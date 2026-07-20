@@ -1,0 +1,260 @@
+{
+  "schemaVersion": 1,
+  "product": "Praxodoro",
+  "goal": "Build and verify the first native macOS 26 Praxodoro vertical slice with a complete offline ADHD-aware focus loop, Liquid Instrument accessibility paths, and explicit Lite/Pro/Enterprise capability boundaries.",
+  "originalSpec": "SPEC.md",
+  "blueprint": "BLUEPRINT.md",
+  "openSpecChange": "build-native-praxodoro",
+  "openSpecPath": "openspec/changes/build-native-praxodoro",
+  "criteriaMappingMeaning": "Each atom's criteria list identifies requirements it supports; it does not claim final acceptance. Final acceptance requires atom 8.2 evidence mapping against the complete current tree.",
+  "branch": "feat/native-app",
+  "mergeBase": "9a910325c09ed5288c262a5653f561286fdd196e",
+  "planningGate": {
+    "status": "done",
+    "required": [
+      "strict-openspec-validation",
+      "premortem",
+      "devils-advocate",
+      "architecture-privacy-test-council",
+      "plan-revision",
+      "planning-commit"
+    ],
+    "evidence": [
+      ".agent/council/2026-07-20-foundation-plan-council.md",
+      ".agent/council/2026-07-20-second-revision-reconciliation.md",
+      ".agent/council/2026-07-20-final-plan-acceptance.md",
+      "docs/superpowers/plans/2026-07-20-native-foundation.md"
+    ]
+  },
+  "counts": {
+    "earsAcceptanceCriteria": 56,
+    "documentedAssumptions": 12,
+    "atoms": 21,
+    "todo": 21,
+    "doing": 0,
+    "done": 0,
+    "parked": 0
+  },
+  "nextAtom": "1.1",
+  "atoms": [
+    {
+      "id": "1.1",
+      "title": "Pin XcodeGen and scaffold the native project plus internal package",
+      "status": "todo",
+      "dependsOn": [],
+      "criteria": ["D-001", "D-004"],
+      "red": "scripts/verify-scaffold.sh fails on missing project.yml, project, or targets",
+      "green": "scaffold check, swift test, unsigned xcodebuild, and isolated launch pass",
+      "evidence": null
+    },
+    {
+      "id": "1.2",
+      "title": "Add strict concurrency, formatting, provenance, and regeneration gates",
+      "status": "todo",
+      "dependsOn": ["1.1"],
+      "criteria": ["D-001", "D-002"],
+      "red": "project regeneration/provenance verifier fails before gates exist",
+      "green": "generator produces no diff and quality settings/build are clean",
+      "evidence": null
+    },
+    {
+      "id": "2.1",
+      "title": "Implement product capability registry and edition matrices",
+      "status": "todo",
+      "dependsOn": ["1.1"],
+      "criteria": ["G-001", "G-002", "G-006"],
+      "red": "ProductRulesTests fail to compile on missing capability types",
+      "green": "edition matrix and registry completeness tests pass",
+      "evidence": null
+    },
+    {
+      "id": "2.2",
+      "title": "Implement entitlement evidence, policy precedence, expiry, and downgrade",
+      "status": "todo",
+      "dependsOn": ["2.1"],
+      "criteria": ["G-002", "G-003", "G-004", "G-005", "G-006"],
+      "red": "EntitlementSnapshotTests fail on missing evidence and policy APIs",
+      "green": "verified, expired, unverified, managed, and downgrade fixtures pass",
+      "evidence": null
+    },
+    {
+      "id": "3.1",
+      "title": "Define session states, intents, events, projections, and timing presets",
+      "status": "todo",
+      "dependsOn": ["2.1"],
+      "criteria": ["E-001", "E-003", "E-004", "G-001"],
+      "red": "SessionModelTests fail on missing domain types and presets",
+      "green": "all lifecycle states encode/decode and four Lite presets validate",
+      "evidence": null
+    },
+    {
+      "id": "3.2",
+      "title": "Implement exhaustive pure focus and coach reducer",
+      "status": "todo",
+      "dependsOn": ["3.1"],
+      "criteria": ["E-001", "E-003", "E-009", "C-001", "C-002", "C-003", "C-004", "C-005", "C-006", "C-009", "C-010"],
+      "red": "transition tests fail on missing reducer and rejection contract",
+      "green": "complete state-intent matrix and full focus-loop fixture pass",
+      "evidence": null
+    },
+    {
+      "id": "3.3",
+      "title": "Implement canonical time projection and reconciliation",
+      "status": "todo",
+      "dependsOn": ["3.1"],
+      "criteria": ["E-004", "E-005", "E-006", "E-007", "E-008"],
+      "red": "TimerReconciliationTests fail on missing clock and reconciliation APIs",
+      "green": "pause, sleep, wake, relaunch, DST, wall-change, Flow, and exactly-once fixtures pass",
+      "evidence": null
+    },
+    {
+      "id": "4.1",
+      "title": "Implement actor engine and in-memory atomic repository",
+      "status": "todo",
+      "dependsOn": ["2.2", "3.2", "3.3"],
+      "criteria": ["E-002", "E-008", "E-010", "G-004", "G-005"],
+      "red": "SessionEngineTests fail on missing snapshot stream and commit contract",
+      "green": "concurrency, revision, atomicity, and effect-failure tests pass",
+      "evidence": null
+    },
+    {
+      "id": "4.2",
+      "title": "Implement SwiftData V1 schema and repository adapter",
+      "status": "todo",
+      "dependsOn": ["1.1", "4.1"],
+      "criteria": ["E-007", "E-010", "P-001", "P-009", "P-010"],
+      "red": "repository contract fails on missing SwiftData schema/adapter",
+      "green": "in-memory and temporary SwiftData contracts plus recovery fixtures pass",
+      "evidence": null
+    },
+    {
+      "id": "5.1",
+      "title": "Implement Liquid Instrument tokens, surface roles, and render policy",
+      "status": "todo",
+      "dependsOn": ["1.1"],
+      "criteria": ["U-001", "U-002", "U-003", "U-004", "U-005", "U-008", "U-010"],
+      "red": "RenderPolicyTests fail on missing role/fallback mappings",
+      "green": "all accessibility, appearance, power, and hidden policies pass without external effects dependency",
+      "evidence": null
+    },
+    {
+      "id": "5.2",
+      "title": "Wire shared app container, main window, and menu bar",
+      "status": "todo",
+      "dependsOn": ["4.1", "4.2", "5.1"],
+      "criteria": ["E-002", "U-006", "U-009", "D-002"],
+      "red": "AppModelTests fail on missing shared engine and scene subscriptions",
+      "green": "main/menu-bar parity and shared revision tests pass",
+      "evidence": null
+    },
+    {
+      "id": "5.3",
+      "title": "Build accessible Initiate and Focus surfaces",
+      "status": "todo",
+      "dependsOn": ["3.2", "3.3", "5.2"],
+      "criteria": ["E-001", "C-001", "C-002", "C-007", "U-001", "U-006", "U-008"],
+      "red": "UI/model tests fail for offline start, capacity, editing, controls, and keyboard flow",
+      "green": "initiate/focus tests, build, relaunch, and keyboard smoke pass",
+      "evidence": null
+    },
+    {
+      "id": "5.4",
+      "title": "Build check-in, detour, break, re-entry, and review surfaces",
+      "status": "todo",
+      "dependsOn": ["5.3"],
+      "criteria": ["C-003", "C-004", "C-005", "C-006", "C-008", "C-009", "C-010", "U-006", "U-007"],
+      "red": "coach-loop tests fail on missing semantics, transitions, restoration, and sparse-review guard",
+      "green": "full keyboard/VoiceOver-identified focus loop passes without punitive or commerce behavior",
+      "evidence": null
+    },
+    {
+      "id": "5.5",
+      "title": "Add optional compact floating surface",
+      "status": "todo",
+      "dependsOn": ["5.1", "5.2", "5.3"],
+      "criteria": ["G-001", "U-006", "U-009"],
+      "red": "compact tests fail on missing panel activation, accessibility, and state parity",
+      "green": "Spaces/fullscreen/focus/VoiceOver/disable parity smoke passes",
+      "evidence": null
+    },
+    {
+      "id": "6.1",
+      "title": "Implement data dictionary, retention, and session-only coach defaults",
+      "status": "todo",
+      "dependsOn": ["3.2", "4.2"],
+      "criteria": ["P-001", "P-003", "P-009", "P-010"],
+      "red": "retention tests fail on missing category and cleanup policy",
+      "green": "boundary fixtures and data-dictionary parity pass",
+      "evidence": null
+    },
+    {
+      "id": "6.2",
+      "title": "Implement privacy-safe local notifications",
+      "status": "todo",
+      "dependsOn": ["4.1", "5.2"],
+      "criteria": ["E-010", "P-004", "P-007"],
+      "red": "scheduler tests fail on missing opt-in, preview, dedupe, and denial behavior",
+      "green": "permission, privacy, event, cancellation, and timer-fallback fixtures pass",
+      "evidence": null
+    },
+    {
+      "id": "6.3",
+      "title": "Implement exact local export and honest Delete All",
+      "status": "todo",
+      "dependsOn": ["4.2", "6.1"],
+      "criteria": ["G-004", "P-005", "P-006", "P-010"],
+      "red": "export/delete tests fail on missing category selection and complete cleanup",
+      "green": "minimal/all exports, full local deletion, and partial-failure messaging pass",
+      "evidence": null
+    },
+    {
+      "id": "7.1",
+      "title": "Complete native accessibility and visual regression matrix",
+      "status": "todo",
+      "dependsOn": ["5.1", "5.4", "5.5"],
+      "criteria": ["C-007", "U-001", "U-002", "U-003", "U-004", "U-005", "U-006", "U-007", "U-008", "U-009"],
+      "red": "accessibility suite captures any unreachable, unlabeled, chatty, clipped, or missing fallback",
+      "green": "keyboard, VoiceOver, effects, contrast, large-text, light/dark, and screenshot dossier pass",
+      "evidence": null
+    },
+    {
+      "id": "7.2",
+      "title": "Prove zero-network, no-surveillance, energy, and hidden-scene behavior",
+      "status": "todo",
+      "dependsOn": ["6.1", "6.2", "6.3", "7.1"],
+      "criteria": ["E-004", "U-005", "U-010", "P-002", "P-007", "P-008", "D-005"],
+      "red": "privacy-performance verifier fails when evidence capture is absent",
+      "green": "network, entitlement, log, write, hidden-renderer, and energy checks pass",
+      "evidence": null
+    },
+    {
+      "id": "8.1",
+      "title": "Add macOS CI and one local verification entry point",
+      "status": "todo",
+      "dependsOn": ["1.2", "7.2"],
+      "criteria": ["S-001", "S-002", "D-001", "D-002", "D-003", "D-004", "D-005"],
+      "red": "scripts/verify.sh fails each unwired mandatory stage",
+      "green": "local verification and macOS CI cover spec, format, tests, build, secret, privacy, and smoke",
+      "evidence": null
+    },
+    {
+      "id": "8.2",
+      "title": "Complete fresh-context validation, reviews, docs, and archive readiness",
+      "status": "todo",
+      "dependsOn": ["8.1"],
+      "criteria": ["S-003", "D-003", "D-004", "D-005", "D-006", "D-007"],
+      "red": "validator finds any unmapped criterion, stale state, unexplained anomaly, or open Major/Important finding",
+      "green": "full verification, independent validator, specialist reviews, final smoke, and OpenSpec task status pass",
+      "evidence": null
+    }
+  ],
+  "parkedExternalAtoms": [
+    "public-github-remote-and-push",
+    "signing-notarization-and-distribution",
+    "storekit-product-and-commerce",
+    "cloudkit-eventkit-app-intents-foundation-models",
+    "privileged-blocker-extension",
+    "enterprise-license-issuer-mdm-and-backend"
+  ],
+  "lastUpdated": "2026-07-20T14:20:00Z"
+}

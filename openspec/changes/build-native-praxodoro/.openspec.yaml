@@ -1,0 +1,5 @@
+schema: spec-driven
+created: 2026-07-20
+goal: Ship a locally runnable, testable native focus loop that preserves core
+  ADHD-aware and accessibility support in Lite while establishing explicit Pro
+  and Enterprise extension points.

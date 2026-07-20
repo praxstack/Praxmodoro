@@ -12,3 +12,36 @@
 2026-07-20T13:50:00Z | actor=/root | atom=bootstrap | DECISION | Root AGENTS and OpenSpec config now encode spec-first, TDD, edition, ADHD, privacy, accessibility, and Liquid Instrument constraints.
 2026-07-20T13:51:00Z | actor=/root | atom=bootstrap | GATE | Withheld baseline commit because git diff --check found nine extra EOF blank lines; gitleaks and npm audit were clean.
 2026-07-20T13:51:00Z | actor=/root | atom=bootstrap | ANOMALY | Corrected staged metric: 14,100 was line changes, not bytes.
+2026-07-20T13:52:00Z | actor=/root | atom=bootstrap | CHECKPOINT | Baseline committed as 9a91032; post-commit secret scan clean. SSH signature verification config is incomplete, so commit is unsigned.
+2026-07-20T13:53:00Z | actor=/root | atom=isolate | ANOMALY | First setup command remained in root and proved main only; rerouted with explicit worktree workdir.
+2026-07-20T13:54:57Z | actor=/root | atom=isolate | GATE | feat/native-app at 9a91032: npm audit 0 vulnerabilities, strict OpenSpec validation green, isolated baseline clean.
+2026-07-20T13:56:00Z | actor=/root | atom=plan | SUBAGENT_RETURN | ADHD/privacy/test review converted edition, retention, notification, wording, accessibility, and zero-network gaps into binding proposal constraints.
+2026-07-20T13:57:00Z | actor=/root | atom=plan | OPEN_SPEC | Created build-native-praxodoro and authored proposal covering six capabilities plus measurable success and non-goals.
+2026-07-20T14:00:00Z | actor=/root | atom=plan | SUBAGENT_RETURN | Architecture review selected modular monolith, actor engine, pure reducer, atomic repository, canonical time, capability sets, and semantic render policy.
+2026-07-20T14:02:00Z | actor=/root | atom=plan | DECISION | All four timing presets remain Lite; paid editions add depth/integrations, not core recovery support.
+2026-07-20T14:05:00Z | actor=/root | atom=plan | OPEN_SPEC | Six capability specs and technical design authored; no app source created.
+2026-07-20T14:06:00Z | actor=/root | atom=plan | REROUTE | Strict validation rejected permissive-only Pro requirement; added mandatory Lite-union invariant before retry.
+2026-07-20T14:07:00Z | actor=/root | atom=plan | VALIDATE | Strict OpenSpec validation passed proposal, six specs, and design with zero issues.
+2026-07-20T14:10:00Z | actor=/root | atom=plan | OPEN_SPEC | Created 21 implementation atoms with exact files, RED/GREEN, smoke, and commit contracts.
+2026-07-20T14:11:00Z | actor=/root | atom=plan | ANOMALY | Corrected task-count audit from 18 to 21 after direct checkbox count.
+2026-07-20T14:13:00Z | actor=/root | atom=plan | SPEC | Created global completion contract with original-scope EARS criteria and definition of done.
+2026-07-20T14:14:00Z | actor=/root | atom=plan | ANOMALY | Draft counting was wrong: it conflated 56 EARS criteria with 12 assumptions; the two totals are now tracked separately.
+2026-07-20T14:17:00Z | actor=/root | atom=plan | BLUEPRINT | Expanded interfaces, sequences, edge cases, exact error copy, data/render matrices, verification, and rollback.
+2026-07-20T14:20:00Z | actor=/root | atom=plan | PRD | Created validatable 21-atom task DAG with dependencies, criteria, evidence slots, next atom, and parked external scope.
+2026-07-20T14:22:00Z | actor=/root | atom=plan | PREMORTEM | Captured 15 failure modes, detection, mitigation, rollback, and council triggers.
+2026-07-20T14:23:00Z | actor=/root | atom=plan | DEVILS_ADVOCATE | Required exact-code subsystem plan, fail-closed QA proof, no runtime effects dependency, and staged green checkpoints.
+2026-07-20T14:24:00Z | actor=/root | atom=plan | REROUTE | Replaced unpinned formatter with Xcode-bundled swift-format 6.3.0, fixed scaffold test-file inventory, and corrected one atomic patch context error.
+2026-07-20T14:29:00Z | actor=/root | atom=plan | WRITING_PLAN | Exact-code plan ready for scaffold, quality gates, capability matrix, and entitlement resolution.
+2026-07-20T14:23:22Z | actor=/root | atom=plan | AUDIT_ANOMALY | Host UTC clock was earlier than several synthesized draft log timestamps; preserve entries but treat their minute values as ordering labels, not trusted wall-time evidence.
+2026-07-20T14:23:22Z | actor=/root | atom=plan | GATE | Strict OpenSpec validation passed 1/1 with 0 issues; git diff check and prd JSON validation passed; placeholder scan found only the self-review sentence.
+2026-07-20T14:23:22Z | actor=/root | atom=plan | REROUTE | Repaired a nested Markdown fence in the exact-code README append instruction before council review.
+2026-07-20T14:23:22Z | actor=/root | atom=plan | COUNCIL_PACKET | Frozen product decisions, environment evidence, six falsifiable review questions, and GO/NO_GO rule prepared for independent reviewers.
+2026-07-20T14:32:37Z | actor=/root | atom=plan | COUNCIL | Three independent reviews converged on GO_WITH_REQUIRED_CHANGES; zero critical redesign blockers, major executable-proof and entitlement-contract defects.
+2026-07-20T14:32:37Z | actor=/root | atom=plan | TOOL_PROOF | Official XcodeGen tag commit 8445e778451c7e44237b90281bde622d764b0084; xcodegen.zip SHA-256 4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806; extracted binary reports exactly Version: 2.46.0.
+2026-07-20T14:32:37Z | actor=/root | atom=plan | PLAN_REVISION | Accepted all evidence-backed majors: real app/UI execution, isolated smoke, snapshot regeneration, no jq, ungateable Lite, exhaustive descriptors, non-forgeable grants, typed policy, scoped downgrade, honest criterion mappings.
+2026-07-20T15:17:21Z | actor=/root | atom=plan | AUDIT_CORRECTION | The earlier combined total was invalid; prd now records 56 EARS acceptance criteria and 12 documented assumptions separately.
+2026-07-20T15:17:21Z | actor=/root | atom=plan | COUNCIL_NO_GO | First revised-plan reviewers found reproducible path quoting, canonical drift, app-test proof, descriptor, entitlement, consent-schema, downgrade-provenance, and trace defects; planning gate remained closed.
+2026-07-20T15:17:21Z | actor=/root | atom=plan | PLAN_REVISION_2 | Reconciled all reported majors across OpenSpec, SPEC/PRD trace, scaffold test evidence, and the exact edition model; local parse/typecheck/strict-validation/diff gates pass.
+2026-07-20T15:17:21Z | actor=/root | atom=plan | COUNCIL_FINAL_DISPATCH | Fresh independent toolchain, policy/privacy, and trace reviewers started; 0/21 implementation atoms remain complete.
+2026-07-20T15:34:29Z | actor=/root | atom=plan | COUNCIL_GO | Fresh toolchain/test, policy/privacy, and canonical-trace reviewers independently returned GO with no Critical or Major issue.
+2026-07-20T15:34:29Z | actor=/root | atom=plan | GATE | Planning gate closed with durable council evidence; implementation remains 0/21 and next atom remains 1.1.

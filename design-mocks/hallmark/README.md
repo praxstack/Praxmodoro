@@ -1,6 +1,9 @@
 # Praxodoro Hallmark Mock Dossier
 
-Status: **design exploration awaiting user approval**. These are interactive browser mocks, not production macOS code.
+Status: **approved as directional evidence for the autonomous native build on 2026-07-20**.
+These are interactive browser mocks, not production macOS code or pixel-level acceptance.
+The binding OpenSpec requirements override prototype shortcuts around capacity defaults,
+editable actions, check-in choices, privacy wording, accessibility semantics, and remote assets.
 
 The research run behind this direction is fail-closed validated: 53 sources, 38 recorded synthesis claims, 38 supported claims, two evidence waves, and an independent adversarial verification shard.
 
@@ -92,4 +95,7 @@ The 58-gate Hallmark review was applied after rendering. The design avoids gener
 
 ## Approval boundary
 
-The recommended next decision is whether **Liquid Instrument** is the correct base direction. After approval, the design can be written into the formal product/design specification. Native app implementation remains gated until that written specification is reviewed.
+**Liquid Instrument** is the approved base direction. Native implementation must preserve its
+hierarchy and emotional character while passing the written OpenSpec behavior, accessibility,
+privacy, performance, and semantic-render-policy gates. Browser values and JavaScript behavior
+remain directional rather than native runtime proof.
