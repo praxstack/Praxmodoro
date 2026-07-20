@@ -1,0 +1,45 @@
+{
+  "version": "2.0.0",
+  "topic": "Praxodoro ADHD-aware macOS focus coach, premium Pomodoro landscape, liquid-glass skeuomorphic UX, and implementation feasibility",
+  "domain": "technical-products consumer-productivity academic",
+  "risk_tier": "medium",
+  "audience": "General reader",
+  "decision": "Inform understanding",
+  "jurisdiction": null,
+  "language": "English",
+  "as_of": "2026-07-20",
+  "mode": "exhaustive",
+  "mission": "Build an evidence-backed research package for Praxodoro ADHD-aware macOS focus coach, premium Pomodoro landscape, liquid-glass skeuomorphic UX, and implementation feasibility.",
+  "created_at": "2026-07-20T10:58:06.851888+00:00",
+  "updated_at": "2026-07-20T11:29:27.064237+00:00",
+  "status": "completed",
+  "current_wave": 2,
+  "max_waves": 5,
+  "top_level_questions": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "active_shards": [],
+  "completed_shards": [
+    "w1-competitor-official",
+    "w1-user-friction",
+    "w1-adhd-research",
+    "w1-macos-visual-tech",
+    "w2-breaks-adhd-falsification",
+    "w2-platform-feasibility",
+    "w2-effects-dependency-audit",
+    "w2-product-scope-adjudication"
+  ],
+  "failed_shards": [],
+  "partial_shards": [],
+  "retry_counts": {},
+  "recursion_depth": {},
+  "requested_outputs": [
+    "technical-report",
+    "executive-memo"
+  ],
+  "verification_required": true,
+  "verification_completed": true,
+  "notes": [
+    "Wave 2 independently falsified the adaptive-break hypothesis, verified macOS platform constraints, audited optional effects dependencies, and adjudicated product scope. The remaining disputed break-schedule claim is retained as a real evidence conflict and converted into a user-steerable product constraint."
+  ]
+}

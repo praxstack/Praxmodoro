@@ -1,0 +1,93 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,200..800&family=Geist:wght@300;400;700&family=JetBrains+Mono:wght@400;700&display=swap");
+
+:root {
+  /* Hallmark custom theme · all colour and type declarations route through tokens. */
+  --color-paper: oklch(13% 0.018 248);
+  --color-paper-2: oklch(16% 0.021 248);
+  --color-paper-3: oklch(20% 0.024 248);
+  --color-paper-4: oklch(24% 0.026 248);
+  --color-ink: oklch(95% 0.009 78);
+  --color-ink-2: oklch(84% 0.014 245);
+  --color-muted: oklch(67% 0.018 245);
+  --color-neutral: oklch(49% 0.022 245);
+  --color-rule: oklch(33% 0.025 245);
+  --color-rule-2: oklch(27% 0.022 245);
+  --color-accent: oklch(78% 0.16 76);
+  --color-accent-strong: oklch(72% 0.17 70);
+  --color-accent-soft: oklch(78% 0.07 76);
+  --color-accent-ink: oklch(18% 0.025 70);
+  --color-focus: oklch(82% 0.19 76);
+  --color-calm: oklch(75% 0.09 198);
+  --color-calm-ink: oklch(18% 0.028 198);
+  --color-danger: oklch(70% 0.14 28);
+  --color-danger-ink: oklch(18% 0.025 28);
+  --color-glass: oklch(34% 0.026 245 / 0.54);
+  --color-glass-strong: oklch(39% 0.028 245 / 0.72);
+  --color-glass-edge: oklch(88% 0.024 235 / 0.18);
+  --color-glass-shine: oklch(96% 0.012 230 / 0.22);
+  --color-scrim: oklch(8% 0.014 248 / 0.72);
+  --color-shadow: oklch(7% 0.02 248 / 0.58);
+  --color-metal-dark: oklch(23% 0.018 240);
+  --color-metal-mid: oklch(39% 0.021 240);
+  --color-metal-light: oklch(73% 0.018 230);
+  --color-track: oklch(29% 0.025 245);
+  --color-selection: oklch(78% 0.16 76 / 0.12);
+  --color-noise: oklch(88% 0.018 240 / 0.035);
+  --color-clear: transparent;
+
+  --gradient-room: radial-gradient(circle at 62% 34%, var(--color-paper-4), var(--color-paper) 56%);
+  --gradient-glass: linear-gradient(145deg, var(--color-glass-shine), var(--color-clear) 38%), linear-gradient(180deg, var(--color-glass-strong), var(--color-glass));
+  --gradient-metal: linear-gradient(145deg, var(--color-metal-light), var(--color-metal-mid) 18%, var(--color-metal-dark) 64%, var(--color-metal-mid));
+  --gradient-dial: conic-gradient(from 205deg, var(--color-accent) 0deg 244deg, var(--color-track) 244deg 360deg);
+  --gradient-ring: conic-gradient(from 210deg, var(--color-accent) 0deg 276deg, var(--color-rule-2) 276deg 360deg);
+  --gradient-calm: linear-gradient(135deg, var(--color-calm), var(--color-paper-4));
+
+  --font-display: "Bricolage Grotesque", "Avenir Next", sans-serif;
+  --font-body: "Geist", "Avenir Next", sans-serif;
+  --font-outlier: "JetBrains Mono", "SFMono-Regular", monospace;
+
+  --text-xs: 0.68rem;
+  --text-sm: 0.8rem;
+  --text-base: 0.94rem;
+  --text-md: 1.12rem;
+  --text-lg: 1.42rem;
+  --text-xl: 1.85rem;
+  --text-2xl: 2.55rem;
+  --text-3xl: 3.25rem;
+  --text-display: clamp(3.5rem, 8vw, 7rem);
+
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  --radius-xs: 0.45rem;
+  --radius-sm: 0.7rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.45rem;
+  --radius-xl: 2rem;
+  --radius-round: 999rem;
+  --rule-hair: 1px;
+  --rule-control: 1.5px;
+
+  --dur-micro: 100ms;
+  --dur-short: 180ms;
+  --dur-medium: 280ms;
+  --dur-long: 420ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}

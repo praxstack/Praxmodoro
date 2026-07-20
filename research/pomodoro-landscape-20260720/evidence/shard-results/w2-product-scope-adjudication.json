@@ -1,0 +1,227 @@
+{
+  "id": "w2-product-scope-adjudication",
+  "wave": 2,
+  "role": "product-scope-adjudicator",
+  "status": "completed",
+  "shard_query": "Which capabilities survive a value, activation-cost, privacy, feasibility, and differentiation challenge?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w2-product-scope-adjudication-001",
+      "claim": "The smallest differentiated product is not a smaller feature list; it is a complete low-friction loop: choose or capture one task, create a tiny first action, start, stay visibly oriented, check in gently, recover deliberately, and record what happened.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "adhd-social-scaffolds-2026",
+        "focusmo-official-home",
+        "session-official-features",
+        "focused-work-official-v5"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "adhd-social-scaffolds-2026",
+          "locator": "Low-friction interaction, task breakdown, proactive help, plan negotiation",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focusmo-official-home",
+          "locator": "Visible task, check-ins, automatic timeline",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "session-official-features",
+          "locator": "State focus and reflect after session",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focused-work-official-v5",
+          "locator": "Flexible sessions and plan/review",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "This loop is the product spine; every advanced feature must attach to it without adding first-run friction."
+    },
+    {
+      "claim_id": "w2-product-scope-adjudication-002",
+      "claim": "Ship-first capabilities should be native timer modes, one-task initiation, flexible check-ins, intentional breaks, scratchpad/distraction capture, reflection, local analytics, menu-bar and floating views, keyboard commands, accessibility variants, and local-first persistence.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "adhd-social-scaffolds-2026",
+        "microbreak-meta-analysis",
+        "focused-work-official-v5",
+        "apple-designing-macos",
+        "apple-hig-accessibility"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "adhd-social-scaffolds-2026",
+          "locator": "Design implications for low-friction scaffolding",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "microbreak-meta-analysis",
+          "locator": "Well-being evidence for short breaks",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focused-work-official-v5",
+          "locator": "Plan, flexible sessions, and review market precedent",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-designing-macos",
+          "locator": "Menu bar, windows, keyboard, personalization",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-hig-accessibility",
+          "locator": "Intuitive, perceivable, adaptable interface requirements",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Detailed estimates, themes, and expert settings can exist early if defaults prevent them from blocking activation."
+    },
+    {
+      "claim_id": "w2-product-scope-adjudication-003",
+      "claim": "Stage Calendar and Reminders import, CloudKit history sync, App Intents, richer analytics, deterministic workspace automations, and optional on-device task breakdown after the core loop proves usable.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "apple-eventkit-access",
+        "apple-swiftdata-cloudkit-sync",
+        "apple-app-intents",
+        "apple-foundation-models-availability"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "apple-eventkit-access",
+          "locator": "Permission and access requirements",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-swiftdata-cloudkit-sync",
+          "locator": "Capability and schema constraints",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-app-intents",
+          "locator": "System action integration",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-foundation-models-availability",
+          "locator": "Eligibility and fallback constraints",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "These features add meaningful value but also permissions, state, and failure modes."
+    },
+    {
+      "claim_id": "w2-product-scope-adjudication-004",
+      "claim": "Keep system-wide blocking, live cross-device timer control, passive app or website surveillance, social body doubling, and physiological fatigue inference experimental until separate privacy, distribution, reliability, and efficacy gates are met.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "apple-ne-deployment",
+        "apple-coredata-cloudkit-sync",
+        "body-doubling-roadmap-2026",
+        "adhd-digital-health-consensus"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "apple-ne-deployment",
+          "locator": "Privileged content-filter deployment requirements",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-coredata-cloudkit-sync",
+          "locator": "Minute-scale managed sync cadence",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "body-doubling-roadmap-2026",
+          "locator": "Explicit research gaps",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "adhd-digital-health-consensus",
+          "locator": "Privacy, evidence, equity, and user-centered requirements",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Experimental does not mean abandoned; it means isolated from the core shipping claim."
+    },
+    {
+      "claim_id": "w2-product-scope-adjudication-005",
+      "claim": "Reject punitive streak loss, forced breaks, mandatory account creation, configuration-heavy onboarding, manipulative urgency, diagnostic scoring, and productivity judgments based on app activity.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "adhd-social-scaffolds-2026",
+        "chalmers-adhd-productivity-study",
+        "adhd-digital-health-consensus",
+        "dysregulated-not-deficit"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "adhd-social-scaffolds-2026",
+          "locator": "Nonjudgmental tone, options rather than enforcement, low setup burden",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "chalmers-adhd-productivity-study",
+          "locator": "Existing-tool assumptions and barriers",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "adhd-digital-health-consensus",
+          "locator": "Ethical and user-centered requirements",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "dysregulated-not-deficit",
+          "locator": "Attentional dysregulation framing",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Completion streaks may remain as opt-in celebrations if missing a day never erases progress or shames the user."
+    }
+  ],
+  "sources": [],
+  "contradictions": [],
+  "next_queries": [
+    "Convert the adjudicated loop into two or three product/visual approaches for user selection.",
+    "Create wireframes for the initiation, focus, check-in, break, recovery, and review states.",
+    "Define measurable usability and performance acceptance criteria before implementation."
+  ],
+  "summary": "The product survives aggressive scope reduction because its differentiated core is a complete execution-and-recovery loop. Permissions, privileged blocking, AI, live cross-device control, and passive tracking remain optional layers; punitive or diagnosis-like mechanics are rejected."
+}

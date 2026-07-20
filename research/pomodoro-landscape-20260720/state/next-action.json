@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-07-20T11:29:27.222871+00:00",
+  "decision": "candidate-complete",
+  "next_action": "validate",
+  "reason": "No material gap is visible in the recorded state; run fail-closed validation.",
+  "weak_questions": [],
+  "claims_requiring_review": [],
+  "unresolved_contradictions": [],
+  "current_wave": 2,
+  "max_waves": 5
+}

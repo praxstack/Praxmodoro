@@ -1,0 +1,16 @@
+{
+  "version": "2.0.0",
+  "mode": "exhaustive",
+  "max_waves": 5,
+  "max_workers_per_wave": 4,
+  "max_retries_per_shard": 4,
+  "max_recursion_depth": 3,
+  "current_usage": {
+    "waves_started": 2,
+    "workers_launched": 8,
+    "retries_used": 0,
+    "recursive_spawns": 0,
+    "sources_accessed": 52,
+    "claims_recorded": 38
+  }
+}

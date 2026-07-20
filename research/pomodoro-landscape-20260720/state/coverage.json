@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-07-20T11:29:26.687800+00:00",
+  "overall_score": 8.81,
+  "overall_status": "strong",
+  "source_count": 53,
+  "claim_count": 38,
+  "supported_claim_count": 38,
+  "unsupported_claim_count": 0,
+  "contradiction_count": 3,
+  "questions": {
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?": {
+      "score": 8.81,
+      "status": "strong",
+      "claim_count": 38,
+      "supported_claim_count": 38,
+      "evidence_count": 52,
+      "source_diversity": 41,
+      "answered_by": [
+        "w1-adhd-research",
+        "w1-competitor-official",
+        "w1-macos-visual-tech",
+        "w1-user-friction",
+        "w2-breaks-adhd-falsification",
+        "w2-effects-dependency-audit",
+        "w2-platform-feasibility",
+        "w2-product-scope-adjudication"
+      ],
+      "components": {
+        "claim_support": 3.0,
+        "source_authority": 1.81,
+        "source_independence": 2.0,
+        "citation_locators": 2.0,
+        "contradiction_penalty": 0.0
+      },
+      "open_gaps": []
+    }
+  },
+  "scoring_note": "Scores reflect claim support, accessed-source authority and independence, citation locators, and unresolved contradictions; they are routing signals, not truth certificates."
+}

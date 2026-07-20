@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Praxodoro — Hallmark interactive macOS mocks</title>
+  <link rel="stylesheet" href="/files/mockups.css">
+  <link rel="stylesheet" href="./mockups.css">
+</head>
+<body>
+  <div class="prototype-shell" id="prototypeShell" data-effects="full">
+    <aside class="rail" aria-label="Mockup screens">
+      <div class="brand-mark" aria-label="Praxodoro">P</div>
+      <nav class="rail-nav" aria-label="Product areas">
+        <button class="rail-button" type="button" data-screen-target="initiate" aria-selected="true" aria-label="Initiate">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <span class="rail-label">Initiate · 1</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="focus" aria-selected="false" aria-label="Focus">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 7v5l3 2M9 2h6"/></svg>
+          <span class="rail-label">Focus · 2</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="checkin" aria-selected="false" aria-label="Coach check-in">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M9 10h6"/></svg>
+          <span class="rail-label">Check-in · 3</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="break" aria-selected="false" aria-label="Adaptive break">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+          <span class="rail-label">Break · 4</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="review" aria-selected="false" aria-label="Review">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M12 19V4M19 19v-7"/></svg>
+          <span class="rail-label">Review · 5</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="settings" aria-selected="false" aria-label="Settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+          <span class="rail-label">Settings · 6</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="surfaces" aria-selected="false" aria-label="Mac surfaces">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          <span class="rail-label">Mac surfaces · 7</span>
+        </button>
+      </nav>
+      <div class="rail-bottom">
+        <button class="effects-toggle" type="button" id="effectsToggle" aria-pressed="false">Effects: full</button>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="app-hud">
+        <div class="hud-title">Praxodoro <span class="status-dot" aria-hidden="true"></span></div>
+        <div class="hud-center" id="hudCenter">Ready · no session running</div>
+        <div class="hud-actions">
+          <button class="hud-chip" type="button" id="quickCapture">Capture thought</button>
+          <button class="hud-chip" type="button" data-tone="accent" data-screen-jump="focus">Start focus</button>
+        </div>
+      </header>
+
+      <section class="screen is-current" id="screen-initiate" data-screen="initiate" aria-labelledby="initiate-title">
+        <div class="screen-heading">
+          <div>
+            <h1 id="initiate-title">Make starting smaller than avoiding.</h1>
+          </div>
+          <p>The default path asks for one task, one tiny action, and current capacity. Everything else stays folded away.</p>
+        </div>
+
+        <div class="initiator-grid">
+          <article class="instrument-panel init-main">
+            <div class="task-composer">
+              <span class="quiet-label">What needs your attention?</span>
+              <label for="taskInput">Choose one task</label>
+              <input class="task-input" id="taskInput" value="Write the Praxodoro product brief" autocomplete="off">
+            </div>
+
+            <div>
+              <span class="quiet-label">The first visible action</span>
+              <div class="first-action">
+                <span class="first-action-index">1</span>
+                <div>
+                  <strong>Open the research memo and name the three core promises.</strong>
+                  <span>Concrete, reversible, about five minutes. Edit if it feels too large.</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <span class="quiet-label">Capacity right now</span>
+              <div class="choice-row" role="group" aria-label="Current capacity">
+                <button class="choice-chip" type="button" aria-pressed="false">Foggy</button>
+                <button class="choice-chip" type="button" aria-pressed="true">Steady</button>
+                <button class="choice-chip" type="button" aria-pressed="false">Restless</button>
+                <button class="choice-chip" type="button" aria-pressed="false">Charged</button>
+              </div>
+            </div>
+
+            <div>
+              <span class="quiet-label">Session policy</span>
+              <div class="mode-row" role="group" aria-label="Session policy">
+                <button class="mode-chip" type="button" aria-pressed="true">Gentle start · 5 + 20</button>
+                <button class="mode-chip" type="button" aria-pressed="false">Classic · 25 + 5</button>
+                <button class="mode-chip" type="button" aria-pressed="false">Flow · open ended</button>
+                <button class="mode-chip" type="button" aria-pressed="false">Recovery first</button>
+              </div>
+            </div>
+
+            <button class="start-control control-button" type="button" id="beginSession">
+              <span class="start-puck" aria-hidden="true">▶</span>
+              <span>
+                <strong>Begin gentle start</strong>
+                <small>Five minutes to enter the work. No commitment beyond that.</small>
+              </span>
+              <span class="start-shortcut">⌘ ↩</span>
+            </button>
+            <div class="state-message" id="initiateMessage" aria-live="polite"></div>
+          </article>
+
+          <aside class="glass-panel coach-preview">
+            <div>
+              <span class="quiet-label">Focus coach · private</span>
+              <div class="coach-presence" aria-hidden="true"><span class="coach-glyph">⌁</span></div>
+            </div>
+            <div class="coach-copy">
+              <h3>I’ll hold the plan while you begin.</h3>
+              <p>At the first check-in, I’ll ask whether the step still fits. I won’t score you, punish a detour, or force a break.</p>
+            </div>
+            <div class="privacy-note">Capacity and check-in answers remain on this Mac by default. Optional sync is separate from the timer.</div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-focus" data-screen="focus" aria-labelledby="focus-title">
+        <div class="screen-heading">
+          <div><h2 id="focus-title">One task stays in sight.</h2></div>
+          <p>The focal object is a physical instrument, not a decorative countdown. Glass is reserved for controls and overlays.</p>
+        </div>
+
+        <div class="focus-layout">
+          <article class="instrument-panel focus-stage">
+            <div class="focus-task">
+              <div>
+                <span class="quiet-label">Now focusing</span>
+                <h2>Write the Praxodoro product brief</h2>
+                <p>Next: name the three core promises.</p>
+              </div>
+              <span class="focus-status">GENTLE START · 01</span>
+            </div>
+
+            <div class="dial-wrap">
+              <div class="dial-aura" aria-hidden="true"></div>
+              <div class="timer-dial">
+                <div class="timer-readout">
+                  <span class="timer-time" id="timerTime">23:42</span>
+                  <span class="timer-state" id="timerState">Holding your place · check-in in 8 min</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="timer-control-row" aria-label="Timer controls">
+              <button class="dial-button" type="button" id="rewindButton" aria-label="Subtract one minute">−1</button>
+              <button class="dial-button" type="button" id="timerToggle" data-primary="true" aria-label="Pause timer">Ⅱ</button>
+              <button class="dial-button" type="button" id="forwardButton" aria-label="Add one minute">+1</button>
+            </div>
+
+            <div class="session-rail" aria-label="Session progress">
+              <span class="session-step is-complete"></span>
+              <span class="session-step is-current"></span>
+              <span class="session-step"></span>
+              <span class="session-step"></span>
+            </div>
+          </article>
+
+          <aside class="focus-side">
+            <section class="glass-panel coach-nudge">
+              <span class="quiet-label">Coach standing by</span>
+              <h3>No need to answer yet.</h3>
+              <p>Your next check-in is quiet unless you drift, pause, or call it early.</p>
+              <div class="nudge-actions">
+                <button class="text-action" type="button" data-screen-jump="checkin">Check in now</button>
+                <button class="text-action" type="button" data-screen-jump="break">Take a break</button>
+              </div>
+            </section>
+
+            <section class="panel scratch-panel">
+              <div class="panel-header">
+                <div><h3>Thought parking</h3><p>Capture without changing context.</p></div>
+                <span class="quiet-label">⌘ ⇧ D</span>
+              </div>
+              <div class="scratch-list" id="scratchList">
+                <div class="scratch-item"><span class="scratch-time">10:18</span><span>Add pricing research to appendix</span><span class="scratch-type">later</span></div>
+                <div class="scratch-item"><span class="scratch-time">10:24</span><span>Reply to Arun after this block</span><span class="scratch-type">later</span></div>
+              </div>
+              <div class="scratch-entry">
+                <label class="sr-only" for="scratchInput">Capture a thought</label>
+                <input class="scratch-input" id="scratchInput" placeholder="Park a thought…">
+                <button class="icon-button" type="button" id="scratchAdd" aria-label="Add thought">＋</button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-checkin" data-screen="checkin" aria-labelledby="checkin-title">
+        <div class="screen-heading">
+          <div><h2 id="checkin-title">Accountability without judgment.</h2></div>
+          <p>The coach negotiates the plan. A detour becomes information, never a failed streak.</p>
+        </div>
+
+        <div class="checkin-layout">
+          <article class="instrument-panel checkin-card">
+            <span class="quiet-label">A quiet check-in · 11 minutes elapsed</span>
+            <h2 class="checkin-question">Still with the plan?</h2>
+            <p class="checkin-note">Choose the closest answer. Praxodoro will change the next step or break suggestion—not your score.</p>
+            <div class="checkin-options" role="group" aria-label="Check-in answer">
+              <button class="checkin-option" type="button" data-checkin="holding"><span class="option-key">1</span><span><strong>Yes, keep holding</strong><small>Hide this and let the block continue.</small></span></button>
+              <button class="checkin-option" type="button" data-checkin="smaller"><span class="option-key">2</span><span><strong>Make the step smaller</strong><small>Turn the next action into a two-minute move.</small></span></button>
+              <button class="checkin-option" type="button" data-checkin="detour"><span class="option-key">3</span><span><strong>I got pulled away</strong><small>Capture the detour, then choose whether to return.</small></span></button>
+              <button class="checkin-option" type="button" data-checkin="break"><span class="option-key">4</span><span><strong>I need a break</strong><small>Choose a recovery action and preserve re-entry.</small></span></button>
+            </div>
+            <div class="state-message" id="checkinMessage" aria-live="polite">No answer is treated as failure.</div>
+          </article>
+
+          <aside class="glass-panel accountability-panel">
+            <div>
+              <span class="quiet-label">Coach memory · this session only</span>
+              <h3>You chose the plan. I keep it visible.</h3>
+              <p>Check-ins are triggered by time, pause, or your request—not by surveillance of every app you open.</p>
+              <ol class="coach-log">
+                <li><time>10:07</time><span>Started with steady capacity.</span></li>
+                <li><time>10:12</time><span>Gentle start completed; continued.</span></li>
+                <li><time>10:18</time><span>Parked a research thought.</span></li>
+              </ol>
+            </div>
+            <button class="start-control control-button" type="button" data-screen-jump="focus">
+              <span class="start-puck" aria-hidden="true">↩</span>
+              <span><strong>Return to focus</strong><small>The timer resumes where you left it.</small></span>
+              <span class="start-shortcut">⌘ ↩</span>
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-break" data-screen="break" aria-labelledby="break-title">
+        <div class="screen-heading">
+          <div><h2 id="break-title">A break with a way back.</h2></div>
+          <p>Praxodoro offers recovery options from your explicit state; it does not claim to calculate an optimal ADHD cadence.</p>
+        </div>
+
+        <div class="break-layout">
+          <article class="instrument-panel break-instrument">
+            <div>
+              <span class="quiet-label">Reset · user-steerable</span>
+              <div class="break-time">02:00</div>
+              <h2>What would help your body return?</h2>
+              <p>Pick one. The timer can end early; completion is not the point.</p>
+              <div class="break-actions" role="group" aria-label="Break actions">
+                <button class="break-action" type="button" data-break="water"><strong>Water</strong><span>Stand, drink, return.</span></button>
+                <button class="break-action" type="button" data-break="eyes"><strong>Distance</strong><span>Look beyond the screen.</span></button>
+                <button class="break-action" type="button" data-break="move"><strong>Move</strong><span>Release shoulders and hands.</span></button>
+                <button class="break-action" type="button" data-break="quiet"><strong>Quiet</strong><span>No prompt, no instruction.</span></button>
+              </div>
+            </div>
+          </article>
+
+          <aside class="glass-panel reentry-panel">
+            <div>
+              <span class="quiet-label">Re-entry card</span>
+              <h3>Your place is preserved.</h3>
+              <p>When the break ends, this is the only instruction on screen.</p>
+              <div class="reentry-step">
+                <strong>Name the three core promises.</strong>
+                <span>Open research memo → write three rough bullets. They do not need to be final.</span>
+              </div>
+              <div class="adaptive-disclosure"><strong>Why this break?</strong> You said “restless” and asked for a break. Praxodoro suggested movement first. You can change or disable this pattern at any time.</div>
+            </div>
+            <button class="start-control control-button" type="button" data-screen-jump="focus">
+              <span class="start-puck" aria-hidden="true">▶</span>
+              <span><strong>I’m ready to return</strong><small>Resume with the re-entry card visible for 30 seconds.</small></span>
+              <span class="start-shortcut">R</span>
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-review" data-screen="review" aria-labelledby="review-title">
+        <div class="screen-heading">
+          <div><h2 id="review-title">A record, not a verdict.</h2></div>
+          <p>Analytics explain patterns in starts, returns, and recovery. They never infer worth from application activity.</p>
+        </div>
+
+        <div class="review-grid">
+          <section class="panel timeline-panel">
+            <div class="panel-header"><div><h3>Today’s focus trail</h3><p>Local timeline · Monday, 20 July</p></div><button class="hud-chip" type="button">Add note</button></div>
+            <div class="timeline">
+              <div class="timeline-row"><time class="timeline-time">09:42</time><div><strong>Prepared the product brief</strong><span>Gentle start · steady capacity</span></div><span class="timeline-kind">start</span></div>
+              <div class="timeline-row"><time class="timeline-time">09:47</time><div><strong>Continued after gentle start</strong><span>First action still fit</span></div><span class="timeline-kind">choice</span></div>
+              <div class="timeline-row"><time class="timeline-time">10:18</time><div><strong>Parked a research thought</strong><span>Did not leave the focus surface</span></div><span class="timeline-kind">capture</span></div>
+              <div class="timeline-row"><time class="timeline-time">10:24</time><div><strong>Asked for a movement break</strong><span>Returned after 2 min 18 sec</span></div><span class="timeline-kind">recovery</span></div>
+              <div class="timeline-row"><time class="timeline-time">10:51</time><div><strong>Closed the session</strong><span>Three core promises drafted</span></div><span class="timeline-kind">finish</span></div>
+            </div>
+          </section>
+
+          <aside class="insight-stack">
+            <section class="glass-panel insight-card">
+              <span class="quiet-label">Observed, not diagnosed</span>
+              <h3>Short entry ramps helped today.</h3>
+              <p>You continued after two of two gentle starts. Keep the option; there is not enough history to make it a default.</p>
+            </section>
+            <section class="panel insight-card">
+              <h3>Energy you reported</h3>
+              <div class="energy-plot" aria-label="Reported energy across seven check-ins">
+                <span class="energy-bar" style="height:38%"></span><span class="energy-bar is-focus" style="height:55%"></span><span class="energy-bar is-best" style="height:78%"></span><span class="energy-bar is-focus" style="height:66%"></span><span class="energy-bar" style="height:42%"></span><span class="energy-bar is-focus" style="height:61%"></span><span class="energy-bar" style="height:49%"></span>
+              </div>
+            </section>
+            <section class="panel insight-card">
+              <div class="metric-line"><span>Focused time</span><strong>1 h 06 m</strong></div>
+              <div class="metric-line"><span>Return after breaks</span><strong>2 / 2</strong></div>
+              <div class="metric-line"><span>Thoughts parked</span><strong>4</strong></div>
+              <div class="metric-line"><span>Tasks completed</span><strong>—</strong></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-settings" data-screen="settings" aria-labelledby="settings-title">
+        <div class="screen-heading">
+          <div><h2 id="settings-title">Depth without setup debt.</h2></div>
+          <p>RoundPie-class power lives here. The primary loop works before a single setting is touched.</p>
+        </div>
+
+        <div class="panel settings-layout">
+          <nav class="settings-nav" aria-label="Settings categories">
+            <button type="button" data-settings-target="sessions" aria-selected="true">Sessions</button>
+            <button type="button" data-settings-target="coach" aria-selected="false">Focus coach</button>
+            <button type="button" data-settings-target="automations" aria-selected="false">Automations</button>
+            <button type="button" data-settings-target="integrations" aria-selected="false">Integrations</button>
+            <button type="button" data-settings-target="privacy" aria-selected="false">Privacy & sync</button>
+            <button type="button" data-settings-target="appearance" aria-selected="false">Appearance</button>
+          </nav>
+
+          <div class="settings-content">
+            <section class="settings-section is-current" data-settings="sessions">
+              <h2>Sessions</h2><p>Four timing policies share one lifecycle: prepare, focus, check in, recover, reflect.</p>
+              <div class="setting-group">
+                <div class="setting-row"><div class="setting-copy"><strong>Default policy</strong><span>Gentle start · 5 minutes entry, then 20 minutes focus.</span></div><select class="select-control"><option>Gentle start</option><option>Classic</option><option>Flow</option><option>Recovery first</option></select></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Ask before starting another block</strong><span>Prevents automatic loops when your plan has changed.</span></div><button class="switch" type="button" aria-pressed="true" aria-label="Ask before another block"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>End-of-session reflection</strong><span>One question: “What changed?” Skippable every time.</span></div><button class="switch" type="button" aria-pressed="true" aria-label="End-of-session reflection"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Sound set</strong><span>Low-transient tactile tones; independent focus and break volume.</span></div><select class="select-control"><option>Machined bell</option><option>Soft wood</option><option>Silent</option></select></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings="coach">
+              <h2>Focus coach</h2><p>Proactive help stays brief, explainable, and easy to dismiss.</p>
+              <div class="setting-group">
+                <div class="setting-row"><div class="setting-copy"><strong>Task-initiation assist</strong><span>Suggest one tiny first action before the timer starts.</span></div><button class="switch" type="button" aria-pressed="true" aria-label="Task initiation assist"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Check-in cadence</strong><span>Use quiet intervals; pauses and manual requests can trigger earlier.</span></div><select class="select-control"><option>Every 12–18 min</option><option>Every 20 min</option><option>Manual only</option></select></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Coach presence</strong><span>Abstract ambient presence; no avatar, streak, or social pressure.</span></div><select class="select-control"><option>Ambient</option><option>Text only</option><option>Hidden</option></select></div>
+                <div class="setting-row"><div class="setting-copy"><strong>On-device task breakdown <span class="experimental">optional AI</span></strong><span>Uses Apple’s local model when available; deterministic fallback stays ready.</span></div><button class="switch" type="button" aria-pressed="false" aria-label="On-device task breakdown"></button></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings="automations">
+              <h2>Automations</h2><p>Deterministic actions at session boundaries. Every automation can be previewed and undone.</p>
+              <div class="setting-group">
+                <div class="setting-row"><div class="setting-copy"><strong>Enable Focus mode at start</strong><span>Use a user-selected macOS Focus; restore the previous state on finish.</span></div><button class="switch" type="button" aria-pressed="true" aria-label="Enable Focus mode"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Run shortcut</strong><span>Start Focus, Pause, Complete, Log Distraction, and Open Check-in.</span></div><select class="select-control"><option>No shortcut</option><option>Start writing setup</option></select></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Workspace recipes</strong><span>Open named apps and documents only after you approve the preview.</span></div><button class="hud-chip" type="button">Configure recipes</button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>System-wide blocking <span class="experimental">separate install</span></strong><span>Privileged network filtering remains optional and explicitly scoped.</span></div><button class="switch" type="button" aria-pressed="false" aria-label="System wide blocking"></button></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings="integrations">
+              <h2>Integrations</h2><p>Bring the task in; keep the focus loop local. No account is required to start.</p>
+              <div class="setting-group">
+                <div class="setting-row"><div class="setting-copy"><strong>Apple Reminders</strong><span>Import selected lists; request access only when connected.</span></div><button class="hud-chip" type="button">Connect</button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Apple Calendar</strong><span>Show upcoming commitments and offer time-bounded focus blocks.</span></div><button class="hud-chip" type="button">Connect</button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>URL schemes & scripts</strong><span>RoundPie-style inbound tasks and outbound session events.</span></div><button class="hud-chip" type="button">Open reference</button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>CSV and JSON export</strong><span>Portable sessions, tasks, check-ins, and interruption notes.</span></div><button class="hud-chip" type="button">Export…</button></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings="privacy">
+              <h2>Privacy & sync</h2><p>Local first. Sync broad state and history—not live countdown ticks.</p>
+              <div class="setting-group">
+                <div class="setting-row"><div class="setting-copy"><strong>iCloud history sync</strong><span>Tasks, settings, completed sessions, and canonical start/end events.</span></div><button class="switch" type="button" aria-pressed="false" aria-label="iCloud history sync"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Capacity and mood data</strong><span>Keep on this Mac unless separately included in sync.</span></div><select class="select-control"><option>On this Mac</option><option>Include in iCloud</option><option>Never store</option></select></div>
+                <div class="setting-row"><div class="setting-copy"><strong>App activity observation</strong><span>Off. Praxodoro does not judge productivity from active-app history.</span></div><button class="switch" type="button" aria-pressed="false" disabled aria-label="App activity observation disabled"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Delete all local coaching data</strong><span>Removes check-ins, capacity history, and learned suggestions.</span></div><button class="hud-chip control-button" type="button">Review deletion…</button></div>
+              </div>
+            </section>
+
+            <section class="settings-section" data-settings="appearance">
+              <h2>Appearance</h2><p>Maximal craft with accessible alternate render paths.</p>
+              <div class="setting-group">
+                <div class="setting-row"><div class="setting-copy"><strong>Surface character</strong><span>Liquid controls over tactile instrument panels.</span></div><select class="select-control"><option>Liquid instrument</option><option>Quiet graphite</option><option>High contrast</option></select></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Ambient field</strong><span>Subtle state-linked light behind the focus instrument.</span></div><button class="switch" type="button" aria-pressed="true" aria-label="Ambient field"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Reduce motion</strong><span>Replace spatial transitions with short opacity changes.</span></div><button class="switch" type="button" aria-pressed="false" aria-label="Reduce motion"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Reduce transparency</strong><span>Replace every glass surface with an opaque semantic material.</span></div><button class="switch" type="button" aria-pressed="false" aria-label="Reduce transparency"></button></div>
+                <div class="setting-row"><div class="setting-copy"><strong>Animation quality</strong><span>Automatic respects Low Power Mode and active display refresh rate.</span></div><select class="select-control"><option>Automatic</option><option>High</option><option>Low</option></select></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-surfaces" data-screen="surfaces" aria-labelledby="surfaces-title">
+        <div class="screen-heading">
+          <div><h2 id="surfaces-title">Native Mac surfaces, one state.</h2></div>
+          <p>The full app handles planning and review. The menu bar and floating capsule preserve one-task orientation without demanding a window.</p>
+        </div>
+
+        <div class="surface-row" role="group" aria-label="Surface preview">
+          <button class="surface-chip" type="button" data-surface="menu" aria-pressed="true">Menu bar popover</button>
+          <button class="surface-chip" type="button" data-surface="capsule" aria-pressed="false">Floating capsule</button>
+          <button class="surface-chip" type="button" data-surface="lock" aria-pressed="false">Return overlay</button>
+        </div>
+
+        <div class="surfaces-layout" style="margin-top:var(--space-lg)">
+          <article class="instrument-panel surface-stage">
+            <div class="menu-popover" id="surfacePreview">
+              <div class="menu-head"><strong>Praxodoro</strong><span>23:42</span></div>
+              <div class="menu-timer">
+                <div class="menu-mini-dial">23:42</div>
+                <div class="menu-task"><strong>Write the product brief</strong><span>Next: name the three core promises.</span></div>
+                <button class="dial-button" type="button" aria-label="Pause">Ⅱ</button>
+              </div>
+              <div class="menu-actions">
+                <button class="menu-action" type="button"><span>Park a thought</span><kbd>⌘⇧D</kbd></button>
+                <button class="menu-action" type="button"><span>Check in now</span><kbd>⌘⇧C</kbd></button>
+                <button class="menu-action" type="button"><span>Take an intentional break</span><kbd>⌘⇧B</kbd></button>
+              </div>
+            </div>
+          </article>
+
+          <aside class="glass-panel surface-notes">
+            <span class="quiet-label">Surface policy</span>
+            <h2>Keep the promise visible, not the whole system.</h2>
+            <p>Every compact surface has three jobs: show the one task, expose the next action, and offer an escape hatch for a thought or break.</p>
+            <ul class="surface-list">
+              <li>Keyboard-complete; no hover-only commands.</li>
+              <li>Canonical timestamps survive sleep and restart.</li>
+              <li>Reduced Transparency uses solid semantic surfaces.</li>
+              <li>The menu bar can be the only visible surface.</li>
+            </ul>
+          </aside>
+        </div>
+      </section>
+
+      <footer class="prototype-footer">
+        <strong>The timer counts minutes. The product protects the return.</strong>
+        <span>Hallmark design exploration · research-backed, non-medical positioning</span>
+      </footer>
+    </main>
+    <aside class="prototype-feedback" aria-label="Design feedback">
+      <span>Direction</span>
+      <button type="button" data-choice="approve-liquid-instrument" onclick="recordChoice(this)">Approve</button>
+      <button type="button" data-choice="more-tactile" onclick="recordChoice(this)">More tactile</button>
+      <button type="button" data-choice="more-coach" onclick="recordChoice(this)">More coach</button>
+    </aside>
+  </div>
+  <script src="/files/app-mocks.js"></script>
+  <script src="./app-mocks.js"></script>
+</body>
+</html>

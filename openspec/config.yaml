@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  Product: Praxodoro, a native macOS focus timer and non-clinical ADHD-aware focus coach.
+  Platform: macOS 26+, Xcode 26.6, Swift 6.3, SwiftUI, local-first by default.
+  Editions: Lite, Pro, and Enterprise share one codebase with explicit capability gates.
+  Product boundary: initiation help, gentle check-ins, adaptive breaks, and low-cognitive-load modes are core behavior and must remain available in Lite.
+  Design direction: “Liquid Instrument” — advanced liquid glass and controlled skeuomorphic depth, with Reduce Transparency, Increase Contrast, and Reduce Motion fallbacks.
+  Engineering: spec-first, test-first, deterministic timer state, canonical wall-clock timestamps, conventional commits, no hidden cloud dependency.
+  Evidence: product claims must trace to research/pomodoro-landscape-20260720; visual decisions trace to design-mocks/hallmark.
+
+rules:
+  proposal:
+    - State goals, non-goals, assumptions, edition impact, user value, and measurable success.
+    - Separate the native application scaffold from any future cloud or team backend.
+  specs:
+    - Express every requirement as binary EARS-style WHEN/WHILE/IF/WHERE the system SHALL criteria.
+    - Include error, interruption, sleep/wake, accessibility, privacy, and edition-gating scenarios.
+    - Do not make medical or treatment claims about ADHD.
+  design:
+    - Record considered alternatives, rejected choices, data boundaries, dependency provenance, rollback, and verification strategy.
+    - Prefer Apple platform capabilities before third-party rendering dependencies; justify every external package.
+  tasks:
+    - Each implementation task must name exact files, a failing test, the expected red result, minimal implementation, green verification, smoke evidence, and a clean commit.
+    - Order tasks so every completed slice is runnable and independently reviewable.
