@@ -1,0 +1,549 @@
+{
+  "id": "w1-adhd-research",
+  "wave": 1,
+  "role": "academic-evidence-researcher",
+  "status": "completed",
+  "shard_query": "What does current evidence support about ADHD-aware task initiation, time management, accountability, breaks, digital interventions, and cognitive load?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w1-adhd-research-001",
+      "claim": "For adults with ADHD, structured skills work around organization, planning, time management, distractibility, and adaptive thinking has stronger evidence than generic computerized attention training.",
+      "claim_type": "fact",
+      "source_ids": [
+        "solanto-mct-rct",
+        "internet-cbt-rct",
+        "computer-cognitive-training-rct"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "solanto-mct-rct",
+          "locator": "Abstract: randomized 88 adults; MCT targets time-management, organization, and planning",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "internet-cbt-rct",
+          "locator": "Abstract: 104 adults randomized to iCBT, applied relaxation, or treatment as usual",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "computer-cognitive-training-rct",
+          "locator": "Abstract conclusion: no benefit relative to control",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "This does not license a productivity app to claim treatment efficacy; it guides which behavioral scaffolds are more plausible than brain-training claims."
+    },
+    {
+      "claim_id": "w1-adhd-research-002",
+      "claim": "Digital self-guided interventions can improve adult ADHD-related outcomes in trials, but product claims must disclose that evidence concerns structured therapeutic programs, not ordinary focus timers, and some studies involve developer conflicts of interest.",
+      "claim_type": "fact",
+      "source_ids": [
+        "attexis-rct",
+        "internet-cbt-rct",
+        "adhd-digital-health-consensus"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "attexis-rct",
+          "locator": "Abstract and conflict-of-interest statement: 337 adults; developer employees among authors",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "internet-cbt-rct",
+          "locator": "Abstract: active-control randomized comparison and sustained outcomes",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "adhd-digital-health-consensus",
+          "locator": "Consensus requirements: user-centered holistic design, evidence base, privacy, equity, and clinical integration",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Praxodoro should be framed as a focus and self-management tool, not a diagnostic device or treatment."
+    },
+    {
+      "claim_id": "w1-adhd-research-003",
+      "claim": "Micro-breaks show a reliable small-to-moderate well-being benefit across studies, especially for vigor and fatigue, while aggregate performance benefits are less consistent and depend on task and break duration.",
+      "claim_type": "fact",
+      "source_ids": [
+        "microbreak-meta-analysis"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "microbreak-meta-analysis",
+          "locator": "Abstract and Results/Discussion: 22 studies, 2,335 participants; significant well-being effect, non-significant overall performance effect",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The meta-analysis concerns healthy students and employees and defines micro-breaks as 10 minutes or less."
+    },
+    {
+      "claim_id": "w1-adhd-research-004",
+      "claim": "There is no single universally superior break schedule: a 2023 study favored systematic short breaks over self-regulated breaks, while later comparisons found self-regulated breaks could preserve mood or motivation better than rigid Pomodoro schedules.",
+      "claim_type": "fact",
+      "source_ids": [
+        "biwer-pomodoro-study",
+        "smits-break-comparison",
+        "systematic-v-selfregulated-2026"
+      ],
+      "confidence": "high",
+      "verification_status": "disputed",
+      "evidence": [
+        {
+          "source_id": "biwer-pomodoro-study",
+          "locator": "Abstract and conclusion: systematic conditions versus self-regulated breaks over 120 minutes",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "smits-break-comparison",
+          "locator": "Results: structured Pomodoro associated with faster fatigue increase and motivation decline; no productivity or flow difference",
+          "support": "contradicts",
+          "excerpt": null
+        },
+        {
+          "source_id": "systematic-v-selfregulated-2026",
+          "locator": "Results: self-regulated breaks associated with more positive energy, concentration, motivation, and distraction ratings",
+          "support": "contradicts",
+          "excerpt": null
+        }
+      ],
+      "notes": "Different samples, protocols, and outcomes may explain part of the conflict."
+    },
+    {
+      "claim_id": "w1-adhd-research-005",
+      "claim": "Praxodoro should make break guidance adaptive and user-steerable: offer fixed, flow-preserving, and recovery-first modes; learn from self-reported energy and return difficulty; never claim an objectively optimal cadence.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "microbreak-meta-analysis",
+        "biwer-pomodoro-study",
+        "smits-break-comparison",
+        "systematic-v-selfregulated-2026"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "microbreak-meta-analysis",
+          "locator": "Moderator analysis and discussion of duration/task differences",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "biwer-pomodoro-study",
+          "locator": "Conclusion favors structured breaks in its context",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "smits-break-comparison",
+          "locator": "Comparison finds costs for rigid timing in its context",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "systematic-v-selfregulated-2026",
+          "locator": "Discussion highlights different subjective outcomes by break approach",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The recommendation resolves conflicting evidence through choice and cautious personalization rather than false precision."
+    },
+    {
+      "claim_id": "w1-adhd-research-006",
+      "claim": "An ADHD-aware coach should externalize the next action and progress state, use brief agenda/check-in loops, and avoid punitive streak loss or moralized productivity language.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "solanto-mct-rct",
+        "current-cbt-review",
+        "dysregulated-not-deficit"
+      ],
+      "confidence": "medium",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "solanto-mct-rct",
+          "locator": "Intervention targets organization, planning, and time management",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "current-cbt-review",
+          "locator": "CBT modules and session structure: agenda, review, organization/planning, distractibility, adaptive thinking",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "dysregulated-not-deficit",
+          "locator": "Qualitative findings: difficulty maintaining and completing tasks; attentional dysregulation framing",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The anti-punitive tone is an ethical design inference and should be validated with target users."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "solanto-mct-rct",
+      "title": "Efficacy of Meta-Cognitive Therapy for Adult ADHD",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC3633586/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2010-08",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:40:00Z",
+      "accessed_at": "2026-07-20T11:40:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "mount-sinai-mct",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "planning",
+        "rct",
+        "time-management"
+      ],
+      "notes": "Randomized clinical study in adults.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "internet-cbt-rct",
+      "title": "Internet delivered cognitive behavioral therapy for adults with ADHD - A randomized controlled trial",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10359875/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2023",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:41:00Z",
+      "accessed_at": "2026-07-20T11:41:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "swedish-icbt-rct",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "cbt",
+        "digital",
+        "rct"
+      ],
+      "notes": "Peer-reviewed active-control trial.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "computer-cognitive-training-rct",
+      "title": "The Efficacy of Computerized Cognitive Training in Adults With ADHD: A Randomized Controlled Trial",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/24756172/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2014",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:42:00Z",
+      "accessed_at": "2026-07-20T11:42:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "cct-rct",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "cognitive-training",
+        "negative-result",
+        "rct"
+      ],
+      "notes": "Negative randomized trial useful as a boundary against brain-training claims.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "attexis-rct",
+      "title": "Effectiveness of attexis, a digital intervention based on cognitive behavioral therapy for adults with ADHD",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41810578/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2026",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:43:00Z",
+      "accessed_at": "2026-07-20T11:43:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "attexis-rct",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "cbt",
+        "conflict-of-interest",
+        "digital",
+        "rct"
+      ],
+      "notes": "Pragmatic RCT; conflict disclosure includes employees of the developer.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "adhd-digital-health-consensus",
+      "title": "Consensus Statement on Digital Health and ADHD by the European Network for ADHD",
+      "url": "https://www.jmir.org/2026/1/e85638",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2026-07-16",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:44:00Z",
+      "accessed_at": "2026-07-20T11:44:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "eunethydis-consensus",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "consensus",
+        "digital-health",
+        "ethics",
+        "privacy"
+      ],
+      "notes": "Recent modified-Delphi consensus; next wave should inspect full recommendation table.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "microbreak-meta-analysis",
+      "title": "Give me a break! A systematic review and meta-analysis on the efficacy of micro-breaks",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2022",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:45:00Z",
+      "accessed_at": "2026-07-20T11:45:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "microbreak-meta-analysis",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "breaks",
+        "fatigue",
+        "meta-analysis",
+        "performance",
+        "wellbeing"
+      ],
+      "notes": "PRISMA systematic review and meta-analysis of short breaks.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "biwer-pomodoro-study",
+      "title": "Understanding effort regulation: Comparing Pomodoro breaks and self-regulated breaks",
+      "url": "https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjep.12593",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2023",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:46:00Z",
+      "accessed_at": "2026-07-20T11:46:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "biwer-break-study",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "breaks",
+        "pomodoro",
+        "self-regulation",
+        "students"
+      ],
+      "notes": "Experimental study with systematic-long, systematic-short, and self-regulated conditions.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "smits-break-comparison",
+      "title": "Investigating the Effectiveness of Self-Regulated, Pomodoro, and Flowtime Break-Taking Techniques Among Students",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12292963/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2025",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:47:00Z",
+      "accessed_at": "2026-07-20T11:47:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "smits-break-study",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "breaks",
+        "flowtime",
+        "pomodoro",
+        "students"
+      ],
+      "notes": "Later comparison creates a material contradiction with the 2023 study.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "systematic-v-selfregulated-2026",
+      "title": "When to Take a Break: Comparing Effects of Systematic Short and Self-Regulated Breaks",
+      "url": "https://www.mdpi.com/2076-328X/16/7/1158",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2026-07",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:48:00Z",
+      "accessed_at": "2026-07-20T11:48:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "systematic-selfregulated-2026",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "breaks",
+        "concentration",
+        "motivation",
+        "pomodoro"
+      ],
+      "notes": "Very recent study; methods and preregistration need adversarial verification.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "current-cbt-review",
+      "title": "Current Status of Cognitive Behavioral Therapy for Adult ADHD",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC2909688/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2010",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:49:00Z",
+      "accessed_at": "2026-07-20T11:49:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "adult-adhd-cbt-review",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "cbt",
+        "distractibility",
+        "organization"
+      ],
+      "notes": "Review of adult ADHD CBT evidence and intervention structure.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "dysregulated-not-deficit",
+      "title": "Dysregulated not deficit: A qualitative study on symptomatology of ADHD in young adults",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10569543/",
+      "source_type": "paper",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2023",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:50:00Z",
+      "accessed_at": "2026-07-20T11:50:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "academic-evidence-researcher",
+      "authority": 4,
+      "confidence": "high",
+      "independence_group": "adhd-qualitative-study",
+      "shard_id": "w1-adhd-research",
+      "tags": [
+        "adhd",
+        "attentional-dysregulation",
+        "hyperfocus",
+        "qualitative"
+      ],
+      "notes": "Qualitative evidence; useful for language and experience, not prevalence.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "w1-adhd-break-schedule-contradiction",
+      "claim_topic": "Whether fixed systematic Pomodoro breaks are superior to self-regulated or Flowtime breaks",
+      "status": "context-dependent",
+      "positions": [
+        {
+          "label": "systematic-breaks",
+          "summary": "The 2023 experiment associated systematic breaks with less fatigue and distraction and more concentration and motivation than self-regulated breaks.",
+          "source_ids": [
+            "biwer-pomodoro-study"
+          ]
+        },
+        {
+          "label": "flexible-breaks",
+          "summary": "Later studies found either costs for rigid Pomodoro timing or more positive subjective states under self-regulated breaks.",
+          "source_ids": [
+            "smits-break-comparison",
+            "systematic-v-selfregulated-2026"
+          ]
+        }
+      ],
+      "adjudication": "The evidence does not justify one compulsory cadence. Product design should offer distinct timing policies, preserve user control, and evaluate outcomes within the user's task and energy context.",
+      "residual_uncertainty": "Evidence is primarily student-based and not ADHD-specific; no robust trial validates an adaptive algorithm for this product.",
+      "notes": ""
+    }
+  ],
+  "next_queries": [
+    "Inspect the 2025 and 2026 break studies for sample, preregistration, effect sizes, attrition, and task differences.",
+    "Find stronger evidence on implementation intentions and task initiation specifically in adults with ADHD.",
+    "Define non-clinical safety language and privacy requirements for adaptive coaching."
+  ],
+  "summary": "Evidence supports practical external scaffolds around organization, planning, time awareness, distractibility, and reflection, but not medicalized timer claims. Break evidence is genuinely mixed, favoring user-steerable modes and cautious adaptation rather than a supposedly optimal universal schedule."
+}

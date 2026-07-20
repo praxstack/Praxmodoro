@@ -1,0 +1,325 @@
+{
+  "id": "w1-user-friction",
+  "wave": 1,
+  "role": "user-friction-researcher",
+  "status": "completed",
+  "shard_query": "What recurring complaints and abandonment risks appear around Pomodoro, ADHD productivity, pricing, setup, reminders, and task initiation?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w1-user-friction-001",
+      "claim": "Reminder delivery is not equivalent to task initiation: users describe receiving prompts from planning apps while remaining unable to begin, especially when the task is not already reduced to a concrete first action.",
+      "claim_type": "fact",
+      "source_ids": [
+        "reddit-task-initiation-reminders",
+        "reddit-task-initiation-major"
+      ],
+      "confidence": "medium",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "reddit-task-initiation-reminders",
+          "locator": "Post and top discussion on reminders from Tiimo or Structured not producing initiation",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "reddit-task-initiation-major",
+          "locator": "Post describes advice itself becoming another task to initiate",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Community evidence demonstrates lived friction, not prevalence."
+    },
+    {
+      "claim_id": "w1-user-friction-002",
+      "claim": "High-maintenance productivity systems create an abandonment risk for people who already struggle with planning consistency, input burden, and switching between tools.",
+      "claim_type": "fact",
+      "source_ids": [
+        "aalborg-adhd-task-assistant",
+        "chalmers-adhd-productivity-study"
+      ],
+      "confidence": "medium",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "aalborg-adhd-task-assistant",
+          "locator": "Abstract: heavy manual input, high maintenance, and switching between apps",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "chalmers-adhd-productivity-study",
+          "locator": "Abstract: existing tools assume stable planning ability, consistent routines, low setup effort, and positive responses to reminders",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Both sources are recent masters-level user-centered studies, useful for design discovery but lower authority than peer-reviewed trials."
+    },
+    {
+      "claim_id": "w1-user-friction-003",
+      "claim": "Subscription pricing creates visible resentment in the Mac productivity market, especially when users perceive the core function as replaceable by a desk timer or paper.",
+      "claim_type": "fact",
+      "source_ids": [
+        "focusmo-reddit-year",
+        "focusmo-reddit-pricing"
+      ],
+      "confidence": "low",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "focusmo-reddit-year",
+          "locator": "Comment discussion includes direct criticism of price",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focusmo-reddit-pricing",
+          "locator": "Comment discussion contrasts paid app with a desk timer and pad of paper",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "This establishes existence, not incidence or willingness-to-pay distribution."
+    },
+    {
+      "claim_id": "w1-user-friction-004",
+      "claim": "The product should default to an immediate one-task start path, then reveal planning, analytics, blocking, and customization only when they are relevant or explicitly requested.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "aalborg-adhd-task-assistant",
+        "chalmers-adhd-productivity-study",
+        "reddit-task-initiation-reminders"
+      ],
+      "confidence": "medium",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "aalborg-adhd-task-assistant",
+          "locator": "Abstract: abandonment from manual input and maintenance",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "chalmers-adhd-productivity-study",
+          "locator": "Abstract: difficult assumptions in existing productivity tools",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "reddit-task-initiation-reminders",
+          "locator": "Discussion emphasizes smallest actionable chunk over reminders alone",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "This is a design synthesis requiring usability testing."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "reddit-task-initiation-reminders",
+      "title": "Task initiation problem even after notifications from apps like Tiimo or Structured",
+      "url": "https://www.reddit.com/r/ADHD/comments/1su5xtm/task_initiation_problem_even_after_notifications/",
+      "source_type": "community",
+      "source_tier": 3,
+      "retrieval_status": "accessed",
+      "published_at": "2026-05",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:30:00Z",
+      "accessed_at": "2026-07-20T11:30:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "user-friction-researcher",
+      "authority": 2,
+      "confidence": "medium",
+      "independence_group": "reddit-adhd-user-a",
+      "shard_id": "w1-user-friction",
+      "tags": [
+        "adhd",
+        "community",
+        "reminders",
+        "task-initiation"
+      ],
+      "notes": "Bounded lived-experience evidence; no prevalence inference.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "reddit-task-initiation-major",
+      "title": "Task initiation is currently disrupting a major part of my life",
+      "url": "https://www.reddit.com/r/ADHD/comments/1sxuap2/task_initiation_is_currently_disrupting_a_major/",
+      "source_type": "community",
+      "source_tier": 3,
+      "retrieval_status": "accessed",
+      "published_at": "2026-05",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:31:00Z",
+      "accessed_at": "2026-07-20T11:31:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "user-friction-researcher",
+      "authority": 2,
+      "confidence": "medium",
+      "independence_group": "reddit-adhd-user-b",
+      "shard_id": "w1-user-friction",
+      "tags": [
+        "adhd",
+        "cognitive-load",
+        "community",
+        "task-initiation"
+      ],
+      "notes": "Bounded lived-experience evidence.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "aalborg-adhd-task-assistant",
+      "title": "Designing a Digital Task-Management Assistant for Adults with ADHD",
+      "url": "https://projekter.aau.dk/designing-a-digital-task-management-assistant-for-adults-with-adhd-a-user-centred-exploration-of-sch-bc52b1bf.html",
+      "source_type": "paper",
+      "source_tier": 2,
+      "retrieval_status": "accessed",
+      "published_at": "2026",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:32:00Z",
+      "accessed_at": "2026-07-20T11:32:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "user-friction-researcher",
+      "authority": 3,
+      "confidence": "medium",
+      "independence_group": "aalborg-university",
+      "shard_id": "w1-user-friction",
+      "tags": [
+        "abandonment",
+        "adhd",
+        "task-management",
+        "user-research"
+      ],
+      "notes": "Masters project abstract; methods and sample require next-wave inspection.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "chalmers-adhd-productivity-study",
+      "title": "Designing Digital Productivity Support for Adults with ADHD",
+      "url": "https://odr.chalmers.se/items/602f3701-7897-44fe-9b82-1abb6a336824",
+      "source_type": "paper",
+      "source_tier": 2,
+      "retrieval_status": "accessed",
+      "published_at": "2026",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:33:00Z",
+      "accessed_at": "2026-07-20T11:33:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "user-friction-researcher",
+      "authority": 3,
+      "confidence": "medium",
+      "independence_group": "chalmers-university",
+      "shard_id": "w1-user-friction",
+      "tags": [
+        "adhd",
+        "productivity",
+        "user-research",
+        "ux"
+      ],
+      "notes": "Masters project abstract; full thesis review is a next-wave task.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "focusmo-reddit-year",
+      "title": "Focusmo completed one year in development",
+      "url": "https://www.reddit.com/r/macapps/comments/1px48gw/my_app_completed_1_year_in_development_lifetime/",
+      "source_type": "community",
+      "source_tier": 3,
+      "retrieval_status": "accessed",
+      "published_at": "2026-01",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:34:00Z",
+      "accessed_at": "2026-07-20T11:34:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "user-friction-researcher",
+      "authority": 2,
+      "confidence": "low",
+      "independence_group": "reddit-macapps-price-a",
+      "shard_id": "w1-user-friction",
+      "tags": [
+        "community",
+        "focusmo",
+        "pricing"
+      ],
+      "notes": "Developer post and comment discussion; selection bias expected.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "focusmo-reddit-pricing",
+      "title": "Focusmo ADHD productivity and day planning in menu bar",
+      "url": "https://www.reddit.com/r/macapps/comments/1opa5r4/focusmo_adhd_productivity_day_planning_in_menubar/",
+      "source_type": "community",
+      "source_tier": 3,
+      "retrieval_status": "accessed",
+      "published_at": "2025-11",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:35:00Z",
+      "accessed_at": "2026-07-20T11:35:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "user-friction-researcher",
+      "authority": 2,
+      "confidence": "low",
+      "independence_group": "reddit-macapps-price-b",
+      "shard_id": "w1-user-friction",
+      "tags": [
+        "community",
+        "focusmo",
+        "pricing"
+      ],
+      "notes": "Developer post and comment discussion; selection bias expected.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "w1-user-friction-pricing-contradiction",
+      "claim_topic": "Whether a premium focus app should use subscription pricing",
+      "status": "context-dependent",
+      "positions": [
+        {
+          "label": "subscription-supporting",
+          "summary": "Competitor subscriptions bundle ongoing sync, blocking, integrations, analytics, and updates.",
+          "source_ids": [
+            "session-official-features",
+            "focusmo-official-pricing"
+          ]
+        },
+        {
+          "label": "subscription-resistant",
+          "summary": "Some Mac community participants reject recurring prices for a focus timer and prefer simple physical tools or one-time purchases.",
+          "source_ids": [
+            "focusmo-reddit-year",
+            "focusmo-reddit-pricing"
+          ]
+        }
+      ],
+      "adjudication": "Pricing preference depends on whether users perceive durable ongoing value beyond the timer. Keep business-model decisions separate from core product architecture and test willingness to pay after the differentiated coach loop is demonstrated.",
+      "residual_uncertainty": "No representative willingness-to-pay data has been gathered.",
+      "notes": "Next wave should compare competitor pricing, app-store reviews, and possible open-source or local-first positioning."
+    }
+  ],
+  "next_queries": [
+    "Inspect full methods and participant findings in the Aalborg and Chalmers studies.",
+    "Collect bounded App Store review samples for blocking reliability, sync, and notification complaints.",
+    "Test whether a zero-setup mode can coexist with a highly configurable expert mode."
+  ],
+  "summary": "User-friction evidence points to a central UX requirement: reduce activation energy. Reminders, complex planning, and configuration can themselves become work; advanced capabilities should remain available without obstructing a one-task immediate-start path."
+}

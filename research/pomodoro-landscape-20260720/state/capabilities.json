@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "recorded_at": "2026-07-20T10:58:06.851888+00:00",
+  "available": [],
+  "unknown": [
+    "browser",
+    "code",
+    "connectors",
+    "files",
+    "page-fetch",
+    "pdf",
+    "search",
+    "subagents",
+    "vision"
+  ],
+  "notes": [
+    "Capabilities not explicitly supplied remain unknown; agents must probe before relying on them."
+  ]
+}

@@ -1,0 +1,244 @@
+{
+  "id": "w2-breaks-adhd-falsification",
+  "wave": 2,
+  "role": "adversarial-academic-verifier",
+  "status": "completed",
+  "shard_query": "Which ADHD-coach and break claims survive adversarial comparison, and which must be downgraded or reframed?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w2-breaks-adhd-falsification-001",
+      "claim": "Current evidence does not validate an algorithm that autonomously prescribes the optimal break cadence for an individual with ADHD.",
+      "claim_type": "fact",
+      "source_ids": [
+        "microbreak-meta-analysis",
+        "biwer-pomodoro-study",
+        "smits-break-comparison",
+        "systematic-v-selfregulated-2026"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "microbreak-meta-analysis",
+          "locator": "Participants are healthy employees or students; moderators and performance results are heterogeneous",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "biwer-pomodoro-study",
+          "locator": "Student experiment with predefined break conditions",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "smits-break-comparison",
+          "locator": "Student comparison with conflicting fatigue and motivation trajectories",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "systematic-v-selfregulated-2026",
+          "locator": "Student self-study experiment; outcomes differ from earlier systematic-break findings",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Adaptive must mean user-steerable recommendation and learning from explicit check-ins, not clinical or physiological optimization."
+    },
+    {
+      "claim_id": "w2-breaks-adhd-falsification-002",
+      "claim": "Body doubling and socially aware AI are promising design directions for task initiation, but their effectiveness evidence remains early, context-specific, and insufficient for outcome claims.",
+      "claim_type": "fact",
+      "source_ids": [
+        "adhd-social-scaffolds-2026",
+        "body-doubling-roadmap-2026",
+        "vr-body-doubling-study"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "adhd-social-scaffolds-2026",
+          "locator": "Methods: 22 interviews plus speed-dating study with 20 people and 13 speculative concepts",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "body-doubling-roadmap-2026",
+          "locator": "Abstract explicitly identifies limited prototypes and need for empirical studies",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "vr-body-doubling-study",
+          "locator": "Abstract: 12 participants in a VR construction task; authors note prior evidence was inconclusive",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Praxodoro may offer a private companion presence as an experimental mode, but should not say it treats ADHD or guarantees initiation."
+    },
+    {
+      "claim_id": "w2-breaks-adhd-falsification-003",
+      "claim": "Recent ADHD-centered HCI evidence supports a low-friction, nonjudgmental coach that offers task breakdown, proactive help at the right moment, multimodal cues, plan negotiation, and capacity-sensitive options rather than rigid enforcement.",
+      "claim_type": "fact",
+      "source_ids": [
+        "adhd-social-scaffolds-2026",
+        "chalmers-adhd-productivity-study",
+        "aalborg-adhd-task-assistant"
+      ],
+      "confidence": "medium",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "adhd-social-scaffolds-2026",
+          "locator": "Design implications: low-friction proactive interaction, multimodal and emotion-aware interaction, plan negotiation and context sensitivity",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "chalmers-adhd-productivity-study",
+          "locator": "Abstract: existing tools assume stable planning, routines, and low setup effort",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "aalborg-adhd-task-assistant",
+          "locator": "Abstract: heavy input, maintenance, and app switching contribute to abandonment",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Evidence is qualitative and design-oriented; feature priority still needs product testing."
+    },
+    {
+      "claim_id": "w2-breaks-adhd-falsification-004",
+      "claim": "The safe product language is 'ADHD-aware focus coach' or 'designed with ADHD-related executive-function challenges in mind,' paired with explicit non-medical positioning and user control.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "adhd-digital-health-consensus",
+        "adhd-social-scaffolds-2026",
+        "attexis-rct"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "adhd-digital-health-consensus",
+          "locator": "Consensus: strong evidence, privacy, equity, user-centered design, clinical integration",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "adhd-social-scaffolds-2026",
+          "locator": "Neurodiversity-oriented, nonjudgmental, context-sensitive design implications",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "attexis-rct",
+          "locator": "Trial concerns a structured CBT intervention, illustrating why evidence cannot be transferred to a timer",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Final legal and App Store language should be reviewed before release."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "adhd-social-scaffolds-2026",
+      "title": "Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD",
+      "url": "https://arxiv.org/abs/2603.17258",
+      "source_type": "paper",
+      "source_tier": 2,
+      "retrieval_status": "accessed",
+      "published_at": "2026-03-18",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:20:00Z",
+      "accessed_at": "2026-07-20T12:20:00Z",
+      "discovered_wave": 2,
+      "discovered_by": "adversarial-academic-verifier",
+      "authority": 4,
+      "confidence": "medium",
+      "independence_group": "chen-meng-nie-cscw",
+      "shard_id": "w2-breaks-adhd-falsification",
+      "tags": [
+        "adhd",
+        "ai",
+        "hci",
+        "social-scaffolding",
+        "task-initiation"
+      ],
+      "notes": "Preprint reports acceptance to CSCW 2026; qualitative and speculative-design methods, not an efficacy trial.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "body-doubling-roadmap-2026",
+      "title": "A Roadmap of Mixed Reality Body Doubling for Adults with ADHD",
+      "url": "https://arxiv.org/abs/2605.07851",
+      "source_type": "paper",
+      "source_tier": 2,
+      "retrieval_status": "accessed",
+      "published_at": "2026-05-08",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:21:00Z",
+      "accessed_at": "2026-07-20T12:21:00Z",
+      "discovered_wave": 2,
+      "discovered_by": "adversarial-academic-verifier",
+      "authority": 4,
+      "confidence": "medium",
+      "independence_group": "body-doubling-roadmap",
+      "shard_id": "w2-breaks-adhd-falsification",
+      "tags": [
+        "adhd",
+        "body-doubling",
+        "research-gaps"
+      ],
+      "notes": "Framework and research roadmap; explicitly not conclusive efficacy evidence.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "vr-body-doubling-study",
+      "title": "You Are Not Alone: Designing Body Doubling for ADHD in Virtual Reality",
+      "url": "https://arxiv.org/abs/2509.12153",
+      "source_type": "paper",
+      "source_tier": 2,
+      "retrieval_status": "accessed",
+      "published_at": "2025-09-15",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:22:00Z",
+      "accessed_at": "2026-07-20T12:22:00Z",
+      "discovered_wave": 2,
+      "discovered_by": "adversarial-academic-verifier",
+      "authority": 4,
+      "confidence": "medium",
+      "independence_group": "vr-body-doubling-study",
+      "shard_id": "w2-breaks-adhd-falsification",
+      "tags": [
+        "adhd",
+        "body-doubling",
+        "small-sample",
+        "vr"
+      ],
+      "notes": "Small context-specific experiment; not directly generalizable to desktop knowledge work.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    }
+  ],
+  "contradictions": [],
+  "next_queries": [
+    "User-test whether coach check-ins feel supportive or intrusive at different cadences.",
+    "Evaluate the deterministic coach loop separately from optional AI-generated task breakdown.",
+    "Define opt-in privacy boundaries for mood, energy, and activity data."
+  ],
+  "summary": "Verification narrows the claim set: adaptive timing is justified as user-steerable personalization, not automatic optimization; body doubling is an experimental interaction metaphor, not a proven treatment; low-friction, nonjudgmental, context-sensitive scaffolding remains well supported as a design direction."
+}

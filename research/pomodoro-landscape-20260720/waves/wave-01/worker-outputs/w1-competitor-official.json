@@ -1,0 +1,366 @@
+{
+  "id": "w1-competitor-official",
+  "wave": 1,
+  "role": "competitive-intelligence-researcher",
+  "status": "completed",
+  "shard_query": "Which current premium focus apps provide meaningful timer, task, check-in, blocking, analytics, automation, integration, and synchronization capabilities?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w1-competitor-official-001",
+      "claim": "The mature competitive baseline is no longer a timer alone: leading products combine flexible timing, task context, distraction blocking, history or analytics, automation, and cross-device behavior.",
+      "claim_type": "fact",
+      "source_ids": [
+        "session-official-features",
+        "focusmo-official-pricing",
+        "focused-work-official-v5",
+        "be-focused-app-store"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "session-official-features",
+          "locator": "Homepage sections State your focus, block apps and websites, review progress, Syncs Everywhere",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focusmo-official-pricing",
+          "locator": "Compare Plans and Pro feature lists",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focused-work-official-v5",
+          "locator": "Sections Flow with Flowmodoro, Flexible Sessions, Plan & Review",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "be-focused-app-store",
+          "locator": "App description sections Task & Interval Management, Productivity Tracking, Automation, Focus",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The exact packaging differs, but all four first-party sources describe a multi-capability product rather than a standalone countdown."
+    },
+    {
+      "claim_id": "w1-competitor-official-002",
+      "claim": "RoundPie differentiates through breadth of inbound task integrations, outbound automation, time logs, interruption notes, and scripting rather than through a narrow Pomodoro experience.",
+      "claim_type": "fact",
+      "source_ids": [
+        "roundpie-official-plans"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "roundpie-official-plans",
+          "locator": "Integrations, Log access, Custom app features, Outbound integrations, Ultimate plan",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The official documentation lists Trello, Todoist, calendar/task systems, Toggl, Slack, Teams, Zapier, notes, tags, and AppleScript/PowerShell support across tiers."
+    },
+    {
+      "claim_id": "w1-competitor-official-003",
+      "claim": "The strongest ADHD-specific competitor proposition is an execution loop: keep one task visible, interrupt time blindness with periodic check-ins, block detours, and reconstruct the day automatically in a timeline.",
+      "claim_type": "fact",
+      "source_ids": [
+        "focusmo-official-home",
+        "focusmo-official-pricing"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "focusmo-official-home",
+          "locator": "Steps Keep your goal visible and See exactly where your day really went; Accountability Check-ins feature",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focusmo-official-pricing",
+          "locator": "Compare Plans: floating timer, task management, workspace blocking, timeline and analytics",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "This is a product-positioning fact, not proof that the product produces clinical or universal outcomes."
+    },
+    {
+      "claim_id": "w1-competitor-official-004",
+      "claim": "Flexible session structures are a proven market pattern: fixed Pomodoro, open-ended Flowmodoro, preparation stages, user-defined multi-stage sessions, and reflection can coexist without forcing one timing doctrine.",
+      "claim_type": "fact",
+      "source_ids": [
+        "focused-work-official-v5",
+        "focused-work-app-store"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "focused-work-official-v5",
+          "locator": "Flow with Flowmodoro; Flexible Sessions; Plan & Review",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focused-work-app-store",
+          "locator": "Core Features and curated session templates",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The app offers fixed and adaptive timing as selectable patterns, which supports a mode-based rather than one-size-fits-all architecture."
+    },
+    {
+      "claim_id": "w1-competitor-official-005",
+      "claim": "Praxodoro should treat planning, focusing, recovering, and reviewing as one session lifecycle, while keeping each stage skippable and progressively disclosed.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "session-official-features",
+        "focused-work-official-v5",
+        "focusmo-official-home"
+      ],
+      "confidence": "medium",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "session-official-features",
+          "locator": "State your focus and Review your progress",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focused-work-official-v5",
+          "locator": "Flexible Sessions and Plan & Review",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "focusmo-official-home",
+          "locator": "Task visibility, check-ins, activity timeline",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The recommendation is an inference from converging market patterns; the progressive-disclosure requirement must be tested with target users."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "session-official-features",
+      "title": "Session - Pomodoro focus timer with analytics",
+      "url": "https://stayinsession.com/",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:20:00Z",
+      "accessed_at": "2026-07-20T11:20:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "session",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "blocking",
+        "competitor",
+        "reflection",
+        "sync",
+        "timer"
+      ],
+      "notes": "First-party product page.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "focusmo-official-home",
+      "title": "Focusmo - Focus App for ADHD and Time Blindness on Mac",
+      "url": "https://focusmo.app/",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:22:00Z",
+      "accessed_at": "2026-07-20T11:22:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "focusmo",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "adhd",
+        "blocking",
+        "check-ins",
+        "competitor",
+        "timeline"
+      ],
+      "notes": "First-party product page; outcome testimonials are treated as marketing evidence only.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "focusmo-official-pricing",
+      "title": "Focusmo Pricing - Free Forever Plan or Pro",
+      "url": "https://focusmo.app/pricing",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:23:00Z",
+      "accessed_at": "2026-07-20T11:23:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "focusmo",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "analytics",
+        "blocking",
+        "competitor",
+        "pricing",
+        "tasks"
+      ],
+      "notes": "First-party plan comparison accessed July 20, 2026.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "focused-work-official-v5",
+      "title": "Focused Work 5 - A redesigned experience for focus",
+      "url": "https://focusedwork.app/focused-work-5",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:24:00Z",
+      "accessed_at": "2026-07-20T11:24:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "focused-work",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "competitor",
+        "flowmodoro",
+        "reflection",
+        "sessions"
+      ],
+      "notes": "First-party feature page.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "focused-work-app-store",
+      "title": "Flowmodoro - Focused Work",
+      "url": "https://apps.apple.com/us/app/focused-work-focus-timer/id1523968394",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:25:00Z",
+      "accessed_at": "2026-07-20T11:25:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "focused-work",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "app-store",
+        "automation",
+        "competitor",
+        "sessions"
+      ],
+      "notes": "Official App Store listing.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "roundpie-official-plans",
+      "title": "RoundPie Docs - Free or Premium?",
+      "url": "https://docs.rpie.me/free-or-premium",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": "2026-07-19",
+      "discovered_at": "2026-07-20T11:26:00Z",
+      "accessed_at": "2026-07-20T11:26:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "roundpie",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "automation",
+        "competitor",
+        "integrations",
+        "logs",
+        "pricing"
+      ],
+      "notes": "Official documentation said last updated 22 hours before access.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "be-focused-app-store",
+      "title": "Be Focused Pro - Focus Timer",
+      "url": "https://apps.apple.com/us/app/be-focused-pro-focus-timer/id961632517",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": "2025-09-02",
+      "discovered_at": "2026-07-20T11:27:00Z",
+      "accessed_at": "2026-07-20T11:27:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "competitive-intelligence-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "be-focused",
+      "shard_id": "w1-competitor-official",
+      "tags": [
+        "app-store",
+        "blocking",
+        "competitor",
+        "reports",
+        "tasks"
+      ],
+      "notes": "Official Mac App Store listing.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    }
+  ],
+  "contradictions": [],
+  "next_queries": [
+    "Which marketed competitor features fail in real use because of sync, blocking, notification, or input friction?",
+    "How often do users prefer a lightweight one-time purchase over a subscription bundle?",
+    "Which session lifecycle stages improve initiation and recovery for adults with ADHD?"
+  ],
+  "summary": "First-party sources establish a high competitive baseline: timer flexibility, task context, blocking, analytics, automation, integrations, and synchronization. The clearest white-space hypothesis is an adaptive execution-and-recovery loop rather than another feature-count race."
+}

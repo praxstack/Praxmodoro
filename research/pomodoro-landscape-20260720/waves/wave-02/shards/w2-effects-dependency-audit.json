@@ -1,0 +1,81 @@
+{
+  "id": "w2-effects-dependency-audit",
+  "wave": 2,
+  "role": "dependency-and-performance-verifier",
+  "status": "completed",
+  "shard_query": "Do candidate third-party visual-effect libraries justify adoption in the core product?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w2-effects-dependency-audit-001",
+      "claim": "Pow, Vortex, Inferno, and Glur are all MIT-licensed and declare macOS 12 or newer, but their maintenance and dependency profiles differ materially.",
+      "claim_type": "fact",
+      "source_ids": ["pow-repo", "vortex-repo", "inferno-repo", "glur-repo"],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {"source_id": "pow-repo", "locator": "Local audit: LICENSE; Package.swift; commit 1b4b1dda dated 2026-02-20", "support": "supports", "excerpt": null},
+        {"source_id": "vortex-repo", "locator": "Local audit: LICENSE; Package.swift; commit c9efc55b dated 2026-04-03", "support": "supports", "excerpt": null},
+        {"source_id": "inferno-repo", "locator": "Local audit: LICENSE; Package.swift; commit a40c7a0b dated 2026-05-17", "support": "supports", "excerpt": null},
+        {"source_id": "glur-repo", "locator": "Local audit: LICENSE; Package.swift; commit 35ae7c26 dated 2025-10-09", "support": "supports", "excerpt": null}
+      ],
+      "notes": "Audit snapshots were cloned July 20, 2026."
+    },
+    {
+      "claim_id": "w2-effects-dependency-audit-002",
+      "claim": "Vortex, Inferno, and Glur declare no package dependencies, while Pow declares an exact SnapshotPreviews-iOS dependency even though its preview integration is disabled by default.",
+      "claim_type": "fact",
+      "source_ids": ["pow-repo", "vortex-repo", "inferno-repo", "glur-repo"],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {"source_id": "pow-repo", "locator": "Package.swift dependencies and enablePreviews = false", "support": "supports", "excerpt": null},
+        {"source_id": "vortex-repo", "locator": "Package.swift contains targets but no dependencies array", "support": "supports", "excerpt": null},
+        {"source_id": "inferno-repo", "locator": "Package.swift contains targets but no dependencies array", "support": "supports", "excerpt": null},
+        {"source_id": "glur-repo", "locator": "Package.swift contains targets but no dependencies array", "support": "supports", "excerpt": null}
+      ],
+      "notes": "SPM can still fetch declared packages even when a target dependency is conditionally unused, so Pow adds supply-chain surface."
+    },
+    {
+      "claim_id": "w2-effects-dependency-audit-003",
+      "claim": "None of the four audited repositories contains an integrated Reduce Motion or Reduce Transparency policy; Praxodoro must gate third-party effects at its own design-system boundary.",
+      "claim_type": "fact",
+      "source_ids": ["pow-repo", "vortex-repo", "inferno-repo", "glur-repo"],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {"source_id": "pow-repo", "locator": "Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches", "support": "supports", "excerpt": null},
+        {"source_id": "vortex-repo", "locator": "Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches", "support": "supports", "excerpt": null},
+        {"source_id": "inferno-repo", "locator": "Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches", "support": "supports", "excerpt": null},
+        {"source_id": "glur-repo", "locator": "Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches", "support": "supports", "excerpt": null}
+      ],
+      "notes": "Absence of an integrated policy is not a defect in a low-level effect library, but it matters at product integration."
+    },
+    {
+      "claim_id": "w2-effects-dependency-audit-004",
+      "claim": "The core UI should have zero mandatory visual-effect dependencies; prototype native SwiftUI and Metal first, then consider Vortex for rare particles or selectively port a small audited Inferno shader with attribution.",
+      "claim_type": "recommendation",
+      "source_ids": ["apple-wwdc26-graphics", "pow-repo", "vortex-repo", "inferno-repo", "glur-repo"],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {"source_id": "apple-wwdc26-graphics", "locator": "Official native shader APIs and domain-warping example", "support": "supports", "excerpt": null},
+        {"source_id": "pow-repo", "locator": "Broad effect surface and declared exact package dependency", "support": "supports", "excerpt": null},
+        {"source_id": "vortex-repo", "locator": "Focused particle scope, no package dependencies", "support": "supports", "excerpt": null},
+        {"source_id": "inferno-repo", "locator": "Focused shader examples, no package dependencies, detailed upstream attribution", "support": "supports", "excerpt": null},
+        {"source_id": "glur-repo", "locator": "Narrow progressive-blur scope that overlaps native material strategy", "support": "supports", "excerpt": null}
+      ],
+      "notes": "Final adoption requires runtime frame, energy, and memory measurements on target hardware."
+    }
+  ],
+  "sources": [],
+  "contradictions": [],
+  "next_queries": [
+    "Run a visual prototype with native MeshGradient plus one custom Metal background before adding packages.",
+    "Benchmark Vortex and a copied Inferno shader under Reduce Motion and low-power mode.",
+    "Review source attribution requirements for any copied shader before release."
+  ],
+  "summary": "The audited libraries are legitimate and current enough to prototype, but none should define the core visual architecture. Native APIs minimize supply-chain and accessibility risk; Vortex or a small attributed Inferno shader are the strongest bounded candidates after measurement."
+}

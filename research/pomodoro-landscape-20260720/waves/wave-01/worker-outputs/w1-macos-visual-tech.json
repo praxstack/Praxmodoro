@@ -1,0 +1,621 @@
+{
+  "id": "w1-macos-visual-tech",
+  "wave": 1,
+  "role": "macos-visual-technology-researcher",
+  "status": "completed",
+  "shard_query": "How can Praxodoro achieve an advanced Liquid Glass and modern skeuomorphic aesthetic while remaining native, accessible, performant, and maintainable on macOS?",
+  "questions_answered": [
+    "What evidence-backed product, interaction, visual, accessibility, and technical design should define a best-in-class native macOS ADHD-aware focus coach?"
+  ],
+  "key_findings": [
+    {
+      "claim_id": "w1-macos-visual-tech-001",
+      "claim": "Apple positions Liquid Glass as a functional layer for controls and navigation above content, explicitly warning against using it throughout the content layer or on every custom surface.",
+      "claim_type": "fact",
+      "source_ids": [
+        "apple-hig-materials",
+        "apple-liquid-glass-custom"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "apple-hig-materials",
+          "locator": "Liquid Glass section: functional layer, do not use in content layer, use sparingly",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-liquid-glass-custom",
+          "locator": "Overview: custom glass and GlassEffectContainer rendering guidance",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "This is the main visual-system constraint and prevents undifferentiated glass-on-glass hierarchy."
+    },
+    {
+      "claim_id": "w1-macos-visual-tech-002",
+      "claim": "A high-end native Mac implementation can combine system Liquid Glass, standard materials and vibrancy, responsive spring or morphing transitions, MeshGradient, and SwiftUI-accessible Metal shader effects without replacing the platform window or control model.",
+      "claim_type": "fact",
+      "source_ids": [
+        "apple-hig-materials",
+        "apple-swiftui-glass-effect",
+        "apple-wwdc26-graphics",
+        "apple-mesh-gradient",
+        "apple-designing-macos"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "apple-hig-materials",
+          "locator": "Liquid Glass and standard materials; macOS blending modes",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-swiftui-glass-effect",
+          "locator": "glassEffect discussion and GlassEffectContainer use",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-wwdc26-graphics",
+          "locator": "Transcript lines 205-256: colorEffect, distortionEffect, layerEffect, domain warping, TimelineView",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-mesh-gradient",
+          "locator": "MeshGradient overview: tessellated Bezier patches and interpolated vertex colors",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-designing-macos",
+          "locator": "Best practices: resizable windows, menu bar, keyboard, personalization",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "Metal effects should remain background or state feedback, not the semantic foundation of controls."
+    },
+    {
+      "claim_id": "w1-macos-visual-tech-003",
+      "claim": "Accessibility requires complete alternate render paths: Reduce Transparency should replace translucent surfaces with solid semantic backgrounds, Reduce Motion should suppress depth/parallax and continuous effects, and increased contrast, keyboard access, and VoiceOver must remain first-class.",
+      "claim_type": "fact",
+      "source_ids": [
+        "apple-hig-accessibility",
+        "apple-reduced-motion",
+        "ehmo-macos-guidelines"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "apple-hig-accessibility",
+          "locator": "Accessibility principles and support for system accessibility features",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-reduced-motion",
+          "locator": "Indicating support: disable or change parallax, animated blur, and depth-of-field effects",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "ehmo-macos-guidelines",
+          "locator": "Sections 9 and 11: materials, Reduce Transparency, VoiceOver, Full Keyboard Access, Reduce Motion, Bold Text, Increase Contrast",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The accessible version must preserve meaning and hierarchy, not merely turn animation speed down."
+    },
+    {
+      "claim_id": "w1-macos-visual-tech-004",
+      "claim": "Third-party effect packages are best treated as optional, bounded tools: Pow offers transitions and value-change effects, Vortex offers cross-platform particles, Inferno provides inspectable SwiftUI Metal shader examples, and Glur specializes in progressive Metal blur.",
+      "claim_type": "fact",
+      "source_ids": [
+        "pow-repo",
+        "vortex-repo",
+        "inferno-repo",
+        "glur-repo"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "pow-repo",
+          "locator": "README Overview, Change Effects, and Transitions",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "vortex-repo",
+          "locator": "README: high-performance particle effects and supported platforms",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "inferno-repo",
+          "locator": "README: Metal shaders for SwiftUI and macOS example project",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "glur-repo",
+          "locator": "README: progressive blur using SwiftUI shader API on macOS 14+",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "A dependency review and prototype benchmark must precede adoption."
+    },
+    {
+      "claim_id": "w1-macos-visual-tech-005",
+      "claim": "The recommended visual architecture is advanced hybrid skeuomorphism: a living ambient content field, solid or standard-material instrument panels, refractive glass controls and navigation, tactile inset and raised surfaces, and rare particle or shader celebrations tied to meaningful state changes.",
+      "claim_type": "recommendation",
+      "source_ids": [
+        "apple-hig-materials",
+        "apple-hig-motion",
+        "apple-wwdc26-graphics",
+        "ehmo-macos-guidelines"
+      ],
+      "confidence": "high",
+      "verification_status": "supported",
+      "evidence": [
+        {
+          "source_id": "apple-hig-materials",
+          "locator": "Hierarchy between Liquid Glass functional layer and standard-material content layer",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-hig-motion",
+          "locator": "Best practices: purposeful and optional motion",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "apple-wwdc26-graphics",
+          "locator": "Domain-warping and time-driven shader example",
+          "support": "supports",
+          "excerpt": null
+        },
+        {
+          "source_id": "ehmo-macos-guidelines",
+          "locator": "Visual Design and platform anti-patterns",
+          "support": "supports",
+          "excerpt": null
+        }
+      ],
+      "notes": "The visual result can be maximal in craft while selective in where glass and motion appear."
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "apple-hig-materials",
+      "title": "Apple Human Interface Guidelines - Materials",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/materials",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": "2025-09-09",
+      "discovered_at": "2026-07-20T11:55:00Z",
+      "accessed_at": "2026-07-20T11:55:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-design",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "accessibility",
+        "hig",
+        "liquid-glass",
+        "materials"
+      ],
+      "notes": "Canonical Apple design guidance.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-liquid-glass-custom",
+      "title": "Applying Liquid Glass to custom views",
+      "url": "https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:56:00Z",
+      "accessed_at": "2026-07-20T11:56:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-swiftui-docs",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "glass-effect-container",
+        "liquid-glass",
+        "performance",
+        "swiftui"
+      ],
+      "notes": "Official framework guidance.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-swiftui-glass-effect",
+      "title": "glassEffect(_:in:)",
+      "url": "https://developer.apple.com/documentation/swiftui/view/glasseffect%28_%3Ain%3A%29",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:57:00Z",
+      "accessed_at": "2026-07-20T11:57:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-swiftui-docs",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "api",
+        "liquid-glass",
+        "swiftui"
+      ],
+      "notes": "Official SwiftUI API documentation.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-wwdc26-graphics",
+      "title": "Compose advanced graphics effects with SwiftUI - WWDC26",
+      "url": "https://developer.apple.com/videos/play/wwdc2026/322/",
+      "source_type": "video",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": "2026-06",
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:58:00Z",
+      "accessed_at": "2026-07-20T11:58:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-wwdc",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "animation",
+        "metal",
+        "shader",
+        "swiftui",
+        "wwdc"
+      ],
+      "notes": "Official Apple transcript includes an organic domain-warping shader implementation.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-mesh-gradient",
+      "title": "MeshGradient",
+      "url": "https://developer.apple.com/documentation/swiftui/meshgradient",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T11:59:00Z",
+      "accessed_at": "2026-07-20T11:59:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-swiftui-docs",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "ambient",
+        "gradient",
+        "swiftui"
+      ],
+      "notes": "Official SwiftUI API documentation.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-designing-macos",
+      "title": "Designing for macOS",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:00:00Z",
+      "accessed_at": "2026-07-20T12:00:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-design",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "hig",
+        "keyboard",
+        "macos",
+        "windows"
+      ],
+      "notes": "Canonical platform design guidance.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-hig-accessibility",
+      "title": "Apple Human Interface Guidelines - Accessibility",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/accessibility/",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:01:00Z",
+      "accessed_at": "2026-07-20T12:01:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-accessibility",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "accessibility",
+        "contrast",
+        "hig",
+        "voiceover"
+      ],
+      "notes": "Canonical Apple accessibility guidance.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-reduced-motion",
+      "title": "Reduced Motion evaluation criteria",
+      "url": "https://developer.apple.com/help/app-store-connect/manage-app-accessibility/reduced-motion-evaluation-criteria/",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:02:00Z",
+      "accessed_at": "2026-07-20T12:02:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-accessibility",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "accessibility",
+        "animation",
+        "reduce-motion"
+      ],
+      "notes": "Official evaluation criteria.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "apple-hig-motion",
+      "title": "Apple Human Interface Guidelines - Motion",
+      "url": "https://developer.apple.com/design/human-interface-guidelines/motion",
+      "source_type": "official-docs",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": "2025-09-09",
+      "discovered_at": "2026-07-20T12:03:00Z",
+      "accessed_at": "2026-07-20T12:03:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 5,
+      "confidence": "high",
+      "independence_group": "apple-design",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "accessibility",
+        "animation",
+        "hig",
+        "motion"
+      ],
+      "notes": "Canonical Apple motion guidance.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "ehmo-macos-guidelines",
+      "title": "Platform Design Skills - macOS Human Interface Guidelines",
+      "url": "https://github.com/ehmo/platform-design-skills/tree/main/skills/macos",
+      "source_type": "repo",
+      "source_tier": 2,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:04:00Z",
+      "accessed_at": "2026-07-20T12:04:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 4,
+      "confidence": "high",
+      "independence_group": "ehmo-platform-guidelines",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "accessibility",
+        "macos",
+        "open-source-skill",
+        "ux"
+      ],
+      "notes": "MIT-licensed synthesis of Apple HIG; verified against current Apple primary sources.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "pow-repo",
+      "title": "EmergeTools Pow - Delightful SwiftUI effects",
+      "url": "https://github.com/EmergeTools/Pow",
+      "source_type": "repo",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:05:00Z",
+      "accessed_at": "2026-07-20T12:05:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 4,
+      "confidence": "high",
+      "independence_group": "emerge-tools",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "effects",
+        "open-source",
+        "swiftui",
+        "transitions"
+      ],
+      "notes": "Primary maintainer repository; dependency and macOS behavior need prototype audit.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "vortex-repo",
+      "title": "Vortex - High-performance particle effects for SwiftUI",
+      "url": "https://github.com/twostraws/Vortex",
+      "source_type": "repo",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:06:00Z",
+      "accessed_at": "2026-07-20T12:06:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 4,
+      "confidence": "high",
+      "independence_group": "twostraws-vortex",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "open-source",
+        "particles",
+        "swiftui"
+      ],
+      "notes": "Primary maintainer repository.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "inferno-repo",
+      "title": "Inferno - Metal shaders for SwiftUI",
+      "url": "https://github.com/twostraws/Inferno",
+      "source_type": "repo",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:07:00Z",
+      "accessed_at": "2026-07-20T12:07:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 4,
+      "confidence": "high",
+      "independence_group": "twostraws-inferno",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "metal",
+        "open-source",
+        "shader",
+        "swiftui"
+      ],
+      "notes": "Primary maintainer repository; examples may be copied rather than linked as a package.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    },
+    {
+      "source_id": "glur-repo",
+      "title": "Glur - Progressive blurs in SwiftUI",
+      "url": "https://github.com/joogps/Glur",
+      "source_type": "repo",
+      "source_tier": 1,
+      "retrieval_status": "accessed",
+      "published_at": null,
+      "updated_at": null,
+      "discovered_at": "2026-07-20T12:08:00Z",
+      "accessed_at": "2026-07-20T12:08:00Z",
+      "discovered_wave": 1,
+      "discovered_by": "macos-visual-technology-researcher",
+      "authority": 4,
+      "confidence": "high",
+      "independence_group": "joogps-glur",
+      "shard_id": "w1-macos-visual-tech",
+      "tags": [
+        "blur",
+        "metal",
+        "open-source",
+        "swiftui"
+      ],
+      "notes": "Primary maintainer repository; specialized rather than foundational.",
+      "access_error": null,
+      "content_hash": null,
+      "archive_url": null
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "w1-macos-glass-maximalism-contradiction",
+      "claim_topic": "Whether an extremely advanced interface should apply Liquid Glass throughout the product",
+      "status": "resolved",
+      "positions": [
+        {
+          "label": "maximal-glass",
+          "summary": "The product direction asks for an unmistakably rich Liquid Glass and skeuomorphic visual identity.",
+          "source_ids": [
+            "user-product-brief"
+          ]
+        },
+        {
+          "label": "selective-glass",
+          "summary": "Apple recommends Liquid Glass as a sparse functional layer and warns against using it throughout content.",
+          "source_ids": [
+            "apple-hig-materials"
+          ]
+        }
+      ],
+      "adjudication": "Use maximal craft, not maximal glass coverage. Concentrate refraction and morphing in navigation and controls; use tactile, dimensional, high-fidelity standard-material content surfaces and an ambient Metal field for richness.",
+      "residual_uncertainty": "The exact visual intensity and acceptable motion budget require mockups, accessibility variants, and performance prototypes.",
+      "notes": "This preserves the requested non-minimal identity while following the platform hierarchy."
+    }
+  ],
+  "next_queries": [
+    "Benchmark native glass plus one ambient Metal shader at 60 and 120 Hz on representative Apple Silicon Macs.",
+    "Audit Pow, Vortex, Inferno, and Glur licenses, transitive dependencies, release recency, and reduced-motion behavior.",
+    "Generate three distinct visual direction mocks using the same product flow and test hierarchy under Reduce Transparency."
+  ],
+  "summary": "The strongest feasible direction is native-first hybrid skeuomorphism: selective Liquid Glass for functional layers, dimensional standard-material content surfaces, and carefully bounded Metal or particle effects. Accessibility alternate paths and Mac platform conventions are architectural requirements, not finishing polish."
+}

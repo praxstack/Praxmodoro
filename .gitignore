@@ -1,0 +1,25 @@
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Swift and Xcode build products
+.build/
+DerivedData/
+build/
+*.xcresult
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+xcuserdata/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+
+# Project-local tools and isolated worktrees
+node_modules/
+.worktrees/
+.superpowers/
+.hallmark/
+
+# Read-only upstream research clones; curated evidence remains tracked.
+research/skill-sources/
+research/library-sources/
