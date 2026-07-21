@@ -30,22 +30,22 @@
     "earsAcceptanceCriteria": 56,
     "documentedAssumptions": 12,
     "atoms": 21,
-    "todo": 21,
+    "todo": 20,
     "doing": 0,
-    "done": 0,
+    "done": 1,
     "parked": 0
   },
-  "nextAtom": "1.1",
+  "nextAtom": "1.2",
   "atoms": [
     {
       "id": "1.1",
       "title": "Pin XcodeGen and scaffold the native project plus internal package",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [],
       "criteria": ["D-001", "D-004"],
       "red": "scripts/verify-scaffold.sh fails on missing project.yml, project, or targets",
       "green": "scaffold check, swift test, unsigned xcodebuild, and isolated launch pass",
-      "evidence": null
+      "evidence": ".agent/evidence/atom-1.1-native-scaffold.md"
     },
     {
       "id": "1.2",

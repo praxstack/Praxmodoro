@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "receiptKind": "normalized-xcresulttool-test-receipt",
+  "sourceBundle": ".build/TestResults/Praxodoro-20260721T102433Z-50191.xcresult",
+  "sourceBundleRetention": "ignored-local-artifact",
+  "rawSummaryJSONSHA256": "676dac3cf2f5dc36e64182d6de2bc96a1d62e7fd740a269d1be138a4898d4e45",
+  "rawTestsJSONSHA256": "4acb89c9a463306c415198652d76cb30554b8628c2ef32322d7b528ec8dd15fb",
+  "platform": {
+    "name": "macOS",
+    "version": "26.5.2",
+    "architecture": "arm64"
+  },
+  "summary": {
+    "result": "Passed",
+    "totalTestCount": 3,
+    "passedTests": 3,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "expectedFailures": 0
+  },
+  "tests": [
+    {
+      "bundle": "PraxodoroTests",
+      "name": "applicationUsesCoreProductIdentity()",
+      "result": "Passed"
+    },
+    {
+      "bundle": "PraxodoroTests",
+      "name": "testStateRootOverrideIsConsumed()",
+      "result": "Passed"
+    },
+    {
+      "bundle": "PraxodoroUITests",
+      "suite": "PraxodoroLaunchUITests",
+      "name": "testLaunchesInitiateSurface()",
+      "result": "Passed",
+      "durationInSeconds": 2.261672019958496
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 ## 1. Reproducible native scaffold
 
-- [ ] 1.1 Pin XcodeGen 2.46.0 and create the generated macOS project plus internal Swift package.
+- [x] 1.1 Pin XcodeGen 2.46.0 and create the generated macOS project plus internal Swift package.
   - **Files:** create `.xcodegen-version`, `scripts/bootstrap-xcodegen.sh`, `scripts/verify-scaffold.sh`, `scripts/run-app-tests.sh`, `scripts/smoke-scaffold.sh`, `project.yml`, `Packages/PraxodoroCore/Package.swift`, `Packages/PraxodoroCore/Sources/PraxodoroCore/PraxodoroCore.swift`, `Packages/PraxodoroCore/Tests/PraxodoroCoreTests/ScaffoldTests.swift`, `PraxodoroApp/PraxodoroApp.swift`, `PraxodoroApp/Platform/AppPaths.swift`, `PraxodoroApp/Features/FocusLoop/InitiateView.swift`, `PraxodoroTests/ScaffoldIntegrationTests.swift`, `PraxodoroUITests/PraxodoroLaunchUITests.swift`; generate `Praxodoro.xcodeproj/`.
   - **RED:** write `scripts/verify-scaffold.sh`, run `bash scripts/verify-scaffold.sh`, and observe failure naming the missing `project.yml`/project/targets.
-  - **Minimal implementation:** bootstrap the checksum-verified official XcodeGen 2.46.0 archive into ignored repo-local tooling, define macOS 26 app/test targets and the strict Swift package, generate the project, and render an adaptive semantic initiation placeholder with no behavior claim.
+  - **Minimal implementation:** bootstrap the archive- and executable-checksum-verified official XcodeGen 2.46.0 release into ignored repo-local tooling, revalidate cached executables before invocation, confine interrupted-download cleanup to the exact temporary directory, define macOS 26 app/test targets and the strict Swift package, generate the project, and render an adaptive semantic initiation placeholder with no behavior claim.
   - **GREEN:** run the scaffold verifier, warnings-as-errors package tests, unsigned app build, then build and execute app-unit/UI tests through the normal local test-signing path with retained `.xcresult` evidence.
   - **Smoke:** launch the exact Debug binary with unique `CFFIXED_USER_HOME`, `TMPDIR`, and app-state roots, verify liveness/fatal-log cleanliness, and use the UI test to prove the initiation heading before deterministic termination.
   - **Commit:** `chore: scaffold native macOS app`.
@@ -11,7 +11,7 @@
 - [ ] 1.2 Add project-wide formatting, strict-concurrency, dependency-provenance, and regeneration gates.
   - **Files:** create `.swift-format`, `docs/engineering/dependencies.md`, `scripts/verify-project-generation.sh`; modify `project.yml`, `README.md`.
   - **RED:** run `bash scripts/verify-project-generation.sh` before the version/provenance and no-diff checks exist; expect a missing provenance or regeneration mismatch failure.
-  - **Minimal implementation:** enable Swift 6 strict concurrency and warnings-as-errors for project code, record XcodeGen source/tag commit/artifact checksum/license/removal path, verify the actual toolchain, and compare a pre-generation project snapshot with regenerated output recursively.
+  - **Minimal implementation:** enable Swift 6 strict concurrency and warnings-as-errors for project code, record XcodeGen source/tag commit/archive and executable checksums/license/removal path, verify the actual toolchain, and compare a pre-generation project snapshot with regenerated output recursively.
   - **GREEN:** lint only the package manifest/sources/tests and app/test sources with explicit configuration, run the regeneration verifier, warnings-as-errors package tests, unsigned build, and executed app-unit/UI tests.
   - **Smoke:** open the generated scheme inventory with `xcodebuild -list -json -project Praxodoro.xcodeproj` and verify app, unit-test, and UI-test targets.
   - **Commit:** `chore: enforce native project quality gates`.

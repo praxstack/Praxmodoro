@@ -1,0 +1,64 @@
+name: Praxodoro
+options:
+  minimumXcodeGenVersion: 2.46.0
+  xcodeVersion: "26.6"
+  bundleIdPrefix: com.praxodoro
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+packages:
+  PraxodoroCore:
+    path: Packages/PraxodoroCore
+settings:
+  base:
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    SWIFT_VERSION: "6.0"
+targets:
+  Praxodoro:
+    type: application
+    platform: macOS
+    sources:
+      - path: PraxodoroApp
+    dependencies:
+      - package: PraxodoroCore
+        product: PraxodoroCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.praxodoro.app
+        PRODUCT_NAME: Praxodoro
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Praxodoro
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+  PraxodoroTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: PraxodoroTests
+    dependencies:
+      - target: Praxodoro
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+  PraxodoroUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources:
+      - path: PraxodoroUITests
+    dependencies:
+      - target: Praxodoro
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  Praxodoro:
+    build:
+      targets:
+        Praxodoro: all
+        PraxodoroTests: [test]
+        PraxodoroUITests: [test]
+    test:
+      targets:
+        - PraxodoroTests
+        - PraxodoroUITests

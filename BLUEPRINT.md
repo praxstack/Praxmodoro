@@ -250,7 +250,10 @@ Show task orientation, phase/time, pause/resume, check-in/break escape, and rout
   `8445e778451c7e44237b90281bde622d764b0084`.
 - Official `xcodegen.zip` SHA-256 is
   `4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806`;
-  bootstrap installs it under ignored `.build/tools`.
+  the extracted universal executable SHA-256 is
+  `8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db`.
+  Bootstrap installs it under ignored `.build/tools` and authenticates cached executables before
+  every invocation.
 - `project.yml` is the human-readable source; generated `Praxodoro.xcodeproj` is committed.
 - Regeneration gate snapshots the entire project directory, runs exact XcodeGen, and recursively
   compares pre/post output. A post-commit gate separately requires clean project/spec paths.

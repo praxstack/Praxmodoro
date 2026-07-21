@@ -284,7 +284,7 @@ Delete All enumerates every local category and any future sync tombstone state. 
 
 Use XcodeGen 2.46.0 from `https://github.com/yonaskolb/XcodeGen` (MIT) to generate `Praxodoro.xcodeproj` from `project.yml`. It is development-only and not linked into the app. The generated project is committed for easy local/CI builds; regeneration must produce no diff.
 
-The repository bootstraps the exact official release archive into ignored repo-local tooling and verifies its SHA-256 before extraction; Homebrew and ambient PATH installations are not accepted by the generator gate. If XcodeGen becomes unavailable, the committed project remains buildable while a replacement generator decision is made.
+The repository bootstraps the exact official release archive into ignored repo-local tooling, verifies the archive SHA-256 before extraction, and verifies the pinned extracted-executable SHA-256 before every invocation, including cached use. Interrupted-download cleanup is confined to the exact repo-local `.download.*` directory created by the bootstrap. Homebrew and ambient PATH installations are not accepted by the generator gate. If XcodeGen becomes unavailable, the committed project remains buildable while a replacement generator decision is made.
 
 ### 12. Verification is layered and spec-traceable
 
