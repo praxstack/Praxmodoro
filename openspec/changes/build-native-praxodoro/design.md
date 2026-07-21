@@ -1,6 +1,6 @@
 ## Context
 
-Praxodoro currently contains a two-wave research corpus and an interactive Hallmark visual dossier, but no native application. The implementation must turn those artifacts into one local-first macOS product whose main window, menu-bar popover, and compact surface command a single session lifecycle:
+Praxodoro currently contains a verified native scaffold plus the edition/capability foundation, a two-wave research corpus, and an interactive Hallmark visual dossier. The focus-session domain and product surfaces remain unimplemented. The remaining implementation must turn those artifacts into one local-first macOS product whose main window, menu-bar popover, and compact surface command a single session lifecycle:
 
 ```text
 prepare → focus → check-in/recover → break/re-enter → reflect
@@ -101,22 +101,27 @@ The deep runtime interface is:
 
 ```swift
 public protocol SessionRunning: Sendable {
-    func snapshots() -> AsyncStream<SessionSnapshot>
-    func send(_ intent: SessionIntent) async throws -> SessionResult
+    func snapshots() async -> AsyncStream<SessionSnapshot>
+    func send(_ command: SessionCommand) async throws(SessionEngineFailure) -> SessionResult
 }
 ```
 
-`SessionReducer` is a pure function from state + intent + captured time/capabilities to a candidate snapshot, ordered timeline events, and requested external effects. `SessionEngine` is an actor that serializes intents, validates revisions, commits the candidate state/events atomically, publishes the committed snapshot, and then attempts best-effort effects.
+`SessionReducer` is a pure, non-throwing function from snapshot + revision-bearing command + captured
+deterministic context to a transition, no-change result, or typed rejection. It does not query
+capabilities or platform services. `SessionEngine` is an actor that serializes commands, validates
+revisions, commits candidate state/events atomically, publishes the committed snapshot, and then
+attempts best-effort effects.
 
 ```mermaid
 flowchart LR
-    UI["Main, menu bar, compact surfaces"] -->|SessionIntent| Engine["SessionEngine actor"]
+    UI["Main, menu bar, compact surfaces"] -->|SessionCommand| Engine["SessionEngine actor"]
     Engine --> Reducer["Pure SessionReducer"]
     Reducer --> Candidate["Snapshot + events + effects"]
     Candidate --> Repo["Atomic SessionRepository commit"]
-    Repo -->|committed revision| Stream["AsyncStream SessionSnapshot"]
+    Repo -->|success| Committed["Committed revision"]
+    Committed --> Stream["AsyncStream SessionSnapshot"]
     Stream --> UI
-    Repo --> Effects["Notifications, sound, visual effects"]
+    Committed --> Effects["Notifications, sound, visual effects"]
 ```
 
 The guarantee is “published means committed.” Notification, sound, or rendering failures cannot roll back or corrupt session truth.
@@ -127,7 +132,8 @@ The guarantee is “published means committed.” Notification, sound, or render
 
 ### 3. Explicit lifecycle and intent vocabulary
 
-Canonical states:
+Canonical states and values are closed by `docs/specification/session-domain-contract.md`; the
+summary below is routing, not an alternative contract:
 
 ```text
 idle
@@ -136,18 +142,19 @@ focusing(phase, anchor, optionalDeadline)
 paused(phase, remaining)
 checkingIn(previousFocusState)
 breaking(breakPlan, anchor, optionalDeadline)
+reentering(priorOrientation, proposedAction)
 reviewing(summaryDraft)
 completed(summary)
 recoveryNeeded(reason, safeChoices)
 ```
 
-Representative intents include prepare, edit task/action, select/clear capacity, select policy, start, pause, resume, checkIn, continue, makeSmaller, reportDetour, parkThought, requestBreak, chooseBreak, endBreak, complete, stop, resolveConflict, and recoverClock.
+The complete SessionIntent enum includes prepare/update, start, pause/resume, typed check-in responses, action acceptance, break selection/end, thought parking, stop/review, active-session conflict resolution, time reconciliation, and clock recovery. It is normative in the session domain contract; there are no additional string commands.
 
-Every state/intent pair gets an explicit transition or rejection test. A second start cannot overwrite an active session; the user chooses Resume Current, Replace and Review, or Cancel.
+Every state/intent pair gets an explicit transition or typed rejection test from the exhaustive matrix. A second start cannot overwrite an active session; the user chooses Resume Current, Replace and Review, or Cancel. Re-entry is a canonical state so break completion cannot silently resume focus before task/action orientation.
 
 ### 4. Timing policy is data
 
-Gentle Start, Classic, Flow, and Recovery First are values containing phases, optional duration/open-ended semantics, check-in rules, and transition rules. All are Lite because flexible recovery is part of the product’s differentiated support, not an expendable convenience.
+Gentle Start, Classic, Flow, and Recovery First are exact values containing the durations, optional/open-ended semantics, check-in rules, and no-auto-chain transitions in `docs/specification/session-domain-contract.md`. All are Lite because flexible recovery is part of the product’s differentiated support, not an expendable convenience.
 
 Pro later adds saved/custom recipes, triggers, integrations, and deeper analysis—not exclusive access to recovery behavior.
 
@@ -169,7 +176,11 @@ On Mac sleep, timed phases continue. On wake:
 - Before deadline: render the correct remainder.
 - After deadline: commit one elapsed event and enter check-in/recovery. Never auto-run multiple overdue phases.
 
-After relaunch, reconstruct from UTC anchors. Because trusted external time is intentionally absent, impossible values enter `recoveryNeeded` with safe choices rather than inventing elapsed focus.
+After relaunch, reconstruct from UTC anchors. Because trusted external time is intentionally absent,
+a finite but contradictory stored/current clock relationship enters `recoveryNeeded` with safe choices
+rather than inventing elapsed focus. A non-finite current clock sample is an unavailable measurement,
+not relaunch data: it returns the typed zero-write `nonFiniteWallObservation` failure so the caller can
+resample without fabricating a timestamped recovery commit.
 
 Use `TimelineView` or a cancellable display task only for redraw. Persist no per-second ticks. The engine owns one injectable deadline task and deduplicates wake/notification/deadline callbacks by state revision.
 
@@ -230,21 +241,27 @@ Managed-policy precedence is OS safety → enforced managed privacy policy → u
 ### 8. One app projection, independent session and capability streams
 
 `AppContainer` owns one `SessionEngine`, one `CapabilitySnapshotSource`, and one `AppModel`.
-`AppModel` subscribes independently to the committed `SessionSnapshot` stream and the
+`AppModel` subscribes independently to a replay-latest broadcast `SessionSnapshot` stream and the
 `EntitlementSnapshot` stream, then publishes one combined app projection. A capability-only
-change updates product entry points and engine enforcement without fabricating a session event or
+change updates product entry points and the Core capability coordinator without fabricating a session event or
 changing the current session ID/revision. `WindowGroup`, `MenuBarExtra`, and the later `NSPanel`
 compact adapter observe that same app projection and send session intents back to the same actor.
+Atom 5.2 also introduces a public Core `SessionCapabilityCoordinator` façade initialized from that
+same `SessionRunning` instance. It observes committed start/boundary publications inside Core and
+uses Atom 2.2's inaccessible receipt/lease values; the app cannot construct a lease, supply a
+downgrade reason, or duplicate the expiry-only transition rule.
 
 ```mermaid
 flowchart LR
     Session["SessionEngine"] -->|SessionSnapshot stream| Model["AppModel"]
     Capability["CapabilitySnapshotSource"] -->|EntitlementSnapshot stream| Model
+    Session -->|independent replay-latest stream| Gate["SessionCapabilityCoordinator"]
+    Capability -->|entitlement changes| Gate
+    Gate -->|active and next-operation capabilities| Model
     Model --> Main["WindowGroup"]
     Model --> Menu["MenuBarExtra"]
     Model --> Compact["NSPanel"]
     Model -->|SessionIntent| Session
-    Capability -->|current available capabilities| Session
 ```
 
 First integration order:
@@ -318,7 +335,7 @@ Gates:
 7. Strict OpenSpec validation, formatting/static checks, dependency/secret scans.
 8. Fresh-context validator mapping `SPEC.md` requirements to code and evidence.
 
-Every implementation task records the observed red result before production code, focused green, broader regression, smoke, and commit.
+Every implementation task records the observed red result before production code, focused green, broader regression, smoke, and commit. `docs/specification/acceptance-trace.md` maps all 57 EARS criteria to their OpenSpec scenarios, owning atoms, validation profiles, and eventual evidence boundary.
 
 ## Risks / Trade-offs
 

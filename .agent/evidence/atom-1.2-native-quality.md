@@ -1,11 +1,15 @@
 # Atom 1.2 native project-quality evidence
 
-## Candidate verdict
+## Verdict
 
-**GREEN / RE-REVIEW PENDING.** Deterministic project generation, formatting, strict concurrency,
+**VERIFIED, INDEPENDENTLY REVIEWED, AND COMMITTED.** Commit
+`e2a537cbbe180be8b4e2f256c8e52d2c774b6f2f` (`chore: enforce native project quality gates`)
+contains the accepted Atom 1.2 milestone. Deterministic project generation, formatting, strict concurrency,
 warnings-as-errors, dependency provenance, signed app tests, and native smoke gates pass in the
-ordered `feat/native-app` worktree. This record does not mark Atom 1.2 complete; independent
-re-review, council acceptance, exact staged-scope audit, and the milestone commit remain required.
+ordered `feat/native-app` worktree. The independent re-review, council acceptance, exact
+staged-scope audit, and milestone commit gates described below were completed before that commit.
+
+Supported acceptance criteria (component evidence, not final acceptance): `D-001`, `D-002`.
 
 Candidate base: `514ebd8` (`chore: scaffold native macOS app`).
 
@@ -33,7 +37,8 @@ committed. Later scratch atoms were excluded.
   The accepted production `WindowGroup` and direct post-launch semantic-heading assertion remain
   unchanged; the test performs no menu command and creates no replacement window.
 
-The six extracted scratch checkpoints remain byte-identical: `.swift-format`
+At the accepted Atom 1.2 checkpoint, the six extracted scratch files were byte-identical to the
+recorded review subject: `.swift-format`
 `881a1584621cd34139192873801cbad4225303c563086a1b0068cf8f076a524d`, dependency record
 `a14076aa0767b08edd6a1bdb7afbcdde358eb9c8cff875d611c68fa4019bcfbe`, verifier
 `14259e6e60e636c2b5eb2937c7f4dae180834166754fbb7ee90c0211e69674c1`, `project.yml`
@@ -81,7 +86,7 @@ accepted Atom 1.1 implementation. The final test anchors launch to the main disp
 cursor, and then performs the original direct `initiate.heading` assertion. Two consecutive final
 signed suites passed without any recovery branch.
 
-## Commit kill criteria
+## Recorded pre-commit kill criteria (satisfied)
 
 Do not credit or commit Atom 1.2 if re-review finds a Critical, Major, or unresolved Minor issue; if
 a fresh gate fails; if generated output changes; if the exact raw extraction commands and artifacts

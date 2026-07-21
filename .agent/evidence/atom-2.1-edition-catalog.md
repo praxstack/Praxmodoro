@@ -1,12 +1,17 @@
 # Atom 2.1 safe edition-catalog evidence
 
-## Candidate verdict
+## Verdict
 
-**GREEN / COUNCIL ACCEPTED CONDITIONALLY.** The package defines the complete ungateable Lite inventory and every
+**VERIFIED, INDEPENDENTLY REVIEWED, AND COMMITTED.** Commit
+`0b1316aa7290d114215a1b9ee9876746dfad7036` (`feat: define safe edition access catalog`)
+contains the accepted Atom 2.1 milestone. The package defines the complete ungateable Lite inventory and every
 optional Pro/Enterprise capability descriptor required by Atom 2.1. Focused, full-package, native
 build/test, smoke, generation, OpenSpec, lint, diff, and secret gates pass. Independent standards,
-spec, and receiving reviews returned READY with zero findings. The shipping council accepted the
-frozen candidate conditionally; exact staged-scope audit and the milestone commit remain required.
+spec, and receiving reviews returned READY with zero findings. The shipping council's conditional
+transaction gates, exact staged-scope audit, and milestone commit were completed.
+
+Supported acceptance criteria (component evidence, not final acceptance): `G-001`, `G-002`,
+`G-006`.
 
 Candidate base: `e2a537c` (`chore: enforce native project quality gates`).
 
@@ -81,7 +86,7 @@ the autonomous plan now blocks Atom 3.1 until those semantic contract gaps are r
   independent Chairman set the transaction gates in
   `.agent/council/2026-07-21-atom-2.1-commit-council.md`.
 
-## Commit kill criteria
+## Recorded pre-commit kill criteria (satisfied)
 
 Do not credit or commit Atom 2.1 if review finds an unresolved finding; if a fresh gate fails; if
 any accepted checkpoint hash changes without a new reviewed plan; if Atom 2.2 behavior leaks into

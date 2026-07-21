@@ -2,12 +2,16 @@
 
 ## Verdict
 
-**VERIFIED — INDEPENDENTLY REVIEWED AND READY FOR COMMIT.** The scaffold, package test, deterministic
+**VERIFIED, INDEPENDENTLY REVIEWED, AND COMMITTED.** Commit
+`514ebd8eab2f1ed00af94bfc13835ac7e59f85e4` (`chore: scaffold native macOS app`) contains the
+accepted Atom 1.1 milestone. The scaffold, package test, deterministic
 regeneration, unsigned app build, normal local-signing app/unit/UI suite, and isolated process
 smoke all pass. The retained result bundle contains three executed tests with `result=Passed`,
 including the real accessibility lookup in `testLaunchesInitiateSurface`. Earlier locked-Mac and
 LocalAuthentication failures remain below as diagnostic history; no signing or UI-test criterion
 was weakened to obtain the pass.
+
+Supported acceptance criteria (component evidence, not final acceptance): `D-001`, `D-004`.
 
 ## Toolchain
 
@@ -243,9 +247,8 @@ bash scripts/smoke-scaffold.sh
   gates passed. The exact atom 1.1 plan was then reread, and its required generation/build/test/
   smoke gates were run directly and passed. No source or test was changed in response.
 
-## Required next action
+## Historical closure action — satisfied by `514ebd8`
 
-Commit the exact council-approved allowlist as `chore: scaffold native macOS app`, then rerun
-recursive regeneration/no-diff and require every scoped atom/canonical/evidence path to be clean.
-Any extra staged path, receipt mismatch, generated diff, or dirty scoped status invalidates the
-completion transition before atom 1.2 begins.
+The exact council-approved allowlist was committed as `chore: scaffold native macOS app`, then the
+recursive regeneration/no-diff and scoped-cleanliness gates were rerun. This paragraph preserves the
+historical receiving condition; it is not a current instruction and Atom 1.2 has already completed.

@@ -2,10 +2,15 @@
 
 ## Verdict
 
-**ACCEPTED CONDITIONALLY; exact-index receiving review and commit pending.** Atom 2.2 implements immutable entitlement
-snapshots, fail-closed public resolution, validated internal grants, explicit policy provenance,
-independent availability dimensions, and expiry-only committed-session preservation. It remains
-uncommitted until the receiving-review audit and exact staged-index checks pass.
+**VERIFIED, INDEPENDENTLY REVIEWED, AND COMMITTED.** Commit
+`35518ab7252160d8b3729859387c1be68b4a364b` (`feat: resolve validated product access`) contains
+the accepted Atom 2.2 milestone. Atom 2.2 implements immutable entitlement snapshots, fail-closed
+public resolution, validated internal grants, explicit policy provenance, independent availability
+dimensions, and expiry-only committed-session preservation. The receiving-review audit and exact
+staged-index checks completed before that commit.
+
+Supported acceptance criteria (component evidence, not final acceptance): `G-002`, `G-003`,
+`G-004`, `G-005`, `G-006`.
 
 ## Scope and accepted checkpoint
 
@@ -39,15 +44,18 @@ The prior scratch trace review found that Atom 2.2 must not claim future publica
 proof. The canonical artifacts now:
 
 - add `G-007` and assign independent capability-only publication to Atom 5.2;
+- assign expiry-only lease boundary integration and runtime fallback proof for `G-004`/`G-005` to
+  Atom 5.2, keeping the session engine capability-agnostic;
 - assign Lite-after-Pro data readability/exportability proof for `G-004` to Atom 6.3;
 - define independent session and capability streams through `CapabilitySnapshotSource`;
 - use `.iCloudSync` rather than the obsolete `.historySync` example; and
 - enumerate authorization, platform, distribution, implementation, runtime, and policy dimensions.
 
-Strict OpenSpec validation passes with 68 requirements and 117 scenarios. `SPEC.md` contains 57
-EARS acceptance criteria plus 12 separately documented assumptions, matching `prd.json`; the PRD
-records 21 atoms, 4 done, 17 todo, and Atom 3.1 as next. This metadata transition is conditionally
-authorized by the shipping council and remains subject to exact-index receiving review and commit.
+At the Atom 2.2 milestone, strict OpenSpec validation passed with 68 requirements and 117 scenarios.
+The later pre-Atom-3.1 semantic-contract change adds stable trace scenarios; its current count is
+tracked separately and does not retroactively enlarge Atom 2.2 proof. `SPEC.md` contains 57 EARS
+acceptance criteria plus 12 separately documented assumptions, matching `prd.json`; the PRD records
+21 atoms, 4 done, 17 todo, and Atom 3.1 as next.
 
 ## Independent review and council
 
@@ -59,8 +67,8 @@ authorized by the shipping council and remains subject to exact-index receiving 
   zero remaining findings.
 - Quick shipping council: three live seats completed the restatement gate, blind Round 1, and
   anonymized anti-conformity Round 2. All independently retained `ACCEPT_CONDITIONALLY`.
-- Independent non-panel Chairman: `ACCEPT_CONDITIONALLY`; the only remaining uncertainty is the
-  real staged index, receipt identities, exact metadata, and transaction gates.
+- Independent non-panel Chairman: `ACCEPT_CONDITIONALLY`; the staged index, receipt identities,
+  exact metadata, and transaction gates were then verified before the milestone commit.
 
 ## Verification
 

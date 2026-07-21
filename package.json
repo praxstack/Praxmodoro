@@ -4,7 +4,8 @@
   "private": true,
   "description": "Pinned specification tooling for the native Praxodoro macOS app.",
   "scripts": {
-    "spec:validate": "openspec validate --all --strict --no-interactive",
+    "spec:validate": "openspec validate --all --strict --no-interactive && node scripts/verify-spec-trace.mjs",
+    "spec:trace": "node scripts/verify-spec-trace.mjs",
     "spec:list": "openspec list"
   },
   "devDependencies": {

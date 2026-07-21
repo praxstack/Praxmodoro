@@ -1,8 +1,11 @@
 # Praxodoro Native App Blueprint
 
-This expands `SPEC.md` and the active OpenSpec change into implementation boundaries, sequences, errors, tests, and rollback. If this file conflicts with `SPEC.md` or a capability spec, the stricter user-visible requirement wins and the conflict must be logged before implementation.
+This expands `SPEC.md` and the active OpenSpec change into implementation boundaries, sequences, errors, tests, and rollback. Conflicts are resolved only by the source precedence declared in `SPEC.md`; they block implementation until the artifacts are reconciled and recorded.
 
 ## Traceability map
+
+The exhaustive criterion-to-scenario-to-atom-to-validation mapping is normative at
+`docs/specification/acceptance-trace.md`; this compact table is routing only.
 
 | Contract area | OpenSpec capability | Task groups |
 |---|---|---|
@@ -29,8 +32,10 @@ flowchart TB
     SessionStream -->|independent session updates| Model
     Commit --> Effects["Best-effort notifications and sound"]
     Capabilities["EntitlementSnapshot + ProductRules"] --> CapabilitySource["CapabilitySnapshotSource"]
-    CapabilitySource -->|current capability snapshot| Engine
     CapabilitySource -->|independent capability updates| Model
+    SessionStream -->|independent replay-latest stream| CapabilityGate["SessionCapabilityCoordinator"]
+    CapabilitySource -->|entitlement changes| CapabilityGate
+    CapabilityGate -->|active and next-operation capabilities| Model
     Render["RenderPolicy"] --> Main
     Render --> Menu
     Render --> Compact
@@ -61,6 +66,9 @@ No view may own a domain timer, mutate SwiftData directly, or infer entitlement 
 
 - `AppContainer.swift`: composition root; creates one engine, repository, entitlements, clocks, notification adapter, render-policy sources.
 - `CapabilitySnapshotSource.swift`: publishes entitlement/policy/prerequisite changes independently from session transitions.
+- `SessionCapabilityCoordinator` (public Core integration façade, introduced with Atom 5.2): observes
+  the same `SessionRunning` instance's committed publications and applies the internal opaque
+  receipt/lease policy without exposing a constructible lease or caller-supplied downgrade reason.
 - `AppModel.swift`: main-actor projection that combines the latest independent session and capability snapshots plus an intent façade; contains no domain transition logic.
 - `FocusLoop/*View.swift`: semantic native screens, each a projection of `AppModel`.
 - `Scenes/*`: main, menu-bar, and compact adapters over the same model.
@@ -70,10 +78,14 @@ No view may own a domain timer, mutate SwiftData directly, or infer entitlement 
 
 ## Core type contracts
 
+The closed state, intent, event, effect, default, invariant, and error vocabulary is normative at
+`docs/specification/session-domain-contract.md`. The protocol boundary below is the runtime shell
+around those values, not a substitute for that domain contract.
+
 ```swift
 public protocol SessionRunning: Sendable {
-    func snapshots() -> AsyncStream<SessionSnapshot>
-    func send(_ intent: SessionIntent) async throws -> SessionResult
+    func snapshots() async -> AsyncStream<SessionSnapshot>
+    func send(_ command: SessionCommand) async throws(SessionEngineFailure) -> SessionResult
 }
 
 public protocol CapabilitySnapshotProviding: Sendable {
@@ -82,12 +94,12 @@ public protocol CapabilitySnapshotProviding: Sendable {
 }
 
 public protocol SessionRepository: Sendable {
-    func loadActive() async throws -> SessionSnapshot?
+    func loadCurrent() async throws(RepositoryFailureKind) -> SessionSnapshot
     func commit(
         expectedRevision: UInt64,
         snapshot: SessionSnapshot,
         events: [SessionEvent]
-    ) async throws
+    ) async throws(SessionRepositoryError)
 }
 
 public struct Reduction: Sendable, Equatable {
@@ -99,16 +111,21 @@ public struct Reduction: Sendable, Equatable {
 public enum SessionReducer {
     public static func reduce(
         snapshot: SessionSnapshot,
-        intent: SessionIntent,
-        now: SessionInstant,
-        capabilities: Set<ProductCapability>
-    ) throws -> Reduction
+        command: SessionCommand,
+        context: ReductionContext
+    ) -> ReductionOutcome
 }
 ```
 
-`SessionResult` returns committed snapshot revision plus effect-status summaries. An effect failure never changes the committed revision.
+The pure reducer never throws. Product capability enforcement is resolved before the session command
+or represented by a typed session input; the reducer does not query entitlement state. `SessionResult`
+returns the committed snapshot plus effect-status summaries. An effect failure never changes the
+committed revision.
 
-## State and sequence table
+## Representative state sequences
+
+This table illustrates common paths only. Exhaustiveness is defined by the closed SessionIntent
+vocabulary and default-rejection matrix in `docs/specification/session-domain-contract.md`.
 
 | Current state | Intent/event | Next state | Required event | Reject/edge behavior |
 |---|---|---|---|---|
@@ -116,17 +133,20 @@ public enum SessionReducer {
 | prepared | start | focusing | `.sessionStarted`, `.phaseStarted` | second active record is repository conflict |
 | focusing | pause | paused | `.phasePaused` | duplicate pause rejects |
 | paused | resume | focusing | `.phaseResumed` | resume uses stored remainder |
-| focusing | checkIn | checkingIn | `.checkInOpened` | deadline remains represented in previous state |
-| checkingIn | continue | focusing | `.checkInContinued` | explicit resume only |
-| checkingIn | makeSmaller | checkingIn | `.actionRevisionRequested` | action must be accepted/edited |
+| focusing | openCheckIn | checkingIn | `.checkInOpened` | live deadline is frozen into the suspended target |
+| checkingIn | continueFocus | focusing or paused | `.checkInResolved`, then `.phaseResumed` only when focusing | explicit resume disposition only |
+| checkingIn | makeSmaller | re-entering | `.checkInResolved`, `.reentryPresented` | action must be accepted/edited |
 | checkingIn | reportDetour | checkingIn | `.detourReported` | text optional; no passive source |
 | checkingIn | requestBreak | breaking | `.breakStarted` | quiet/manual alternative always available |
-| breaking | endBreak | prepared/re-entry | `.breakEnded` | no penalty or forced remainder |
+| breaking | endBreak | re-entering | `.breakEnded`, `.reentryPresented` | no penalty, forced remainder, or implicit resume |
+| re-entering | accept revised/current action | focusing | `.phaseResumed` | focus never resumes before explicit orientation |
 | focusing | deadline elapsed | checkingIn/recovery | `.phaseElapsed` | exactly once; never auto-chain after sleep |
-| any active | parkThought | same state | `.thoughtParked` | unchanged deadline |
-| any active | complete/stop | reviewing | `.sessionReviewStarted` | factual early-stop wording |
+| any non-live active | parkThought | same state | `.thoughtParked` | no elapsed-time change |
+| focusing/breaking | parkThought | same live state or one due boundary transition | `.thoughtParked` then boundary events when due | materialize/rebase the deadline before commit |
+| any active | stop | reviewing | `.sessionStopRequested`, `.reviewStarted` | factual early-stop wording |
 | reviewing | finalize | completed | `.sessionCompleted` | raw session-only answers cleaned after commit |
-| any | impossible recovered time | recoveryNeeded | `.clockRecoveryNeeded` | user picks safe remainder or review/end |
+| any | finite but contradictory recovered time | recoveryNeeded | `.clockRecoveryNeeded` | user picks safe remainder or review/end |
+| any live transition | non-finite current wall sample | typed zero-write failure | none | resample; never persist an invalid recovery timestamp |
 | active | second start | same + conflict UI | none until choice | Resume, Replace and Review, Cancel |
 
 ## Time-correctness matrix
@@ -136,10 +156,11 @@ public enum SessionReducer {
 | Normal countdown | display from monotonic anchor/deadline | zero persistence writes per tick |
 | Pause | commit remaining; remove active deadline | time does not advance while paused |
 | Resume | new anchors from stored remainder | exactly one deadline task |
+| Observation-only wall/monotonic divergence <=2s | keep the current logical projection | no write and no adjustment event |
 | Wall clock +1h in process | monotonic display unchanged; wall deadline rebased | `.clockAdjusted`, same remainder |
 | Wall clock -1h in process | same as +1h | no added duration |
 | Sleep, wake before deadline | wall deadline remainder | correct single active state |
-| Sleep, wake after deadline | one elapsed event; check-in/recovery | no chained phases |
+| Sleep, wake after one or more deadlines | one earliest-boundary decision; phase winner emits one elapsed event, scheduled winner opens its check-in | no chained phases |
 | Relaunch before deadline | UTC reconstruction | same task/action/policy/revision+recovery event |
 | Relaunch after deadline | one elapsed/recovery decision | no invented multi-phase history |
 | Impossible relaunch value | recovery choices | no silent clamp/complete |
@@ -160,6 +181,9 @@ The first implementation uses deterministic, explainable rules only:
 7. “Drift” never names passive app behavior. UI copy uses “detour,” “paused,” “you asked for help,” or a scheduled event.
 
 ## Exact user-facing recovery/error copy
+
+Typed rejection, engine-failure, recovery-reason, and platform-status ownership is normative in
+`docs/specification/session-domain-contract.md`; this table owns the user copy for those cases.
 
 | Condition | Copy | Actions |
 |---|---|---|
@@ -188,7 +212,7 @@ the same downstream resolver without making production evidence forgeable. Resol
 - missing authorization/platform/distribution/adapter/runtime prerequisites
 - next reevaluation time
 
-Fail closed to Lite on unverifiable paid evidence. Do not interrupt active work. Apply paid policy changes at a safe session boundary. The capability source publishes evidence, policy, authorization, platform, distribution, implementation, and runtime-availability changes without waiting for a session transition; `AppModel` updates both native surfaces while preserving the current session ID/revision. The UI may explain unavailable capability outside vulnerable flow states; the engine always enforces it.
+Fail closed to Lite on unverifiable paid evidence. Do not interrupt active work. Apply expiry-only paid policy changes at a safe session boundary through `SessionCapabilityCoordinator`; all other fallback applies immediately. The capability source publishes evidence, policy, authorization, platform, distribution, implementation, and runtime-availability changes without waiting for a session transition; `AppModel` updates both native surfaces while preserving the current session ID/revision. The UI may explain unavailable capability outside vulnerable flow states; the integration coordinator always enforces optional-capability access while the pure session engine remains entitlement-agnostic.
 
 Enterprise registry contains no tenant, user-monitoring, productivity-score, task-history, capacity, or check-in export capability.
 
@@ -271,6 +295,9 @@ Show task orientation, phase/time, pause/resume, check-in/break escape, and rout
 - App target uses only Apple SwiftUI, AppKit, SwiftData, UserNotifications, OSLog, and Foundation frameworks in the first slice.
 
 ## Verification layers
+
+Each SPEC criterion selects one or more of these profiles through
+`docs/specification/acceptance-trace.md`; no layer may be inferred from task prose alone.
 
 | Layer | Command/driver | Proves |
 |---|---|---|

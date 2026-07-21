@@ -1,7 +1,7 @@
 # Praxodoro Native App Completion Contract
 
-- Status: implementation candidate; requires plan/council gate before application code
-- Date: 2026-07-20
+- Status: implementation underway; 4/21 atoms complete; Atom 3.1 blocked on this semantic-contract gate
+- Date: 2026-07-21
 - Active OpenSpec change: `build-native-praxodoro`
 - Platform: macOS 26+, Xcode 26.6, Swift 6.3
 - Editions: Lite, Pro, Enterprise from one codebase
@@ -21,9 +21,10 @@ It is not a medical device, diagnostic system, treatment, surveillance product, 
 
 1. This global completion contract and the original user request.
 2. `openspec/changes/build-native-praxodoro/` proposal, six capability specs, design, and tasks.
-3. `BLUEPRINT.md`, `prd.json`, and the dated implementation plan.
-4. Current code, tests, build logs, smoke evidence, and Git history.
-5. `research/pomodoro-landscape-20260720/` and `design-mocks/hallmark/` as product/design evidence, not runtime proof.
+3. `docs/specification/session-domain-contract.md` and `docs/specification/acceptance-trace.md` for closed domain semantics and criterion ownership.
+4. `BLUEPRINT.md`, `prd.json`, and the dated implementation plan.
+5. Current code, tests, build logs, smoke evidence, and Git history.
+6. `research/pomodoro-landscape-20260720/` and `design-mocks/hallmark/` as product/design evidence, not runtime proof.
 
 ## Assumptions
 
@@ -52,6 +53,8 @@ It is not a medical device, diagnostic system, treatment, surveillance product, 
 - Full keyboard, VoiceOver, Reduce Motion, Reduce Transparency, Increase Contrast, Differentiate Without Color, low-power, resizable, light/dark, and low-cognitive-load paths.
 - No passive app/browser observation, screenshots, keystrokes, clipboard, microphone, camera, location, Health data, advertising, or employer behavior reporting.
 - Test-first behavior changes, exact-version/provenance logging, strict OpenSpec validation, secret scan, clean builds, isolated smoke, independent validator.
+- Closed typed session vocabulary, exhaustive state-by-intent behavior, exact defaults, and named error taxonomy from `docs/specification/session-domain-contract.md`; stringly or implicit domain behavior is forbidden.
+- Every EARS criterion SHALL retain its scenario, atom, validation-profile, and evidence ownership in `docs/specification/acceptance-trace.md`; planned mappings are never completion evidence.
 
 ## Edition contract
 
@@ -83,7 +86,7 @@ It is not a medical device, diagnostic system, treatment, surveillance product, 
 - **E-002:** WHEN concurrent native surfaces send intents, the engine SHALL serialize them into one revision-ordered state without duplicate transitions.
 - **E-003:** WHEN an intent is invalid for the current state, the engine SHALL return an explicit rejection and persist no mutation.
 - **E-004:** WHEN a timed phase renders, the system SHALL derive time from canonical anchors and SHALL persist no ordinary per-second ticks.
-- **E-005:** WHEN wall time changes while the process runs, monotonic remaining time SHALL not jump and the wall deadline SHALL rebase with a factual clock-adjusted event.
+- **E-005:** WHEN wall and monotonic observations diverge materially beyond the declared tolerance while the process runs, monotonic remaining time SHALL not jump and the wall deadline SHALL rebase with a factual clock-adjusted event.
 - **E-006:** WHEN the Mac wakes before/after a deadline, the system SHALL reconcile the remaining time or one elapsed boundary and SHALL NOT auto-chain overdue phases.
 - **E-007:** WHEN relaunch data is valid, the system SHALL restore the active task/action/policy/timeline/time; WHEN it is impossible, it SHALL offer safe recovery rather than invent elapsed focus.
 - **E-008:** WHEN multiple callbacks report the same boundary, the system SHALL commit exactly one phase transition.
@@ -158,6 +161,7 @@ It is not a medical device, diagnostic system, treatment, surveillance product, 
 - Every Major/Important review finding is fixed; any later-scope atom is explicit and not claimed complete.
 - Git history contains clean slices; `main` remains protected until verified merge.
 - Documentation, data dictionary, edition matrix, audit trail, prd/progress, and human-feedback ritual are current.
+- The 57-row acceptance trace has no unmapped criterion, no stale owner, and no evidence claim from an incomplete downstream atom.
 - No remote/public/release claim is made without direct evidence.
 
 ## Non-goal completion rule

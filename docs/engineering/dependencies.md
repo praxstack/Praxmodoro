@@ -23,6 +23,24 @@
 - Scope: development and CI only; not an app dependency.
 - Removal: source still compiles; replace only through a documented formatting decision.
 
+## OpenSpec 1.6.0
+
+- Purpose: strict specification validation, change status inspection, and archive workflow for the
+  repository-owned OpenSpec change.
+- Canonical source: https://github.com/Fission-AI/OpenSpec
+- Registry source:
+  `https://registry.npmjs.org/@fission-ai/openspec/-/openspec-1.6.0.tgz`.
+- npm integrity:
+  `sha512-7yFTQ3hrrk11mQ2ACClNv2gtAN0o116vCgwoiQKmreoB6ambSnrZh7wf2FNFoSDBXHBi9iiCQ7G16fG71ZNppA==`.
+- License: MIT.
+- Scope: development and CI only; the package is not linked, bundled, imported, or required by the
+  native Praxodoro app at runtime.
+- Upgrade: separate dependency-review change that verifies the official repository and registry
+  metadata, updates the exact version and lock integrity, runs strict validation, and reconciles any
+  command/schema change in tasks and verification scripts.
+- Removal: committed Markdown specifications remain readable; replace the validation/status/archive
+  commands and remove the exact package/lock entries in one reviewed change before deleting the tool.
+
 ## Runtime
 
 The foundation app has no non-Apple runtime dependency. It links only Apple frameworks and the

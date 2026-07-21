@@ -26,9 +26,29 @@
       "docs/superpowers/plans/2026-07-20-native-foundation.md"
     ]
   },
+  "semanticContractGate": {
+    "status": "in_review",
+    "blocksAtom": "3.1",
+    "required": [
+      "closed-session-domain-contract",
+      "stable-openspec-scenario-ids",
+      "machine-verified-criterion-scenario-atom-trace",
+      "strict-openspec-validation",
+      "independent-semantic-review",
+      "independent-trace-review",
+      "shipping-council",
+      "exact-staged-index-receiving-review"
+    ],
+    "evidence": [
+      "docs/specification/session-domain-contract.md",
+      "docs/specification/acceptance-trace.md",
+      "scripts/verify-spec-trace.mjs"
+    ]
+  },
   "counts": {
     "earsAcceptanceCriteria": 57,
     "documentedAssumptions": 12,
+    "openSpecScenarios": 122,
     "atoms": 21,
     "todo": 17,
     "doing": 0,
@@ -36,6 +56,7 @@
     "parked": 0
   },
   "nextAtom": "3.1",
+  "executionOrder": ["1.1", "1.2", "2.1", "2.2", "3.1", "3.3", "3.2", "4.1", "4.2", "5.1", "5.2", "5.3", "5.4", "5.5", "6.1", "6.2", "6.3", "7.1", "7.2", "8.1", "8.2"],
   "atoms": [
     {
       "id": "1.1",
@@ -72,7 +93,7 @@
       "title": "Implement entitlement evidence, policy precedence, expiry, and downgrade",
       "status": "done",
       "dependsOn": ["2.1"],
-      "criteria": ["G-002", "G-003", "G-005", "G-006"],
+      "criteria": ["G-002", "G-003", "G-004", "G-005", "G-006"],
       "red": "EntitlementSnapshotTests fail on missing evidence and policy APIs",
       "green": "verified, expired, unverified, managed, and downgrade fixtures pass",
       "evidence": ".agent/evidence/atom-2.2-validated-product-access.md"
@@ -83,18 +104,18 @@
       "status": "todo",
       "dependsOn": ["2.1"],
       "criteria": ["E-001", "E-003", "E-004", "G-001"],
-      "red": "SessionModelTests fail on missing domain types and presets",
-      "green": "all lifecycle states encode/decode and four Lite presets validate",
+      "red": "SessionModelTests fail on missing closed types, invariants, errors, defaults, and presets",
+      "green": "all ten lifecycle states, named errors, exact defaults, and four Lite presets validate",
       "evidence": null
     },
     {
       "id": "3.2",
       "title": "Implement exhaustive pure focus and coach reducer",
       "status": "todo",
-      "dependsOn": ["3.1"],
-      "criteria": ["E-001", "E-003", "E-009", "C-001", "C-002", "C-003", "C-004", "C-005", "C-006", "C-009", "C-010"],
-      "red": "transition tests fail on missing reducer and rejection contract",
-      "green": "complete state-intent matrix and full focus-loop fixture pass",
+      "dependsOn": ["3.1", "3.3"],
+      "criteria": ["E-001", "E-003", "E-004", "E-005", "E-006", "E-007", "E-008", "E-009", "C-001", "C-002", "C-003", "C-004", "C-005", "C-006", "C-009", "C-010", "G-001"],
+      "red": "transition tests fail on missing exhaustive matrix rows and typed rejection contract",
+      "green": "every listed transition, every 3.3 live-entry/replacement/remainder, timing/admission, non-boundary, winner-time boundary and terminal-review materialization mapping without clock arithmetic, exact due-boundary supersession, schedule changes, canonical timestamp sources, revised-action plan/summary persistence, every unlisted-pair rejection, and the full focus loop pass",
       "evidence": null
     },
     {
@@ -102,9 +123,9 @@
       "title": "Implement canonical time projection and reconciliation",
       "status": "todo",
       "dependsOn": ["3.1"],
-      "criteria": ["E-004", "E-005", "E-006", "E-007", "E-008"],
+      "criteria": ["E-004", "E-005", "E-006", "E-007", "E-008", "G-001"],
       "red": "TimerReconciliationTests fail on missing clock and reconciliation APIs",
-      "green": "pause, sleep, wake, relaunch, DST, wall-change, Flow, and exactly-once fixtures pass",
+      "green": "typed start/resume/break entry and scheduled replacement deadlines/tokens/failures plus manual/5/120-minute remainder values, paired fractional elapsed, non-finite precedence, admission-tolerant versus live-commit ±1/±2 drift, exact non-boundary focus timing/cadence and break accumulation, future-cadence preserve plus equal-collision, overdue-later-scheduled, and scheduled-occurrence resets, scheduled-earlier/phase-later/both-overdue exact winner-time suspension without irrelevant observation-total overflow, winner-total overflow recovery, future relaunch recovery, sleep/wake, DST, Flow, token arbitration, and pure one-winner admission fixtures pass",
       "evidence": null
     },
     {
@@ -112,9 +133,9 @@
       "title": "Implement actor engine and in-memory atomic repository",
       "status": "todo",
       "dependsOn": ["2.2", "3.2", "3.3"],
-      "criteria": ["E-002", "E-008", "E-010", "G-004", "G-005"],
+      "criteria": ["E-001", "E-002", "E-003", "E-005", "E-006", "E-007", "E-008", "E-010", "G-001"],
       "red": "SessionEngineTests fail on missing snapshot stream and commit contract",
-      "green": "concurrency, revision, atomicity, and effect-failure tests pass",
+      "green": "concurrency, revision, atomicity, all five same-named zero-write failure mappings, replay-latest multi-subscriber, cancellation-isolation, and effect-failure tests pass",
       "evidence": null
     },
     {
@@ -122,7 +143,7 @@
       "title": "Implement SwiftData V1 schema and repository adapter",
       "status": "todo",
       "dependsOn": ["1.1", "4.1"],
-      "criteria": ["E-007", "E-010", "P-001", "P-009", "P-010"],
+      "criteria": ["E-001", "E-007", "E-010", "C-007", "G-001", "P-001", "P-003", "P-009", "P-010"],
       "red": "repository contract fails on missing SwiftData schema/adapter",
       "green": "in-memory and temporary SwiftData contracts plus recovery fixtures pass",
       "evidence": null
@@ -132,7 +153,7 @@
       "title": "Implement Liquid Instrument tokens, surface roles, and render policy",
       "status": "todo",
       "dependsOn": ["1.1"],
-      "criteria": ["U-001", "U-002", "U-003", "U-004", "U-005", "U-008", "U-010"],
+      "criteria": ["G-001", "U-001", "U-002", "U-003", "U-004", "U-005", "U-008", "U-010"],
       "red": "RenderPolicyTests fail on missing role/fallback mappings",
       "green": "all accessibility, appearance, power, and hidden policies pass without external effects dependency",
       "evidence": null
@@ -142,9 +163,9 @@
       "title": "Wire shared app container, main window, and menu bar",
       "status": "todo",
       "dependsOn": ["2.2", "4.1", "4.2", "5.1"],
-      "criteria": ["E-002", "G-007", "U-006", "U-009", "D-002"],
+      "criteria": ["E-002", "C-009", "G-001", "G-004", "G-005", "G-007", "U-006", "U-009", "D-002"],
       "red": "AppModelTests fail on missing shared engine and independent session/capability subscriptions",
-      "green": "main/menu-bar parity, shared revision, and capability-only publication tests pass",
+      "green": "main/menu-bar parity, shared revision, expiry-only lease boundary gating, runtime Lite fallback, and capability-only publication tests pass",
       "evidence": null
     },
     {
@@ -152,7 +173,7 @@
       "title": "Build accessible Initiate and Focus surfaces",
       "status": "todo",
       "dependsOn": ["3.2", "3.3", "5.2"],
-      "criteria": ["E-001", "C-001", "C-002", "C-007", "U-001", "U-006", "U-008"],
+      "criteria": ["E-001", "E-004", "E-009", "C-001", "C-002", "C-007", "C-010", "G-001", "U-001", "U-006", "U-008"],
       "red": "UI/model tests fail for offline start, capacity, editing, controls, and keyboard flow",
       "green": "initiate/focus tests, build, relaunch, and keyboard smoke pass",
       "evidence": null
@@ -162,7 +183,7 @@
       "title": "Build check-in, detour, break, re-entry, and review surfaces",
       "status": "todo",
       "dependsOn": ["5.3"],
-      "criteria": ["C-003", "C-004", "C-005", "C-006", "C-008", "C-009", "C-010", "U-006", "U-007"],
+      "criteria": ["C-003", "C-004", "C-005", "C-006", "C-008", "C-009", "C-010", "G-001", "U-006", "U-007"],
       "red": "coach-loop tests fail on missing semantics, transitions, restoration, and sparse-review guard",
       "green": "full keyboard/VoiceOver-identified focus loop passes without punitive or commerce behavior",
       "evidence": null
@@ -182,7 +203,7 @@
       "title": "Implement data dictionary, retention, and session-only coach defaults",
       "status": "todo",
       "dependsOn": ["3.2", "4.2"],
-      "criteria": ["P-001", "P-003", "P-009", "P-010"],
+      "criteria": ["C-008", "G-001", "P-001", "P-003", "P-009", "P-010"],
       "red": "retention tests fail on missing category and cleanup policy",
       "green": "boundary fixtures and data-dictionary parity pass",
       "evidence": null
@@ -192,7 +213,7 @@
       "title": "Implement privacy-safe local notifications",
       "status": "todo",
       "dependsOn": ["4.1", "5.2"],
-      "criteria": ["E-010", "P-004", "P-007"],
+      "criteria": ["E-010", "G-001", "P-004", "P-007"],
       "red": "scheduler tests fail on missing opt-in, preview, dedupe, and denial behavior",
       "green": "permission, privacy, event, cancellation, and timer-fallback fixtures pass",
       "evidence": null
@@ -202,7 +223,7 @@
       "title": "Implement exact local export and honest Delete All",
       "status": "todo",
       "dependsOn": ["4.2", "6.1"],
-      "criteria": ["G-004", "P-005", "P-006", "P-010"],
+      "criteria": ["G-001", "G-004", "P-005", "P-006", "P-010"],
       "red": "export/delete tests fail on missing category selection, downgrade reads, and complete cleanup",
       "green": "Lite-after-Pro reads, minimal/all exports, full local deletion, and partial-failure messaging pass",
       "evidence": null
@@ -212,7 +233,7 @@
       "title": "Complete native accessibility and visual regression matrix",
       "status": "todo",
       "dependsOn": ["5.1", "5.4", "5.5"],
-      "criteria": ["C-007", "U-001", "U-002", "U-003", "U-004", "U-005", "U-006", "U-007", "U-008", "U-009"],
+      "criteria": ["C-007", "G-001", "U-001", "U-002", "U-003", "U-004", "U-005", "U-006", "U-007", "U-008", "U-009"],
       "red": "accessibility suite captures any unreachable, unlabeled, chatty, clipped, or missing fallback",
       "green": "keyboard, VoiceOver, effects, contrast, large-text, light/dark, and screenshot dossier pass",
       "evidence": null
@@ -222,7 +243,7 @@
       "title": "Prove zero-network, no-surveillance, energy, and hidden-scene behavior",
       "status": "todo",
       "dependsOn": ["6.1", "6.2", "6.3", "7.1"],
-      "criteria": ["E-004", "U-005", "U-010", "P-002", "P-007", "P-008", "D-005"],
+      "criteria": ["E-004", "G-001", "U-005", "U-010", "P-002", "P-007", "P-008", "D-005"],
       "red": "privacy-performance verifier fails when evidence capture is absent",
       "green": "network, entitlement, log, write, hidden-renderer, and energy checks pass",
       "evidence": null
@@ -256,5 +277,5 @@
     "privileged-blocker-extension",
     "enterprise-license-issuer-mdm-and-backend"
   ],
-  "lastUpdated": "2026-07-21T12:17:23Z"
+  "lastUpdated": "2026-07-21T14:50:19Z"
 }

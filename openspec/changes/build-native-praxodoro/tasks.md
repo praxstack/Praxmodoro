@@ -36,27 +36,32 @@
 
 ## 3. Pure focus-session domain
 
+Execution order is `3.1 → 3.3 → 3.2`: the pure tested time kernel must exist before the exhaustive
+reducer integrates live rows. Numeric labels preserve criterion/history identity, not execution order.
+
 - [ ] 3.1 Define session state, intents, events, projections, and four data-defined timing presets.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Session/SessionState.swift`, `SessionIntent.swift`, `SessionEvent.swift`, `SessionProjection.swift`, `TimingPolicy.swift`; create `SessionModelTests.swift`.
-  - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter SessionModelTests`; expect missing session model and preset symbols.
-  - **Minimal implementation:** add Sendable value types for all specified states/intents/events and Gentle Start, Classic, Flow, Recovery First policy data with invariant validation.
+  - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter SessionModelTests`; expect missing closed session model, exact default manifest, invariant, error-taxonomy, and preset symbols.
+  - **Minimal implementation:** implement the Sendable closed value vocabulary, ten lifecycle states including re-entry, exact events/effects/results/errors, snapshot invariants, and the four exact timing policies/defaults from `docs/specification/session-domain-contract.md`.
   - **GREEN:** run focused and full package tests.
-  - **Smoke:** encode/decode one fixture for every lifecycle state and verify all four presets are granted by Lite rules.
+  - **Smoke:** construct and validate one fixture for every lifecycle state, every named error class, and every default; verify all four presets are granted by Lite rules. Codable round trips remain owned by persistence atom 4.2.
   - **Commit:** `feat: model focus session lifecycle`.
 
 - [ ] 3.2 Implement the exhaustive pure reducer and invalid-transition contract.
+  - **Depends on:** accepted atoms 3.1 and 3.3.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Session/SessionReducer.swift`, `CoachSuggestion.swift`; create `SessionTransitionTests.swift`, `CoachTransitionTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter SessionTransitionTests`; expect missing `SessionReducer.reduce` and invalid-transition results.
-  - **Minimal implementation:** implement one explicit transition or rejection for every state/intent pair, conflict choices, thought parking, check-ins, breaks/re-entry, completion/review, optional capacity, and deterministic first-action help.
-  - **GREEN:** run focused transition/coach tests and the full package suite.
+  - **Minimal implementation:** implement every row and every default rejection in the normative state-by-intent matrix, copy every accepted 3.3 live entry/scheduled replacement/scheduled remainder, live/relaunch/admission, non-boundary focus/break exit, and winner-time boundary-exit materialization into exact candidates and events without clock arithmetic, classify duplicate/stale boundary inputs before timing admission, and implement conflict choices, thought parking, check-ins, breaks/re-entry, completion/review, optional capacity, and deterministic first-action help.
+  - **GREEN:** run focused transition/coach tests and the full package suite, including exact interval/manual schedule changes for paused, resume-suspended check-in, live break resume-target, phase-boundary check-in, and re-entry; exact observed-wall `pausedAt` when a resume-suspended check-in resolves back to paused; due-boundary supersession for open-check-in/request-break/end-break; due/no-due Stop/Replace-and-Review terminal materialization with exact events/totals plus expected-versus-observed review timestamp separation; every canonical transition timestamp source; and revised-action persistence into the plan/final summary.
   - **Smoke:** generate a transition-matrix report proving no unhandled state/intent pair and execute one full initiate→focus→check-in→break→re-enter→review fixture.
   - **Commit:** `feat: implement deterministic focus reducer`.
 
 - [ ] 3.3 Implement canonical time projection and reconciliation.
+  - **Depends on:** accepted atom 3.1; this atom creates no reducer stub or event envelope.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Runtime/SessionTimeSource.swift`, `PhaseEndScheduling.swift`; extend `SessionProjection.swift`; create `TimerReconciliationTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter TimerReconciliationTests`; expect missing manual clock/projection/reconciliation APIs.
-  - **Minimal implementation:** project live time from monotonic anchors, persist UTC anchors/deadlines/paused remainder, rebase wall divergence, deduplicate zero boundaries, continue through sleep, and enter recovery for impossible relaunch values.
-  - **GREEN:** run focused and full package tests with fixtures for ±1-hour clock changes, sleep before/after deadline, relaunch, timezone/DST, pause/resume, zero boundary, Flow, and exactly-once completion.
+  - **Minimal implementation:** implement the callable projector plus pure internal live/relaunch reconciliation, typed live-entry and scheduled-replacement decisions, exact non-boundary exit/live-commit and winner-time boundary-exit materialization values, installed-boundary cadence/admission decisions, and token-allocation decisions from the paired canonical raw-wall/monotonic anchor; persist no values directly, separate ±2 admission tolerance from any-nonzero live-commit rebasing, do not compute irrelevant observation-based totals when a boundary is due, recover on any future relaunch anchor, return non-finite current wall as a typed zero-write decision, continue through sleep, and return the named recovery/failure decisions for impossible observations and new-entry construction. Duplicate/stale preclassification belongs to Atom 3.2.
+  - **GREEN:** run focused and full package tests with exact wall-100 phase-300/cadence-900 entry deadlines and ordered tokens, saved/open-ended focus and break entries, schedule replacement plus manual/5/120-minute remainder values, non-finite/date/occurrence entry failures, fractional-boundary paired elapsed, NaN/infinite precedence, ±1-hour clock decisions, exact ±1/±2 admission-versus-live-commit outputs, exact non-boundary focus timing/cadence and break accumulation, future-cadence preserve/equal-collision reset/overdue-later-scheduled reset/scheduled reset decisions, scheduled-earlier/phase-later/both-overdue exact winner-time suspension despite irrelevant observation-total overflow, winner-total overflow recovery, sleep before/after deadline, equal/future relaunch anchors, timezone/DST, zero boundary, Flow, token arbitration, and pure one-winner admission; reducer candidates/events and pause/resume integration remain Atom 3.2 work.
   - **Smoke:** assert ordinary countdown projection performs zero repository writes.
   - **Commit:** `feat: reconcile canonical session time`.
 
@@ -65,8 +70,8 @@
 - [ ] 4.1 Implement the actor-isolated engine and in-memory atomic repository.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Runtime/SessionEngine.swift`, `SessionRepository.swift`; create `SessionEngineTests.swift`, `InMemorySessionRepositoryTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter SessionEngineTests`; expect missing `SessionRunning`, snapshot stream, and repository commit contract.
-  - **Minimal implementation:** serialize intents, enforce expected revision, atomically commit snapshot/events, publish only committed revisions, and perform effects after commit.
-  - **GREEN:** run focused tests, Swift concurrency stress fixtures, Thread Sanitizer test configuration where supported, and all package tests.
+  - **Minimal implementation:** serialize intents, enforce expected revision, atomically commit snapshot/events, map all five reduction failures to same-named zero-write engine failures, publish only committed revisions through independent replay-latest broadcast streams, and perform effects after commit.
+  - **GREEN:** run focused tests, Swift concurrency stress fixtures, Thread Sanitizer test configuration where supported, and all package tests; all five failure mappings pass, two subscribers receive identical current/later revision sequences, and cancelling one does not affect the other.
   - **Smoke:** issue concurrent main/menu-bar intents and verify one ordered result; inject save and notification failures and verify state guarantees.
   - **Commit:** `feat: add atomic session runtime`.
 
@@ -89,11 +94,11 @@
   - **Commit:** `feat: add Liquid Instrument design system`.
 
 - [ ] 5.2 Wire one app container, main window, and menu-bar surface to the same engine.
-  - **Files:** create `PraxodoroApp/App/AppContainer.swift`, `AppModel.swift`, `CapabilitySnapshotSource.swift`, `PraxodoroApp/Scenes/MainWindowScene.swift`, `MenuBarScene.swift`; modify `PraxodoroApp/PraxodoroApp.swift`; create `PraxodoroTests/App/AppModelTests.swift`.
+  - **Files:** create `PraxodoroApp/App/AppContainer.swift`, `AppModel.swift`, `CapabilitySnapshotSource.swift`, `PraxodoroApp/Scenes/MainWindowScene.swift`, `MenuBarScene.swift`; modify `PraxodoroApp/PraxodoroApp.swift`, `Packages/PraxodoroCore/Sources/PraxodoroCore/Entitlements/EntitlementSnapshot.swift`, and `ProductRules.swift`; create `PraxodoroTests/App/AppModelTests.swift` plus focused core facade tests.
   - **RED:** run `AppModelTests`; expect missing shared-container, independent session/capability subscriptions, and scene-command APIs.
-  - **Minimal implementation:** instantiate one engine/repository/capability source, subscribe independently to session and capability changes, combine them into one observable app snapshot without coupling their emission cadence, and bind both native scenes to it.
-  - **GREEN:** run focused/app/package tests and build, including a capability-only publication fixture that leaves the session ID/revision unchanged.
-  - **Smoke:** start/pause from the menu bar and verify the main window reports the same session ID/revision; then change a capability prerequisite without a session transition and verify both scenes update while the session ID/revision remain unchanged; close/reopen the window without restarting the timer.
+  - **Minimal implementation:** instantiate one engine/repository/capability source, subscribe independently to session and capability changes, combine them into one observable app snapshot without coupling their emission cadence, add one public Core integration facade initialized from that same `SessionRunning` instance so it consumes committed start/boundary publications internally while Atom 2.2's receipt/lease constructors remain inaccessible, bind that facade's expiry-only transition to committed session boundaries, apply all non-expiry fallback immediately, and bind both native scenes to the result without injecting entitlements into the pure session engine or accepting a caller-supplied downgrade reason/lease.
+  - **GREEN:** run focused/app/package tests and build, including two non-competing session subscribers for AppModel/coordinator, expiry-only mid-focus preservation until the next committed boundary, immediate verifier/logout/prerequisite fallback, and a capability-only publication fixture that leaves the session ID/revision unchanged.
+  - **Smoke:** start/pause from the menu bar and verify the main window reports the same session ID/revision; expire an eligible leased capability and prove boundary gating in both scenes; then change a non-expiry prerequisite without a session transition and verify both scenes update immediately while the session ID/revision remain unchanged; close/reopen the window without restarting the timer.
   - **Commit:** `feat: share session state across Mac surfaces`.
 
 - [ ] 5.3 Build the accessible Initiate and Focus vertical slice.
@@ -167,10 +172,10 @@
 ## 8. Verification workflow and handoff
 
 - [ ] 8.1 Add macOS CI and a single local verification entry point.
-  - **Files:** create `.github/workflows/ci.yml`, `scripts/verify.sh`, `scripts/smoke-app.sh`; modify `package.json`, `README.md`, `AGENTS.md`.
+  - **Files:** create `.github/workflows/ci.yml`, `scripts/verify.sh`, `scripts/smoke-app.sh`; modify `package.json`, `package-lock.json`, `docs/engineering/dependencies.md`, `README.md`, `AGENTS.md`.
   - **RED:** run `bash scripts/verify.sh`; expect a failing gate for each not-yet-wired spec/format/test/build/secret/smoke stage.
-  - **Minimal implementation:** make strict OpenSpec validation, generation diff, Swift format/static checks, package/app tests, unsigned build, gitleaks, and isolated app smoke mandatory locally and on a supported macOS CI runner.
-  - **GREEN:** run `bash scripts/verify.sh` to exit 0 with exact test/build counts and no skipped mandatory gate.
+  - **Minimal implementation:** reconcile the canonical dependency document against the official OpenSpec repository and npm registry version/source/MIT license/integrity/development-only purpose/upgrade/removal record, then make that provenance check, strict OpenSpec validation, generation diff, Swift format/static checks, package/app tests, unsigned build, gitleaks, Atom 7.2's zero-network/privacy and energy/performance gates, and isolated app smoke mandatory locally and on a supported macOS CI runner.
+  - **GREEN:** run `bash scripts/verify.sh` to exit 0 with exact test/build counts, explicit successful Atom 7.2 privacy/energy stages, and no skipped mandatory gate.
   - **Smoke:** execute `scripts/smoke-app.sh` from a clean DerivedData path and confirm the initiation accessibility element before clean termination.
   - **Commit:** `ci: verify native app end to end`.
 

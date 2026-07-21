@@ -4,7 +4,7 @@ Praxodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach.
 
 ## Current state
 
-The product research and interactive visual mocks are complete. Native implementation is beginning through an OpenSpec change and a test-first autonomous workflow; no shipping app or Enterprise service is claimed yet.
+The product research and interactive visual mocks are complete. The native scaffold and edition-access foundation are verified in 4 of 21 OpenSpec atoms; the focus-session domain is next. No complete focus loop, shipping app, production paid verifier, or Enterprise service is claimed yet.
 
 ## Editions
 
@@ -19,6 +19,8 @@ Core accessibility and ADHD-aware focus support are not paywalled.
 - `research/pomodoro-landscape-20260720/` — sourced product and platform research.
 - `design-mocks/hallmark/` — interactive Hallmark mocks, screenshots, and design dossier.
 - `openspec/` — canonical product specs and active change artifacts.
+- `docs/specification/session-domain-contract.md` — closed session types, defaults, exhaustive transitions, events/effects, and errors.
+- `docs/specification/acceptance-trace.md` — all 57 EARS criteria mapped to OpenSpec scenarios, atoms, validation profiles, and evidence ownership.
 - `.agent/sessions/` — continuous autonomous build audit trail.
 - `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt` — durable completion contract and execution state.
 
@@ -28,10 +30,28 @@ Core accessibility and ADHD-aware focus support are not paywalled.
 npm install
 npm run spec:list
 npm run spec:validate
+npm exec -- openspec status --change build-native-praxodoro
+npm exec -- openspec doctor --json
 ```
 
 OpenSpec is pinned to 1.6.0. The native foundation commands below exercise generator,
 verification, test, build, and smoke paths.
+
+The pre-Atom-3.1 semantic gate is accepted only from an exact staged-index receiving review and the
+reserved milestone commit subject `docs: accept session domain contract`. Before that commit, the
+validator binds the current index byte-for-byte; afterward it replays the historical gate commit so
+normal Atom 3.1+ source/status staging is not mistaken for gate drift.
+
+Each implementation atom likewise has one reserved commit subject in the OpenSpec task list. A
+precommit `done` transition is valid only when its PRD, task checkbox, progress log, and evidence are
+staged together; after commit, validation replays that exact historical milestone and follows the
+dependency-safe `prd.json` execution order rather than numeric atom order.
+
+The active change is `build-native-praxodoro`. Repository-local workflow skills live under
+`.codex/skills/openspec-*`; matching global Codex prompts, when installed, are invoked as
+`/opsx:*`. This repository uses the core profile, so optional `/opsx:verify` is not required.
+`openspec/specs/` is intentionally absent while this first change contains only ADDED capability
+specs; canonical main specs appear when the change is synced/archived after all accepted tasks pass.
 
 ## Native foundation commands
 
