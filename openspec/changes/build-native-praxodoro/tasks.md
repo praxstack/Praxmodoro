@@ -18,7 +18,7 @@
 
 ## 2. Edition capability foundation
 
-- [ ] 2.1 Implement the product capability registry and Lite/Pro/Enterprise matrices.
+- [x] 2.1 Implement the product capability registry and Lite/Pro/Enterprise matrices.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Entitlements/ProductCapability.swift`, `ProductRules.swift`; create `Packages/PraxodoroCore/Tests/PraxodoroCoreTests/ProductRulesTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter ProductRulesTests`; expect compile failure because `ProductCapability` and `ProductRules` do not exist.
   - **Minimal implementation:** define an exhaustive ungateable Lite-feature inventory plus optional Pro/Enterprise capability descriptors with explicit authorization, platform eligibility, distribution, downgrade, data-access, and adapter-availability decisions; exclude privileged blocking pending its separate add-on spec.

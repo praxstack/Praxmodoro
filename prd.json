@@ -30,12 +30,12 @@
     "earsAcceptanceCriteria": 56,
     "documentedAssumptions": 12,
     "atoms": 21,
-    "todo": 19,
+    "todo": 18,
     "doing": 0,
-    "done": 2,
+    "done": 3,
     "parked": 0
   },
-  "nextAtom": "2.1",
+  "nextAtom": "2.2",
   "atoms": [
     {
       "id": "1.1",
@@ -60,12 +60,12 @@
     {
       "id": "2.1",
       "title": "Implement product capability registry and edition matrices",
-      "status": "todo",
+      "status": "done",
       "dependsOn": ["1.1"],
       "criteria": ["G-001", "G-002", "G-006"],
       "red": "ProductRulesTests fail to compile on missing capability types",
       "green": "edition matrix and registry completeness tests pass",
-      "evidence": null
+      "evidence": ".agent/evidence/atom-2.1-edition-catalog.md"
     },
     {
       "id": "2.2",
