@@ -8,7 +8,7 @@
   - **Smoke:** launch the exact Debug binary with unique `CFFIXED_USER_HOME`, `TMPDIR`, and app-state roots, verify liveness/fatal-log cleanliness, and use the UI test to prove the initiation heading before deterministic termination.
   - **Commit:** `chore: scaffold native macOS app`.
 
-- [ ] 1.2 Add project-wide formatting, strict-concurrency, dependency-provenance, and regeneration gates.
+- [x] 1.2 Add project-wide formatting, strict-concurrency, dependency-provenance, and regeneration gates.
   - **Files:** create `.swift-format`, `docs/engineering/dependencies.md`, `scripts/verify-project-generation.sh`; modify `project.yml`, `README.md`.
   - **RED:** run `bash scripts/verify-project-generation.sh` before the version/provenance and no-diff checks exist; expect a missing provenance or regeneration mismatch failure.
   - **Minimal implementation:** enable Swift 6 strict concurrency and warnings-as-errors for project code, record XcodeGen source/tag commit/archive and executable checksums/license/removal path, verify the actual toolchain, and compare a pre-generation project snapshot with regenerated output recursively.

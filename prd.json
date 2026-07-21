@@ -30,12 +30,12 @@
     "earsAcceptanceCriteria": 56,
     "documentedAssumptions": 12,
     "atoms": 21,
-    "todo": 20,
+    "todo": 19,
     "doing": 0,
-    "done": 1,
+    "done": 2,
     "parked": 0
   },
-  "nextAtom": "1.2",
+  "nextAtom": "2.1",
   "atoms": [
     {
       "id": "1.1",
@@ -50,12 +50,12 @@
     {
       "id": "1.2",
       "title": "Add strict concurrency, formatting, provenance, and regeneration gates",
-      "status": "todo",
+      "status": "done",
       "dependsOn": ["1.1"],
       "criteria": ["D-001", "D-002"],
       "red": "project regeneration/provenance verifier fails before gates exist",
       "green": "generator produces no diff and quality settings/build are clean",
-      "evidence": null
+      "evidence": ".agent/evidence/atom-1.2-native-quality.md"
     },
     {
       "id": "2.1",
@@ -256,5 +256,5 @@
     "privileged-blocker-extension",
     "enterprise-license-issuer-mdm-and-backend"
   ],
-  "lastUpdated": "2026-07-20T14:20:00Z"
+  "lastUpdated": "2026-07-21T11:26:39Z"
 }
