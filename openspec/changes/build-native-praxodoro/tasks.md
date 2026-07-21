@@ -26,10 +26,10 @@
   - **Smoke:** print the deterministic Lite capability count from a test fixture and verify every core-loop/accessibility/privacy identifier is present.
   - **Commit:** `feat: define safe edition access catalog`.
 
-- [ ] 2.2 Implement entitlement evidence, policy precedence, expiry, and downgrade behavior.
+- [x] 2.2 Implement entitlement evidence, policy precedence, expiry, and downgrade behavior.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Entitlements/EntitlementSnapshot.swift`; extend `ProductRules.swift`; create `EntitlementSnapshotTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter EntitlementSnapshotTests`; expect missing-type failures for verified evidence and policy resolution.
-  - **Minimal implementation:** separate public untrusted claims from privately constructed interval-valid grants; keep production paid resolution Lite-only until a verifier exists; record all concurrent availability failures, evidence/issue/expiry/limits, reevaluation, one exhaustive consent-safe managed-policy schema with no personal cadence, and opaque session-ID/revision/full-snapshot-bound leases whose transition requires the expired resolution of the same grant plus matching complete contexts, rejecting claim loss/logout/verifier failure without StoreKit/network code.
+  - **Minimal implementation:** separate public untrusted claims from privately constructed interval-valid grants; keep production paid resolution Lite-only until a verifier exists; record implementation and runtime availability independently alongside every other concurrent failure, evidence/issue/expiry/limits, meaningful reevaluation boundaries, one exhaustive consent-safe managed-policy schema with no personal cadence, and opaque session-ID/revision/commit-time/full-snapshot-bound leases whose transition requires the expired resolution of the same grant plus matching complete contexts, rejecting claim loss/logout/verifier failure without StoreKit/network code. This atom proves fail-closed access and active-session policy only; downgrade readability/exportability remains owned by 6.3.
   - **GREEN:** run focused and full package tests.
   - **Smoke:** cover Lite, verified Pro, expired Pro, unverified Enterprise, and managed diagnostics-disabled fixtures in the edition matrix.
   - **Commit:** `feat: resolve validated product access`.
@@ -89,11 +89,11 @@
   - **Commit:** `feat: add Liquid Instrument design system`.
 
 - [ ] 5.2 Wire one app container, main window, and menu-bar surface to the same engine.
-  - **Files:** create `PraxodoroApp/App/AppContainer.swift`, `AppModel.swift`, `PraxodoroApp/Scenes/MainWindowScene.swift`, `MenuBarScene.swift`; modify `PraxodoroApp/PraxodoroApp.swift`; create `PraxodoroTests/App/AppModelTests.swift`.
-  - **RED:** run `AppModelTests`; expect missing shared-container/snapshot subscription and scene-command APIs.
-  - **Minimal implementation:** instantiate one engine/repository/capability source, publish one observable app snapshot, and bind both native scenes to it.
-  - **GREEN:** run focused/app/package tests and build.
-  - **Smoke:** start/pause from the menu bar and verify the main window reports the same session ID/revision; close/reopen the window without restarting the timer.
+  - **Files:** create `PraxodoroApp/App/AppContainer.swift`, `AppModel.swift`, `CapabilitySnapshotSource.swift`, `PraxodoroApp/Scenes/MainWindowScene.swift`, `MenuBarScene.swift`; modify `PraxodoroApp/PraxodoroApp.swift`; create `PraxodoroTests/App/AppModelTests.swift`.
+  - **RED:** run `AppModelTests`; expect missing shared-container, independent session/capability subscriptions, and scene-command APIs.
+  - **Minimal implementation:** instantiate one engine/repository/capability source, subscribe independently to session and capability changes, combine them into one observable app snapshot without coupling their emission cadence, and bind both native scenes to it.
+  - **GREEN:** run focused/app/package tests and build, including a capability-only publication fixture that leaves the session ID/revision unchanged.
+  - **Smoke:** start/pause from the menu bar and verify the main window reports the same session ID/revision; then change a capability prerequisite without a session transition and verify both scenes update while the session ID/revision remain unchanged; close/reopen the window without restarting the timer.
   - **Commit:** `feat: share session state across Mac surfaces`.
 
 - [ ] 5.3 Build the accessible Initiate and Focus vertical slice.
@@ -140,10 +140,10 @@
 
 - [ ] 6.3 Implement local export and honest Delete All behavior.
   - **Files:** create `PraxodoroApp/Persistence/DataExportService.swift`, `DataDeletionService.swift`, `PraxodoroApp/Features/Settings/DataControlView.swift`; create export/deletion tests.
-  - **RED:** run focused tests; expect missing category selection, schema manifest, exact-field export, notification cancellation, full local deletion, and partial-failure status.
-  - **Minimal implementation:** export exactly selected V1 categories, delete every local category and queued notification, preserve retry status, and explain exported-file/device-backup limits.
+  - **RED:** run focused tests; expect missing category selection, schema manifest, exact-field export, downgrade readability, notification cancellation, full local deletion, and partial-failure status.
+  - **Minimal implementation:** keep local data reads and export independent of paid capability gates, export exactly selected V1 categories, delete every local category and queued notification, preserve retry status, and explain exported-file/device-backup limits.
   - **GREEN:** run focused/full tests, build, gitleaks, and content-field snapshot tests.
-  - **Smoke:** seed every category, export minimal/all sets, delete all, and verify zero local queries plus honest remaining-copy messaging.
+  - **Smoke:** seed every category under a Pro snapshot, downgrade to Lite/offline evidence, verify exact reads and export still succeed, then export minimal/all sets, delete all, and verify zero local queries plus honest remaining-copy messaging.
   - **Commit:** `feat: add local export and deletion controls`.
 
 ## 7. Accessibility, privacy, and performance QA

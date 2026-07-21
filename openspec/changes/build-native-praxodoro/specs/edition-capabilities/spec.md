@@ -7,7 +7,7 @@ SHALL gate both optional user-interface entry points and optional engine intents
 rather than scattering edition-name comparisons through features.
 
 #### Scenario: Capability allowed
-- **WHEN** validated evidence grants a requested optional capability, its adapter exists, and its independent authorization, platform, and distribution prerequisites are satisfied
+- **WHEN** validated evidence grants a requested optional capability, its adapter is implemented, its required runtime service or model is currently available, its authorization, platform, and distribution prerequisites are satisfied, and any applicable policy permits it
 - **THEN** the system exposes the entry point and accepts the corresponding engine intent
 
 #### Scenario: Capability unavailable
@@ -122,3 +122,7 @@ The system SHALL publish capability-snapshot changes independently from session 
 #### Scenario: Capability registry completeness
 - **WHEN** a new product capability is added to the registry
 - **THEN** tests require an explicit edition, authorization, platform eligibility, distribution, downgrade, data-access, and implementation-availability decision for it
+
+#### Scenario: Capability change without session change
+- **WHEN** entitlement evidence, policy, permission, platform, distribution, implementation, or runtime availability changes without a session transition
+- **THEN** the app publishes the new capability snapshot independently while preserving the current session ID and revision

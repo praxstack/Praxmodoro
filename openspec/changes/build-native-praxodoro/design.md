@@ -193,13 +193,16 @@ Both `InMemorySessionRepository` and `SwiftDataSessionRepository` run the same c
 
 ### 7. Editions resolve to capabilities, permissions, and distribution prerequisites
 
-Keep three independent dimensions:
+Keep six independent dimensions:
 
 1. Product capability granted by verified evidence.
 2. OS permission or user consent.
-3. Distribution capability such as a signed system extension.
+3. Platform eligibility such as an iCloud account or supported on-device model.
+4. Distribution capability such as a signed system extension.
+5. Adapter implementation availability.
+6. Current runtime service or model availability.
 
-Views ask `capabilities.contains(.historySync)`; engines independently reject unavailable intents. They never rely on hidden UI as enforcement.
+Views ask `capabilities.contains(.iCloudSync)`; engines independently reject unavailable intents. They never rely on hidden UI as enforcement.
 
 The complete `RequiredLiteFeature` inventory is unconditional and is never fed through a paid
 gate. Optional `ProductCapability` descriptors record edition eligibility, authorization,
@@ -224,9 +227,25 @@ apply immediately. Data remains readable/exportable after downgrade.
 
 Managed-policy precedence is OS safety → enforced managed privacy policy → user choice → recommended managed default → app default. Every managed input belongs to one exhaustive typed schema; diagnostics and sync defaults are structurally fixed off, and recommendations cannot provide consent. Enterprise adds no task/behavior reporting schema.
 
-### 8. One snapshot, multiple native surfaces
+### 8. One app projection, independent session and capability streams
 
-`AppContainer` owns one `SessionEngine` and one `AppModel`. `WindowGroup`, `MenuBarExtra`, and later `NSPanel` compact adapter subscribe to the same `AsyncStream` and send intents back to the same actor.
+`AppContainer` owns one `SessionEngine`, one `CapabilitySnapshotSource`, and one `AppModel`.
+`AppModel` subscribes independently to the committed `SessionSnapshot` stream and the
+`EntitlementSnapshot` stream, then publishes one combined app projection. A capability-only
+change updates product entry points and engine enforcement without fabricating a session event or
+changing the current session ID/revision. `WindowGroup`, `MenuBarExtra`, and the later `NSPanel`
+compact adapter observe that same app projection and send session intents back to the same actor.
+
+```mermaid
+flowchart LR
+    Session["SessionEngine"] -->|SessionSnapshot stream| Model["AppModel"]
+    Capability["CapabilitySnapshotSource"] -->|EntitlementSnapshot stream| Model
+    Model --> Main["WindowGroup"]
+    Model --> Menu["MenuBarExtra"]
+    Model --> Compact["NSPanel"]
+    Model -->|SessionIntent| Session
+    Capability -->|current available capabilities| Session
+```
 
 First integration order:
 

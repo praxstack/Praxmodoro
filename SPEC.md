@@ -111,6 +111,7 @@ It is not a medical device, diagnostic system, treatment, surveillance product, 
 - **G-004:** WHEN paid evidence is unverified/expired, the system SHALL fail closed to Lite without deleting, hiding, or making local data unexportable.
 - **G-005:** WHEN paid evidence expires mid-session, the active session SHALL finish with its committed policy and gating SHALL apply at the next boundary.
 - **G-006:** WHEN a capability is added, the registry SHALL require explicit edition, permission, distribution, downgrade, and data-access decisions.
+- **G-007:** WHEN the resolved capability snapshot changes without a session transition, the app SHALL publish that capability change independently while preserving the current session ID and revision.
 
 ### Liquid Instrument UI
 

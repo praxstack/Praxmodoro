@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "receiptKind": "normalized-xcresulttool-test-receipt",
+  "sourceBundle": ".build/TestResults/Praxodoro-20260721T120251Z-75165.xcresult",
+  "sourceBundleRetention": "ignored-local-artifact",
+  "rawExtraction": {
+    "summaryArtifact": ".build/atom-2.2-final-summary.json",
+    "testsArtifact": ".build/atom-2.2-final-tests.json",
+    "format": "xcresulttool pretty JSON stdout bytes with final newline; no minification",
+    "summaryCommand": "xcrun xcresulttool get test-results summary --path SOURCE_BUNDLE --format json",
+    "testsCommand": "xcrun xcresulttool get test-results tests --path SOURCE_BUNDLE --format json"
+  },
+  "rawSummaryJSONSHA256": "94eda0e4ea9cc3876a1ce4d0c1526ca6da3562740d3219181922587728d4fa82",
+  "rawTestsJSONSHA256": "2ebc7316e680a21c96f9ad58406bf47f98d11d14d7fcefd3218b723a54a49328",
+  "platform": {
+    "name": "macOS",
+    "version": "26.5.2",
+    "architecture": "arm64"
+  },
+  "summary": {
+    "result": "Passed",
+    "totalTestCount": 3,
+    "passedTests": 3,
+    "failedTests": 0,
+    "skippedTests": 0,
+    "expectedFailures": 0
+  },
+  "tests": [
+    {
+      "bundle": "PraxodoroTests",
+      "name": "applicationUsesCoreProductIdentity()",
+      "result": "Passed"
+    },
+    {
+      "bundle": "PraxodoroTests",
+      "name": "testStateRootOverrideIsConsumed()",
+      "result": "Passed"
+    },
+    {
+      "bundle": "PraxodoroUITests",
+      "suite": "PraxodoroLaunchUITests",
+      "name": "testLaunchesInitiateSurface()",
+      "result": "Passed",
+      "durationInSeconds": 2.5855809450149536
+    }
+  ]
+}
