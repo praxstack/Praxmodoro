@@ -924,6 +924,80 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidText(.firstAction)))
   }
 
+  @Test("completion copies the frozen review draft exactly")
+  func completionMustPreserveReviewDraft() throws {
+    let sessionID = UUID()
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let draft = SessionSummaryDraft(
+      endedAt: timestamp,
+      focusedSeconds: 0,
+      breakSeconds: 0,
+      parkedThoughtCount: 0,
+      optionalReflection: nil
+    )
+    let previous = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .reviewing(ReviewState(draft: draft, stopReason: .completed, replacementDraft: nil)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let summary = SessionSummary(
+      sessionID: sessionID,
+      task: "Task",
+      finalAction: "Action",
+      startedAt: timestamp,
+      endedAt: timestamp,
+      focusedSeconds: 1,
+      breakSeconds: 0,
+      stopReason: .completed,
+      parkedThoughtCount: 0,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .completed(CompletedState(summary: summary, pendingReplacementDraft: nil)),
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 1,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: timestamp.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    #expect(SessionSnapshotValidator.validate(
+      previous: previous,
+      command: SessionCommand(expectedRevision: 1, intent: .finalizeReview),
+      candidate: candidate,
+      emittedEvents: [],
+      context: context
+    ).contains(.invalidSummary))
+  }
+
   @Test("review drafts freeze the current totals and parked-thought count")
   func reviewDraftRequiresCurrentSummaryValues() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))

@@ -157,6 +157,7 @@ internal enum SessionSnapshotValidator {
     if candidate.state.kind == .completed && previous.state.kind != .reviewing {
       violations.insert(.invalidSummary)
     }
+    validateCompletionHandoff(previous: previous, candidate: candidate, into: &violations)
     if candidate.state.kind != .idle {
       if candidate.sessionID == nil || (previous.sessionID != nil && candidate.sessionID != previous.sessionID) {
         violations.insert(.invalidIdentity)
@@ -221,6 +222,28 @@ internal enum SessionSnapshotValidator {
     let hasClockAdjustment = emittedEvents.contains { $0.payload.kind == .clockAdjusted }
     if !hasClockAdjustment {
       violations.insert(.invalidWallObservation)
+    }
+  }
+
+  private static func validateCompletionHandoff(
+    previous: SessionSnapshot,
+    candidate: SessionSnapshot,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard case let .reviewing(review) = previous.state,
+          case let .completed(completed) = candidate.state
+    else { return }
+    let summary = completed.summary
+    let draft = review.draft
+    if summary.endedAt != draft.endedAt
+      || summary.focusedSeconds != draft.focusedSeconds
+      || summary.breakSeconds != draft.breakSeconds
+      || summary.parkedThoughtCount != draft.parkedThoughtCount
+      || summary.optionalReflection != draft.optionalReflection
+      || summary.stopReason != review.stopReason
+      || completed.pendingReplacementDraft != review.replacementDraft
+    {
+      violations.insert(.invalidSummary)
     }
   }
 
