@@ -1084,6 +1084,41 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidScheduledCheckIn))
   }
 
+  @Test("phase-boundary check-ins retain the consumed token")
+  func phaseBoundaryCheckInRequiresMatchingConsumedToken() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 1, occurrence: 0
+    )
+    let state = CheckInState(
+      suspended: nil,
+      trigger: .phaseBoundary(token),
+      continuation: .startPhase(TimingPolicy.classic.phases[0]),
+      phaseBoundaryScheduledCheckInRemaining: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 1,
+      state: .checkingIn(state),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
+  }
+
   @Test("relational candidates cannot regress totals or boundary occurrence")
   func relationalCountersNeverRegress() {
     let previous = SessionSnapshot(

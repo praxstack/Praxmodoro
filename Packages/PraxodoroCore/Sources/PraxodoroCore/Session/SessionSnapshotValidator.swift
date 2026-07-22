@@ -35,6 +35,7 @@ internal enum SessionSnapshotValidator {
       parkedThoughtCount: candidate.parkedThoughts.count,
       scheduledCheckIn: candidate.nextScheduledCheckIn,
       checkInSchedule: candidate.configuration.checkInSchedule,
+      lastConsumedBoundaryToken: candidate.lastConsumedBoundaryToken,
       into: &violations
     )
     validateBoundaryToken(
@@ -329,6 +330,7 @@ internal enum SessionSnapshotValidator {
     parkedThoughtCount: Int,
     scheduledCheckIn: ScheduledCheckInBoundary?,
     checkInSchedule: CheckInSchedule,
+    lastConsumedBoundaryToken: BoundaryToken?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -379,7 +381,13 @@ internal enum SessionSnapshotValidator {
       )
       if plan == nil { violations.insert(.missingPlan) }
     case let .checkingIn(value):
-      validateCheckIn(value, schedule: checkInSchedule, into: &violations)
+      validateCheckIn(
+        value,
+        schedule: checkInSchedule,
+        plan: plan,
+        lastConsumedBoundaryToken: lastConsumedBoundaryToken,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .breaking(value):
       validate(value.wallAnchor, as: .breakWallAnchor, into: &violations)
@@ -449,7 +457,13 @@ internal enum SessionSnapshotValidator {
       if value.safeChoices != Set(ClockRecoveryChoice.allCases) {
         violations.insert(.invalidRecoveryChoices)
       }
-      validateRecoverableState(value.lastTrustworthyState, schedule: checkInSchedule, into: &violations)
+      validateRecoverableState(
+        value.lastTrustworthyState,
+        schedule: checkInSchedule,
+        plan: plan,
+        lastConsumedBoundaryToken: lastConsumedBoundaryToken,
+        into: &violations
+      )
     }
   }
 
@@ -463,6 +477,8 @@ internal enum SessionSnapshotValidator {
   private static func validateCheckIn(
     _ checkIn: CheckInState,
     schedule: CheckInSchedule,
+    plan: SessionPlan?,
+    lastConsumedBoundaryToken: BoundaryToken?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch checkIn.continuation {
@@ -481,11 +497,21 @@ internal enum SessionSnapshotValidator {
           into: &violations
         )
       }
-    case .startPhase:
+    case let .startPhase(nextPhase):
       if checkIn.suspended != nil { violations.insert(.timingShapeMismatch) }
-      if case .phaseBoundary = checkIn.trigger {
-        break
-      } else {
+      guard case let .phaseBoundary(token) = checkIn.trigger else {
+        violations.insert(.invalidBoundaryToken)
+        validateScheduledRemainder(
+          checkIn.phaseBoundaryScheduledCheckInRemaining,
+          schedule: schedule,
+          into: &violations
+        )
+        return
+      }
+      if token != lastConsumedBoundaryToken || token.kind != .phase || token.phaseID == nil
+        || plan?.timingPolicy.phases.contains(where: { $0.id == token.phaseID }) != true
+        || plan?.timingPolicy.phases.contains(nextPhase) != true
+      {
         violations.insert(.invalidBoundaryToken)
       }
       validateScheduledRemainder(
@@ -499,6 +525,8 @@ internal enum SessionSnapshotValidator {
   private static func validateRecoverableState(
     _ state: RecoverableSessionState,
     schedule: CheckInSchedule,
+    plan: SessionPlan?,
+    lastConsumedBoundaryToken: BoundaryToken?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -520,7 +548,13 @@ internal enum SessionSnapshotValidator {
       )
       validateAction(suspended.proposedAction, into: &violations)
     case let .checkingIn(checkIn):
-      validateCheckIn(checkIn, schedule: schedule, into: &violations)
+      validateCheckIn(
+        checkIn,
+        schedule: schedule,
+        plan: plan,
+        lastConsumedBoundaryToken: lastConsumedBoundaryToken,
+        into: &violations
+      )
     case let .reentering(reentry):
       validateSuspendedFocus(
         phase: reentry.resumeTarget.phase,
