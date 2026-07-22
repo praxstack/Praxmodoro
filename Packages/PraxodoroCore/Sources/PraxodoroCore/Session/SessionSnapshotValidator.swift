@@ -193,6 +193,7 @@ internal enum SessionSnapshotValidator {
       {
         violations.insert(.invalidEventEnvelope)
       }
+      validate(event.occurredAt, as: .eventOccurredAt, into: &violations)
       validateEventPayloadTimestamps(event.payload, into: &violations)
     }
     return violations

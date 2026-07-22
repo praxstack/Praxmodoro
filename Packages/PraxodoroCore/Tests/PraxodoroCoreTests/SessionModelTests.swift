@@ -991,7 +991,7 @@ struct SessionModelTests {
     let event = SessionEvent(
       sessionID: sessionID,
       sequence: 1,
-      occurredAt: wall,
+      occurredAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 90.5)),
       payload: .phaseStarted(
         phase: TimingPolicy.classic.phases[0],
         endsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 90.5))
@@ -1012,6 +1012,7 @@ struct SessionModelTests {
       context: context
     )
     #expect(violations.contains(.nonCanonicalTimestamp(.eventPhaseStartedEndsAt)))
+    #expect(violations.contains(.nonCanonicalTimestamp(.eventOccurredAt)))
   }
 
   @Test("post-start lifecycle snapshots retain identity and start timestamp")
