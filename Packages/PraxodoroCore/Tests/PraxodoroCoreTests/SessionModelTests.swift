@@ -416,4 +416,31 @@ struct SessionModelTests {
 
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
   }
+
+  @Test("parked thoughts must be normalized, unique, and deterministically ordered")
+  func parkedThoughtsRequireCanonicalContentAndOrder() {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 40))
+    let thought = ParkedThought(id: UUID(), text: "   ", createdAt: timestamp)
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: nil,
+      revision: 0,
+      eventSequence: 0,
+      nextBoundaryOccurrence: 0,
+      state: .idle,
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [thought],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: nil,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidText(.thought)))
+    #expect(violations.contains(.invalidIdleBaseline))
+  }
 }

@@ -32,10 +32,38 @@ internal enum SessionSnapshotValidator {
       nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
       into: &violations
     )
+    validateThoughts(candidate.parkedThoughts, into: &violations)
     for thought in candidate.parkedThoughts {
       validate(thought.createdAt, as: .thoughtCreatedAt, into: &violations)
     }
     return violations
+  }
+
+  private static func validateThoughts(
+    _ thoughts: [ParkedThought],
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    if thoughts.count > SessionDefaults.maximumParkedThoughts {
+      violations.insert(.thoughtLimitExceeded)
+    }
+    if Set(thoughts.map(\.id)).count != thoughts.count {
+      violations.insert(.duplicateThoughtID)
+    }
+    for thought in thoughts {
+      let normalized = thought.text.trimmingCharacters(in: .whitespacesAndNewlines)
+      if normalized.isEmpty || normalized.unicodeScalars.count > 2_000 {
+        violations.insert(.invalidText(.thought))
+      }
+    }
+    let expectedOrder = thoughts.sorted { lhs, rhs in
+      let left = lhs.createdAt.date.timeIntervalSinceReferenceDate
+      let right = rhs.createdAt.date.timeIntervalSinceReferenceDate
+      if left != right { return left < right }
+      return lhs.id.uuidString < rhs.id.uuidString
+    }
+    if thoughts != expectedOrder {
+      violations.insert(.invalidText(.thought))
+    }
   }
 
   static func validate(
