@@ -365,6 +365,13 @@ struct TimerReconciliationTests {
           )
         )
     )
+
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(
+        snapshot: snapshot,
+        wallNow: Date(timeIntervalSinceReferenceDate: 99)
+      ) == .recovery(.wallClockAmbiguousAfterRelaunch)
+    )
   }
 
   @Test("phase admission materializes at its deadline instead of a later observation")
