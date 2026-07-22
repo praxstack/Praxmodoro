@@ -133,9 +133,38 @@ internal enum SessionSnapshotValidator {
       {
         violations.insert(.invalidEventEnvelope)
       }
+      validateEventPayloadTimestamps(event.payload, into: &violations)
     }
     _ = command
     return violations
+  }
+
+  private static func validateEventPayloadTimestamps(
+    _ payload: SessionEventPayload,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch payload {
+    case let .phaseStarted(_, endsAt):
+      validate(endsAt, as: .eventPhaseStartedEndsAt, into: &violations)
+    case let .phaseResumed(_, endsAt):
+      validate(endsAt, as: .eventPhaseResumedEndsAt, into: &violations)
+    case let .liveProjectionRestored(_, wallAnchor, endsAt):
+      validate(wallAnchor, as: .eventLiveProjectionRestoredWallAnchor, into: &violations)
+      validate(endsAt, as: .eventLiveProjectionRestoredEndsAt, into: &violations)
+    case let .breakStarted(_, _, endsAt):
+      validate(endsAt, as: .eventBreakStartedEndsAt, into: &violations)
+    case let .clockAdjusted(event):
+      validate(event.previousPhaseOrBreakDeadline, as: .clockAdjustmentPreviousPhaseOrBreakDeadline, into: &violations)
+      validate(event.newPhaseOrBreakDeadline, as: .clockAdjustmentNewPhaseOrBreakDeadline, into: &violations)
+      validate(event.previousScheduledCheckInAt, as: .clockAdjustmentPreviousScheduledCheckInAt, into: &violations)
+      validate(event.newScheduledCheckInAt, as: .clockAdjustmentNewScheduledCheckInAt, into: &violations)
+    case .sessionPrepared, .planUpdated, .sessionStarted, .phasePaused, .checkInOpened,
+        .checkInResolved, .detourReported, .actionRevised, .configurationChanged,
+        .breakEnded, .reentryPresented, .thoughtParked, .phaseElapsed, .clockRecoveryNeeded,
+        .clockRecovered, .sessionStopRequested, .sessionReplacementRequested, .reviewStarted,
+        .reviewReflectionUpdated, .sessionCompleted:
+      break
+    }
   }
 
   private static func validateIdleBaseline(

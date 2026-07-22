@@ -592,4 +592,52 @@ struct SessionModelTests {
     #expect(request.id.value.contains("breakEnd"))
     #expect(request.id.value.hasSuffix(".2"))
   }
+
+  @Test("nested event payload timestamps retain field-specific validation")
+  func eventPayloadTimestampUsesSpecificViolation() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let sessionID = UUID()
+    let wall = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 90))
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: wall)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: wall,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: 1,
+      occurredAt: wall,
+      payload: .phaseStarted(
+        phase: TimingPolicy.classic.phases[0],
+        endsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 90.5))
+      )
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: wall.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    let violations = SessionSnapshotValidator.validate(
+      previous: .canonicalIdle,
+      command: SessionCommand(expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+      candidate: candidate,
+      emittedEvents: [event],
+      context: context
+    )
+    #expect(violations.contains(.nonCanonicalTimestamp(.eventPhaseStartedEndsAt)))
+  }
 }
