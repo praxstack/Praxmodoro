@@ -26,8 +26,9 @@ public enum SessionReducer {
       return reduceFocusing(snapshot: snapshot, command: command, context: context)
     case .paused:
       return reducePaused(snapshot: snapshot, command: command, context: context)
-    case .checkingIn, .breaking, .reentering, .reviewing, .completed,
-      .recoveryNeeded:
+    case .checkingIn:
+      return reduceCheckingIn(snapshot: snapshot, command: command, context: context)
+    case .breaking, .reentering, .reviewing, .completed, .recoveryNeeded:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
   }
@@ -920,6 +921,100 @@ public enum SessionReducer {
       sequence: snapshot.eventSequence + 1,
       occurredAt: observedAt,
       payload: .thoughtParked(id: thought.id)
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
+  }
+
+  private static func reduceCheckingIn(
+    snapshot: SessionSnapshot,
+    command: SessionCommand,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    switch command.intent {
+    case let .respondToCheckIn(response):
+      return resolvePausedCheckIn(
+        snapshot: snapshot,
+        response: response,
+        context: context
+      )
+    case .reconcileTime:
+      return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
+    default:
+      return invalidTransition(snapshot: snapshot, intent: command.intent)
+    }
+  }
+
+  private static func resolvePausedCheckIn(
+    snapshot: SessionSnapshot,
+    response: CheckInResponse,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard response == .continueFocus || response == .skip || response == .dismiss else {
+      return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(response))
+    }
+    guard case let .checkingIn(checkIn) = snapshot.state,
+      checkIn.continuation == .resumeSuspended,
+      let suspended = checkIn.suspended,
+      suspended.resumeDisposition == .paused,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(response))
+    }
+    switch checkIn.trigger {
+    case .manual, .pauseOffer:
+      break
+    case .scheduled, .phaseBoundary:
+      return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(response))
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 1 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .paused(
+        PausedState(
+          phase: suspended.phase,
+          timing: suspended.timing,
+          pausedAt: observedAt,
+          scheduledCheckInRemaining: suspended.scheduledCheckInRemaining
+        )),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .checkInResolved
     )
     return .transition(
       Reduction(

@@ -1023,4 +1023,82 @@ struct SessionTransitionTests {
     #expect(reduction.events[0].occurredAt == observedAt)
     #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
   }
+
+  @Test(
+    "paused check-in resolutions restore paused focus without auto-resume",
+    arguments: [
+      CheckInResponse.continueFocus,
+      .skip,
+      .dismiss,
+    ]
+  )
+  func pausedCheckInResolutionsRestorePausedFocus(response: CheckInResponse) throws {
+    let sessionID = UUID()
+    let openedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let resolvedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: .manual,
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: openedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .respondToCheckIn(response)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: resolvedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected paused check-in resolution")
+      return
+    }
+
+    #expect(reduction.snapshot.revision == 5)
+    #expect(reduction.snapshot.eventSequence == 6)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 2)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(reduction.snapshot.lastWallObservationAt == resolvedAt)
+    #expect(
+      reduction.snapshot.state
+        == .paused(
+          PausedState(
+            phase: suspended.phase,
+            timing: suspended.timing,
+            pausedAt: resolvedAt,
+            scheduledCheckInRemaining: suspended.scheduledCheckInRemaining
+          )))
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(reduction.events.map(\.payload) == [.checkInResolved])
+    #expect(reduction.events[0].occurredAt == resolvedAt)
+    #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+  }
 }
