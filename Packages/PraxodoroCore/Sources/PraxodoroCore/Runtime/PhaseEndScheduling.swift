@@ -330,7 +330,13 @@ internal enum SessionTimeKernel {
         )
       )
     }
-    guard observed.date >= values.anchor.date else {
+    guard let lastWallObservationAt = snapshot.lastWallObservationAt else {
+      return .recovery(.wallClockAmbiguousAfterRelaunch)
+    }
+    let rollback =
+      observed.date.timeIntervalSinceReferenceDate
+      - lastWallObservationAt.date.timeIntervalSinceReferenceDate
+    guard rollback.isFinite, rollback >= -2, observed.date >= values.anchor.date else {
       return .recovery(.wallClockAmbiguousAfterRelaunch)
     }
     let base = NormalizedLiveTiming(
