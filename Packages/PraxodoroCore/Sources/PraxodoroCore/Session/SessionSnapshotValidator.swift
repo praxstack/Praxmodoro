@@ -568,6 +568,7 @@ internal enum SessionSnapshotValidator {
         into: &violations
       )
     case let .breakState(suspended):
+      validatePausedBreak(choice: suspended.choice, timing: suspended.timing, into: &violations)
       validateSuspendedFocus(
         phase: suspended.resumeTarget.phase,
         timing: suspended.resumeTarget.timing,
@@ -773,6 +774,19 @@ internal enum SessionSnapshotValidator {
       deadline: deadline,
       into: &violations
     )
+  }
+
+  private static func validatePausedBreak(
+    choice: BreakChoice,
+    timing: PausedTiming,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (choice.duration, timing) {
+    case (.timed, .timed), (.openEnded, .openEnded):
+      break
+    default:
+      violations.insert(.timingShapeMismatch)
+    }
   }
 
   private static func validateTimedBudget(

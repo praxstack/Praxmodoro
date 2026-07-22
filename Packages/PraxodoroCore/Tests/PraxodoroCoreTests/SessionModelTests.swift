@@ -1028,6 +1028,47 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidRecoveryChoices))
   }
 
+  @Test("recovery preserves a break timing shape that matches its choice")
+  func recoveryBreakRequiresMatchingFrozenTiming() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))
+    let suspendedFocus = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(300)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let recovery = RecoveryState(
+      reason: .negativeMonotonicElapsed,
+      lastTrustworthyState: .breakState(SuspendedBreakState(
+        choice: BreakChoice(kind: .quiet, duration: .timed(.five)),
+        timing: .openEnded,
+        resumeTarget: suspendedFocus,
+        proposedAction: "Return"
+      )),
+      safeChoices: Set(ClockRecoveryChoice.allCases)
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .recoveryNeeded(recovery),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.timingShapeMismatch))
+  }
+
   @Test("notification requests derive kind and private content from boundary tokens")
   func notificationRequestsAreTokenDerivedAndPrivate() {
     let token = BoundaryToken(
