@@ -482,4 +482,45 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidSummary))
     #expect(violations.contains(.invalidText(.reflection)))
   }
+
+  @Test("manual-only configuration cannot carry a scheduled check-in")
+  func manualOnlyScheduleRejectsPersistedBoundary() {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 1,
+      occurrence: 0
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 1,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: try! SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: SessionConfiguration(
+        checkInSchedule: .manualOnly,
+        breakSuggestionsEnabled: true,
+        lowCognitiveLoadEnabled: false,
+        reflectionPromptEnabled: true
+      ),
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: token,
+        dueAt: timestamp,
+        trustedRemaining: try! CheckInRemainingSeconds(1)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+  }
 }

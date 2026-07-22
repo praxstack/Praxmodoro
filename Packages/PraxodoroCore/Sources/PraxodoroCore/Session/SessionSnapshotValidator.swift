@@ -12,6 +12,11 @@ internal enum SessionSnapshotValidator {
 
     validateIdleBaseline(candidate, into: &violations)
     validateRootTimestamps(candidate, into: &violations)
+    validateScheduledCheckIn(
+      candidate.nextScheduledCheckIn,
+      schedule: candidate.configuration.checkInSchedule,
+      into: &violations
+    )
     validateState(
       candidate.state,
       plan: candidate.plan,
@@ -40,6 +45,24 @@ internal enum SessionSnapshotValidator {
       validate(thought.createdAt, as: .thoughtCreatedAt, into: &violations)
     }
     return violations
+  }
+
+  private static func validateScheduledCheckIn(
+    _ boundary: ScheduledCheckInBoundary?,
+    schedule: CheckInSchedule,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (schedule, boundary) {
+    case (.manualOnly, .some):
+      violations.insert(.invalidScheduledCheckIn)
+    case let (.interval(minutes), .some(boundary)):
+      let maximum = UInt32(minutes.value) * 60
+      if boundary.trustedRemaining.value > maximum || boundary.token.kind != .scheduledCheckIn {
+        violations.insert(.invalidScheduledCheckIn)
+      }
+    case (.manualOnly, nil), (.interval, nil):
+      break
+    }
   }
 
   private static func validateThoughts(
