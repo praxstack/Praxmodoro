@@ -163,6 +163,52 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("open-ended focus installs only its captured scheduled boundary")
+  func openEndedFocusEntryInstallsOnlyScheduledBoundary() throws {
+    let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000006")!
+    let projectionToken = UUID(uuidString: "00000000-0000-0000-0000-000000000007")!
+    let cadence = try CheckInRemainingSeconds(300)
+    let decision = SessionTimeKernel.materializeLiveEntry(
+      .focus(
+        sessionID: sessionID,
+        targetRevision: 5,
+        nextBoundaryOccurrence: 7,
+        wallNow: Date(timeIntervalSinceReferenceDate: 100),
+        projectionToken: projectionToken,
+        phaseID: .focus,
+        timing: .openEnded,
+        cadence: .captured(cadence)
+      )
+    )
+
+    #expect(
+      decision
+        == .materialized(
+          .focus(
+            FocusEntryMaterialization(
+              wallAnchor: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+              timingAtAnchor: .openEnded,
+              projectionToken: projectionToken,
+              phaseEndsAt: nil,
+              phaseBoundaryToken: nil,
+              scheduledCheckIn: ScheduledCheckInBoundary(
+                token: BoundaryToken(
+                  sessionID: sessionID,
+                  kind: .scheduledCheckIn,
+                  phaseID: nil,
+                  sourceRevision: 5,
+                  occurrence: 7
+                ),
+                dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+                trustedRemaining: cadence
+              ),
+              nextBoundaryOccurrence: 8
+            )
+          )
+        )
+    )
+  }
+
   @Test("open-ended break entry has no deadline or boundary token")
   func openEndedBreakEntryHasNoBoundary() {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
