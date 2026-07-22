@@ -1451,6 +1451,30 @@ struct TimerReconciliationTests {
         )
     )
 
+    let phaseEarliestRelaunch = SessionTimeKernel.reconcileRelaunch(
+      snapshot: snapshot,
+      wallNow: Date(timeIntervalSinceReferenceDate: 600)
+    )
+    guard case let .normalized(phaseEarliestTiming) = phaseEarliestRelaunch else {
+      Issue.record("expected both-overdue relaunch timing")
+      return
+    }
+    #expect(phaseEarliestTiming.nonBoundaryExitMaterialization == nil)
+    #expect(
+      SessionTimeKernel.admitBoundary(
+        snapshot: snapshot,
+        timing: phaseEarliestTiming,
+        observedToken: nil
+      )
+        == .winner(
+          BoundaryWinnerDecision(
+            token: phaseToken,
+            dueAt: phaseDue,
+            exitMaterialization: .phase(accumulatedFocusSeconds: 304),
+            scheduledCadence: .resetAfterSupersededScheduledOccurrence
+          ))
+    )
+
     #expect(
       SessionTimeKernel.admitBoundary(
         snapshot: snapshot,
@@ -1547,6 +1571,34 @@ struct TimerReconciliationTests {
             scheduledCadence: .resetAfterScheduledOccurrence
           )
         )
+    )
+
+    let scheduledEarliestRelaunch = SessionTimeKernel.reconcileRelaunch(
+      snapshot: snapshot,
+      wallNow: Date(timeIntervalSinceReferenceDate: 600)
+    )
+    guard case let .normalized(scheduledEarliestTiming) = scheduledEarliestRelaunch else {
+      Issue.record("expected both-overdue scheduled-first relaunch timing")
+      return
+    }
+    #expect(scheduledEarliestTiming.nonBoundaryExitMaterialization == nil)
+    #expect(
+      SessionTimeKernel.admitBoundary(
+        snapshot: snapshot,
+        timing: scheduledEarliestTiming,
+        observedToken: nil
+      )
+        == .winner(
+          BoundaryWinnerDecision(
+            token: scheduledToken,
+            dueAt: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+            exitMaterialization: .scheduledCheckIn(
+              accumulatedFocusSeconds: 208,
+              suspendedTiming: .timed(remaining: try PhaseSeconds(200))
+            ),
+            scheduledCadence: .resetAfterScheduledOccurrence
+          ))
     )
 
     let earlyDecision = SessionTimeKernel.admitBoundary(
