@@ -1221,6 +1221,12 @@ public enum SessionReducer {
       )
     }
     switch command.intent {
+    case let .stop(choice):
+      return enterReviewFromNonLive(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
     case .resume:
       return resumePaused(snapshot: snapshot, context: context)
     case let .openCheckIn(trigger):
@@ -1687,6 +1693,12 @@ public enum SessionReducer {
       )
     }
     switch command.intent {
+    case let .stop(choice):
+      return enterReviewFromNonLive(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
     case let .respondToCheckIn(response):
       if response == .makeSmaller {
         return presentReentryFromCheckIn(snapshot: snapshot, context: context)
@@ -1835,6 +1847,13 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    if case let .stop(choice) = command.intent {
+      return enterReviewFromNonLive(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
+    }
     if case let .acceptRevisedAction(action) = command.intent {
       return acceptRevisedAction(
         snapshot: snapshot,
@@ -2140,6 +2159,18 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    switch command.intent {
+    case let .updateReviewReflection(reflection):
+      return updateReviewReflection(
+        snapshot: snapshot,
+        reflection: reflection,
+        context: context
+      )
+    case .finalizeReview:
+      return finalizeReview(snapshot: snapshot, context: context)
+    default:
+      break
+    }
     guard
       let configuration = requestedConfiguration(
         for: command.intent,
@@ -2204,6 +2235,264 @@ public enum SessionReducer {
             payload: .configurationChanged(fields: changes)
           )
         ],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
+  }
+
+  private static func enterReviewFromNonLive(
+    snapshot: SessionSnapshot,
+    choice: SessionStopChoice,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard
+      snapshot.state.kind == .paused || snapshot.state.kind == .checkingIn
+        || snapshot.state.kind == .reentering,
+      let sessionID = snapshot.sessionID,
+      let startedAt = snapshot.startedAt,
+      canonicalSecond(context.instant.wallNow) != nil
+    else {
+      if canonicalSecond(context.instant.wallNow) == nil {
+        return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+      }
+      return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+    }
+    let observedAt = canonicalSecond(context.instant.wallNow)!
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 2 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 2,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let stopReason: SessionStopReason =
+      switch choice {
+      case .completed: .completed
+      case .intentionalStop: .intentionalStop
+      }
+    let endedAt = observedAt.date >= startedAt.date ? observedAt : startedAt
+    let thoughtCount = UInt64(snapshot.parkedThoughts.count)
+    let draft = SessionSummaryDraft(
+      endedAt: endedAt,
+      focusedSeconds: snapshot.accumulatedFocusSeconds,
+      breakSeconds: snapshot.accumulatedBreakSeconds,
+      parkedThoughtCount: thoughtCount,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 2,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reviewing(
+        ReviewState(
+          draft: draft,
+          stopReason: stopReason,
+          replacementDraft: nil
+        )),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let reviewEvent = SessionReviewEvent(
+      focusedSeconds: draft.focusedSeconds,
+      breakSeconds: draft.breakSeconds,
+      stopReason: stopReason,
+      parkedThoughtCount: thoughtCount,
+      hasReflection: false
+    )
+    let events = [
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 1,
+        occurredAt: observedAt,
+        payload: .sessionStopRequested(reason: stopReason)
+      ),
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 2,
+        occurredAt: observedAt,
+        payload: .reviewStarted(reviewEvent)
+      ),
+    ]
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: events,
+        effects: [
+          .announceAccessibility(.reviewPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+      ))
+  }
+
+  private static func updateReviewReflection(
+    snapshot: SessionSnapshot,
+    reflection: String?,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .reviewing(review) = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(
+        snapshot: snapshot,
+        intent: .updateReviewReflection(reflection)
+      )
+    }
+    let trimmed = reflection?.trimmingCharacters(in: .whitespacesAndNewlines)
+    let normalized = trimmed.flatMap { $0.isEmpty ? nil : $0 }
+    if let normalized, normalized.unicodeScalars.count > 2_000 {
+      return .rejected(snapshot: snapshot, reason: .invalidText(.reflection))
+    }
+    guard normalized != review.draft.optionalReflection else {
+      return .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    let draft = SessionSummaryDraft(
+      endedAt: review.draft.endedAt,
+      focusedSeconds: review.draft.focusedSeconds,
+      breakSeconds: review.draft.breakSeconds,
+      parkedThoughtCount: review.draft.parkedThoughtCount,
+      optionalReflection: normalized
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reviewing(
+        ReviewState(
+          draft: draft,
+          stopReason: review.stopReason,
+          replacementDraft: review.replacementDraft
+        )),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .reviewReflectionUpdated(hasReflection: normalized != nil)
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
+  }
+
+  private static func finalizeReview(
+    snapshot: SessionSnapshot,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .reviewing(review) = snapshot.state,
+      let sessionID = snapshot.sessionID,
+      let plan = snapshot.plan,
+      let startedAt = snapshot.startedAt
+    else {
+      return invalidTransition(snapshot: snapshot, intent: .finalizeReview)
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    let summary = SessionSummary(
+      sessionID: sessionID,
+      task: plan.task,
+      finalAction: plan.firstAction,
+      startedAt: startedAt,
+      endedAt: review.draft.endedAt,
+      focusedSeconds: review.draft.focusedSeconds,
+      breakSeconds: review.draft.breakSeconds,
+      stopReason: review.stopReason,
+      parkedThoughtCount: review.draft.parkedThoughtCount,
+      optionalReflection: review.draft.optionalReflection
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .completed(
+        CompletedState(
+          summary: summary,
+          pendingReplacementDraft: review.replacementDraft
+        )),
+      plan: nil,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let summaryEvent = SessionSummaryEvent(
+      focusedSeconds: summary.focusedSeconds,
+      breakSeconds: summary.breakSeconds,
+      stopReason: summary.stopReason,
+      parkedThoughtCount: summary.parkedThoughtCount,
+      hasReflection: summary.optionalReflection != nil
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .sessionCompleted(summary: summaryEvent)
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
         effects: [.invalidateDisplayProjection(projectionToken: nil)]
       ))
   }

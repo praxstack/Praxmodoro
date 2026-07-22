@@ -3447,4 +3447,366 @@ struct SessionTransitionTests {
         ])
     #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
   }
+
+  @Test("non-live stop enters review with exact reason and rollback-safe end time")
+  func nonLiveStopEntersReviewExactly() throws {
+    let sessionID = UUID()
+    let startedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 150))
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 90))
+    let thought = ParkedThought(id: UUID(), text: "Later", createdAt: pausedAt)
+    let target = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+    )
+    let states: [SessionState] = [
+      .paused(
+        PausedState(
+          phase: target.phase,
+          timing: target.timing,
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: target.scheduledCheckInRemaining
+        )),
+      .checkingIn(
+        CheckInState(
+          suspended: target,
+          trigger: .manual,
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      .reentering(
+        ReentryState(
+          resumeTarget: target,
+          proposedAction: "Old action",
+          enteredAt: pausedAt
+        )),
+    ]
+    let cases: [(SessionStopChoice, SessionStopReason)] = [
+      (.completed, .completed),
+      (.intentionalStop, .intentionalStop),
+    ]
+
+    for state in states {
+      let snapshot = SessionSnapshot(
+        schemaVersion: 1,
+        sessionID: sessionID,
+        revision: 4,
+        eventSequence: 6,
+        nextBoundaryOccurrence: 2,
+        state: state,
+        plan: try SessionPlan(
+          task: "Old task", firstAction: "Old action", capacity: nil,
+          timingPolicy: .classic),
+        configuration: .defaults,
+        parkedThoughts: [thought],
+        startedAt: startedAt,
+        accumulatedFocusSeconds: 10,
+        accumulatedBreakSeconds: 5,
+        lastWallObservationAt: pausedAt,
+        nextScheduledCheckIn: nil,
+        lastConsumedBoundaryToken: nil
+      )
+      #expect(SessionSnapshotValidator.validateCandidate(snapshot).isEmpty)
+      for (choice, reason) in cases {
+        let outcome = SessionReducer.reduce(
+          snapshot: snapshot,
+          command: SessionCommand(expectedRevision: 4, intent: .stop(choice)),
+          context: ReductionContext(
+            instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+            generatedSessionID: UUID(),
+            generatedThoughtID: UUID(),
+            generatedProjectionToken: UUID()
+          )
+        )
+        guard case let .transition(reduction) = outcome,
+          case let .reviewing(review) = reduction.snapshot.state
+        else {
+          Issue.record("expected non-live stop review for \(state.kind) / \(reason)")
+          continue
+        }
+        let expectedDraft = SessionSummaryDraft(
+          endedAt: startedAt,
+          focusedSeconds: 10,
+          breakSeconds: 5,
+          parkedThoughtCount: 1,
+          optionalReflection: nil
+        )
+        let expectedReviewEvent = SessionReviewEvent(
+          focusedSeconds: 10,
+          breakSeconds: 5,
+          stopReason: reason,
+          parkedThoughtCount: 1,
+          hasReflection: false
+        )
+        #expect(review.draft == expectedDraft)
+        #expect(review.stopReason == reason)
+        #expect(review.replacementDraft == nil)
+        #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+        #expect(reduction.snapshot.parkedThoughts == [thought])
+        #expect(reduction.events.map(\.occurredAt) == [observedAt, observedAt])
+        #expect(
+          reduction.events.map(\.payload)
+            == [
+              .sessionStopRequested(reason: reason),
+              .reviewStarted(expectedReviewEvent),
+            ])
+        #expect(
+          reduction.effects
+            == [
+              .announceAccessibility(.reviewPresented),
+              .invalidateDisplayProjection(projectionToken: nil),
+            ])
+        #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+      }
+    }
+  }
+
+  @Test("prepared stop remains a wall-independent invalid transition")
+  func preparedStopIsInvalidWithoutClockUse() throws {
+    let sessionID = UUID()
+    let preparedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: preparedAt)),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: preparedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    for choice in [SessionStopChoice.completed, .intentionalStop] {
+      #expect(
+        SessionReducer.reduce(
+          snapshot: snapshot,
+          command: SessionCommand(expectedRevision: 1, intent: .stop(choice)),
+          context: context
+        )
+          == .rejected(
+            snapshot: snapshot,
+            reason: .invalidTransition(state: .prepared, intent: .stop)
+          ))
+    }
+  }
+
+  @Test("reflection edits preserve the frozen review and finalization uses old-session truth")
+  func reviewReflectionAndFinalizationAreExact() throws {
+    let sessionID = UUID()
+    let startedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let endedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let thought = ParkedThought(id: UUID(), text: "Later", createdAt: endedAt)
+    let replacement = SessionDraft(
+      plan: try SessionPlan(
+        task: "Replacement task", firstAction: "Replacement action", capacity: nil,
+        timingPolicy: .gentleStart)
+    )
+    let review = ReviewState(
+      draft: SessionSummaryDraft(
+        endedAt: endedAt,
+        focusedSeconds: 1_200,
+        breakSeconds: 300,
+        parkedThoughtCount: 1,
+        optionalReflection: nil
+      ),
+      stopReason: .intentionalStop,
+      replacementDraft: replacement
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 5,
+      eventSequence: 8,
+      nextBoundaryOccurrence: 3,
+      state: .reviewing(review),
+      plan: try SessionPlan(
+        task: "Old task", firstAction: "Old final action", capacity: nil,
+        timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [thought],
+      startedAt: startedAt,
+      accumulatedFocusSeconds: 1_200,
+      accumulatedBreakSeconds: 300,
+      lastWallObservationAt: endedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let editedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let editContext = ReductionContext(
+      instant: SessionInstant(wallNow: editedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let edited = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 5,
+        intent: .updateReviewReflection("  I found a clean stopping point.  ")
+      ),
+      context: editContext
+    )
+    guard case let .transition(editReduction) = edited,
+      case let .reviewing(editedReview) = editReduction.snapshot.state
+    else {
+      Issue.record("expected reflection edit")
+      return
+    }
+    #expect(editedReview.draft.endedAt == endedAt)
+    #expect(editedReview.draft.focusedSeconds == 1_200)
+    #expect(editedReview.draft.breakSeconds == 300)
+    #expect(editedReview.draft.optionalReflection == "I found a clean stopping point.")
+    #expect(editedReview.stopReason == .intentionalStop)
+    #expect(editedReview.replacementDraft == replacement)
+    #expect(
+      editReduction.events.map(\.payload)
+        == [.reviewReflectionUpdated(hasReflection: true)])
+    #expect(editReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+    #expect(SessionSnapshotValidator.validateCandidate(editReduction.snapshot).isEmpty)
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: editReduction.snapshot,
+        command: SessionCommand(
+          expectedRevision: 6,
+          intent: .updateReviewReflection("I found a clean stopping point.")
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .noChange(
+          snapshot: editReduction.snapshot,
+          reason: .alreadyInRequestedState
+        ))
+
+    let clearedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 460))
+    let cleared = SessionReducer.reduce(
+      snapshot: editReduction.snapshot,
+      command: SessionCommand(
+        expectedRevision: 6,
+        intent: .updateReviewReflection("  \n\t  ")
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: clearedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(clearReduction) = cleared,
+      case let .reviewing(clearedReview) = clearReduction.snapshot.state
+    else {
+      Issue.record("expected whitespace reflection clear")
+      return
+    }
+    #expect(clearedReview.draft.optionalReflection == nil)
+    #expect(clearedReview.draft.endedAt == endedAt)
+    #expect(
+      clearReduction.events.map(\.payload)
+        == [.reviewReflectionUpdated(hasReflection: false)])
+    #expect(
+      SessionReducer.reduce(
+        snapshot: clearReduction.snapshot,
+        command: SessionCommand(
+          expectedRevision: 7,
+          intent: .updateReviewReflection(nil)
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .noChange(
+          snapshot: clearReduction.snapshot,
+          reason: .alreadyInRequestedState
+        ))
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 5,
+          intent: .updateReviewReflection(String(repeating: "x", count: 2_001))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .rejected(snapshot: snapshot, reason: .invalidText(.reflection))
+    )
+
+    let finalizedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 500))
+    let finalized = SessionReducer.reduce(
+      snapshot: editReduction.snapshot,
+      command: SessionCommand(expectedRevision: 6, intent: .finalizeReview),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: finalizedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(finalReduction) = finalized,
+      case let .completed(completed) = finalReduction.snapshot.state
+    else {
+      Issue.record("expected review finalization")
+      return
+    }
+    let summary = completed.summary
+    #expect(summary.sessionID == sessionID)
+    #expect(summary.task == "Old task")
+    #expect(summary.finalAction == "Old final action")
+    #expect(summary.startedAt == startedAt)
+    #expect(summary.endedAt == endedAt)
+    #expect(summary.focusedSeconds == 1_200)
+    #expect(summary.breakSeconds == 300)
+    #expect(summary.stopReason == .intentionalStop)
+    #expect(summary.parkedThoughtCount == 1)
+    #expect(summary.optionalReflection == "I found a clean stopping point.")
+    #expect(completed.pendingReplacementDraft == replacement)
+    #expect(finalReduction.snapshot.plan == nil)
+    #expect(finalReduction.snapshot.parkedThoughts == [thought])
+    #expect(finalReduction.snapshot.lastWallObservationAt == finalizedAt)
+    #expect(
+      finalReduction.events.map(\.payload)
+        == [
+          .sessionCompleted(
+            summary: SessionSummaryEvent(
+              focusedSeconds: 1_200,
+              breakSeconds: 300,
+              stopReason: .intentionalStop,
+              parkedThoughtCount: 1,
+              hasReflection: true
+            ))
+        ])
+    #expect(finalReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+    #expect(SessionSnapshotValidator.validateCandidate(finalReduction.snapshot).isEmpty)
+  }
 }
