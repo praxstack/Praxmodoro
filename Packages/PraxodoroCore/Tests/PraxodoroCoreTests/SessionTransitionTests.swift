@@ -4032,6 +4032,155 @@ struct SessionTransitionTests {
         )
       ) == .failed(snapshot: started.snapshot, reason: .nonFiniteWallObservation)
     )
+
+    let scheduled = try #require(started.snapshot.nextScheduledCheckIn)
+    let earlyContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 200),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: originalProjection,
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+          monotonicElapsedSinceAnchor: .seconds(100)
+        )),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .reconcileTime(.deadlineFired(token: scheduled.token))
+        ),
+        context: earlyContext
+      )
+        == .rejected(
+          snapshot: started.snapshot,
+          reason: .boundaryNotDue(
+            token: scheduled.token,
+            dueAt: scheduled.dueAt,
+            observedAt: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 200))
+          ))
+    )
+
+    let rebasedEarly = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 2,
+        intent: .reconcileTime(.deadlineFired(token: scheduled.token))
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 210),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: originalProjection,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(rebasedReduction) = rebasedEarly,
+      case let .focusing(rebasedFocus) = rebasedReduction.snapshot.state,
+      let rebasedScheduled = rebasedReduction.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected adjustment-only early callback")
+      return
+    }
+    #expect(rebasedReduction.snapshot.revision == 3)
+    #expect(rebasedReduction.events.map(\.payload.kind) == [.clockAdjusted])
+    #expect(rebasedScheduled.token == scheduled.token)
+    #expect(rebasedReduction.snapshot.lastConsumedBoundaryToken == nil)
+    #expect(rebasedFocus.projectionToken == originalProjection)
+    #expect(
+      rebasedReduction.effects == [
+        .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
+        .scheduleNotification(
+          SessionNotificationRequest(
+            boundaryToken: rebasedScheduled.token,
+            fireAt: rebasedScheduled.dueAt
+          )),
+        .invalidateDisplayProjection(projectionToken: originalProjection),
+      ])
+    #expect(SessionSnapshotValidator.validateCandidate(rebasedReduction.snapshot).isEmpty)
+
+    let due = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 2,
+        intent: .reconcileTime(.deadlineFired(token: scheduled.token))
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: scheduled.dueAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: originalProjection,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(900)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(dueReduction) = due else {
+      Issue.record("expected due callback transition")
+      return
+    }
+    #expect(dueReduction.snapshot.state.kind == .checkingIn)
+    #expect(dueReduction.snapshot.lastConsumedBoundaryToken == scheduled.token)
+    #expect(dueReduction.events.map(\.payload.kind) == [.checkInOpened])
+    let callbackClassificationContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: dueReduction.snapshot,
+        command: SessionCommand(
+          expectedRevision: 3,
+          intent: .reconcileTime(.deadlineFired(token: scheduled.token))
+        ),
+        context: callbackClassificationContext
+      )
+        == .rejected(
+          snapshot: dueReduction.snapshot,
+          reason: .duplicateBoundary(scheduled.token)
+        )
+    )
+
+    let staleToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 2,
+      occurrence: scheduled.token.occurrence + 10
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .reconcileTime(.deadlineFired(token: staleToken))
+        ),
+        context: callbackClassificationContext
+      ) == .rejected(snapshot: started.snapshot, reason: .staleBoundary(staleToken))
+    )
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .reconcileTime(.wake)),
+        context: earlyContext
+      ) == .noChange(snapshot: started.snapshot, reason: .observationIrrelevant)
+    )
   }
 
   @Test("active-session conflict choices preserve old-session truth and replacement intent")
