@@ -411,6 +411,7 @@ struct TimerReconciliationTests {
           )
         )
     )
+
   }
 
   @Test("equal phase and scheduled boundaries select phase and reset cadence")
@@ -556,6 +557,30 @@ struct TimerReconciliationTests {
             ),
             scheduledCadence: .resetAfterScheduledOccurrence
           )
+        )
+    )
+
+    let earlyDecision = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: NormalizedLiveTiming(
+        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 3_700)),
+        expectedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 3_700)),
+        normalizedDueInstant: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 3_700)),
+        phaseOrBreakDeadline: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 4_100)),
+        scheduledCheckInAt: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 3_900)),
+        admissionAdjustment: nil
+      ),
+      observedToken: scheduledToken
+    )
+    #expect(
+      earlyDecision
+        == .boundaryNotDue(
+          token: scheduledToken,
+          dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 3_900)),
+          observedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 3_700))
         )
     )
   }

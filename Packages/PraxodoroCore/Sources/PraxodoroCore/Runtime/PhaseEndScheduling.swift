@@ -796,9 +796,14 @@ internal enum SessionTimeKernel {
       })
     else { return .noneDue }
     guard winner.dueAt.date <= timing.normalizedDueInstant.date else {
-      return observedToken.map {
-        .boundaryNotDue(token: $0, dueAt: winner.dueAt, observedAt: timing.normalizedDueInstant)
-      } ?? .noneDue
+      guard let observedToken else { return .noneDue }
+      let observedDueAt =
+        candidates.first(where: { $0.token == observedToken })?.dueAt ?? winner.dueAt
+      return .boundaryNotDue(
+        token: observedToken,
+        dueAt: observedDueAt,
+        observedAt: timing.normalizedDueInstant
+      )
     }
     guard observedToken == nil || observedToken == winner.token else {
       return .earlierBoundaryPending
