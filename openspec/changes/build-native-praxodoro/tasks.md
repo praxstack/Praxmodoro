@@ -56,7 +56,7 @@ reducer integrates live rows. Numeric labels preserve criterion/history identity
   - **Smoke:** generate a transition-matrix report proving no unhandled state/intent pair and execute one full initiate→focus→check-in→break→re-enter→review fixture.
   - **Commit:** `feat: implement deterministic focus reducer`.
 
-- [ ] 3.3 Implement canonical time projection and reconciliation.
+- [x] 3.3 Implement canonical time projection and reconciliation.
   - **Depends on:** accepted atom 3.1; this atom creates no reducer stub or event envelope.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Runtime/SessionTimeSource.swift`, `PhaseEndScheduling.swift`; extend `SessionProjection.swift`; create `TimerReconciliationTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter TimerReconciliationTests`; expect missing manual clock/projection/reconciliation APIs.
