@@ -3810,6 +3810,170 @@ struct SessionTransitionTests {
     #expect(SessionSnapshotValidator.validateCandidate(finalReduction.snapshot).isEmpty)
   }
 
+  @Test("active-session conflict choices preserve old-session truth and replacement intent")
+  func activeSessionConflictIsExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Current task", firstAction: "Current action", capacity: nil, timingPolicy: .classic)
+    let replacementPlan = try SessionPlan(
+      task: "Next task", firstAction: "Next action", capacity: nil, timingPolicy: .flow)
+    let replacement = SessionDraft(plan: replacementPlan)
+    guard
+      case let .transition(prepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: sessionID,
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: prepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), let scheduled = started.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected conflict fixture")
+      return
+    }
+    let wallIndependentContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .resolveActiveSessionConflict(choice: .resumeCurrent, replacement: nil)
+        ),
+        context: wallIndependentContext
+      ) == .noChange(snapshot: started.snapshot, reason: .resumeCurrentSelected)
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .resolveActiveSessionConflict(choice: .cancel, replacement: nil)
+        ),
+        context: wallIndependentContext
+      ) == .noChange(snapshot: started.snapshot, reason: .conflictCancelled)
+    )
+    for choice in [ActiveSessionConflictChoice.resumeCurrent, .cancel] {
+      #expect(
+        SessionReducer.reduce(
+          snapshot: started.snapshot,
+          command: SessionCommand(
+            expectedRevision: 2,
+            intent: .resolveActiveSessionConflict(choice: choice, replacement: replacement)
+          ),
+          context: wallIndependentContext
+        ) == .rejected(snapshot: started.snapshot, reason: .replacementDraftNotAllowed)
+      )
+    }
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .resolveActiveSessionConflict(choice: .replaceAndReview, replacement: nil)
+        ),
+        context: wallIndependentContext
+      ) == .rejected(snapshot: started.snapshot, reason: .replacementDraftRequired)
+    )
+
+    let dueContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: scheduled.dueAt.date,
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+          monotonicElapsedSinceAnchor: .seconds(900)
+        )),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let replaced = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 2,
+        intent: .resolveActiveSessionConflict(
+          choice: .replaceAndReview,
+          replacement: replacement
+        )
+      ),
+      context: dueContext
+    )
+    guard case let .transition(replacedReduction) = replaced,
+      case let .reviewing(review) = replacedReduction.snapshot.state
+    else {
+      Issue.record("expected replace-and-review transition")
+      return
+    }
+    #expect(review.stopReason == .replacedByAnotherSession)
+    #expect(review.replacementDraft == replacement)
+    #expect(review.draft.focusedSeconds == 900)
+    #expect(replacedReduction.snapshot.lastConsumedBoundaryToken == nil)
+    #expect(
+      replacedReduction.events.map(\.payload.kind) == [
+        .sessionReplacementRequested, .reviewStarted,
+      ])
+    #expect(
+      !replacedReduction.events.contains {
+        $0.payload.kind == .phaseElapsed || $0.payload.kind == .checkInOpened
+      })
+
+    let laterPlan = try SessionPlan(
+      task: "Later task", firstAction: "Later action", capacity: nil, timingPolicy: .classic)
+    let laterReplacement = SessionDraft(plan: laterPlan)
+    let updated = SessionReducer.reduce(
+      snapshot: replacedReduction.snapshot,
+      command: SessionCommand(
+        expectedRevision: 3,
+        intent: .resolveActiveSessionConflict(
+          choice: .replaceAndReview,
+          replacement: laterReplacement
+        )
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 1_100), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(updatedReduction) = updated,
+      case let .reviewing(updatedReview) = updatedReduction.snapshot.state
+    else {
+      Issue.record("expected replacement draft update")
+      return
+    }
+    #expect(updatedReview.draft == review.draft)
+    #expect(updatedReview.stopReason == .replacedByAnotherSession)
+    #expect(updatedReview.replacementDraft == laterReplacement)
+    #expect(updatedReduction.events.map(\.payload) == [.sessionReplacementRequested])
+    #expect(updatedReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+  }
+
   @Test("live focus stop preserves the terminal request before and at a due boundary")
   func liveFocusStopIsExact() throws {
     let sessionID = UUID()
@@ -3846,6 +4010,35 @@ struct SessionTransitionTests {
       Issue.record("expected live focus fixture")
       return
     }
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .rejected(snapshot: started.snapshot, reason: .activeSessionExists)
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .rejected(snapshot: started.snapshot, reason: .activeSessionExists)
+    )
     let cases: [(SessionTimestamp, Duration, SessionStopChoice, UInt64)] = [
       (
         SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200)),

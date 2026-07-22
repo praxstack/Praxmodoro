@@ -3,6 +3,31 @@ import Foundation
 /// Pure session state-machine entry point. Each lifecycle family is implemented
 /// as a closed dispatch so unlisted state/intent pairs reject deterministically.
 public enum SessionReducer {
+  private enum ReviewEntryRequest {
+    case stop(SessionStopChoice)
+    case replacement(SessionDraft)
+
+    var stopReason: SessionStopReason {
+      switch self {
+      case .stop(.completed): .completed
+      case .stop(.intentionalStop): .intentionalStop
+      case .replacement: .replacedByAnotherSession
+      }
+    }
+
+    var replacementDraft: SessionDraft? {
+      if case let .replacement(draft) = self { return draft }
+      return nil
+    }
+
+    var firstEvent: SessionEventPayload {
+      switch self {
+      case .stop: .sessionStopRequested(reason: stopReason)
+      case .replacement: .sessionReplacementRequested
+      }
+    }
+  }
+
   public static func reduce(
     snapshot: SessionSnapshot,
     command: SessionCommand,
@@ -15,6 +40,22 @@ public enum SessionReducer {
           expected: command.expectedRevision,
           actual: snapshot.revision
         ))
+    }
+
+    if activeSessionConflictState(snapshot.state.kind) {
+      switch command.intent {
+      case .prepare, .start:
+        return .rejected(snapshot: snapshot, reason: .activeSessionExists)
+      case let .resolveActiveSessionConflict(choice, replacement):
+        return resolveActiveSessionConflict(
+          snapshot: snapshot,
+          choice: choice,
+          replacement: replacement,
+          context: context
+        )
+      default:
+        break
+      }
     }
 
     switch snapshot.state {
@@ -36,6 +77,64 @@ public enum SessionReducer {
       return reduceBreaking(snapshot: snapshot, command: command, context: context)
     case .completed, .recoveryNeeded:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
+    }
+  }
+
+  private static func activeSessionConflictState(_ state: SessionStateKind) -> Bool {
+    switch state {
+    case .focusing, .paused, .checkingIn, .breaking, .reentering, .reviewing, .recoveryNeeded:
+      true
+    case .idle, .prepared, .completed:
+      false
+    }
+  }
+
+  private static func resolveActiveSessionConflict(
+    snapshot: SessionSnapshot,
+    choice: ActiveSessionConflictChoice,
+    replacement: SessionDraft?,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    switch choice {
+    case .resumeCurrent:
+      guard replacement == nil else {
+        return .rejected(snapshot: snapshot, reason: .replacementDraftNotAllowed)
+      }
+      return .noChange(snapshot: snapshot, reason: .resumeCurrentSelected)
+    case .cancel:
+      guard replacement == nil else {
+        return .rejected(snapshot: snapshot, reason: .replacementDraftNotAllowed)
+      }
+      return .noChange(snapshot: snapshot, reason: .conflictCancelled)
+    case .replaceAndReview:
+      guard let replacement else {
+        return .rejected(snapshot: snapshot, reason: .replacementDraftRequired)
+      }
+      var invalidFields: Set<SessionPlanField> = []
+      if replacement.plan.task.isEmpty { invalidFields.insert(.task) }
+      if replacement.plan.firstAction.isEmpty { invalidFields.insert(.firstAction) }
+      guard invalidFields.isEmpty else {
+        return .rejected(snapshot: snapshot, reason: .invalidPlan(fields: invalidFields))
+      }
+      if case .reviewing = snapshot.state {
+        return replacePendingDraftInReview(
+          snapshot: snapshot,
+          replacement: replacement,
+          context: context
+        )
+      }
+      if snapshot.state.kind == .focusing || snapshot.state.kind == .breaking {
+        return enterReviewFromLive(
+          snapshot: snapshot,
+          request: .replacement(replacement),
+          context: context
+        )
+      }
+      return enterReviewFromNonLive(
+        snapshot: snapshot,
+        request: .replacement(replacement),
+        context: context
+      )
     }
   }
 
@@ -352,7 +451,7 @@ public enum SessionReducer {
     if case let .stop(choice) = command.intent {
       return enterReviewFromLive(
         snapshot: snapshot,
-        choice: choice,
+        request: .stop(choice),
         context: context
       )
     }
@@ -626,7 +725,7 @@ public enum SessionReducer {
     if case let .stop(choice) = command.intent {
       return enterReviewFromLive(
         snapshot: snapshot,
-        choice: choice,
+        request: .stop(choice),
         context: context
       )
     }
@@ -1238,7 +1337,7 @@ public enum SessionReducer {
     case let .stop(choice):
       return enterReviewFromNonLive(
         snapshot: snapshot,
-        choice: choice,
+        request: .stop(choice),
         context: context
       )
     case .resume:
@@ -1710,7 +1809,7 @@ public enum SessionReducer {
     case let .stop(choice):
       return enterReviewFromNonLive(
         snapshot: snapshot,
-        choice: choice,
+        request: .stop(choice),
         context: context
       )
     case let .respondToCheckIn(response):
@@ -1864,7 +1963,7 @@ public enum SessionReducer {
     if case let .stop(choice) = command.intent {
       return enterReviewFromNonLive(
         snapshot: snapshot,
-        choice: choice,
+        request: .stop(choice),
         context: context
       )
     }
@@ -2253,14 +2352,90 @@ public enum SessionReducer {
       ))
   }
 
+  private static func reviewEntryIntent(_ request: ReviewEntryRequest) -> SessionIntent {
+    switch request {
+    case let .stop(choice): .stop(choice)
+    case let .replacement(draft):
+      .resolveActiveSessionConflict(choice: .replaceAndReview, replacement: draft)
+    }
+  }
+
+  private static func replacePendingDraftInReview(
+    snapshot: SessionSnapshot,
+    replacement: SessionDraft,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .reviewing(review) = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(
+        snapshot: snapshot,
+        intent: .resolveActiveSessionConflict(
+          choice: .replaceAndReview,
+          replacement: replacement
+        )
+      )
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reviewing(
+        ReviewState(
+          draft: review.draft,
+          stopReason: review.stopReason,
+          replacementDraft: replacement
+        )),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [
+          SessionEvent(
+            sessionID: sessionID,
+            sequence: snapshot.eventSequence + 1,
+            occurredAt: observedAt,
+            payload: .sessionReplacementRequested
+          )
+        ],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
+  }
+
   private static func enterReviewFromNonLive(
     snapshot: SessionSnapshot,
-    choice: SessionStopChoice,
+    request: ReviewEntryRequest,
     context: ReductionContext
   ) -> ReductionOutcome {
     guard
       snapshot.state.kind == .paused || snapshot.state.kind == .checkingIn
-        || snapshot.state.kind == .reentering,
+        || snapshot.state.kind == .reentering || snapshot.state.kind == .recoveryNeeded,
       let sessionID = snapshot.sessionID,
       let startedAt = snapshot.startedAt,
       canonicalSecond(context.instant.wallNow) != nil
@@ -2268,7 +2443,7 @@ public enum SessionReducer {
       if canonicalSecond(context.instant.wallNow) == nil {
         return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
       }
-      return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+      return invalidTransition(snapshot: snapshot, intent: reviewEntryIntent(request))
     }
     let observedAt = canonicalSecond(context.instant.wallNow)!
     let nextRevision = snapshot.revision.addingReportingOverflow(1)
@@ -2284,11 +2459,7 @@ public enum SessionReducer {
           remainingCapacity: remainingCapacity
         ))
     }
-    let stopReason: SessionStopReason =
-      switch choice {
-      case .completed: .completed
-      case .intentionalStop: .intentionalStop
-      }
+    let stopReason = request.stopReason
     let endedAt = observedAt.date >= startedAt.date ? observedAt : startedAt
     let thoughtCount = UInt64(snapshot.parkedThoughts.count)
     let draft = SessionSummaryDraft(
@@ -2308,7 +2479,7 @@ public enum SessionReducer {
         ReviewState(
           draft: draft,
           stopReason: stopReason,
-          replacementDraft: nil
+          replacementDraft: request.replacementDraft
         )),
       plan: snapshot.plan,
       configuration: snapshot.configuration,
@@ -2332,7 +2503,7 @@ public enum SessionReducer {
         sessionID: sessionID,
         sequence: snapshot.eventSequence + 1,
         occurredAt: observedAt,
-        payload: .sessionStopRequested(reason: stopReason)
+        payload: request.firstEvent
       ),
       SessionEvent(
         sessionID: sessionID,
@@ -2354,7 +2525,7 @@ public enum SessionReducer {
 
   private static func enterReviewFromLive(
     snapshot: SessionSnapshot,
-    choice: SessionStopChoice,
+    request: ReviewEntryRequest,
     context: ReductionContext
   ) -> ReductionOutcome {
     let timingDecision = SessionTimeKernel.reconcileLive(
@@ -2374,7 +2545,7 @@ public enum SessionReducer {
       case .breaking:
         return breakRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
       default:
-        return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+        return invalidTransition(snapshot: snapshot, intent: reviewEntryIntent(request))
       }
     }
     let admission = SessionTimeKernel.admitBoundary(
@@ -2389,7 +2560,7 @@ public enum SessionReducer {
       case .breaking:
         return breakRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
       default:
-        return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+        return invalidTransition(snapshot: snapshot, intent: reviewEntryIntent(request))
       }
     }
     let focusedSeconds: UInt64
@@ -2416,12 +2587,12 @@ public enum SessionReducer {
         return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
       }
     case .boundaryNotDue, .earlierBoundaryPending, .recovery:
-      return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+      return invalidTransition(snapshot: snapshot, intent: reviewEntryIntent(request))
     }
     guard let sessionID = snapshot.sessionID,
       let startedAt = snapshot.startedAt
     else {
-      return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+      return invalidTransition(snapshot: snapshot, intent: reviewEntryIntent(request))
     }
     let nextRevision = snapshot.revision.addingReportingOverflow(1)
     guard !nextRevision.overflow else {
@@ -2437,11 +2608,7 @@ public enum SessionReducer {
           remainingCapacity: remainingCapacity
         ))
     }
-    let stopReason: SessionStopReason =
-      switch choice {
-      case .completed: .completed
-      case .intentionalStop: .intentionalStop
-      }
+    let stopReason = request.stopReason
     let endedAt =
       timing.expectedWallNow.date >= startedAt.date
       ? timing.expectedWallNow : startedAt
@@ -2463,7 +2630,7 @@ public enum SessionReducer {
         ReviewState(
           draft: draft,
           stopReason: stopReason,
-          replacementDraft: nil
+          replacementDraft: request.replacementDraft
         )),
       plan: snapshot.plan,
       configuration: snapshot.configuration,
@@ -2479,7 +2646,7 @@ public enum SessionReducer {
     if let adjustment = timing.admissionAdjustment {
       payloads.append(.clockAdjusted(adjustment))
     }
-    payloads.append(.sessionStopRequested(reason: stopReason))
+    payloads.append(request.firstEvent)
     payloads.append(
       .reviewStarted(
         SessionReviewEvent(
