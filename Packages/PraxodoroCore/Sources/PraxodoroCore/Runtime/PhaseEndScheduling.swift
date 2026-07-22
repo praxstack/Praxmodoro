@@ -182,7 +182,14 @@ internal enum SessionTimeKernel {
         timing: timing,
         observedToken: observedToken
       )
-    case .idle, .prepared, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed,
+    case let .breaking(breakState):
+      return admitBreakBoundary(
+        snapshot: snapshot,
+        breakState: breakState,
+        timing: timing,
+        observedToken: observedToken
+      )
+    case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
       .recoveryNeeded:
       return .noneDue
     }
@@ -457,6 +464,38 @@ internal enum SessionTimeKernel {
     case .breakEnd:
       return .recovery(.arithmeticOverflow)
     }
+  }
+
+  private static func admitBreakBoundary(
+    snapshot: SessionSnapshot,
+    breakState: BreakState,
+    timing: NormalizedLiveTiming,
+    observedToken: BoundaryToken?
+  ) -> BoundaryAdmissionDecision {
+    guard let token = breakState.boundaryToken,
+      let dueAt = timing.phaseOrBreakDeadline
+    else { return .noneDue }
+    guard dueAt.date <= timing.normalizedDueInstant.date else {
+      return observedToken.map {
+        .boundaryNotDue(token: $0, dueAt: dueAt, observedAt: timing.normalizedDueInstant)
+      } ?? .noneDue
+    }
+    guard observedToken == nil || observedToken == token else { return .earlierBoundaryPending }
+    guard case let .timed(remaining) = breakState.timingAtAnchor else {
+      return .recovery(.arithmeticOverflow)
+    }
+    let carry = breakState.elapsedBeforeAnchorSeconds.addingReportingOverflow(
+      UInt64(remaining.value))
+    let total = snapshot.accumulatedBreakSeconds.addingReportingOverflow(carry.partialValue)
+    guard !carry.overflow, !total.overflow else { return .recovery(.arithmeticOverflow) }
+    return .winner(
+      BoundaryWinnerDecision(
+        token: token,
+        dueAt: dueAt,
+        exitMaterialization: .breakEnd(accumulatedBreakSeconds: total.partialValue),
+        scheduledCadence: .notApplicable
+      )
+    )
   }
 
   private static func cadenceAfterPhase(

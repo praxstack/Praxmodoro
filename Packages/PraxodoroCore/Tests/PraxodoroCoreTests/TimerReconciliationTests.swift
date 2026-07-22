@@ -381,4 +381,73 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("break end admission materializes only break time at its deadline")
+  func breakEndAdmissionMaterializesBreakTime() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let token = BoundaryToken(
+      sessionID: sessionID, kind: .breakEnd, phaseID: nil, sourceRevision: 3, occurrence: 0
+    )
+    let resumeTarget = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(300)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 3,
+      nextBoundaryOccurrence: 1,
+      state: .breaking(
+        BreakState(
+          choice: BreakChoice(kind: .quiet, duration: .timed(.five)),
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          endsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          boundaryToken: token,
+          resumeTarget: resumeTarget,
+          proposedAction: "Return"
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 12,
+      accumulatedBreakSeconds: 9,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let deadline = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let decision = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: NormalizedLiveTiming(
+        observedWallNow: deadline,
+        expectedWallNow: deadline,
+        normalizedDueInstant: deadline,
+        phaseOrBreakDeadline: deadline,
+        scheduledCheckInAt: nil,
+        admissionAdjustment: nil
+      ),
+      observedToken: token
+    )
+
+    #expect(
+      decision
+        == .winner(
+          BoundaryWinnerDecision(
+            token: token,
+            dueAt: deadline,
+            exitMaterialization: .breakEnd(accumulatedBreakSeconds: 309),
+            scheduledCadence: .notApplicable
+          )
+        )
+    )
+  }
 }
