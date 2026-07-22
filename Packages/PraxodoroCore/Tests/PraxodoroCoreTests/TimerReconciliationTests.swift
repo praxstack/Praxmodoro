@@ -36,8 +36,8 @@ struct TimerReconciliationTests {
     #expect(!projection.lowCognitiveLoadEnabled)
   }
 
-  @Test("live focus projection uses paired elapsed time without writing state")
-  func liveFocusProjectionUsesPairedElapsedTime() throws {
+  @Test("live focus projection uses fractional paired elapsed time without writing state")
+  func liveFocusProjectionUsesFractionalPairedElapsedTime() throws {
     let sessionID = UUID()
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
     let phaseToken = BoundaryToken(
@@ -80,20 +80,20 @@ struct TimerReconciliationTests {
     let projection = try SessionProjector.project(
       snapshot: snapshot,
       instant: SessionInstant(
-        wallNow: Date(timeIntervalSinceReferenceDate: 110),
+        wallNow: Date(timeIntervalSinceReferenceDate: 101),
         liveProjection: LiveProjectionObservation(
           projectionToken: UUID(uuidString: "00000000-0000-0000-0000-000000000010")!,
-          rawWallAtProjectionAnchor: anchor.date,
-          monotonicElapsedSinceAnchor: .seconds(10)
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100.75),
+          monotonicElapsedSinceAnchor: .milliseconds(250)
         )
       )
     )
 
     #expect(projection.sourceRevision == snapshot.revision)
     #expect(projection.state == .focusing)
-    #expect(projection.focusedSeconds == 22)
+    #expect(projection.focusedSeconds == 13)
     #expect(projection.breakSeconds == 3)
-    #expect(projection.remainingSeconds == 290)
+    #expect(projection.remainingSeconds == 299)
     #expect(projection.nextScheduledCheckInAt == snapshot.nextScheduledCheckIn?.dueAt)
   }
 
