@@ -40,8 +40,8 @@
     "documentedAssumptions": 12,
     "openSpecScenarios": 122,
     "atoms": 21,
-    "todo": 17,
-    "doing": 0,
+    "todo": 16,
+    "doing": 1,
     "done": 4,
     "parked": 0
   },
@@ -91,7 +91,7 @@
     {
       "id": "3.1",
       "title": "Define session states, intents, events, projections, and timing presets",
-      "status": "todo",
+      "status": "doing",
       "dependsOn": ["2.1"],
       "criteria": ["E-001", "E-003", "E-004", "G-001"],
       "red": "SessionModelTests fail on missing closed types, invariants, errors, defaults, and presets",
