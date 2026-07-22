@@ -619,8 +619,7 @@ git add .xcodegen-version project.yml scripts/bootstrap-xcodegen.sh \
   openspec/changes/build-native-praxodoro/design.md \
   openspec/changes/build-native-praxodoro/tasks.md prd.json progress.txt \
   .agent/evidence/atom-1.1-native-scaffold.md \
-  .agent/evidence/atom-1.1-app-test-receipt.json \
-  .agent/council/2026-07-21-atom-1.1-commit-council.md
+  .agent/evidence/atom-1.1-app-test-receipt.json
 git diff --cached --name-status
 git commit -m "chore: scaffold native macOS app"
 git status --short -- project.yml Praxodoro.xcodeproj Packages PraxodoroApp \
@@ -628,12 +627,12 @@ git status --short -- project.yml Praxodoro.xcodeproj Packages PraxodoroApp \
   docs/superpowers/plans/2026-07-20-native-scaffold.md \
   openspec/changes/build-native-praxodoro/design.md \
   openspec/changes/build-native-praxodoro/tasks.md prd.json progress.txt \
-  .agent/evidence .agent/council/2026-07-21-atom-1.1-commit-council.md
+  .agent/evidence
 ```
 
 Expected pre-commit staged manifest: only the scaffold implementation/generated project, its
-aligned canonical checksum/status changes, durable audit history, compact test receipt, and final
-council record named above. Progress entries for scratch atoms are approved audit history only;
+aligned canonical checksum/status changes, concise progress summary, and compact test receipt.
+Progress entries for scratch atoms are approved audit history only;
 they do not credit or integrate later implementation. Expected post-commit status: empty for every
 listed atom/canonical/evidence path.
 

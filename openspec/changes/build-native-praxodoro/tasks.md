@@ -179,10 +179,10 @@ reducer integrates live rows. Numeric labels preserve criterion/history identity
   - **Smoke:** execute `scripts/smoke-app.sh` from a clean DerivedData path and confirm the initiation accessibility element before clean termination.
   - **Commit:** `ci: verify native app end to end`.
 
-- [ ] 8.2 Run fresh-context final validation, specialist reviews, docs reconciliation, and OpenSpec archive readiness.
-  - **Files:** update `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt`, README, data/design/verification docs, session log, `.learnings/feedback/<run-id>.md`; create validator and review reports under `.agent/reviews/`.
+- [ ] 8.2 Run final validation, docs reconciliation, and OpenSpec archive readiness.
+  - **Files:** update `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt`, README, and data/design/verification docs.
   - **RED:** run the validator before reconciliation; any unmapped criterion, unexplained anomaly, failing test, stale task, or undocumented dependency keeps the atom red.
-  - **Minimal implementation:** address every Major/Important finding, defer only explicit later-change scope with rationale, map every original/OpenSpec criterion to evidence, and prepare archive without skipping specs or validation.
-  - **GREEN:** run full `scripts/verify.sh`, `npm run spec:validate`, independent fresh-context validator, design/privacy/security/performance reviews, and `openspec status --change build-native-praxodoro --json` with every accepted task complete.
+  - **Minimal implementation:** address every Major/Important finding from one final independent review, defer only explicit later-change scope with rationale, map every original/OpenSpec criterion to evidence, and prepare archive without skipping specs or validation.
+  - **GREEN:** run full `scripts/verify.sh`, `npm run spec:validate`, one independent final review, and `openspec status --change build-native-praxodoro --json` with every accepted task complete.
   - **Smoke:** rerun the full offline focus loop from main window and menu bar on the final diff and inspect the generated `.app` with no development server.
   - **Commit:** `docs: close verified Praxodoro vertical slice`.

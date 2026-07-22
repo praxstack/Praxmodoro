@@ -21,7 +21,6 @@ Core accessibility and ADHD-aware focus support are not paywalled.
 - `openspec/` — canonical product specs and active change artifacts.
 - `docs/specification/session-domain-contract.md` — closed session types, defaults, exhaustive transitions, events/effects, and errors.
 - `docs/specification/acceptance-trace.md` — all 57 EARS criteria mapped to OpenSpec scenarios, atoms, validation profiles, and evidence ownership.
-- `.agent/sessions/` — continuous autonomous build audit trail.
 - `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt` — durable completion contract and execution state.
 
 ## Specification commands
@@ -37,15 +36,10 @@ npm exec -- openspec doctor --json
 OpenSpec is pinned to 1.6.0. The native foundation commands below exercise generator,
 verification, test, build, and smoke paths.
 
-The pre-Atom-3.1 semantic gate is accepted only from an exact staged-index receiving review and the
-reserved milestone commit subject `docs: accept session domain contract`. Before that commit, the
-validator binds the current index byte-for-byte; afterward it replays the historical gate commit so
-normal Atom 3.1+ source/status staging is not mistaken for gate drift.
-
-Each implementation atom likewise has one reserved commit subject in the OpenSpec task list. A
-precommit `done` transition is valid only when its PRD, task checkbox, progress log, and evidence are
-staged together; after commit, validation replays that exact historical milestone and follows the
-dependency-safe `prd.json` execution order rather than numeric atom order.
+The pre-Atom-3.1 contract is ready once its OpenSpec scenarios and strict trace validation pass.
+Each implementation atom uses a focused RED test, focused GREEN, one full regression run, and one
+independent final review before its milestone commit. `progress.txt` and `finalized.html` change only
+when behavior or accepted completion genuinely changes.
 
 The active change is `build-native-praxodoro`. Repository-local workflow skills live under
 `.codex/skills/openspec-*`; matching global Codex prompts, when installed, are invoked as

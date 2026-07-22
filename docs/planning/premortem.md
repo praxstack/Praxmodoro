@@ -28,7 +28,7 @@ Assume the build failed or shipped an untrustworthy local app. These are the mos
 4. Keep all paid/cloud/Enterprise adapters absent from the first core commits; capability value types are sufficient scaffolding.
 5. Treat standard accessible controls and opaque surfaces as the default fallback, not a degraded afterthought.
 
-## Mid-task council triggers
+## Mid-task decision triggers
 
 - Timer correctness has two plausible behaviors after sleep/relaunch anomaly.
 - SwiftData cannot satisfy atomic snapshot/event commit without a design change.
@@ -36,3 +36,6 @@ Assume the build failed or shipped an untrustworthy local app. These are the mos
 - A capability must move across edition boundaries.
 - A task needs a new runtime dependency, permission, entitlement, network service, or distribution target.
 - Two consecutive implementation attempts fail without ruling out a new cause.
+
+For these cases, present a short decision brief with options, recommendation, and consequences; use
+a council only when the choice is consequential or irreversible.

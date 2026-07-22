@@ -15,9 +15,6 @@ false-green test paths and unsafe entitlement states. The corrected executable p
 2. [Edition access foundation](2026-07-20-edition-access-foundation.md) — OpenSpec atoms `2.1`
    and `2.2`.
 
-Authoritative council decision:
-[Foundation Plan Council Decision](../../../.agent/council/2026-07-20-foundation-plan-council.md).
-
 ## Sequence
 
 - [ ] Execute atom `1.1`; retain RED/GREEN/package/build/app-test/UI-test/smoke evidence; review;

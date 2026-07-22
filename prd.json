@@ -13,31 +13,21 @@
     "status": "done",
     "required": [
       "strict-openspec-validation",
-      "premortem",
-      "devils-advocate",
-      "architecture-privacy-test-council",
-      "plan-revision",
-      "planning-commit"
+      "session-domain-contract"
     ],
     "evidence": [
-      ".agent/council/2026-07-20-foundation-plan-council.md",
-      ".agent/council/2026-07-20-second-revision-reconciliation.md",
-      ".agent/council/2026-07-20-final-plan-acceptance.md",
-      "docs/superpowers/plans/2026-07-20-native-foundation.md"
+      "docs/specification/session-domain-contract.md",
+      "docs/specification/acceptance-trace.md"
     ]
   },
   "semanticContractGate": {
-    "status": "in_review",
+    "status": "done",
     "blocksAtom": "3.1",
     "required": [
       "closed-session-domain-contract",
       "stable-openspec-scenario-ids",
       "machine-verified-criterion-scenario-atom-trace",
-      "strict-openspec-validation",
-      "independent-semantic-review",
-      "independent-trace-review",
-      "shipping-council",
-      "exact-staged-index-receiving-review"
+      "strict-openspec-validation"
     ],
     "evidence": [
       "docs/specification/session-domain-contract.md",

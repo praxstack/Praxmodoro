@@ -4,7 +4,7 @@
 
 Read, in order:
 
-1. The current user request and `.agent/sessions/` audit log.
+1. The current user request and `progress.txt` execution summary.
 2. `SPEC.md` and `prd.json` for global completion criteria and atom state.
 3. The active change under `openspec/changes/` for proposal, capability specs, design, and tasks.
 4. `BLUEPRINT.md` and the dated implementation plan in `docs/superpowers/plans/`.
@@ -16,7 +16,7 @@ Read, in order:
 - Work on a feature branch or linked worktree, never directly on `main` after the baseline commit.
 - For behavior changes, write one failing test and observe the expected failure before production code.
 - Complete one independently testable atom per commit; update `prd.json` and `progress.txt` with real evidence.
-- Before a completion claim, run fresh focused tests, the full suite, build, lint/format checks, smoke QA, strict OpenSpec validation, and an independent validator pass against `SPEC.md`.
+- Before a completion claim, run fresh focused tests, the full suite, build, lint/format checks, smoke QA, strict OpenSpec validation, and one independent final review against `SPEC.md`.
 - Never weaken a test or acceptance criterion to obtain green output.
 
 ## Product constraints

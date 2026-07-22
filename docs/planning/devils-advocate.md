@@ -22,7 +22,7 @@ The outcome is reachable, but the plan is larger than one ordinary feature branc
 
 **Objection:** Generated files create review noise and can drift.
 
-**Resolution:** For a greenfield autonomous build, the committed project is an executable fallback when the generator is unavailable, while `project.yml` remains the human source. Exact 2.46.0 no-diff regeneration is mandatory. If the project is noisy or non-deterministic, council can switch to generator-only tracking before app code depends on it.
+**Resolution:** For a greenfield autonomous build, the committed project is an executable fallback when the generator is unavailable, while `project.yml` remains the human source. Exact 2.46.0 no-diff regeneration is mandatory. If the project is noisy or non-deterministic, the maintainer can switch to generator-only tracking before app code depends on it.
 
 ### 4. “VoiceOver tests” can be overstated
 

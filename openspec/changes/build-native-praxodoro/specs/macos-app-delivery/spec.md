@@ -80,7 +80,7 @@ The project SHALL provide an unsigned local smoke path that builds the `.app`, l
 - **THEN** a Praxodoro process launches with isolated storage, exposes the initiation surface, logs no fatal error, and terminates successfully
 
 ### Requirement: Documentation and durable workflow state
-The repository SHALL keep setup, architecture, data dictionary, design tokens, edition matrix, build/test/smoke commands, OpenSpec state, `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt`, implementation plan, decisions, and session audit current with the code.
+The repository SHALL keep setup, architecture, data dictionary, design tokens, edition matrix, build/test/smoke commands, OpenSpec state, `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt`, implementation plan, and durable decisions current with the code.
 
 #### Scenario: [MAD-S014] Fresh-context acceptance audit
 - **WHEN** a new validator opens the final repository tree without prior conversation context and audits acceptance

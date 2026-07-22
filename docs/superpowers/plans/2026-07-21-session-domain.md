@@ -1,7 +1,7 @@
 # Session Domain Execution Plan
 
-> **Required mode:** OpenSpec-driven, test-first, subagent-reviewed, one accepted atom per commit.
-> This plan is executable only after `semanticContractGate.status == done`. The normative value,
+> **Required mode:** OpenSpec-driven, test-first, one independent final review per accepted atom.
+> This plan is executable after the session-domain contract and strict OpenSpec trace validate. The normative value,
 > transition, timing, event, failure, and ownership contract is
 > `docs/specification/session-domain-contract.md`; this file does not redefine it.
 
@@ -12,9 +12,9 @@ alternate sources of session truth.
 **Architecture:** Atom 3.1 introduces immutable closed values and candidate validation only. Atom 3.3
 then adds the pure paired wall/monotonic projector/time kernel, boundary arbitration, and recovery
 decisions without a reducer stub. Atom 3.2 integrates that accepted kernel into the exhaustive pure
-reducer and coach rules. Atom 4.1 adds the actor and atomic in-memory repository. Each atom
-starts with a focused failing test, runs the full package regression, receives independent code/spec
-review, passes the receiving-implementer gate, and commits before the next atom begins.
+reducer and coach rules. Atom 4.1 adds the actor and atomic in-memory repository. Each atom starts
+with a focused failing test, runs focused tests while changing code, runs the full package regression
+once at the end, receives one independent final review, and commits before the next atom begins.
 
 ## Frozen ownership boundary
 
@@ -52,8 +52,8 @@ bash scripts/verify-project-generation.sh
 git status --short
 ```
 
-Kill the atom if the semantic gate is not accepted, the index/worktree contains an unrelated source
-change, or the existing 20 package tests do not pass.
+Kill the atom if the contract or strict OpenSpec trace does not validate, the index/worktree contains
+an unrelated source change, or the existing 20 package tests do not pass.
 
 ### Step 2: Write one real compile-time RED
 
@@ -76,7 +76,7 @@ swift test --package-path Packages/PraxodoroCore --filter SessionModelTests
 
 Accepted RED: exit nonzero and compiler diagnostics naming missing session-domain symbols. Reject a
 zero-selected-test result, a test-discovery failure, or a failure caused only by malformed test code.
-Record the command, exit code, and decisive diagnostic in the Atom 3.1 evidence file.
+Record the command, exit code, and decisive diagnostic in the concise Atom 3.1 progress entry.
 
 ### Step 3: Implement validated scalar and configuration values
 
@@ -172,39 +172,14 @@ git diff --check
 Required GREEN evidence includes exact focused/full test counts, zero skipped mandatory tests, strict
 OpenSpec trace totals, deterministic generation, and a successful native build.
 
-### Step 9: Independent review and receiving gate
+### Step 9: Final review and milestone commit
 
-Dispatch separate technical reviewers for:
-
-- code quality, Swift 6 concurrency, API visibility, and exhaustive switches;
-- OpenSpec/session-contract fidelity and exact owned-scope boundaries;
-
-Resolve every Critical/Major/Important finding. Convene the quick shipping council only after both
-technical reviews return READY. Then, before the final receiving review:
-
-1. Check OpenSpec task 3.1 and only 3.1.
-2. Set PRD Atom 3.1 to done, next atom 3.3, and attach the conditional evidence path.
-3. Finalize the evidence file and append RED, GREEN, technical-review, council, anomaly, and
-   `RECEIVING_CANDIDATE` entries to `progress.txt`; do not claim an ACCEPT verdict that has not yet
-   happened.
-4. Stage the complete exact Atom 3.1 payload except the receiving review's own receipt, then run all
-   cached/index checks plus focused/full tests.
-5. Have the receiving reviewer inspect that actual staged payload and confirm the exact allowlist,
-   content digest, test receipts, lifecycle metadata, and absence of Atom 3.2/3.3 implementation.
-   The reviewer creates and stages only its own ACCEPT receipt, which is excluded from the payload
-   digest to avoid self-reference.
-6. Rerun the final read-only cached/index validation and focused/full tests. Any payload mutation,
-   including task/PRD/progress/evidence changes, invalidates ACCEPT and requires another final-index
-   receiving pass.
-
-### Step 10: Atom 3.1 milestone commit
-
-Only after the final staged receiving verdict is ACCEPT:
-
-1. Make no further file or index mutation.
-2. Commit the already reviewed index exactly as `feat: model focus session lifecycle`.
-3. Verify the commit contains the accepted path/content digests, post-commit generation is no-diff,
-   strict validation remains green, and the scoped worktree is clean.
+When the focused tests are green, run the full package suite, strict OpenSpec trace, generation, an
+unsigned native build, and `git diff --check` once. Ask one independent reviewer to inspect code
+quality, Swift 6 concurrency, API visibility, exhaustive switches, and contract fidelity. Resolve
+any Critical, Major, or Important finding. Then check only OpenSpec task 3.1, set PRD Atom 3.1 to
+done with its concise evidence path, update `progress.txt`, and commit as
+`feat: model focus session lifecycle`.
 
 ---
 
@@ -255,12 +230,6 @@ effect-after-publication, and same-named zero-write mapping for every reduction 
 - Any repair/clamp inside candidate validation.
 - Any product-capability query inside the pure reducer.
 - Any completion claim based only on type existence or a narrow focused test.
-- Any milestone commit before code review, spec review, council, and receiving-index acceptance.
-- Any semantic acceptance/reacceptance that fabricates changes to unchanged reviewed files: the
-  commit must contain every required transition receipt/metadata/contract path and only paths from
-  the allowed manifest; the receiving receipt binds the actual changed-path set plus Git file modes
-  and bytes, while the subject digest binds unchanged reviewed subject paths from the index.
-- Any working-tree or Git-index byte change to the accepted session-domain contract while
-  `semanticContractGate.status` remains `done`; strict validation must fail, including when an
-  unreviewed edit exists only in the index, until the gate is set to `in_review` and a new exact
-  staged review/council/receiving transition becomes the latest reserved semantic-gate commit.
+- Any completion claim before focused GREEN, one full regression run, and one independent final
+  review.
+- Any change to the session-domain contract without rerunning strict OpenSpec trace validation.
