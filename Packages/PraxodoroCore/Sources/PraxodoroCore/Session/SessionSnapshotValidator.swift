@@ -649,6 +649,19 @@ internal enum SessionSnapshotValidator {
         violations.insert(.invalidText(.reflection))
       }
     }
+    validateSummaryText(summary.task, field: .task, into: &violations)
+    validateSummaryText(summary.finalAction, field: .firstAction, into: &violations)
+  }
+
+  private static func validateSummaryText(
+    _ value: String,
+    field: SessionTextField,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    let normalized = value.trimmingCharacters(in: .whitespacesAndNewlines)
+    if normalized.isEmpty || normalized != value || normalized.unicodeScalars.count > 500 {
+      violations.insert(.invalidText(field))
+    }
   }
 
   private static func validateReviewDraft(

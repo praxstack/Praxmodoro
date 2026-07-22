@@ -885,6 +885,45 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidSummary))
   }
 
+  @Test("completed summaries retain normalized task and final action text")
+  func completedSummaryRequiresNormalizedText() {
+    let sessionID = UUID()
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
+    let summary = SessionSummary(
+      sessionID: sessionID,
+      task: "   ",
+      finalAction: " Action ",
+      startedAt: timestamp,
+      endedAt: timestamp,
+      focusedSeconds: 0,
+      breakSeconds: 0,
+      stopReason: .completed,
+      parkedThoughtCount: 0,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .completed(CompletedState(summary: summary, pendingReplacementDraft: nil)),
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidText(.task)))
+    #expect(violations.contains(.invalidText(.firstAction)))
+  }
+
   @Test("review drafts freeze the current totals and parked-thought count")
   func reviewDraftRequiresCurrentSummaryValues() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))
