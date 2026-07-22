@@ -17,6 +17,14 @@ internal enum LiveEntryRequest: Sendable {
     timing: PausedTiming,
     cadence: ScheduledCadenceSeed
   )
+  case breakState(
+    sessionID: UUID,
+    targetRevision: UInt64,
+    nextBoundaryOccurrence: UInt64,
+    wallNow: Date,
+    projectionToken: UUID,
+    timing: BreakEntryTimingSeed
+  )
 }
 
 internal enum LiveEntryDecision: Equatable, Sendable {
@@ -26,6 +34,7 @@ internal enum LiveEntryDecision: Equatable, Sendable {
 
 internal enum LiveEntryMaterialization: Equatable, Sendable {
   case focus(FocusEntryMaterialization)
+  case breakState(BreakEntryMaterialization)
 }
 
 internal struct FocusEntryMaterialization: Equatable, Sendable {
@@ -35,6 +44,20 @@ internal struct FocusEntryMaterialization: Equatable, Sendable {
   let phaseEndsAt: SessionTimestamp?
   let phaseBoundaryToken: BoundaryToken?
   let scheduledCheckIn: ScheduledCheckInBoundary?
+  let nextBoundaryOccurrence: UInt64
+}
+
+internal enum BreakEntryTimingSeed: Equatable, Sendable {
+  case choice(BreakDuration)
+  case saved(PausedTiming)
+}
+
+internal struct BreakEntryMaterialization: Equatable, Sendable {
+  let wallAnchor: SessionTimestamp
+  let timingAtAnchor: PausedTiming
+  let projectionToken: UUID
+  let endsAt: SessionTimestamp?
+  let boundaryToken: BoundaryToken?
   let nextBoundaryOccurrence: UInt64
 }
 
@@ -60,6 +83,22 @@ internal enum SessionTimeKernel {
         phaseID: phaseID,
         timing: timing,
         cadence: cadence
+      )
+    case let .breakState(
+      sessionID,
+      targetRevision,
+      nextBoundaryOccurrence,
+      wallNow,
+      projectionToken,
+      timing
+    ):
+      return materializeBreakEntry(
+        sessionID: sessionID,
+        targetRevision: targetRevision,
+        nextBoundaryOccurrence: nextBoundaryOccurrence,
+        wallNow: wallNow,
+        projectionToken: projectionToken,
+        timing: timing
       )
     }
   }
@@ -149,6 +188,46 @@ internal enum SessionTimeKernel {
     )
   }
 
+  private static func materializeBreakEntry(
+    sessionID: UUID,
+    targetRevision: UInt64,
+    nextBoundaryOccurrence: UInt64,
+    wallNow: Date,
+    projectionToken: UUID,
+    timing seed: BreakEntryTimingSeed
+  ) -> LiveEntryDecision {
+    guard let wallAnchor = canonicalSecond(wallNow) else {
+      return .failure(.nonFiniteWallObservation)
+    }
+    let timing = seed.timing
+    let nextOccurrence = nextBoundaryOccurrence.addingReportingOverflow(
+      timing.requiresBoundary ? 1 : 0)
+    guard !nextOccurrence.overflow else { return .failure(.boundaryOccurrenceExhausted) }
+    let deadline = deadline(anchor: wallAnchor, seconds: timing.seconds)
+    guard timing.seconds == nil || deadline != nil else { return .failure(.arithmeticOverflow) }
+    let token =
+      timing.requiresBoundary
+      ? BoundaryToken(
+        sessionID: sessionID,
+        kind: .breakEnd,
+        phaseID: nil,
+        sourceRevision: targetRevision,
+        occurrence: nextBoundaryOccurrence
+      ) : nil
+    return .materialized(
+      .breakState(
+        BreakEntryMaterialization(
+          wallAnchor: wallAnchor,
+          timingAtAnchor: timing,
+          projectionToken: projectionToken,
+          endsAt: deadline,
+          boundaryToken: token,
+          nextBoundaryOccurrence: nextOccurrence.partialValue
+        )
+      )
+    )
+  }
+
   private static func deadline(
     anchor: SessionTimestamp,
     seconds: UInt64?
@@ -180,6 +259,20 @@ private extension ScheduledCadenceSeed {
     case .manualOnly: nil
     case let .fullInterval(minutes): UInt64(minutes.value) * 60
     case let .captured(remaining): UInt64(remaining.value)
+    }
+  }
+}
+
+private extension BreakEntryTimingSeed {
+  var timing: PausedTiming {
+    switch self {
+    case let .choice(duration):
+      switch duration {
+      case .openEnded: .openEnded
+      case let .timed(minutes):
+        .timed(remaining: try! PhaseSeconds(UInt32(minutes.value) * 60))
+      }
+    case let .saved(timing): timing
     }
   }
 }

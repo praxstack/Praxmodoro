@@ -141,4 +141,36 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("open-ended break entry has no deadline or boundary token")
+  func openEndedBreakEntryHasNoBoundary() {
+    let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
+    let projectionToken = UUID(uuidString: "00000000-0000-0000-0000-000000000004")!
+    let decision = SessionTimeKernel.materializeLiveEntry(
+      .breakState(
+        sessionID: sessionID,
+        targetRevision: 4,
+        nextBoundaryOccurrence: 7,
+        wallNow: Date(timeIntervalSinceReferenceDate: 250),
+        projectionToken: projectionToken,
+        timing: .choice(.openEnded)
+      )
+    )
+
+    #expect(
+      decision
+        == .materialized(
+          .breakState(
+            BreakEntryMaterialization(
+              wallAnchor: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 250)),
+              timingAtAnchor: .openEnded,
+              projectionToken: projectionToken,
+              endsAt: nil,
+              boundaryToken: nil,
+              nextBoundaryOccurrence: 7
+            )
+          )
+        )
+    )
+  }
 }
