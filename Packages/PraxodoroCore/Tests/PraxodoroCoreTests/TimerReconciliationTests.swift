@@ -57,7 +57,7 @@ struct TimerReconciliationTests {
     )
   }
 
-  @Test("live focus projection uses fractional paired elapsed time without writing state")
+  @Test("live focus projection shares fractional elapsed and reaches zero at its boundary")
   func liveFocusProjectionUsesFractionalPairedElapsedTime() throws {
     let sessionID = UUID()
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
@@ -143,6 +143,35 @@ struct TimerReconciliationTests {
         ))
     #expect(reconciled.liveCommitMaterialization?.elapsedBeforeAnchorSeconds == 1)
     #expect(reconciled.liveCommitMaterialization?.adjustment == nil)
+
+    let zeroProjection = try SessionProjector.project(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 400),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: focusProjectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(300)
+        )
+      ))
+    #expect(zeroProjection.remainingSeconds == 0)
+    #expect(zeroProjection.focusedSeconds == 312)
+    let zeroDecision = SessionTimeKernel.reconcileLive(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 400),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: focusProjectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(300)
+        )
+      ))
+    guard case let .normalized(zeroTiming) = zeroDecision else {
+      Issue.record("expected zero boundary to normalize")
+      return
+    }
+    #expect(zeroTiming.nonBoundaryExitMaterialization == nil)
+    #expect(zeroTiming.liveCommitMaterialization == nil)
 
     #expect(throws: ProjectionError.missingLiveProjection) {
       try SessionProjector.project(
@@ -436,8 +465,8 @@ struct TimerReconciliationTests {
     )
   }
 
-  @Test("saved focus entry preserves remaining phase and cadence seconds")
-  func savedFocusEntryPreservesRemainingSeconds() throws {
+  @Test("resumeSavedRemainder focus preserves remaining phase and cadence seconds")
+  func resumeSavedRemainderFocusPreservesRemainingSeconds() throws {
     let sessionID = UUID()
     let projectionToken = UUID()
     let phaseRemaining = try PhaseSeconds(120)
@@ -487,6 +516,30 @@ struct TimerReconciliationTests {
               nextBoundaryOccurrence: 9
             )))
     )
+
+    let continuationPhase = TimingPolicy.gentleStart.phases[1]
+    let phaseBoundaryContinuation = SessionTimeKernel.materializeLiveEntry(
+      .focus(
+        sessionID: sessionID,
+        targetRevision: 6,
+        nextBoundaryOccurrence: 9,
+        wallNow: Date(timeIntervalSinceReferenceDate: 100),
+        projectionToken: projectionToken,
+        phaseID: continuationPhase.id,
+        timing: .timed(remaining: try PhaseSeconds(1_200)),
+        cadence: .manualOnly
+      ))
+    guard case let .materialized(.focus(continuation)) = phaseBoundaryContinuation else {
+      Issue.record("expected phase-boundary continuation entry")
+      return
+    }
+    #expect(continuation.timingAtAnchor == .timed(remaining: try PhaseSeconds(1_200)))
+    #expect(
+      continuation.phaseEndsAt
+        == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_300)))
+    #expect(continuation.phaseBoundaryToken?.phaseID == continuationPhase.id)
+    #expect(continuation.scheduledCheckIn == nil)
+    #expect(continuation.nextBoundaryOccurrence == 10)
   }
 
   @Test("open-ended focus installs only its captured scheduled boundary")
@@ -712,7 +765,7 @@ struct TimerReconciliationTests {
     )
   }
 
-  @Test("live reconciliation retains expected timing within two seconds of drift")
+  @Test("live reconciliation covers tolerance and timezone-DST one-hour rebases")
   func liveReconciliationRetainsExpectedTimingWithinTolerance() throws {
     let sessionID = UUID()
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
@@ -1060,7 +1113,7 @@ struct TimerReconciliationTests {
     #expect(overflowingDueTiming.liveCommitMaterialization == nil)
   }
 
-  @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
+  @Test("relaunch covers sleep before, at, and after deadline with a fresh anchor")
   func relaunchCarriesElapsedIntoFreshAnchor() throws {
     let sessionID = UUID()
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
@@ -1197,6 +1250,19 @@ struct TimerReconciliationTests {
     )
 
     #expect(
+      SessionTimeKernel.reconcileRelaunch(snapshot: snapshot, wallNow: deadline.date)
+        == .normalized(
+          NormalizedLiveTiming(
+            observedWallNow: deadline,
+            expectedWallNow: deadline,
+            normalizedDueInstant: deadline,
+            phaseOrBreakDeadline: deadline,
+            scheduledCheckInAt: nil,
+            admissionAdjustment: nil
+          ))
+    )
+
+    #expect(
       SessionTimeKernel.reconcileRelaunch(
         snapshot: snapshot,
         wallNow: Date(timeIntervalSinceReferenceDate: 99)
@@ -1222,7 +1288,7 @@ struct TimerReconciliationTests {
     )
   }
 
-  @Test("phase admission materializes at its deadline instead of a later observation")
+  @Test("zero boundary admits at most one phase winner at its deadline")
   func phaseAdmissionMaterializesAtDeadline() throws {
     let sessionID = UUID()
     let phaseToken = BoundaryToken(
