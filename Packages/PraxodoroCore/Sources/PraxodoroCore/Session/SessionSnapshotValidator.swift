@@ -27,6 +27,7 @@ internal enum SessionSnapshotValidator {
       startedAt: candidate.startedAt,
       accumulatedFocusSeconds: candidate.accumulatedFocusSeconds,
       accumulatedBreakSeconds: candidate.accumulatedBreakSeconds,
+      parkedThoughtCount: candidate.parkedThoughts.count,
       scheduledCheckIn: candidate.nextScheduledCheckIn,
       checkInSchedule: candidate.configuration.checkInSchedule,
       into: &violations
@@ -137,6 +138,9 @@ internal enum SessionSnapshotValidator {
     }
     if candidate.nextBoundaryOccurrence < previous.nextBoundaryOccurrence {
       violations.insert(.invalidBoundaryOccurrence)
+    }
+    if candidate.state.kind == .completed && previous.state.kind != .reviewing {
+      violations.insert(.invalidSummary)
     }
     if candidate.state.kind != .idle {
       if candidate.sessionID == nil || (previous.sessionID != nil && candidate.sessionID != previous.sessionID) {
@@ -306,6 +310,7 @@ internal enum SessionSnapshotValidator {
     startedAt: SessionTimestamp?,
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
+    parkedThoughtCount: Int,
     scheduledCheckIn: ScheduledCheckInBoundary?,
     checkInSchedule: CheckInSchedule,
     into violations: inout Set<SnapshotInvariantViolation>
@@ -400,6 +405,14 @@ internal enum SessionSnapshotValidator {
       if plan == nil { violations.insert(.missingPlan) }
     case let .reviewing(value):
       validate(value.draft.endedAt, as: .reviewEndedAt, into: &violations)
+      validateReviewDraft(
+        value.draft,
+        startedAt: startedAt,
+        accumulatedFocusSeconds: accumulatedFocusSeconds,
+        accumulatedBreakSeconds: accumulatedBreakSeconds,
+        parkedThoughtCount: parkedThoughtCount,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .completed(value):
       if plan != nil { violations.insert(.unexpectedPlan) }
@@ -544,6 +557,31 @@ internal enum SessionSnapshotValidator {
       violations.insert(.invalidSummary)
     }
     if let reflection = summary.optionalReflection {
+      let normalized = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
+      if normalized.isEmpty || normalized.unicodeScalars.count > 2_000 {
+        violations.insert(.invalidText(.reflection))
+      }
+    }
+  }
+
+  private static func validateReviewDraft(
+    _ draft: SessionSummaryDraft,
+    startedAt: SessionTimestamp?,
+    accumulatedFocusSeconds: UInt64,
+    accumulatedBreakSeconds: UInt64,
+    parkedThoughtCount: Int,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    if draft.focusedSeconds != accumulatedFocusSeconds
+      || draft.breakSeconds != accumulatedBreakSeconds
+      || draft.parkedThoughtCount != UInt64(parkedThoughtCount)
+      || startedAt == nil
+      || draft.endedAt.date.timeIntervalSinceReferenceDate
+        < (startedAt?.date.timeIntervalSinceReferenceDate ?? .infinity)
+    {
+      violations.insert(.invalidSummary)
+    }
+    if let reflection = draft.optionalReflection {
       let normalized = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
       if normalized.isEmpty || normalized.unicodeScalars.count > 2_000 {
         violations.insert(.invalidText(.reflection))

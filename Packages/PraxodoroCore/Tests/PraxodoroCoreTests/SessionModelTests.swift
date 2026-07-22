@@ -684,6 +684,38 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidText(.reflection)))
   }
 
+  @Test("review drafts freeze the current totals and parked-thought count")
+  func reviewDraftRequiresCurrentSummaryValues() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let draft = SessionSummaryDraft(
+      endedAt: timestamp,
+      focusedSeconds: 9,
+      breakSeconds: 2,
+      parkedThoughtCount: 1,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .reviewing(ReviewState(draft: draft, stopReason: .completed, replacementDraft: nil)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 2,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidSummary))
+  }
+
   @Test("manual-only configuration cannot carry a scheduled check-in")
   func manualOnlyScheduleRejectsPersistedBoundary() {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
