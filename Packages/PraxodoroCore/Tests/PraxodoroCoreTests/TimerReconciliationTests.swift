@@ -1237,6 +1237,76 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("scheduled check-in suspends open-ended focus without a phase deadline")
+  func scheduledCheckInSuspendsOpenEndedFocus() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let due = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 2,
+      occurrence: 0
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 1,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.flow.phases[0],
+          timingAtAnchor: .openEnded,
+          wallAnchor: anchor,
+          phaseEndsAt: nil,
+          elapsedBeforeAnchorSeconds: 5,
+          projectionToken: UUID(),
+          phaseBoundaryToken: nil
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .flow),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 8,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken,
+        dueAt: due,
+        trustedRemaining: try CheckInRemainingSeconds(200)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(
+      SessionTimeKernel.admitBoundary(
+        snapshot: snapshot,
+        timing: NormalizedLiveTiming(
+          observedWallNow: due,
+          expectedWallNow: due,
+          normalizedDueInstant: due,
+          phaseOrBreakDeadline: nil,
+          scheduledCheckInAt: due,
+          admissionAdjustment: nil
+        ),
+        observedToken: scheduledToken
+      )
+        == .winner(
+          BoundaryWinnerDecision(
+            token: scheduledToken,
+            dueAt: due,
+            exitMaterialization: .scheduledCheckIn(
+              accumulatedFocusSeconds: 213,
+              suspendedTiming: .openEnded
+            ),
+            scheduledCadence: .resetAfterScheduledOccurrence
+          ))
+    )
+  }
+
   @Test("break end admission materializes only break time at its deadline")
   func breakEndAdmissionMaterializesBreakTime() throws {
     let sessionID = UUID()
