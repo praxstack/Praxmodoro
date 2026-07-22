@@ -36,6 +36,27 @@ struct TimerReconciliationTests {
     #expect(!projection.lowCognitiveLoadEnabled)
   }
 
+  @Test("non-live relaunch ignores an unusable wall observation")
+  func nonLiveRelaunchIgnoresUnusableWallObservation() {
+    let unchanged = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 0))
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(
+        snapshot: .canonicalIdle,
+        wallNow: Date(timeIntervalSinceReferenceDate: .infinity)
+      )
+        == .normalized(
+          NormalizedLiveTiming(
+            observedWallNow: unchanged,
+            expectedWallNow: unchanged,
+            normalizedDueInstant: unchanged,
+            phaseOrBreakDeadline: nil,
+            scheduledCheckInAt: nil,
+            admissionAdjustment: nil
+          )
+        )
+    )
+  }
+
   @Test("live focus projection uses fractional paired elapsed time without writing state")
   func liveFocusProjectionUsesFractionalPairedElapsedTime() throws {
     let sessionID = UUID()

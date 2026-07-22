@@ -310,6 +310,25 @@ internal enum SessionTimeKernel {
     snapshot: SessionSnapshot,
     wallNow: Date
   ) -> LiveTimeDecision {
+    switch snapshot.state {
+    case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
+      let unchanged =
+        snapshot.lastWallObservationAt ?? snapshot.startedAt
+        ?? SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 0))
+      return .normalized(
+        NormalizedLiveTiming(
+          observedWallNow: unchanged,
+          expectedWallNow: unchanged,
+          normalizedDueInstant: unchanged,
+          phaseOrBreakDeadline: nil,
+          scheduledCheckInAt: nil,
+          admissionAdjustment: nil
+        )
+      )
+    case .focusing, .breaking:
+      break
+    }
     guard let observed = canonicalSecond(wallNow) else {
       return .failure(.nonFiniteWallObservation)
     }
@@ -321,16 +340,7 @@ internal enum SessionTimeKernel {
       values = (breakState.wallAnchor, breakState.endsAt)
     case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
       .recoveryNeeded:
-      return .normalized(
-        NormalizedLiveTiming(
-          observedWallNow: observed,
-          expectedWallNow: observed,
-          normalizedDueInstant: observed,
-          phaseOrBreakDeadline: nil,
-          scheduledCheckInAt: nil,
-          admissionAdjustment: nil
-        )
-      )
+      preconditionFailure("non-live states return before wall-clock validation")
     }
     guard let lastWallObservationAt = snapshot.lastWallObservationAt else {
       return .recovery(.wallClockAmbiguousAfterRelaunch)
