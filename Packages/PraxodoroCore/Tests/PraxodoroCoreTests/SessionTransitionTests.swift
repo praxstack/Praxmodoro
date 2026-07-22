@@ -942,4 +942,85 @@ struct SessionTransitionTests {
         ]
     )
   }
+
+  @Test("paused thought parking normalizes text and preserves deterministic order")
+  func pausedThoughtParkingNormalizesTextAndPreservesDeterministicOrder() throws {
+    let sessionID = UUID()
+    let thoughtID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+    let laterThoughtID = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let laterAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 301))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 4,
+      nextBoundaryOccurrence: 2,
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(1_490)),
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [
+        ParkedThought(id: laterThoughtID, text: "Later", createdAt: laterAt)
+      ],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(expectedRevision: 3, intent: .parkThought(" \n ")),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .rejected(snapshot: snapshot, reason: .invalidText(.thought))
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 3, intent: .parkThought("  Capture this  \n")),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: thoughtID,
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected paused thought transition")
+      return
+    }
+
+    #expect(reduction.snapshot.revision == 4)
+    #expect(reduction.snapshot.eventSequence == 5)
+    #expect(reduction.snapshot.state == snapshot.state)
+    #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+    #expect(
+      reduction.snapshot.parkedThoughts
+        == [
+          ParkedThought(id: thoughtID, text: "Capture this", createdAt: observedAt),
+          ParkedThought(id: laterThoughtID, text: "Later", createdAt: laterAt),
+        ])
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(reduction.events.map(\.payload) == [.thoughtParked(id: thoughtID)])
+    #expect(reduction.events[0].occurredAt == observedAt)
+    #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+  }
 }

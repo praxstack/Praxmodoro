@@ -569,6 +569,12 @@ public enum SessionReducer {
         choice: choice,
         context: context
       )
+    case let .parkThought(text):
+      return parkThoughtInNonLiveState(
+        snapshot: snapshot,
+        text: text,
+        context: context
+      )
     case .reconcileTime:
       return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
     default:
@@ -845,6 +851,82 @@ public enum SessionReducer {
     effects.append(
       .invalidateDisplayProjection(projectionToken: materialization.projectionToken))
     return .transition(Reduction(snapshot: candidate, events: [event], effects: effects))
+  }
+
+  private static func parkThoughtInNonLiveState(
+    snapshot: SessionSnapshot,
+    text: String,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !normalized.isEmpty, normalized.unicodeScalars.count <= 2_000 else {
+      return .rejected(snapshot: snapshot, reason: .invalidText(.thought))
+    }
+    guard snapshot.parkedThoughts.count < SessionDefaults.maximumParkedThoughts else {
+      return .rejected(
+        snapshot: snapshot,
+        reason: .thoughtLimitReached(maximum: UInt16(SessionDefaults.maximumParkedThoughts))
+      )
+    }
+    guard let sessionID = snapshot.sessionID else {
+      return invalidTransition(snapshot: snapshot, intent: .parkThought(text))
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 1 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let thought = ParkedThought(
+      id: context.generatedThoughtID,
+      text: normalized,
+      createdAt: observedAt
+    )
+    let thoughts = (snapshot.parkedThoughts + [thought]).sorted { left, right in
+      if left.createdAt != right.createdAt {
+        return left.createdAt.date < right.createdAt.date
+      }
+      return left.id.uuidString < right.id.uuidString
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: thoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .thoughtParked(id: thought.id)
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
   }
 
   private static func changedPlanFields(
