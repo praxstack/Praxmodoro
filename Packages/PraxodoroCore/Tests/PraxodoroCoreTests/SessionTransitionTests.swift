@@ -364,4 +364,96 @@ struct SessionTransitionTests {
           reason: .invalidPlan(fields: [.task, .firstAction]))
     )
   }
+
+  @Test("focus pause freezes paired time and clears live boundaries")
+  func focusPauseFreezesPairedTimeAndClearsLiveBoundaries() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let prepareContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+      generatedSessionID: sessionID,
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    guard
+      case let .transition(preparation) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+        context: prepareContext
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: preparation.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        ))
+    else {
+      Issue.record("expected a live focus fixture")
+      return
+    }
+    let previousWinner = try #require(started.snapshot.nextScheduledCheckIn)
+    let observedWall = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 111))
+    let expectedWall = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 110))
+
+    let outcome = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .pause),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: observedWall.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected pause transition")
+      return
+    }
+
+    #expect(reduction.snapshot.revision == 3)
+    #expect(reduction.snapshot.eventSequence == 4)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(reduction.snapshot.accumulatedBreakSeconds == 0)
+    #expect(reduction.snapshot.lastWallObservationAt == observedWall)
+    #expect(reduction.snapshot.nextScheduledCheckIn == nil)
+    #expect(
+      reduction.snapshot.state
+        == .paused(
+          PausedState(
+            phase: TimingPolicy.classic.phases[0],
+            timing: .timed(remaining: try PhaseSeconds(1_490)),
+            pausedAt: expectedWall,
+            scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+          ))
+    )
+    #expect(reduction.events.count == 1)
+    #expect(reduction.events[0].sequence == 4)
+    #expect(reduction.events[0].occurredAt == observedWall)
+    #expect(
+      reduction.events[0].payload
+        == .phasePaused(timing: .timed(remaining: try PhaseSeconds(1_490))))
+    #expect(
+      reduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: previousWinner.token)),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+    )
+  }
 }
