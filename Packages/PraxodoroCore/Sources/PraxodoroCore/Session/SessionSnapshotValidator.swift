@@ -569,7 +569,7 @@ internal enum SessionSnapshotValidator {
       }
       if token != lastConsumedBoundaryToken || token.kind != .phase || token.phaseID == nil
         || plan?.timingPolicy.phases.contains(where: { $0.id == token.phaseID }) != true
-        || plan?.timingPolicy.phases.contains(nextPhase) != true
+        || expectedPhaseContinuation(for: token, in: plan) != nextPhase
       {
         violations.insert(.invalidBoundaryToken)
       }
@@ -579,6 +579,21 @@ internal enum SessionSnapshotValidator {
         into: &violations
       )
     }
+  }
+
+  private static func expectedPhaseContinuation(
+    for token: BoundaryToken,
+    in plan: SessionPlan?
+  ) -> SessionPhaseDescriptor? {
+    guard let plan, let phaseID = token.phaseID,
+          let index = plan.timingPolicy.phases.firstIndex(where: { $0.id == phaseID })
+    else { return nil }
+    let elapsed = plan.timingPolicy.phases[index]
+    guard case .timed = elapsed.duration else { return nil }
+    let nextIndex = plan.timingPolicy.phases.index(after: index)
+    return nextIndex < plan.timingPolicy.phases.endIndex
+      ? plan.timingPolicy.phases[nextIndex]
+      : elapsed
   }
 
   private static func validateRecoverableState(

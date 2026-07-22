@@ -1430,6 +1430,41 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
   }
 
+  @Test("phase-boundary check-ins use the exact policy continuation")
+  func phaseBoundaryCheckInRequiresExactContinuation() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .gentleStart)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .entry, sourceRevision: 1, occurrence: 0
+    )
+    let state = CheckInState(
+      suspended: nil,
+      trigger: .phaseBoundary(token),
+      continuation: .startPhase(TimingPolicy.gentleStart.phases[0]),
+      phaseBoundaryScheduledCheckInRemaining: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 1,
+      state: .checkingIn(state),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
+  }
+
   @Test("relational candidates cannot regress totals or boundary occurrence")
   func relationalCountersNeverRegress() {
     let previous = SessionSnapshot(
