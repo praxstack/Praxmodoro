@@ -359,6 +359,21 @@ struct TimerReconciliationTests {
         )
       ) == .failure(.boundaryOccurrenceExhausted)
     )
+
+    #expect(
+      SessionTimeKernel.materializeLiveEntry(
+        .focus(
+          sessionID: UUID(),
+          targetRevision: 1,
+          nextBoundaryOccurrence: .max - 1,
+          wallNow: Date(timeIntervalSinceReferenceDate: 100),
+          projectionToken: UUID(),
+          phaseID: .focus,
+          timing: .timed(remaining: try PhaseSeconds(1)),
+          cadence: .fullInterval(try CheckInMinutes(5))
+        )
+      ) == .failure(.boundaryOccurrenceExhausted)
+    )
   }
 
   @Test("live entry rejects non-finite wall input before token allocation")
@@ -588,6 +603,46 @@ struct TimerReconciliationTests {
         == SessionTimestamp(
           unchecked: Date(timeIntervalSinceReferenceDate: 400)))
     #expect(toleranceTiming.liveCommitMaterialization?.adjustment?.drift == .seconds(2))
+
+    for drift in [-2.0, -1.0, 0.0] {
+      let observed = 110 + drift
+      let toleranceDecision = SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: observed),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )
+        ))
+      guard case let .normalized(timing) = toleranceDecision else {
+        Issue.record("expected normalized timing within drift tolerance")
+        continue
+      }
+      #expect(timing.admissionAdjustment == nil)
+      #expect(timing.normalizedDueInstant.date.timeIntervalSinceReferenceDate == 110)
+      #expect(
+        timing.nonBoundaryExitMaterialization
+          == .focus(
+            accumulatedFocusSeconds: 10,
+            suspendedTiming: .timed(remaining: try PhaseSeconds(290)),
+            scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+          ))
+      #expect(
+        timing.liveCommitMaterialization?.phaseOrBreakDeadline
+          == SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 400 + drift)))
+      #expect(
+        timing.liveCommitMaterialization?.scheduledCheckInAt
+          == SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 1_000 + drift)))
+      if drift == 0 {
+        #expect(timing.liveCommitMaterialization?.adjustment == nil)
+      } else {
+        #expect(timing.liveCommitMaterialization?.adjustment?.drift == .seconds(drift))
+      }
+    }
 
     #expect(
       SessionTimeKernel.reconcileLive(
