@@ -684,6 +684,43 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidText(.reflection)))
   }
 
+  @Test("completed summaries retain the exact parked-thought count")
+  func completedSummaryRequiresExactParkedThoughtCount() {
+    let sessionID = UUID()
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
+    let summary = SessionSummary(
+      sessionID: sessionID,
+      task: "Task",
+      finalAction: "Action",
+      startedAt: timestamp,
+      endedAt: timestamp,
+      focusedSeconds: 0,
+      breakSeconds: 0,
+      stopReason: .completed,
+      parkedThoughtCount: 0,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .completed(CompletedState(summary: summary, pendingReplacementDraft: nil)),
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [ParkedThought(id: UUID(), text: "Remember this", createdAt: timestamp)],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidSummary))
+  }
+
   @Test("review drafts freeze the current totals and parked-thought count")
   func reviewDraftRequiresCurrentSummaryValues() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))

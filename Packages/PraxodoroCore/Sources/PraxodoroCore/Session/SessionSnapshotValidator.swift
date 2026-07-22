@@ -423,6 +423,7 @@ internal enum SessionSnapshotValidator {
         startedAt: startedAt,
         accumulatedFocusSeconds: accumulatedFocusSeconds,
         accumulatedBreakSeconds: accumulatedBreakSeconds,
+        parkedThoughtCount: parkedThoughtCount,
         into: &violations
       )
     case let .recoveryNeeded(value):
@@ -547,11 +548,13 @@ internal enum SessionSnapshotValidator {
     startedAt: SessionTimestamp?,
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
+    parkedThoughtCount: Int,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     if summary.startedAt != startedAt
       || summary.focusedSeconds != accumulatedFocusSeconds
       || summary.breakSeconds != accumulatedBreakSeconds
+      || summary.parkedThoughtCount != UInt64(parkedThoughtCount)
       || summary.endedAt.date.timeIntervalSinceReferenceDate < summary.startedAt.date.timeIntervalSinceReferenceDate
     {
       violations.insert(.invalidSummary)
