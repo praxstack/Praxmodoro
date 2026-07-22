@@ -16,6 +16,20 @@ internal enum SessionSnapshotValidator {
       candidate.state,
       plan: candidate.plan,
       lastWallObservationAt: candidate.lastWallObservationAt,
+      sessionID: candidate.sessionID,
+      nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
+      into: &violations
+    )
+    validateBoundaryToken(
+      candidate.lastConsumedBoundaryToken,
+      sessionID: candidate.sessionID,
+      nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
+      into: &violations
+    )
+    validateBoundaryToken(
+      candidate.nextScheduledCheckIn?.token,
+      sessionID: candidate.sessionID,
+      nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
       into: &violations
     )
     for thought in candidate.parkedThoughts {
@@ -104,6 +118,8 @@ internal enum SessionSnapshotValidator {
     _ state: SessionState,
     plan: SessionPlan?,
     lastWallObservationAt: SessionTimestamp?,
+    sessionID: UUID?,
+    nextBoundaryOccurrence: UInt64,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -122,6 +138,12 @@ internal enum SessionSnapshotValidator {
         deadline: value.phaseEndsAt,
         into: &violations
       )
+      validateBoundaryToken(
+        value.phaseBoundaryToken,
+        sessionID: sessionID,
+        nextBoundaryOccurrence: nextBoundaryOccurrence,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .paused(value):
       validate(value.pausedAt, as: .pausedAt, into: &violations)
@@ -134,6 +156,12 @@ internal enum SessionSnapshotValidator {
       validate(value.endsAt, as: .breakDeadline, into: &violations)
       if lastWallObservationAt != value.wallAnchor { violations.insert(.invalidWallObservation) }
       validateLiveBreak(choice: value.choice, timing: value.timingAtAnchor, deadline: value.endsAt, into: &violations)
+      validateBoundaryToken(
+        value.boundaryToken,
+        sessionID: sessionID,
+        nextBoundaryOccurrence: nextBoundaryOccurrence,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .reentering(value):
       validate(value.enteredAt, as: .reentryEnteredAt, into: &violations)
@@ -147,6 +175,22 @@ internal enum SessionSnapshotValidator {
       validate(value.summary.endedAt, as: .summaryEndedAt, into: &violations)
     case .recoveryNeeded:
       if plan == nil { violations.insert(.missingPlan) }
+    }
+  }
+
+  private static func validateBoundaryToken(
+    _ token: BoundaryToken?,
+    sessionID: UUID?,
+    nextBoundaryOccurrence: UInt64,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard let token else { return }
+    let discriminantIsValid = switch token.kind {
+    case .phase: token.phaseID != nil
+    case .scheduledCheckIn, .breakEnd: token.phaseID == nil
+    }
+    if !discriminantIsValid || token.sessionID != sessionID || token.occurrence >= nextBoundaryOccurrence {
+      violations.insert(.invalidBoundaryToken)
     }
   }
 

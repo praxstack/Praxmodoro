@@ -383,4 +383,37 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidDeadline))
     #expect(violations.contains(.invalidWallObservation))
   }
+
+  @Test("boundary tokens require an owned discriminant and published occurrence")
+  func boundaryTokenMustBeWellFormedAndPublished() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 30))
+    let sessionID = UUID()
+    let malformedToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: nil,
+      sourceRevision: 1,
+      occurrence: 0
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: malformedToken
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
+  }
 }
