@@ -229,4 +229,48 @@ struct SessionModelTests {
     #expect(SessionEngineFailure.corruptSnapshot([.invalidIdleBaseline]) ==
       .corruptSnapshot([.invalidIdleBaseline]))
   }
+
+  @Test("prepared candidates require a session plan")
+  func preparedCandidateRequiresPlan() {
+    let preparedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001"),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: preparedAt)),
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: preparedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.missingPlan))
+  }
+
+  @Test("relational validation requires exactly one revision increment")
+  func transitionRevisionMustIncrementExactlyOnce() {
+    let candidate = SessionSnapshot.canonicalIdle
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: Date(timeIntervalSinceReferenceDate: 0), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let violations = SessionSnapshotValidator.validate(
+      previous: .canonicalIdle,
+      command: SessionCommand(expectedRevision: 0, intent: .start),
+      candidate: candidate,
+      emittedEvents: [],
+      context: context
+    )
+
+    #expect(violations.contains(.invalidRevision(expected: 1, actual: 0)))
+  }
 }
