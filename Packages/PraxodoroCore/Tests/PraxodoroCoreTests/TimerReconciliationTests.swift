@@ -396,6 +396,28 @@ struct TimerReconciliationTests {
           )
         )
     )
+
+    let exactToleranceDecision = SessionTimeKernel.reconcileLive(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 112),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(10)
+        )
+      )
+    )
+    guard case let .normalized(toleranceTiming) = exactToleranceDecision else {
+      Issue.record("expected a normalized exact-tolerance decision")
+      return
+    }
+    #expect(toleranceTiming.admissionAdjustment == nil)
+    #expect(
+      toleranceTiming.phaseOrBreakDeadline
+        == SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 400)))
+    #expect(toleranceTiming.liveCommitMaterialization?.adjustment?.drift == .seconds(2))
   }
 
   @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
