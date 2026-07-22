@@ -149,4 +149,9 @@ struct SessionModelTests {
     #expect(ProjectionError.invalidSnapshot([.invalidIdleBaseline]) ==
       .invalidSnapshot([.invalidIdleBaseline]))
   }
+
+  @Test("state kinds map exhaustively without a default case")
+  func stateKindMappingsCoverStaticStates() {
+    #expect(SessionState.idle.kind == .idle)
+  }
 }
