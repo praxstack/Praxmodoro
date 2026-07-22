@@ -430,6 +430,59 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("saved focus entry preserves remaining phase and cadence seconds")
+  func savedFocusEntryPreservesRemainingSeconds() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let phaseRemaining = try PhaseSeconds(120)
+    let cadenceRemaining = try CheckInRemainingSeconds(300)
+    let decision = SessionTimeKernel.materializeLiveEntry(
+      .focus(
+        sessionID: sessionID,
+        targetRevision: 5,
+        nextBoundaryOccurrence: 7,
+        wallNow: Date(timeIntervalSinceReferenceDate: 100),
+        projectionToken: projectionToken,
+        phaseID: .focus,
+        timing: .timed(remaining: phaseRemaining),
+        cadence: .captured(cadenceRemaining)
+      ))
+
+    #expect(
+      decision
+        == .materialized(
+          .focus(
+            FocusEntryMaterialization(
+              wallAnchor: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+              timingAtAnchor: .timed(remaining: phaseRemaining),
+              projectionToken: projectionToken,
+              phaseEndsAt: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 220)),
+              phaseBoundaryToken: BoundaryToken(
+                sessionID: sessionID,
+                kind: .phase,
+                phaseID: .focus,
+                sourceRevision: 5,
+                occurrence: 7
+              ),
+              scheduledCheckIn: ScheduledCheckInBoundary(
+                token: BoundaryToken(
+                  sessionID: sessionID,
+                  kind: .scheduledCheckIn,
+                  phaseID: nil,
+                  sourceRevision: 5,
+                  occurrence: 8
+                ),
+                dueAt: SessionTimestamp(
+                  unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+                trustedRemaining: cadenceRemaining
+              ),
+              nextBoundaryOccurrence: 9
+            )))
+    )
+  }
+
   @Test("open-ended focus installs only its captured scheduled boundary")
   func openEndedFocusEntryInstallsOnlyScheduledBoundary() throws {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000006")!
@@ -574,6 +627,42 @@ struct TimerReconciliationTests {
             )
           )
         )
+    )
+  }
+
+  @Test("selected timed break entry creates an exact break boundary")
+  func selectedTimedBreakEntryCreatesExactBoundary() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let remaining = try PhaseSeconds(300)
+    #expect(
+      SessionTimeKernel.materializeLiveEntry(
+        .breakState(
+          sessionID: sessionID,
+          targetRevision: 4,
+          nextBoundaryOccurrence: 7,
+          wallNow: Date(timeIntervalSinceReferenceDate: 250),
+          projectionToken: projectionToken,
+          timing: .choice(.timed(.five))
+        ))
+        == .materialized(
+          .breakState(
+            BreakEntryMaterialization(
+              wallAnchor: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 250)),
+              timingAtAnchor: .timed(remaining: remaining),
+              projectionToken: projectionToken,
+              endsAt: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 550)),
+              boundaryToken: BoundaryToken(
+                sessionID: sessionID,
+                kind: .breakEnd,
+                phaseID: nil,
+                sourceRevision: 4,
+                occurrence: 7
+              ),
+              nextBoundaryOccurrence: 8
+            )))
     )
   }
 
