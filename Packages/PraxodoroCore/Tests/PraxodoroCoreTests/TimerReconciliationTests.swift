@@ -495,6 +495,24 @@ struct TimerReconciliationTests {
         )
       ) == .recovery(.arithmeticOverflow)
     )
+
+    let dueDecision = SessionTimeKernel.reconcileLive(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 600),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(500)
+        )
+      )
+    )
+    guard case let .normalized(dueTiming) = dueDecision else {
+      Issue.record("expected due-boundary reconciliation to normalize")
+      return
+    }
+    #expect(dueTiming.nonBoundaryExitMaterialization == nil)
+    #expect(dueTiming.liveCommitMaterialization == nil)
   }
 
   @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
