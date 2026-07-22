@@ -60,6 +60,7 @@ internal enum SessionSnapshotValidator {
       break
     case .prepared:
       if candidate.sessionID == nil { violations.insert(.invalidIdentity) }
+      if candidate.startedAt != nil { violations.insert(.invalidStartTimestamp) }
     case .focusing, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed, .recoveryNeeded:
       if candidate.sessionID == nil { violations.insert(.invalidIdentity) }
       if candidate.startedAt == nil { violations.insert(.invalidStartTimestamp) }

@@ -305,6 +305,31 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.missingPlan))
   }
 
+  @Test("prepared sessions never carry a start timestamp")
+  func preparedSessionCannotCarryStartTimestamp() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidStartTimestamp))
+  }
+
   @Test("relational validation requires exactly one revision increment")
   func transitionRevisionMustIncrementExactlyOnce() {
     let candidate = SessionSnapshot.canonicalIdle
