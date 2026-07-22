@@ -76,6 +76,23 @@ struct SessionModelTests {
     ])
   }
 
+  @Test("each V1 timing preset has its exact phase identity and feature gate")
+  func timingPolicyDefinitionsAreExact() {
+    #expect(TimingPolicy.gentleStart.phases.map(\.id) == [.entry, .focus])
+    #expect(TimingPolicy.gentleStart.phases.map(\.ordinal) == [0, 1])
+    #expect(TimingPolicy.classic.phases.map(\.id) == [.focus])
+    #expect(TimingPolicy.classic.phases.map(\.ordinal) == [0])
+    #expect(TimingPolicy.flow.phases.map(\.id) == [.flow])
+    #expect(TimingPolicy.flow.phases.map(\.ordinal) == [0])
+    #expect(TimingPolicy.recoveryFirst.phases.map(\.id) == [.recoveryRamp, .focus])
+    #expect(TimingPolicy.recoveryFirst.phases.map(\.ordinal) == [0, 1])
+    #expect(TimingPolicy.gentleStart.suggestedBreak == .timed(.five))
+    #expect(TimingPolicyID.gentleStart.requiredLiteFeature == .gentleStart)
+    #expect(TimingPolicyID.classic.requiredLiteFeature == .classic)
+    #expect(TimingPolicyID.flow.requiredLiteFeature == .flow)
+    #expect(TimingPolicyID.recoveryFirst.requiredLiteFeature == .recoveryFirst)
+  }
+
   @Test("a session plan preserves deliberate capacity and normalizes input")
   func sessionPlanPreservesCapacityAndNormalizesInput() throws {
     let plan = try SessionPlan(
