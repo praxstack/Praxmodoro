@@ -940,6 +940,13 @@ public enum SessionReducer {
       if response == .makeSmaller {
         return presentReentryFromCheckIn(snapshot: snapshot, context: context)
       }
+      if case let .detour(note) = response {
+        return reportDetourFromCheckIn(
+          snapshot: snapshot,
+          note: note,
+          context: context
+        )
+      }
       return resolveRestoringCheckIn(
         snapshot: snapshot,
         response: response,
@@ -950,6 +957,106 @@ public enum SessionReducer {
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
+  }
+
+  private static func reportDetourFromCheckIn(
+    snapshot: SessionSnapshot,
+    note: String?,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case .checkingIn = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(
+        snapshot: snapshot,
+        intent: .respondToCheckIn(.detour(note: note))
+      )
+    }
+    let normalizedNote = note?.trimmingCharacters(in: .whitespacesAndNewlines)
+    let meaningfulNote = normalizedNote.flatMap { $0.isEmpty ? nil : $0 }
+    if let meaningfulNote, meaningfulNote.unicodeScalars.count > 2_000 {
+      return .rejected(snapshot: snapshot, reason: .invalidText(.detourNote))
+    }
+    if meaningfulNote != nil,
+      snapshot.parkedThoughts.count >= SessionDefaults.maximumParkedThoughts
+    {
+      return .rejected(
+        snapshot: snapshot,
+        reason: .thoughtLimitReached(maximum: UInt16(SessionDefaults.maximumParkedThoughts))
+      )
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let requiredEvents: UInt64 = meaningfulNote == nil ? 1 : 2
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= requiredEvents else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: requiredEvents,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    var thoughts = snapshot.parkedThoughts
+    if let meaningfulNote {
+      thoughts.append(
+        ParkedThought(
+          id: context.generatedThoughtID,
+          text: meaningfulNote,
+          createdAt: observedAt
+        ))
+      thoughts.sort { left, right in
+        if left.createdAt != right.createdAt {
+          return left.createdAt.date < right.createdAt.date
+        }
+        return left.id.uuidString < right.id.uuidString
+      }
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + requiredEvents,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: thoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    var events = [
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 1,
+        occurredAt: observedAt,
+        payload: .detourReported(hasNote: meaningfulNote != nil)
+      )
+    ]
+    if meaningfulNote != nil {
+      events.append(
+        SessionEvent(
+          sessionID: sessionID,
+          sequence: snapshot.eventSequence + 2,
+          occurredAt: observedAt,
+          payload: .thoughtParked(id: context.generatedThoughtID)
+        ))
+    }
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: events,
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
   }
 
   private static func presentReentryFromCheckIn(

@@ -1458,4 +1458,107 @@ struct SessionTransitionTests {
     #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
     #expect(reduction.events.map(\.payload) == [.checkInResolved, .reentryPresented])
   }
+
+  @Test("detour reporting stays in check-in and only parks a meaningful note")
+  func detourReportingStaysInCheckInAndParksMeaningfulNote() throws {
+    let sessionID = UUID()
+    let thoughtID = UUID()
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let checkIn = CheckInState(
+      suspended: SuspendedFocusState(
+        phase: TimingPolicy.classic.phases[0],
+        timing: .timed(remaining: try PhaseSeconds(1_490)),
+        resumeDisposition: .focusing,
+        scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+      ),
+      trigger: .manual,
+      continuation: .resumeSuspended,
+      phaseBoundaryScheduledCheckInRemaining: nil
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(checkIn),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: thoughtID,
+      generatedProjectionToken: UUID()
+    )
+
+    let oversized = String(repeating: "x", count: 2_001)
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4,
+          intent: .respondToCheckIn(.detour(note: oversized))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .rejected(snapshot: snapshot, reason: .invalidText(.detourNote))
+    )
+
+    for note in [String?.none, " \n "] {
+      let outcome = SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4, intent: .respondToCheckIn(.detour(note: note))),
+        context: context
+      )
+      guard case let .transition(reduction) = outcome else {
+        Issue.record("expected note-free detour transition")
+        continue
+      }
+      #expect(reduction.snapshot.state == .checkingIn(checkIn))
+      #expect(reduction.snapshot.parkedThoughts.isEmpty)
+      #expect(reduction.snapshot.eventSequence == 6)
+      #expect(reduction.events.map(\.payload) == [.detourReported(hasNote: false)])
+      #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+    }
+
+    let notedOutcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .respondToCheckIn(.detour(note: "  Check messages later  \n"))
+      ),
+      context: context
+    )
+    guard case let .transition(noted) = notedOutcome else {
+      Issue.record("expected noted detour transition")
+      return
+    }
+    #expect(noted.snapshot.state == .checkingIn(checkIn))
+    #expect(
+      noted.snapshot.parkedThoughts
+        == [ParkedThought(id: thoughtID, text: "Check messages later", createdAt: observedAt)])
+    #expect(noted.snapshot.eventSequence == 7)
+    #expect(
+      noted.events.map(\.payload)
+        == [.detourReported(hasNote: true), .thoughtParked(id: thoughtID)])
+    #expect(SessionSnapshotValidator.validateCandidate(noted.snapshot).isEmpty)
+    #expect(noted.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+  }
 }
