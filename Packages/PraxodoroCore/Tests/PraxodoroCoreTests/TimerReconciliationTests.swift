@@ -275,6 +275,77 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
+  func relaunchCarriesElapsedIntoFreshAnchor() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let deadline = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 1,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: deadline,
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: BoundaryToken(
+            sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0)
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: SessionConfiguration(
+        checkInSchedule: .manualOnly,
+        breakSuggestionsEnabled: true,
+        lowCognitiveLoadEnabled: false,
+        reflectionPromptEnabled: true
+      ),
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 12,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let wallNow = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+
+    let decision = SessionTimeKernel.reconcileRelaunch(snapshot: snapshot, wallNow: wallNow.date)
+
+    #expect(
+      decision
+        == .normalized(
+          NormalizedLiveTiming(
+            observedWallNow: wallNow,
+            expectedWallNow: wallNow,
+            normalizedDueInstant: wallNow,
+            phaseOrBreakDeadline: deadline,
+            scheduledCheckInAt: nil,
+            admissionAdjustment: nil,
+            nonBoundaryExitMaterialization: .focus(
+              accumulatedFocusSeconds: 22,
+              suspendedTiming: .timed(remaining: try PhaseSeconds(290)),
+              scheduledCheckInRemaining: nil
+            ),
+            liveCommitMaterialization: LiveCommitMaterialization(
+              wallAnchor: wallNow,
+              elapsedBeforeAnchorSeconds: 10,
+              timingAtAnchor: .timed(remaining: try PhaseSeconds(290)),
+              phaseOrBreakDeadline: deadline,
+              scheduledCheckInAt: nil,
+              scheduledCheckInRemaining: nil,
+              adjustment: nil
+            )
+          )
+        )
+    )
+  }
+
   @Test("phase admission materializes at its deadline instead of a later observation")
   func phaseAdmissionMaterializesAtDeadline() throws {
     let sessionID = UUID()
