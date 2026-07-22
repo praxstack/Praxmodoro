@@ -183,6 +183,9 @@ internal enum SessionTimeKernel {
       return .recovery(.missingLiveProjection)
     }
     guard live.projectionToken == liveValues.token else { return .recovery(.staleLiveProjection) }
+    guard live.rawWallAtProjectionAnchor.timeIntervalSinceReferenceDate.isFinite else {
+      return .recovery(.arithmeticOverflow)
+    }
     guard let rawAnchor = canonicalSecond(live.rawWallAtProjectionAnchor),
       rawAnchor == liveValues.anchor
     else { return .recovery(.inconsistentLiveProjectionAnchor) }
