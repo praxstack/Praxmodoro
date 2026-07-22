@@ -12,7 +12,12 @@ internal enum SessionSnapshotValidator {
 
     validateIdleBaseline(candidate, into: &violations)
     validateRootTimestamps(candidate, into: &violations)
-    validateState(candidate.state, plan: candidate.plan, into: &violations)
+    validateState(
+      candidate.state,
+      plan: candidate.plan,
+      lastWallObservationAt: candidate.lastWallObservationAt,
+      into: &violations
+    )
     for thought in candidate.parkedThoughts {
       validate(thought.createdAt, as: .thoughtCreatedAt, into: &violations)
     }
@@ -98,6 +103,7 @@ internal enum SessionSnapshotValidator {
   private static func validateState(
     _ state: SessionState,
     plan: SessionPlan?,
+    lastWallObservationAt: SessionTimestamp?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -109,15 +115,25 @@ internal enum SessionSnapshotValidator {
     case let .focusing(value):
       validate(value.wallAnchor, as: .focusWallAnchor, into: &violations)
       validate(value.phaseEndsAt, as: .focusDeadline, into: &violations)
+      if lastWallObservationAt != value.wallAnchor { violations.insert(.invalidWallObservation) }
+      validateLivePhase(
+        phase: value.phase,
+        timing: value.timingAtAnchor,
+        deadline: value.phaseEndsAt,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .paused(value):
       validate(value.pausedAt, as: .pausedAt, into: &violations)
+      validatePausedPhase(phase: value.phase, timing: value.timing, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case .checkingIn:
       if plan == nil { violations.insert(.missingPlan) }
     case let .breaking(value):
       validate(value.wallAnchor, as: .breakWallAnchor, into: &violations)
       validate(value.endsAt, as: .breakDeadline, into: &violations)
+      if lastWallObservationAt != value.wallAnchor { violations.insert(.invalidWallObservation) }
+      validateLiveBreak(choice: value.choice, timing: value.timingAtAnchor, deadline: value.endsAt, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case let .reentering(value):
       validate(value.enteredAt, as: .reentryEnteredAt, into: &violations)
@@ -131,6 +147,55 @@ internal enum SessionSnapshotValidator {
       validate(value.summary.endedAt, as: .summaryEndedAt, into: &violations)
     case .recoveryNeeded:
       if plan == nil { violations.insert(.missingPlan) }
+    }
+  }
+
+  private static func validateLivePhase(
+    phase: SessionPhaseDescriptor,
+    timing: PausedTiming,
+    deadline: SessionTimestamp?,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (phase.duration, timing, deadline) {
+    case (.timed, .timed, .some):
+      break
+    case (.openEnded, .openEnded, nil):
+      break
+    case (.timed, .timed, nil), (.openEnded, .openEnded, .some):
+      violations.insert(.invalidDeadline)
+    default:
+      violations.insert(.timingShapeMismatch)
+    }
+  }
+
+  private static func validatePausedPhase(
+    phase: SessionPhaseDescriptor,
+    timing: PausedTiming,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (phase.duration, timing) {
+    case (.timed, .timed), (.openEnded, .openEnded):
+      break
+    default:
+      violations.insert(.timingShapeMismatch)
+    }
+  }
+
+  private static func validateLiveBreak(
+    choice: BreakChoice,
+    timing: PausedTiming,
+    deadline: SessionTimestamp?,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (choice.duration, timing, deadline) {
+    case (.timed, .timed, .some):
+      break
+    case (.openEnded, .openEnded, nil):
+      break
+    case (.timed, .timed, nil), (.openEnded, .openEnded, .some):
+      violations.insert(.invalidDeadline)
+    default:
+      violations.insert(.timingShapeMismatch)
     }
   }
 

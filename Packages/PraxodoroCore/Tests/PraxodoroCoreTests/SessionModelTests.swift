@@ -117,6 +117,25 @@ struct SessionModelTests {
     }
   }
 
+  @Test("all persisted timing scalar boundaries are exact")
+  func timingScalarBoundariesAreExact() throws {
+    #expect(try CheckInMinutes(5).value == 5)
+    #expect(try CheckInMinutes(120).value == 120)
+    #expect(throws: DomainValidationError.intervalOutOfRange(actual: 121, allowed: 5...120)) {
+      _ = try CheckInMinutes(121)
+    }
+    #expect(try CheckInRemainingSeconds(1).value == 1)
+    #expect(try CheckInRemainingSeconds(7_200).value == 7_200)
+    #expect(throws: DomainValidationError.checkInRemainingOutOfRange(actual: 0, allowed: 1...7_200)) {
+      _ = try CheckInRemainingSeconds(0)
+    }
+    #expect(try PhaseSeconds(1).value == 1)
+    #expect(try PhaseSeconds(86_400).value == 86_400)
+    #expect(throws: DomainValidationError.phaseDurationOutOfRange(actual: 86_401, allowed: 1...86_400)) {
+      _ = try PhaseSeconds(86_401)
+    }
+  }
+
   @Test("an explicit cadence always wins over an adapter preference")
   func explicitScheduleWinsDuringResolution() throws {
     let explicit = CheckInSchedule.interval(try CheckInMinutes(20))
@@ -326,6 +345,42 @@ struct SessionModelTests {
       context: context
     )
 
+    #expect(violations.contains(.invalidWallObservation))
+  }
+
+  @Test("timed focus candidates require both a matching live anchor and deadline")
+  func timedFocusCandidateRequiresConsistentLiveShape() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let focus = FocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+      wallAnchor: anchor,
+      phaseEndsAt: nil,
+      elapsedBeforeAnchorSeconds: 0,
+      projectionToken: UUID(),
+      phaseBoundaryToken: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .focusing(focus),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 21)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidDeadline))
     #expect(violations.contains(.invalidWallObservation))
   }
 }
