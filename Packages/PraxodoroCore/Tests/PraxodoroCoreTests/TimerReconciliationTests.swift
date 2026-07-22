@@ -191,6 +191,67 @@ struct TimerReconciliationTests {
     }
   }
 
+  @Test("open-ended break projection advances only break time")
+  func openEndedBreakProjectionAdvancesOnlyBreakTime() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 500))
+    let projectionToken = UUID()
+    let resumeTarget = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(240)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(600)
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 7,
+      eventSequence: 7,
+      nextBoundaryOccurrence: 4,
+      state: .breaking(
+        BreakState(
+          choice: BreakChoice(kind: .quiet, duration: .openEnded),
+          timingAtAnchor: .openEnded,
+          wallAnchor: anchor,
+          endsAt: nil,
+          elapsedBeforeAnchorSeconds: 5,
+          projectionToken: projectionToken,
+          boundaryToken: nil,
+          resumeTarget: resumeTarget,
+          proposedAction: "Return"
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 120,
+      accumulatedBreakSeconds: 9,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let projection = try SessionProjector.project(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 503),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(3)
+        )
+      ))
+
+    #expect(projection.sourceRevision == snapshot.revision)
+    #expect(projection.state == .breaking)
+    #expect(projection.phase == .focus)
+    #expect(projection.focusedSeconds == 120)
+    #expect(projection.breakSeconds == 17)
+    #expect(projection.remainingSeconds == nil)
+    #expect(projection.nextScheduledCheckInAt == nil)
+  }
+
   @Test("focus entry materializes exact deadlines and ordered tokens")
   func focusEntryMaterializesExactDeadlinesAndOrderedTokens() {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
