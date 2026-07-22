@@ -523,4 +523,38 @@ struct SessionModelTests {
 
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
+
+  @Test("recovery states expose the complete safe-choice set")
+  func recoveryStateRequiresAllSafeChoices() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let recovery = RecoveryState(
+      reason: .negativeMonotonicElapsed,
+      lastTrustworthyState: .focus(SuspendedFocusState(
+        phase: TimingPolicy.classic.phases[0],
+        timing: .timed(remaining: try PhaseSeconds(300)),
+        resumeDisposition: .focusing,
+        scheduledCheckInRemaining: nil
+      )),
+      safeChoices: [.reviewSession]
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .recoveryNeeded(recovery),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidRecoveryChoices))
+  }
 }

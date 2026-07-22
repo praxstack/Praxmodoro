@@ -237,8 +237,11 @@ internal enum SessionSnapshotValidator {
         accumulatedBreakSeconds: accumulatedBreakSeconds,
         into: &violations
       )
-    case .recoveryNeeded:
+    case let .recoveryNeeded(value):
       if plan == nil { violations.insert(.missingPlan) }
+      if value.safeChoices != Set(ClockRecoveryChoice.allCases) {
+        violations.insert(.invalidRecoveryChoices)
+      }
     }
   }
 
