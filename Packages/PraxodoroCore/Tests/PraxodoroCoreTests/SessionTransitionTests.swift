@@ -2225,4 +2225,97 @@ struct SessionTransitionTests {
           ))
     )
   }
+
+  @Test("paused configuration changes replace cadence only for schedule updates")
+  func pausedConfigurationChangesAreExact() throws {
+    let sessionID = UUID()
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let changedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let originalCadence = try CheckInRemainingSeconds(890)
+    let paused = PausedState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      pausedAt: pausedAt,
+      scheduledCheckInRemaining: originalCadence
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 2,
+      state: .paused(paused),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let thirty = try CheckInMinutes(30)
+    let fullThirty = try CheckInRemainingSeconds(1_800)
+    let cases: [(SessionIntent, SessionConfigurationField, CheckInRemainingSeconds?)] = [
+      (.setCheckInSchedule(.manualOnly), .checkInSchedule, nil),
+      (.setCheckInSchedule(.interval(thirty)), .checkInSchedule, fullThirty),
+      (.setBreakSuggestionsEnabled(false), .breakSuggestionsEnabled, originalCadence),
+      (.setLowCognitiveLoadEnabled(true), .lowCognitiveLoadEnabled, originalCadence),
+      (.setReflectionPromptEnabled(false), .reflectionPromptEnabled, originalCadence),
+    ]
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: changedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    for (intent, field, expectedCadence) in cases {
+      let outcome = SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(expectedRevision: 4, intent: intent),
+        context: context
+      )
+      guard case let .transition(reduction) = outcome,
+        case let .paused(candidate) = reduction.snapshot.state
+      else {
+        Issue.record("expected paused configuration transition for \(field)")
+        continue
+      }
+      #expect(candidate.phase == paused.phase)
+      #expect(candidate.timing == paused.timing)
+      #expect(candidate.pausedAt == pausedAt)
+      #expect(candidate.scheduledCheckInRemaining == expectedCadence)
+      #expect(reduction.snapshot.lastWallObservationAt == changedAt)
+      #expect(reduction.snapshot.eventSequence == 6)
+      #expect(
+        reduction.events.map(\.payload)
+          == [
+            .configurationChanged(
+              fields: SessionConfigurationFieldChanges([field])!)
+          ])
+      #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4,
+          intent: .setBreakSuggestionsEnabled(true)
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    )
+  }
 }

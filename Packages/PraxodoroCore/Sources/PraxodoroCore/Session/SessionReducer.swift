@@ -573,6 +573,17 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    if let configuration = requestedConfiguration(
+      for: command.intent,
+      current: snapshot.configuration
+    ) {
+      return updatePausedConfiguration(
+        snapshot: snapshot,
+        intent: command.intent,
+        configuration: configuration,
+        context: context
+      )
+    }
     switch command.intent {
     case .resume:
       return resumePaused(snapshot: snapshot, context: context)
@@ -599,6 +610,81 @@ public enum SessionReducer {
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
+  }
+
+  private static func updatePausedConfiguration(
+    snapshot: SessionSnapshot,
+    intent: SessionIntent,
+    configuration: SessionConfiguration,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .paused(paused) = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(snapshot: snapshot, intent: intent)
+    }
+    let fields = changedConfigurationFields(
+      from: snapshot.configuration,
+      to: configuration
+    )
+    guard let changes = SessionConfigurationFieldChanges(fields) else {
+      return .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 1 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let cadence =
+      fields.contains(.checkInSchedule)
+      ? SessionTimeKernel.materializeScheduledRemainder(configuration.checkInSchedule)
+      : paused.scheduledCheckInRemaining
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .paused(
+        PausedState(
+          phase: paused.phase,
+          timing: paused.timing,
+          pausedAt: paused.pausedAt,
+          scheduledCheckInRemaining: cadence
+        )),
+      plan: snapshot.plan,
+      configuration: configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .configurationChanged(fields: changes)
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
   }
 
   private static func openCheckInFromPaused(
