@@ -309,4 +309,76 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("scheduled check-in wins before a later phase deadline")
+  func scheduledCheckInWinsBeforeLaterPhaseDeadline() throws {
+    let sessionID = UUID()
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 2, occurrence: 1
+    )
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(400)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 500)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: phaseToken
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 8,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+        trustedRemaining: try CheckInRemainingSeconds(200)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+    let decision = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: NormalizedLiveTiming(
+        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        expectedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        normalizedDueInstant: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        phaseOrBreakDeadline: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 500)),
+        scheduledCheckInAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+        admissionAdjustment: nil
+      ),
+      observedToken: scheduledToken
+    )
+
+    #expect(
+      decision
+        == .winner(
+          BoundaryWinnerDecision(
+            token: scheduledToken,
+            dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+            exitMaterialization: .scheduledCheckIn(
+              accumulatedFocusSeconds: 208,
+              suspendedTiming: .timed(remaining: try PhaseSeconds(200))
+            ),
+            scheduledCadence: .resetAfterScheduledOccurrence
+          )
+        )
+    )
+  }
 }

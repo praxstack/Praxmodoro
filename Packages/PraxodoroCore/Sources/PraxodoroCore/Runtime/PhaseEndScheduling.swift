@@ -176,29 +176,11 @@ internal enum SessionTimeKernel {
   ) -> BoundaryAdmissionDecision {
     switch snapshot.state {
     case let .focusing(focus):
-      guard let token = focus.phaseBoundaryToken,
-        let dueAt = timing.phaseOrBreakDeadline
-      else { return .noneDue }
-      guard dueAt.date <= timing.normalizedDueInstant.date else {
-        return observedToken.map {
-          .boundaryNotDue(token: $0, dueAt: dueAt, observedAt: timing.normalizedDueInstant)
-        } ?? .noneDue
-      }
-      guard observedToken == nil || observedToken == token else { return .earlierBoundaryPending }
-      guard case let .timed(remaining) = focus.timingAtAnchor else {
-        return .recovery(.arithmeticOverflow)
-      }
-      let carry = focus.elapsedBeforeAnchorSeconds.addingReportingOverflow(UInt64(remaining.value))
-      guard !carry.overflow else { return .recovery(.arithmeticOverflow) }
-      let total = snapshot.accumulatedFocusSeconds.addingReportingOverflow(carry.partialValue)
-      guard !total.overflow else { return .recovery(.arithmeticOverflow) }
-      return .winner(
-        BoundaryWinnerDecision(
-          token: token,
-          dueAt: dueAt,
-          exitMaterialization: .phase(accumulatedFocusSeconds: total.partialValue),
-          scheduledCadence: cadenceAfterPhase(snapshot.configuration.checkInSchedule)
-        )
+      return admitFocusBoundary(
+        snapshot: snapshot,
+        focus: focus,
+        timing: timing,
+        observedToken: observedToken
       )
     case .idle, .prepared, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed,
       .recoveryNeeded:
@@ -403,6 +385,78 @@ internal enum SessionTimeKernel {
     let end = date.timeIntervalSinceReferenceDate + seconds
     guard seconds.isFinite, end.isFinite else { return nil }
     return canonicalSecond(Date(timeIntervalSinceReferenceDate: end))
+  }
+
+  private static func admitFocusBoundary(
+    snapshot: SessionSnapshot,
+    focus: FocusState,
+    timing: NormalizedLiveTiming,
+    observedToken: BoundaryToken?
+  ) -> BoundaryAdmissionDecision {
+    let phase = focus.phaseBoundaryToken.flatMap { token in
+      timing.phaseOrBreakDeadline.map { (token: token, dueAt: $0) }
+    }
+    let scheduled = snapshot.nextScheduledCheckIn.flatMap { boundary in
+      timing.scheduledCheckInAt.map { (token: boundary.token, dueAt: $0) }
+    }
+    let candidates = [phase, scheduled].compactMap { $0 }
+    guard
+      let winner = candidates.min(by: { left, right in
+        if left.dueAt.date != right.dueAt.date { return left.dueAt.date < right.dueAt.date }
+        return left.token.kind == .phase && right.token.kind != .phase
+      })
+    else { return .noneDue }
+    guard winner.dueAt.date <= timing.normalizedDueInstant.date else {
+      return observedToken.map {
+        .boundaryNotDue(token: $0, dueAt: winner.dueAt, observedAt: timing.normalizedDueInstant)
+      } ?? .noneDue
+    }
+    guard observedToken == nil || observedToken == winner.token else {
+      return .earlierBoundaryPending
+    }
+    guard case let .timed(remaining) = focus.timingAtAnchor else {
+      return .recovery(.arithmeticOverflow)
+    }
+    let budget = UInt64(remaining.value)
+    let elapsed =
+      winner.dueAt.date.timeIntervalSinceReferenceDate
+      - focus.wallAnchor.date.timeIntervalSinceReferenceDate
+    guard elapsed.isFinite, elapsed >= 0, elapsed <= Double(budget) else {
+      return .recovery(.arithmeticOverflow)
+    }
+    let elapsedSeconds = UInt64(elapsed)
+    let carry = focus.elapsedBeforeAnchorSeconds.addingReportingOverflow(elapsedSeconds)
+    let total = snapshot.accumulatedFocusSeconds.addingReportingOverflow(carry.partialValue)
+    guard !carry.overflow, !total.overflow else { return .recovery(.arithmeticOverflow) }
+    switch winner.token.kind {
+    case .phase:
+      return .winner(
+        BoundaryWinnerDecision(
+          token: winner.token,
+          dueAt: winner.dueAt,
+          exitMaterialization: .phase(accumulatedFocusSeconds: total.partialValue),
+          scheduledCadence: cadenceAfterPhase(snapshot.configuration.checkInSchedule)
+        )
+      )
+    case .scheduledCheckIn:
+      let remainingSeconds = budget - elapsedSeconds
+      guard let suspended = try? PhaseSeconds(UInt32(remainingSeconds)) else {
+        return .recovery(.arithmeticOverflow)
+      }
+      return .winner(
+        BoundaryWinnerDecision(
+          token: winner.token,
+          dueAt: winner.dueAt,
+          exitMaterialization: .scheduledCheckIn(
+            accumulatedFocusSeconds: total.partialValue,
+            suspendedTiming: .timed(remaining: suspended)
+          ),
+          scheduledCadence: .resetAfterScheduledOccurrence
+        )
+      )
+    case .breakEnd:
+      return .recovery(.arithmeticOverflow)
+    }
   }
 
   private static func cadenceAfterPhase(
