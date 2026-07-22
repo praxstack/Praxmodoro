@@ -1,0 +1,126 @@
+import Foundation
+
+/// Validation is intentionally pure. Additional lifecycle-specific invariants
+/// are added alongside each immutable state fixture before reducer work begins.
+internal enum SessionSnapshotValidator {
+  static func validateCandidate(_ candidate: SessionSnapshot) -> Set<SnapshotInvariantViolation> {
+    var violations = Set<SnapshotInvariantViolation>()
+
+    if candidate.schemaVersion != 1 {
+      violations.insert(.unsupportedSchema(found: candidate.schemaVersion))
+    }
+
+    validateIdleBaseline(candidate, into: &violations)
+    validateRootTimestamps(candidate, into: &violations)
+    validateState(candidate.state, plan: candidate.plan, into: &violations)
+    for thought in candidate.parkedThoughts {
+      validate(thought.createdAt, as: .thoughtCreatedAt, into: &violations)
+    }
+    return violations
+  }
+
+  static func validate(
+    previous: SessionSnapshot?,
+    command: SessionCommand,
+    candidate: SessionSnapshot,
+    emittedEvents: [SessionEvent],
+    context: ReductionContext
+  ) -> Set<SnapshotInvariantViolation> {
+    var violations = validateCandidate(candidate)
+    if previous == nil {
+      if candidate.state.kind != .idle || candidate.revision != 0 || !emittedEvents.isEmpty {
+        violations.insert(.invalidIdleBaseline)
+      }
+      return violations
+    }
+
+    let expectedRevision = previous!.revision == UInt64.max ? UInt64.max : previous!.revision + 1
+    if candidate.revision != expectedRevision {
+      violations.insert(.invalidRevision(expected: expectedRevision, actual: candidate.revision))
+    }
+    _ = command
+    _ = context
+    return violations
+  }
+
+  private static func validateIdleBaseline(
+    _ candidate: SessionSnapshot,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard candidate.state.kind == .idle else { return }
+    let isCanonical = candidate.sessionID == nil
+      && candidate.revision == 0
+      && candidate.eventSequence == 0
+      && candidate.nextBoundaryOccurrence == 0
+      && candidate.plan == nil
+      && candidate.configuration == .defaults
+      && candidate.parkedThoughts.isEmpty
+      && candidate.startedAt == nil
+      && candidate.accumulatedFocusSeconds == 0
+      && candidate.accumulatedBreakSeconds == 0
+      && candidate.lastWallObservationAt == nil
+      && candidate.nextScheduledCheckIn == nil
+      && candidate.lastConsumedBoundaryToken == nil
+    if !isCanonical { violations.insert(.invalidIdleBaseline) }
+  }
+
+  private static func validateRootTimestamps(
+    _ candidate: SessionSnapshot,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    validate(candidate.startedAt, as: .startedAt, into: &violations)
+    validate(candidate.lastWallObservationAt, as: .lastWallObservationAt, into: &violations)
+    validate(candidate.nextScheduledCheckIn?.dueAt, as: .scheduledCheckInDueAt, into: &violations)
+  }
+
+  private static func validateState(
+    _ state: SessionState,
+    plan: SessionPlan?,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch state {
+    case .idle:
+      break
+    case let .prepared(value):
+      validate(value.preparedAt, as: .preparedAt, into: &violations)
+      if plan == nil { violations.insert(.missingPlan) }
+    case let .focusing(value):
+      validate(value.wallAnchor, as: .focusWallAnchor, into: &violations)
+      validate(value.phaseEndsAt, as: .focusDeadline, into: &violations)
+      if plan == nil { violations.insert(.missingPlan) }
+    case let .paused(value):
+      validate(value.pausedAt, as: .pausedAt, into: &violations)
+      if plan == nil { violations.insert(.missingPlan) }
+    case .checkingIn:
+      if plan == nil { violations.insert(.missingPlan) }
+    case let .breaking(value):
+      validate(value.wallAnchor, as: .breakWallAnchor, into: &violations)
+      validate(value.endsAt, as: .breakDeadline, into: &violations)
+      if plan == nil { violations.insert(.missingPlan) }
+    case let .reentering(value):
+      validate(value.enteredAt, as: .reentryEnteredAt, into: &violations)
+      if plan == nil { violations.insert(.missingPlan) }
+    case let .reviewing(value):
+      validate(value.draft.endedAt, as: .reviewEndedAt, into: &violations)
+      if plan == nil { violations.insert(.missingPlan) }
+    case let .completed(value):
+      if plan != nil { violations.insert(.unexpectedPlan) }
+      validate(value.summary.startedAt, as: .summaryStartedAt, into: &violations)
+      validate(value.summary.endedAt, as: .summaryEndedAt, into: &violations)
+    case .recoveryNeeded:
+      if plan == nil { violations.insert(.missingPlan) }
+    }
+  }
+
+  private static func validate(
+    _ timestamp: SessionTimestamp?,
+    as field: SessionTimestampField,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard let timestamp else { return }
+    let interval = timestamp.date.timeIntervalSinceReferenceDate
+    if !interval.isFinite || interval != interval.rounded(.down) {
+      violations.insert(.nonCanonicalTimestamp(field))
+    }
+  }
+}

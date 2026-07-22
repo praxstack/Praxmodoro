@@ -168,4 +168,33 @@ struct SessionModelTests {
     #expect(SessionEffectKind.allCases.count == 6)
     #expect(CheckInResponseKind.allCases.count == 6)
   }
+
+  @Test("the canonical idle snapshot validates without repair")
+  func canonicalIdleSnapshotIsValid() {
+    #expect(SessionSnapshotValidator.validateCandidate(.canonicalIdle).isEmpty)
+  }
+
+  @Test("a malformed persisted timestamp identifies its exact field")
+  func malformedTimestampUsesFieldSpecificViolation() {
+    var snapshot = SessionSnapshot.canonicalIdle
+    snapshot = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: snapshot.sessionID,
+      revision: snapshot.revision,
+      eventSequence: snapshot.eventSequence,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 2.5)),
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: snapshot.lastWallObservationAt,
+      nextScheduledCheckIn: snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(snapshot).contains(.nonCanonicalTimestamp(.startedAt)))
+  }
 }

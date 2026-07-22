@@ -184,4 +184,22 @@ public struct SessionSnapshot: Equatable, Sendable {
   public let lastWallObservationAt: SessionTimestamp?
   public let nextScheduledCheckIn: ScheduledCheckInBoundary?
   public let lastConsumedBoundaryToken: BoundaryToken?
+
+  internal static let canonicalIdle = SessionSnapshot(
+    schemaVersion: 1,
+    sessionID: nil,
+    revision: 0,
+    eventSequence: 0,
+    nextBoundaryOccurrence: 0,
+    state: .idle,
+    plan: nil,
+    configuration: .defaults,
+    parkedThoughts: [],
+    startedAt: nil,
+    accumulatedFocusSeconds: 0,
+    accumulatedBreakSeconds: 0,
+    lastWallObservationAt: nil,
+    nextScheduledCheckIn: nil,
+    lastConsumedBoundaryToken: nil
+  )
 }
