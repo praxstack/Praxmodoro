@@ -141,6 +141,20 @@ struct TimerReconciliationTests {
             monotonicElapsedSinceAnchor: .seconds(1)
           )))
     }
+    #expect(
+      throws: ProjectionError.staleProjectionToken(
+        expected: focusProjectionToken, actual: staleToken)
+    ) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 101),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: staleToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: .infinity),
+            monotonicElapsedSinceAnchor: .seconds(1)
+          )))
+    }
 
     let inconsistentAnchor = SessionTimestamp(
       unchecked: Date(timeIntervalSinceReferenceDate: 101))
@@ -749,9 +763,29 @@ struct TimerReconciliationTests {
       SessionTimeKernel.reconcileLive(
         snapshot: snapshot,
         instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: .infinity), liveProjection: nil)
+      ) == .failure(.nonFiniteWallObservation)
+    )
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
           wallNow: Date(timeIntervalSinceReferenceDate: 111),
           liveProjection: LiveProjectionObservation(
             projectionToken: UUID(), rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )
+        )
+      ) == .recovery(.staleLiveProjection)
+    )
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 111),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: UUID(),
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: .infinity),
             monotonicElapsedSinceAnchor: .seconds(10)
           )
         )
@@ -861,6 +895,40 @@ struct TimerReconciliationTests {
     }
     #expect(dueTiming.nonBoundaryExitMaterialization == nil)
     #expect(dueTiming.liveCommitMaterialization == nil)
+
+    let overflowingDueSnapshot = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: snapshot.sessionID,
+      revision: snapshot.revision,
+      eventSequence: snapshot.eventSequence,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: .max,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: snapshot.lastWallObservationAt,
+      nextScheduledCheckIn: snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let overflowingDueDecision = SessionTimeKernel.reconcileLive(
+      snapshot: overflowingDueSnapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 600),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(500)
+        )
+      ))
+    guard case let .normalized(overflowingDueTiming) = overflowingDueDecision else {
+      Issue.record("expected a due boundary to preempt irrelevant total overflow")
+      return
+    }
+    #expect(overflowingDueTiming.nonBoundaryExitMaterialization == nil)
+    #expect(overflowingDueTiming.liveCommitMaterialization == nil)
   }
 
   @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
@@ -1003,6 +1071,12 @@ struct TimerReconciliationTests {
       SessionTimeKernel.reconcileRelaunch(
         snapshot: snapshot,
         wallNow: Date(timeIntervalSinceReferenceDate: 99)
+      ) == .recovery(.wallClockAmbiguousAfterRelaunch)
+    )
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(
+        snapshot: snapshot,
+        wallNow: Date(timeIntervalSinceReferenceDate: 98)
       ) == .recovery(.wallClockAmbiguousAfterRelaunch)
     )
     #expect(
