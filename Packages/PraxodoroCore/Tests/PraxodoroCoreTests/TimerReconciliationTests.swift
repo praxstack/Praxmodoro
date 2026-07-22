@@ -570,4 +570,19 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("scheduled cadence materializes no remainder or exact supported intervals")
+  func scheduledCadenceRemaindersAreExact() throws {
+    let fiveMinutes = try CheckInMinutes(5)
+    let fiveMinuteRemainder = try CheckInRemainingSeconds(300)
+    let maximumMinutes = try CheckInMinutes(120)
+    let maximumRemainder = try CheckInRemainingSeconds(7_200)
+    #expect(SessionTimeKernel.materializeScheduledRemainder(.manualOnly) == nil)
+    #expect(
+      SessionTimeKernel.materializeScheduledRemainder(.interval(fiveMinutes)) == fiveMinuteRemainder
+    )
+    #expect(
+      SessionTimeKernel.materializeScheduledRemainder(.interval(maximumMinutes)) == maximumRemainder
+    )
+  }
 }
