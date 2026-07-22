@@ -107,6 +107,21 @@ struct SessionModelTests {
     #expect(plan.capacity == .foggy)
   }
 
+  @Test("prepared plan fields allow empty values but reject more than 500 scalars")
+  func sessionPlanTextBoundsAreExact() throws {
+    let empty = try SessionPlan(task: "   ", firstAction: "\n", capacity: nil, timingPolicy: .flow)
+    #expect(empty.task.isEmpty)
+    #expect(empty.firstAction.isEmpty)
+
+    let tooLong = String(repeating: "a", count: 501)
+    #expect(throws: DomainValidationError.textTooLong(field: .task, maximumScalars: 500)) {
+      _ = try SessionPlan(task: tooLong, firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    }
+    #expect(throws: DomainValidationError.textTooLong(field: .firstAction, maximumScalars: 500)) {
+      _ = try SessionPlan(task: "Task", firstAction: tooLong, capacity: nil, timingPolicy: .classic)
+    }
+  }
+
   @Test("constrained minute values retain their exact rejected range")
   func constrainedMinuteValuesRejectOutOfRangeInput() {
     #expect(throws: DomainValidationError.intervalOutOfRange(actual: 4, allowed: 5...120)) {
