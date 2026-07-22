@@ -823,6 +823,21 @@ struct TimerReconciliationTests {
           )
         )
     )
+
+    #expect(
+      SessionTimeKernel.admitBoundary(
+        snapshot: snapshot,
+        timing: NormalizedLiveTiming(
+          observedWallNow: phaseDue,
+          expectedWallNow: phaseDue,
+          normalizedDueInstant: phaseDue,
+          phaseOrBreakDeadline: phaseDue,
+          scheduledCheckInAt: scheduledDue,
+          admissionAdjustment: nil
+        ),
+        observedToken: scheduledToken
+      ) == .earlierBoundaryPending
+    )
   }
 
   @Test("scheduled check-in wins before a later phase deadline after a clock rebase")
