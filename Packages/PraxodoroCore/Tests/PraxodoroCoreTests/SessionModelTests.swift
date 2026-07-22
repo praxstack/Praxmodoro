@@ -550,6 +550,41 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
 
+  @Test("suspended focus cannot preserve cadence when configuration is manual-only")
+  func suspendedFocusCannotRetainManualOnlyCadence() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .paused(PausedState(
+        phase: TimingPolicy.classic.phases[0],
+        timing: .timed(remaining: try PhaseSeconds(300)),
+        pausedAt: timestamp,
+        scheduledCheckInRemaining: try CheckInRemainingSeconds(60)
+      )),
+      plan: plan,
+      configuration: SessionConfiguration(
+        checkInSchedule: .manualOnly,
+        breakSuggestionsEnabled: true,
+        lowCognitiveLoadEnabled: false,
+        reflectionPromptEnabled: true
+      ),
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+  }
+
   @Test("boundary tokens require an owned discriminant and published occurrence")
   func boundaryTokenMustBeWellFormedAndPublished() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)

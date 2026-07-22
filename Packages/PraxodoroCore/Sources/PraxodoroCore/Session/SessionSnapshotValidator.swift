@@ -28,6 +28,7 @@ internal enum SessionSnapshotValidator {
       accumulatedFocusSeconds: candidate.accumulatedFocusSeconds,
       accumulatedBreakSeconds: candidate.accumulatedBreakSeconds,
       scheduledCheckIn: candidate.nextScheduledCheckIn,
+      checkInSchedule: candidate.configuration.checkInSchedule,
       into: &violations
     )
     validateBoundaryToken(
@@ -306,6 +307,7 @@ internal enum SessionSnapshotValidator {
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
     scheduledCheckIn: ScheduledCheckInBoundary?,
+    checkInSchedule: CheckInSchedule,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -346,10 +348,16 @@ internal enum SessionSnapshotValidator {
       if plan == nil { violations.insert(.missingPlan) }
     case let .paused(value):
       validate(value.pausedAt, as: .pausedAt, into: &violations)
-      validatePausedPhase(phase: value.phase, timing: value.timing, into: &violations)
+      validateSuspendedFocus(
+        phase: value.phase,
+        timing: value.timing,
+        scheduledCheckInRemaining: value.scheduledCheckInRemaining,
+        schedule: checkInSchedule,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .checkingIn(value):
-      validateCheckIn(value, into: &violations)
+      validateCheckIn(value, schedule: checkInSchedule, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case let .breaking(value):
       validate(value.wallAnchor, as: .breakWallAnchor, into: &violations)
@@ -371,10 +379,24 @@ internal enum SessionSnapshotValidator {
       )
       validateBreakBoundaryToken(value.boundaryToken, timing: value.timingAtAnchor, into: &violations)
       validateAction(value.proposedAction, into: &violations)
+      validateSuspendedFocus(
+        phase: value.resumeTarget.phase,
+        timing: value.resumeTarget.timing,
+        scheduledCheckInRemaining: value.resumeTarget.scheduledCheckInRemaining,
+        schedule: checkInSchedule,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .reentering(value):
       validate(value.enteredAt, as: .reentryEnteredAt, into: &violations)
       validateAction(value.proposedAction, into: &violations)
+      validateSuspendedFocus(
+        phase: value.resumeTarget.phase,
+        timing: value.resumeTarget.timing,
+        scheduledCheckInRemaining: value.resumeTarget.scheduledCheckInRemaining,
+        schedule: checkInSchedule,
+        into: &violations
+      )
       if plan == nil { violations.insert(.missingPlan) }
     case let .reviewing(value):
       validate(value.draft.endedAt, as: .reviewEndedAt, into: &violations)
@@ -395,6 +417,7 @@ internal enum SessionSnapshotValidator {
       if value.safeChoices != Set(ClockRecoveryChoice.allCases) {
         violations.insert(.invalidRecoveryChoices)
       }
+      validateRecoverableState(value.lastTrustworthyState, schedule: checkInSchedule, into: &violations)
     }
   }
 
@@ -407,6 +430,7 @@ internal enum SessionSnapshotValidator {
 
   private static func validateCheckIn(
     _ checkIn: CheckInState,
+    schedule: CheckInSchedule,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch checkIn.continuation {
@@ -416,6 +440,15 @@ internal enum SessionSnapshotValidator {
       if checkIn.phaseBoundaryScheduledCheckInRemaining != nil {
         violations.insert(.invalidScheduledCheckIn)
       }
+      if let suspended = checkIn.suspended {
+        validateSuspendedFocus(
+          phase: suspended.phase,
+          timing: suspended.timing,
+          scheduledCheckInRemaining: suspended.scheduledCheckInRemaining,
+          schedule: schedule,
+          into: &violations
+        )
+      }
     case .startPhase:
       if checkIn.suspended != nil { violations.insert(.timingShapeMismatch) }
       if case .phaseBoundary = checkIn.trigger {
@@ -423,6 +456,76 @@ internal enum SessionSnapshotValidator {
       } else {
         violations.insert(.invalidBoundaryToken)
       }
+      validateScheduledRemainder(
+        checkIn.phaseBoundaryScheduledCheckInRemaining,
+        schedule: schedule,
+        into: &violations
+      )
+    }
+  }
+
+  private static func validateRecoverableState(
+    _ state: RecoverableSessionState,
+    schedule: CheckInSchedule,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch state {
+    case let .focus(suspended):
+      validateSuspendedFocus(
+        phase: suspended.phase,
+        timing: suspended.timing,
+        scheduledCheckInRemaining: suspended.scheduledCheckInRemaining,
+        schedule: schedule,
+        into: &violations
+      )
+    case let .breakState(suspended):
+      validateSuspendedFocus(
+        phase: suspended.resumeTarget.phase,
+        timing: suspended.resumeTarget.timing,
+        scheduledCheckInRemaining: suspended.resumeTarget.scheduledCheckInRemaining,
+        schedule: schedule,
+        into: &violations
+      )
+      validateAction(suspended.proposedAction, into: &violations)
+    case let .checkingIn(checkIn):
+      validateCheckIn(checkIn, schedule: schedule, into: &violations)
+    case let .reentering(reentry):
+      validateSuspendedFocus(
+        phase: reentry.resumeTarget.phase,
+        timing: reentry.resumeTarget.timing,
+        scheduledCheckInRemaining: reentry.resumeTarget.scheduledCheckInRemaining,
+        schedule: schedule,
+        into: &violations
+      )
+      validateAction(reentry.proposedAction, into: &violations)
+    }
+  }
+
+  private static func validateSuspendedFocus(
+    phase: SessionPhaseDescriptor,
+    timing: PausedTiming,
+    scheduledCheckInRemaining: CheckInRemainingSeconds?,
+    schedule: CheckInSchedule,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    validatePausedPhase(phase: phase, timing: timing, into: &violations)
+    validateScheduledRemainder(scheduledCheckInRemaining, schedule: schedule, into: &violations)
+  }
+
+  private static func validateScheduledRemainder(
+    _ remaining: CheckInRemainingSeconds?,
+    schedule: CheckInSchedule,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (schedule, remaining) {
+    case (.manualOnly, .some):
+      violations.insert(.invalidScheduledCheckIn)
+    case let (.interval(minutes), .some(remaining)):
+      if remaining.value > UInt32(minutes.value) * 60 {
+        violations.insert(.invalidScheduledCheckIn)
+      }
+    case (.manualOnly, nil), (.interval, nil):
+      break
     }
   }
 
