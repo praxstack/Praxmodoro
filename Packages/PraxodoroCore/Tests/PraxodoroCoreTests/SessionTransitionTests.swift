@@ -3192,4 +3192,259 @@ struct SessionTransitionTests {
         ])
     #expect(SessionSnapshotValidator.validateCandidate(recoveryReduction.snapshot).isEmpty)
   }
+
+  @Test("ending a break early is silent and revised action returns to paused focus")
+  func earlyBreakEndAndPausedReentryAreExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let choice = BreakChoice(kind: .move, duration: .timed(.five))
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let breakStartedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let paused = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 4,
+      nextBoundaryOccurrence: 2,
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(1_490)),
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Return here", capacity: nil,
+        timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    guard
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: paused,
+        command: SessionCommand(expectedRevision: 3, intent: .requestBreak(choice)),
+        context: ReductionContext(
+          instant: SessionInstant(wallNow: breakStartedAt.date, liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), case let .breaking(liveBreak) = started.snapshot.state,
+      let boundaryToken = liveBreak.boundaryToken
+    else {
+      Issue.record("expected live break fixture")
+      return
+    }
+    let endedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let ended = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .endBreak),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: endedAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: breakStartedAt.date,
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(endReduction) = ended,
+      case let .reentering(reentry) = endReduction.snapshot.state
+    else {
+      Issue.record("expected early break re-entry")
+      return
+    }
+    #expect(endReduction.snapshot.accumulatedBreakSeconds == 100)
+    #expect(endReduction.snapshot.lastConsumedBoundaryToken == nil)
+    #expect(reentry.resumeTarget == liveBreak.resumeTarget)
+    #expect(reentry.enteredAt == endedAt)
+    #expect(endReduction.events.map(\.payload) == [.breakEnded, .reentryPresented])
+    #expect(
+      endReduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: boundaryToken)),
+          .announceAccessibility(.reentryPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ])
+    #expect(!endReduction.effects.contains(.playSound(.breakComplete)))
+    #expect(SessionSnapshotValidator.validateCandidate(endReduction.snapshot).isEmpty)
+
+    let driftedObservedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 402))
+    let drifted = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .endBreak),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: driftedObservedAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: breakStartedAt.date,
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(driftedReduction) = drifted,
+      case let .reentering(driftedReentry) = driftedReduction.snapshot.state
+    else {
+      Issue.record("expected drifted early break re-entry")
+      return
+    }
+    #expect(driftedReentry.enteredAt == endedAt)
+    #expect(driftedReduction.snapshot.lastWallObservationAt == driftedObservedAt)
+    #expect(driftedReduction.events.allSatisfy { $0.occurredAt == driftedObservedAt })
+    #expect(SessionSnapshotValidator.validateCandidate(driftedReduction.snapshot).isEmpty)
+
+    let acceptedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let accepted = SessionReducer.reduce(
+      snapshot: endReduction.snapshot,
+      command: SessionCommand(
+        expectedRevision: 5,
+        intent: .acceptRevisedAction("  Open the next paragraph  ")
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: acceptedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(acceptReduction) = accepted,
+      case let .paused(restored) = acceptReduction.snapshot.state
+    else {
+      Issue.record("expected paused re-entry acceptance")
+      return
+    }
+    #expect(acceptReduction.snapshot.plan?.firstAction == "Open the next paragraph")
+    #expect(restored.phase == reentry.resumeTarget.phase)
+    #expect(restored.timing == reentry.resumeTarget.timing)
+    #expect(restored.scheduledCheckInRemaining == reentry.resumeTarget.scheduledCheckInRemaining)
+    #expect(restored.pausedAt == acceptedAt)
+    #expect(acceptReduction.events.map(\.payload) == [.actionRevised])
+    #expect(
+      acceptReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+    #expect(SessionSnapshotValidator.validateCandidate(acceptReduction.snapshot).isEmpty)
+
+    let unchanged = SessionReducer.reduce(
+      snapshot: endReduction.snapshot,
+      command: SessionCommand(
+        expectedRevision: 5,
+        intent: .acceptRevisedAction(" Return here ")
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: acceptedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(unchangedReduction) = unchanged,
+      case let .paused(unchangedPaused) = unchangedReduction.snapshot.state
+    else {
+      Issue.record("expected unchanged paused re-entry acceptance")
+      return
+    }
+    #expect(unchangedReduction.snapshot.plan?.firstAction == "Return here")
+    #expect(unchangedReduction.snapshot.eventSequence == endReduction.snapshot.eventSequence)
+    #expect(unchangedReduction.events.isEmpty)
+    #expect(unchangedPaused.pausedAt == acceptedAt)
+    #expect(SessionSnapshotValidator.validateCandidate(unchangedReduction.snapshot).isEmpty)
+  }
+
+  @Test("accepting a revised action restores a focusing re-entry target")
+  func focusingReentryAcceptanceIsExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let enteredAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let acceptedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let target = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .reentering(
+        ReentryState(
+          resumeTarget: target,
+          proposedAction: "Open the outline",
+          enteredAt: enteredAt
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Open the outline", capacity: nil,
+        timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: enteredAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .acceptRevisedAction("Open the first paragraph")
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: acceptedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome,
+      case let .focusing(focus) = reduction.snapshot.state,
+      let scheduled = reduction.snapshot.nextScheduledCheckIn,
+      let phaseEndsAt = focus.phaseEndsAt
+    else {
+      Issue.record("expected focusing re-entry acceptance")
+      return
+    }
+    #expect(reduction.snapshot.plan?.firstAction == "Open the first paragraph")
+    #expect(focus.phase == target.phase)
+    #expect(focus.timingAtAnchor == target.timing)
+    #expect(focus.wallAnchor == acceptedAt)
+    #expect(focus.elapsedBeforeAnchorSeconds == 0)
+    #expect(focus.projectionToken == projectionToken)
+    #expect(scheduled.trustedRemaining == target.scheduledCheckInRemaining)
+    #expect(
+      reduction.events.map(\.payload) == [
+        .actionRevised,
+        .phaseResumed(phase: target.phase, endsAt: phaseEndsAt),
+      ])
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(
+              boundaryToken: scheduled.token,
+              fireAt: scheduled.dueAt
+            )),
+          .announceAccessibility(.focusStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ])
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+  }
 }
