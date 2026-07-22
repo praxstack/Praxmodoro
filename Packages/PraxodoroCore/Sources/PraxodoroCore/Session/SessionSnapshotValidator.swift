@@ -27,6 +27,7 @@ internal enum SessionSnapshotValidator {
       startedAt: candidate.startedAt,
       accumulatedFocusSeconds: candidate.accumulatedFocusSeconds,
       accumulatedBreakSeconds: candidate.accumulatedBreakSeconds,
+      scheduledCheckIn: candidate.nextScheduledCheckIn,
       into: &violations
     )
     validateBoundaryToken(
@@ -304,6 +305,7 @@ internal enum SessionSnapshotValidator {
     startedAt: SessionTimestamp?,
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
+    scheduledCheckIn: ScheduledCheckInBoundary?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -328,6 +330,17 @@ internal enum SessionSnapshotValidator {
         value.phaseBoundaryToken,
         sessionID: sessionID,
         nextBoundaryOccurrence: nextBoundaryOccurrence,
+        into: &violations
+      )
+      validateFocusBoundaryToken(
+        value.phaseBoundaryToken,
+        phase: value.phase,
+        timing: value.timingAtAnchor,
+        into: &violations
+      )
+      validateScheduledDeadline(
+        scheduledCheckIn,
+        wallAnchor: value.wallAnchor,
         into: &violations
       )
       if plan == nil { violations.insert(.missingPlan) }
@@ -356,6 +369,7 @@ internal enum SessionSnapshotValidator {
         nextBoundaryOccurrence: nextBoundaryOccurrence,
         into: &violations
       )
+      validateBreakBoundaryToken(value.boundaryToken, timing: value.timingAtAnchor, into: &violations)
       validateAction(value.proposedAction, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case let .reentering(value):
@@ -549,6 +563,50 @@ internal enum SessionSnapshotValidator {
     let expectedDeadline = wallAnchor.date.timeIntervalSinceReferenceDate + Double(remaining.value)
     if !expectedDeadline.isFinite || deadline.date.timeIntervalSinceReferenceDate != expectedDeadline {
       violations.insert(.invalidDeadline)
+    }
+  }
+
+  private static func validateFocusBoundaryToken(
+    _ token: BoundaryToken?,
+    phase: SessionPhaseDescriptor,
+    timing: PausedTiming,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (phase.duration, timing, token) {
+    case (.timed, .timed, .some(let token)) where token.kind == .phase && token.phaseID == phase.id:
+      break
+    case (.openEnded, .openEnded, nil):
+      break
+    default:
+      violations.insert(.invalidBoundaryToken)
+    }
+  }
+
+  private static func validateBreakBoundaryToken(
+    _ token: BoundaryToken?,
+    timing: PausedTiming,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch (timing, token) {
+    case (.timed, .some(let token)) where token.kind == .breakEnd:
+      break
+    case (.openEnded, nil):
+      break
+    default:
+      violations.insert(.invalidBoundaryToken)
+    }
+  }
+
+  private static func validateScheduledDeadline(
+    _ scheduled: ScheduledCheckInBoundary?,
+    wallAnchor: SessionTimestamp,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard let scheduled else { return }
+    let expectedDueAt = wallAnchor.date.timeIntervalSinceReferenceDate
+      + Double(scheduled.trustedRemaining.value)
+    if !expectedDueAt.isFinite || scheduled.dueAt.date.timeIntervalSinceReferenceDate != expectedDueAt {
+      violations.insert(.invalidScheduledCheckIn)
     }
   }
 

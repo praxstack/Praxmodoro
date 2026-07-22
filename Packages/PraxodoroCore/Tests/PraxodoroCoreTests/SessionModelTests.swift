@@ -505,6 +505,51 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.timingShapeMismatch))
   }
 
+  @Test("live timing boundaries retain their owned token and exact scheduled deadline")
+  func liveTimingBoundariesAreAtomic() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 2, occurrence: 1
+    )
+    let focus = FocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+      wallAnchor: anchor,
+      phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+      elapsedBeforeAnchorSeconds: 0,
+      projectionToken: UUID(),
+      phaseBoundaryToken: phaseToken
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(focus),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_001)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+  }
+
   @Test("boundary tokens require an owned discriminant and published occurrence")
   func boundaryTokenMustBeWellFormedAndPublished() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
