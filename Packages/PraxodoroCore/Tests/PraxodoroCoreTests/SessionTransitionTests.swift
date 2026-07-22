@@ -2318,4 +2318,161 @@ struct SessionTransitionTests {
         == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
     )
   }
+
+  @Test("check-in configuration changes update only the relevant suspended cadence")
+  func checkingInConfigurationChangesAreExact() throws {
+    let sessionID = UUID()
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let originalCadence = try CheckInRemainingSeconds(890)
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: originalCadence
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: .manual,
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let thirty = try CheckInMinutes(30)
+    let cases: [(SessionIntent, CheckInRemainingSeconds?)] = [
+      (.setCheckInSchedule(.manualOnly), nil),
+      (.setCheckInSchedule(.interval(thirty)), try CheckInRemainingSeconds(1_800)),
+      (.setLowCognitiveLoadEnabled(true), originalCadence),
+    ]
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    for (intent, expectedCadence) in cases {
+      guard
+        case let .transition(reduction) = SessionReducer.reduce(
+          snapshot: snapshot,
+          command: SessionCommand(expectedRevision: 4, intent: intent),
+          context: context
+        ), case let .checkingIn(candidate) = reduction.snapshot.state
+      else {
+        Issue.record("expected checking-in configuration transition")
+        continue
+      }
+      #expect(candidate.suspended?.scheduledCheckInRemaining == expectedCadence)
+      #expect(candidate.suspended?.phase == suspended.phase)
+      #expect(candidate.suspended?.timing == suspended.timing)
+      #expect(candidate.suspended?.resumeDisposition == suspended.resumeDisposition)
+      #expect(candidate.trigger == .manual)
+      #expect(candidate.continuation == .resumeSuspended)
+      #expect(reduction.snapshot.revision == 5)
+      #expect(reduction.snapshot.eventSequence == 6)
+      #expect(reduction.events.count == 1)
+      #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4,
+          intent: .setBreakSuggestionsEnabled(true)
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    )
+  }
+
+  @Test("phase-boundary schedule changes discard the captured old cadence")
+  func phaseBoundaryConfigurationChangesAreExact() throws {
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .entry,
+      sourceRevision: 3,
+      occurrence: 1
+    )
+    let cadence = try CheckInRemainingSeconds(400)
+    let checkIn = CheckInState(
+      suspended: nil,
+      trigger: .phaseBoundary(token),
+      continuation: .startPhase(TimingPolicy.gentleStart.phases[1]),
+      phaseBoundaryScheduledCheckInRemaining: cadence
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(checkIn),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil,
+        timingPolicy: .gentleStart),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 300,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 450), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    for (intent, expectedCadence) in [
+      (SessionIntent.setCheckInSchedule(.manualOnly), nil),
+      (SessionIntent.setReflectionPromptEnabled(false), cadence),
+    ] {
+      guard
+        case let .transition(reduction) = SessionReducer.reduce(
+          snapshot: snapshot,
+          command: SessionCommand(expectedRevision: 4, intent: intent),
+          context: context
+        ), case let .checkingIn(candidate) = reduction.snapshot.state
+      else {
+        Issue.record("expected phase-boundary configuration transition")
+        continue
+      }
+      #expect(candidate.phaseBoundaryScheduledCheckInRemaining == expectedCadence)
+      #expect(candidate.trigger == checkIn.trigger)
+      #expect(candidate.continuation == checkIn.continuation)
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+  }
 }

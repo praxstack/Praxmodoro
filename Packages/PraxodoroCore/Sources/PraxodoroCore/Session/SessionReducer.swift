@@ -1039,6 +1039,17 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    if let configuration = requestedConfiguration(
+      for: command.intent,
+      current: snapshot.configuration
+    ) {
+      return updateCheckingInConfiguration(
+        snapshot: snapshot,
+        intent: command.intent,
+        configuration: configuration,
+        context: context
+      )
+    }
     switch command.intent {
     case let .respondToCheckIn(response):
       if response == .makeSmaller {
@@ -1084,6 +1095,103 @@ public enum SessionReducer {
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
+  }
+
+  private static func updateCheckingInConfiguration(
+    snapshot: SessionSnapshot,
+    intent: SessionIntent,
+    configuration: SessionConfiguration,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .checkingIn(checkIn) = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(snapshot: snapshot, intent: intent)
+    }
+    let fields = changedConfigurationFields(
+      from: snapshot.configuration,
+      to: configuration
+    )
+    guard let changes = SessionConfigurationFieldChanges(fields) else {
+      return .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+
+    let scheduleChanged = fields.contains(.checkInSchedule)
+    let cadence = SessionTimeKernel.materializeScheduledRemainder(
+      configuration.checkInSchedule)
+    let updatedCheckIn: CheckInState
+    switch checkIn.continuation {
+    case .resumeSuspended:
+      guard let suspended = checkIn.suspended else {
+        return invalidTransition(snapshot: snapshot, intent: intent)
+      }
+      updatedCheckIn = CheckInState(
+        suspended: SuspendedFocusState(
+          phase: suspended.phase,
+          timing: suspended.timing,
+          resumeDisposition: suspended.resumeDisposition,
+          scheduledCheckInRemaining: scheduleChanged
+            ? cadence : suspended.scheduledCheckInRemaining
+        ),
+        trigger: checkIn.trigger,
+        continuation: checkIn.continuation,
+        phaseBoundaryScheduledCheckInRemaining: nil
+      )
+    case .startPhase:
+      updatedCheckIn = CheckInState(
+        suspended: nil,
+        trigger: checkIn.trigger,
+        continuation: checkIn.continuation,
+        phaseBoundaryScheduledCheckInRemaining: scheduleChanged
+          ? nil : checkIn.phaseBoundaryScheduledCheckInRemaining
+      )
+    }
+
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .checkingIn(updatedCheckIn),
+      plan: snapshot.plan,
+      configuration: configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [
+          SessionEvent(
+            sessionID: sessionID,
+            sequence: snapshot.eventSequence + 1,
+            occurredAt: observedAt,
+            payload: .configurationChanged(fields: changes)
+          )
+        ],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
   }
 
   private static func resolvePhaseCheckIn(
