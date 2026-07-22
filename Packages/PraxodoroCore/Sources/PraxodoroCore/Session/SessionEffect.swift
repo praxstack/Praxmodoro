@@ -109,3 +109,54 @@ public enum EffectStatus: Equatable, Sendable {
   case succeeded(SessionEffectKind)
   case failed(SessionEffectKind, PlatformStatus)
 }
+
+public enum SessionRejection: Equatable, Sendable {
+  case invalidTransition(state: SessionStateKind, intent: SessionIntentKind)
+  case invalidPlan(fields: Set<SessionPlanField>)
+  case invalidText(SessionTextField)
+  case activeSessionExists
+  case replacementDraftRequired
+  case replacementDraftNotAllowed
+  case invalidRecoveryChoice(ClockRecoveryChoice)
+  case staleRevision(expected: UInt64, actual: UInt64)
+  case duplicateBoundary(BoundaryToken)
+  case staleBoundary(BoundaryToken)
+  case boundaryNotDue(token: BoundaryToken, dueAt: SessionTimestamp, observedAt: SessionTimestamp)
+  case thoughtLimitReached(maximum: UInt16)
+}
+
+public enum NoChangeReason: String, Equatable, Sendable {
+  case alreadyInRequestedState, resumeCurrentSelected, conflictCancelled
+  case observationIrrelevant, earlierBoundaryPending
+}
+
+public enum SessionEngineFailure: Error, Equatable, Sendable {
+  case repositoryLoadFailed(RepositoryFailureKind)
+  case repositoryCommitFailed(RepositoryFailureKind)
+  case unsupportedSnapshotSchema(found: UInt16)
+  case corruptSnapshot(Set<SnapshotInvariantViolation>)
+  case revisionExhausted
+  case eventSequenceExhausted
+  case boundaryOccurrenceExhausted
+  case arithmeticOverflow
+  case nonFiniteWallObservation
+}
+
+public struct Reduction: Equatable, Sendable {
+  public let snapshot: SessionSnapshot
+  public let events: [SessionEvent]
+  public let effects: [SessionEffect]
+}
+
+public enum ReductionOutcome: Equatable, Sendable {
+  case transition(Reduction)
+  case noChange(snapshot: SessionSnapshot, reason: NoChangeReason)
+  case rejected(snapshot: SessionSnapshot, reason: SessionRejection)
+  case failed(snapshot: SessionSnapshot, reason: ReductionFailure)
+}
+
+public enum SessionResult: Equatable, Sendable {
+  case committed(snapshot: SessionSnapshot, effects: [EffectStatus])
+  case noChange(snapshot: SessionSnapshot, reason: NoChangeReason)
+  case rejected(snapshot: SessionSnapshot, reason: SessionRejection)
+}

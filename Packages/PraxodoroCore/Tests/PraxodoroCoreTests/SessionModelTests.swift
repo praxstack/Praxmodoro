@@ -197,4 +197,12 @@ struct SessionModelTests {
 
     #expect(SessionSnapshotValidator.validateCandidate(snapshot).contains(.nonCanonicalTimestamp(.startedAt)))
   }
+
+  @Test("result vocabulary retains snapshots and typed failure reasons")
+  func resultVocabularyIsClosed() {
+    let result = SessionResult.noChange(snapshot: .canonicalIdle, reason: .observationIrrelevant)
+    #expect(result == .noChange(snapshot: .canonicalIdle, reason: .observationIrrelevant))
+    #expect(SessionEngineFailure.corruptSnapshot([.invalidIdleBaseline]) ==
+      .corruptSnapshot([.invalidIdleBaseline]))
+  }
 }
