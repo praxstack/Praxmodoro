@@ -469,6 +469,19 @@ struct TimerReconciliationTests {
         )
       ) == .recovery(.inconsistentLiveProjectionAnchor)
     )
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 111),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(-1)
+          )
+        )
+      ) == .recovery(.negativeMonotonicElapsed)
+    )
   }
 
   @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
