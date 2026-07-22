@@ -7,6 +7,51 @@ internal struct NormalizedLiveTiming: Equatable, Sendable {
   let phaseOrBreakDeadline: SessionTimestamp?
   let scheduledCheckInAt: SessionTimestamp?
   let admissionAdjustment: ClockAdjustmentEvent?
+  let nonBoundaryExitMaterialization: NonBoundaryExitMaterialization?
+  let liveCommitMaterialization: LiveCommitMaterialization?
+
+  init(
+    observedWallNow: SessionTimestamp,
+    expectedWallNow: SessionTimestamp,
+    normalizedDueInstant: SessionTimestamp,
+    phaseOrBreakDeadline: SessionTimestamp?,
+    scheduledCheckInAt: SessionTimestamp?,
+    admissionAdjustment: ClockAdjustmentEvent?,
+    nonBoundaryExitMaterialization: NonBoundaryExitMaterialization? = nil,
+    liveCommitMaterialization: LiveCommitMaterialization? = nil
+  ) {
+    self.observedWallNow = observedWallNow
+    self.expectedWallNow = expectedWallNow
+    self.normalizedDueInstant = normalizedDueInstant
+    self.phaseOrBreakDeadline = phaseOrBreakDeadline
+    self.scheduledCheckInAt = scheduledCheckInAt
+    self.admissionAdjustment = admissionAdjustment
+    self.nonBoundaryExitMaterialization = nonBoundaryExitMaterialization
+    self.liveCommitMaterialization = liveCommitMaterialization
+  }
+}
+
+/// Values copied verbatim when a reduction leaves a live state. Keeping these
+/// here prevents the reducer from performing a second, potentially divergent,
+/// wall/monotonic calculation.
+internal enum NonBoundaryExitMaterialization: Equatable, Sendable {
+  case focus(
+    accumulatedFocusSeconds: UInt64,
+    suspendedTiming: PausedTiming,
+    scheduledCheckInRemaining: CheckInRemainingSeconds?
+  )
+  case breakState(accumulatedBreakSeconds: UInt64)
+}
+
+/// Values copied verbatim when a reduction commits and remains live.
+internal struct LiveCommitMaterialization: Equatable, Sendable {
+  let wallAnchor: SessionTimestamp
+  let elapsedBeforeAnchorSeconds: UInt64
+  let timingAtAnchor: PausedTiming
+  let phaseOrBreakDeadline: SessionTimestamp?
+  let scheduledCheckInAt: SessionTimestamp?
+  let scheduledCheckInRemaining: CheckInRemainingSeconds?
+  let adjustment: ClockAdjustmentEvent?
 }
 
 internal enum LiveTimeDecision: Equatable, Sendable {
@@ -170,14 +215,61 @@ internal enum SessionTimeKernel {
         newScheduledCheckInAt: normalizedScheduled,
         drift: .seconds(drift)
       ) : nil
+    let base = NormalizedLiveTiming(
+      observedWallNow: observedWallNow,
+      expectedWallNow: expectedWallNow,
+      normalizedDueInstant: rebase ? observedWallNow : expectedWallNow,
+      phaseOrBreakDeadline: normalizedDeadline,
+      scheduledCheckInAt: normalizedScheduled,
+      admissionAdjustment: adjustment
+    )
+    guard !hasDueBoundary(snapshot: snapshot, timing: base) else { return .normalized(base) }
+    guard
+      let materialized = liveMaterializations(
+        snapshot: snapshot,
+        elapsedSinceAnchor: pairedElapsedSeconds(
+          rawAnchor: live.rawWallAtProjectionAnchor,
+          expectedWallNow: expectedWallNow
+        ),
+        expectedWallNow: expectedWallNow,
+        commitAnchor: observedWallNow,
+        deadline: commitDeadline(
+          oldDeadline: liveValues.deadline,
+          expectedWallNow: expectedWallNow,
+          observedWallNow: observedWallNow
+        ),
+        scheduledAt: commitDeadline(
+          oldDeadline: oldScheduled,
+          expectedWallNow: expectedWallNow,
+          observedWallNow: observedWallNow
+        ),
+        commitAdjustment: liveCommitAdjustment(
+          deadline: liveValues.deadline,
+          scheduledAt: oldScheduled,
+          commitDeadline: commitDeadline(
+            oldDeadline: liveValues.deadline,
+            expectedWallNow: expectedWallNow,
+            observedWallNow: observedWallNow
+          ),
+          commitScheduledAt: commitDeadline(
+            oldDeadline: oldScheduled,
+            expectedWallNow: expectedWallNow,
+            observedWallNow: observedWallNow
+          ),
+          drift: drift
+        )
+      )
+    else { return .recovery(.arithmeticOverflow) }
     return .normalized(
       NormalizedLiveTiming(
-        observedWallNow: observedWallNow,
-        expectedWallNow: expectedWallNow,
-        normalizedDueInstant: rebase ? observedWallNow : expectedWallNow,
-        phaseOrBreakDeadline: normalizedDeadline,
-        scheduledCheckInAt: normalizedScheduled,
-        admissionAdjustment: adjustment
+        observedWallNow: base.observedWallNow,
+        expectedWallNow: base.expectedWallNow,
+        normalizedDueInstant: base.normalizedDueInstant,
+        phaseOrBreakDeadline: base.phaseOrBreakDeadline,
+        scheduledCheckInAt: base.scheduledCheckInAt,
+        admissionAdjustment: base.admissionAdjustment,
+        nonBoundaryExitMaterialization: materialized.exit,
+        liveCommitMaterialization: materialized.commit
       )
     )
   }
@@ -241,14 +333,37 @@ internal enum SessionTimeKernel {
     guard observed.date >= values.anchor.date else {
       return .recovery(.wallClockAmbiguousAfterRelaunch)
     }
+    let base = NormalizedLiveTiming(
+      observedWallNow: observed,
+      expectedWallNow: observed,
+      normalizedDueInstant: observed,
+      phaseOrBreakDeadline: values.deadline,
+      scheduledCheckInAt: snapshot.nextScheduledCheckIn?.dueAt,
+      admissionAdjustment: nil
+    )
+    guard !hasDueBoundary(snapshot: snapshot, timing: base) else { return .normalized(base) }
+    let elapsed = secondsBetween(observed, values.anchor)
+    guard let elapsed,
+      let materialized = liveMaterializations(
+        snapshot: snapshot,
+        elapsedSinceAnchor: elapsed,
+        expectedWallNow: observed,
+        commitAnchor: observed,
+        deadline: values.deadline,
+        scheduledAt: snapshot.nextScheduledCheckIn?.dueAt,
+        commitAdjustment: nil
+      )
+    else { return .recovery(.arithmeticOverflow) }
     return .normalized(
       NormalizedLiveTiming(
-        observedWallNow: observed,
-        expectedWallNow: observed,
-        normalizedDueInstant: observed,
-        phaseOrBreakDeadline: values.deadline,
-        scheduledCheckInAt: snapshot.nextScheduledCheckIn?.dueAt,
-        admissionAdjustment: nil
+        observedWallNow: base.observedWallNow,
+        expectedWallNow: base.expectedWallNow,
+        normalizedDueInstant: base.normalizedDueInstant,
+        phaseOrBreakDeadline: base.phaseOrBreakDeadline,
+        scheduledCheckInAt: base.scheduledCheckInAt,
+        admissionAdjustment: nil,
+        nonBoundaryExitMaterialization: materialized.exit,
+        liveCommitMaterialization: materialized.commit
       )
     )
   }
@@ -454,6 +569,170 @@ internal enum SessionTimeKernel {
     let deadline = base + Double(seconds)
     guard deadline.isFinite else { return nil }
     return canonicalSecond(Date(timeIntervalSinceReferenceDate: deadline))
+  }
+
+  private static func hasDueBoundary(
+    snapshot: SessionSnapshot,
+    timing: NormalizedLiveTiming
+  ) -> Bool {
+    switch snapshot.state {
+    case let .focusing(focus):
+      let phaseDue =
+        focus.phaseBoundaryToken != nil
+        && timing.phaseOrBreakDeadline.map {
+          $0.date <= timing.normalizedDueInstant.date
+        } == true
+      let scheduledDue =
+        snapshot.nextScheduledCheckIn != nil
+        && timing.scheduledCheckInAt.map {
+          $0.date <= timing.normalizedDueInstant.date
+        } == true
+      return phaseDue || scheduledDue
+    case let .breaking(breakState):
+      return breakState.boundaryToken != nil
+        && timing.phaseOrBreakDeadline.map {
+          $0.date <= timing.normalizedDueInstant.date
+        } == true
+    case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
+      return false
+    }
+  }
+
+  private static func pairedElapsedSeconds(
+    rawAnchor: Date,
+    expectedWallNow: SessionTimestamp
+  ) -> UInt64? {
+    guard let canonicalAnchor = canonicalSecond(rawAnchor) else { return nil }
+    return secondsBetween(expectedWallNow, canonicalAnchor)
+  }
+
+  private static func secondsBetween(
+    _ later: SessionTimestamp,
+    _ earlier: SessionTimestamp
+  ) -> UInt64? {
+    let delta =
+      later.date.timeIntervalSinceReferenceDate
+      - earlier.date.timeIntervalSinceReferenceDate
+    guard delta.isFinite, delta >= 0, delta <= Double(UInt64.max), delta.rounded() == delta else {
+      return nil
+    }
+    return UInt64(delta)
+  }
+
+  private static func commitDeadline(
+    oldDeadline: SessionTimestamp?,
+    expectedWallNow: SessionTimestamp,
+    observedWallNow: SessionTimestamp
+  ) -> SessionTimestamp? {
+    guard let oldDeadline else { return nil }
+    let drift =
+      observedWallNow.date.timeIntervalSinceReferenceDate
+      - expectedWallNow.date.timeIntervalSinceReferenceDate
+    return shifted(oldDeadline, by: drift)
+  }
+
+  private static func liveCommitAdjustment(
+    deadline: SessionTimestamp?,
+    scheduledAt: SessionTimestamp?,
+    commitDeadline: SessionTimestamp?,
+    commitScheduledAt: SessionTimestamp?,
+    drift: Double
+  ) -> ClockAdjustmentEvent? {
+    guard drift != 0 else { return nil }
+    return ClockAdjustmentEvent(
+      previousPhaseOrBreakDeadline: deadline,
+      newPhaseOrBreakDeadline: commitDeadline,
+      previousScheduledCheckInAt: scheduledAt,
+      newScheduledCheckInAt: commitScheduledAt,
+      drift: .seconds(drift)
+    )
+  }
+
+  private static func liveMaterializations(
+    snapshot: SessionSnapshot,
+    elapsedSinceAnchor: UInt64?,
+    expectedWallNow: SessionTimestamp,
+    commitAnchor: SessionTimestamp,
+    deadline: SessionTimestamp?,
+    scheduledAt: SessionTimestamp?,
+    commitAdjustment: ClockAdjustmentEvent?
+  ) -> (exit: NonBoundaryExitMaterialization, commit: LiveCommitMaterialization)? {
+    guard let elapsedSinceAnchor else { return nil }
+    switch snapshot.state {
+    case let .focusing(focus):
+      guard let timing = reducedTiming(focus.timingAtAnchor, by: elapsedSinceAnchor),
+        let elapsedBeforeAnchor = checkedAdd(focus.elapsedBeforeAnchorSeconds, elapsedSinceAnchor),
+        let accumulated = checkedAdd(snapshot.accumulatedFocusSeconds, elapsedBeforeAnchor),
+        let scheduledRemaining = scheduledRemainder(at: scheduledAt, from: expectedWallNow)
+      else { return nil }
+      return (
+        .focus(
+          accumulatedFocusSeconds: accumulated,
+          suspendedTiming: timing,
+          scheduledCheckInRemaining: scheduledRemaining
+        ),
+        LiveCommitMaterialization(
+          wallAnchor: commitAnchor,
+          elapsedBeforeAnchorSeconds: elapsedBeforeAnchor,
+          timingAtAnchor: timing,
+          phaseOrBreakDeadline: deadline,
+          scheduledCheckInAt: scheduledAt,
+          scheduledCheckInRemaining: scheduledRemaining,
+          adjustment: commitAdjustment
+        )
+      )
+    case let .breaking(breakState):
+      guard let timing = reducedTiming(breakState.timingAtAnchor, by: elapsedSinceAnchor),
+        let elapsedBeforeAnchor = checkedAdd(
+          breakState.elapsedBeforeAnchorSeconds, elapsedSinceAnchor),
+        let accumulated = checkedAdd(snapshot.accumulatedBreakSeconds, elapsedBeforeAnchor)
+      else { return nil }
+      return (
+        .breakState(accumulatedBreakSeconds: accumulated),
+        LiveCommitMaterialization(
+          wallAnchor: commitAnchor,
+          elapsedBeforeAnchorSeconds: elapsedBeforeAnchor,
+          timingAtAnchor: timing,
+          phaseOrBreakDeadline: deadline,
+          scheduledCheckInAt: nil,
+          scheduledCheckInRemaining: nil,
+          adjustment: commitAdjustment
+        )
+      )
+    case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
+      return nil
+    }
+  }
+
+  private static func reducedTiming(_ timing: PausedTiming, by elapsed: UInt64) -> PausedTiming? {
+    switch timing {
+    case let .timed(remaining):
+      let budget = UInt64(remaining.value)
+      guard elapsed < budget, let reduced = try? PhaseSeconds(UInt32(budget - elapsed)) else {
+        return nil
+      }
+      return .timed(remaining: reduced)
+    case .openEnded:
+      return .openEnded
+    }
+  }
+
+  private static func checkedAdd(_ lhs: UInt64, _ rhs: UInt64) -> UInt64? {
+    let result = lhs.addingReportingOverflow(rhs)
+    return result.overflow ? nil : result.partialValue
+  }
+
+  private static func scheduledRemainder(
+    at scheduledAt: SessionTimestamp?,
+    from instant: SessionTimestamp
+  ) -> CheckInRemainingSeconds?? {
+    guard let scheduledAt else { return .some(nil) }
+    guard let seconds = secondsBetween(scheduledAt, instant), seconds > 0,
+      let remaining = try? CheckInRemainingSeconds(UInt32(exactly: seconds) ?? 0)
+    else { return nil }
+    return .some(remaining)
   }
 
   private static func shifted(

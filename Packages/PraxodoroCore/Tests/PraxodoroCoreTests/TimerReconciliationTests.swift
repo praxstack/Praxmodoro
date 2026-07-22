@@ -237,7 +237,30 @@ struct TimerReconciliationTests {
             phaseOrBreakDeadline: SessionTimestamp(
               unchecked: Date(timeIntervalSinceReferenceDate: 400)),
             scheduledCheckInAt: nil,
-            admissionAdjustment: nil
+            admissionAdjustment: nil,
+            nonBoundaryExitMaterialization: .focus(
+              accumulatedFocusSeconds: 10,
+              suspendedTiming: .timed(remaining: try PhaseSeconds(290)),
+              scheduledCheckInRemaining: nil
+            ),
+            liveCommitMaterialization: LiveCommitMaterialization(
+              wallAnchor: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 111)),
+              elapsedBeforeAnchorSeconds: 10,
+              timingAtAnchor: .timed(remaining: try PhaseSeconds(290)),
+              phaseOrBreakDeadline: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 401)),
+              scheduledCheckInAt: nil,
+              scheduledCheckInRemaining: nil,
+              adjustment: ClockAdjustmentEvent(
+                previousPhaseOrBreakDeadline: SessionTimestamp(
+                  unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+                newPhaseOrBreakDeadline: SessionTimestamp(
+                  unchecked: Date(timeIntervalSinceReferenceDate: 401)),
+                previousScheduledCheckInAt: nil,
+                newScheduledCheckInAt: nil,
+                drift: .seconds(1)
+              )
+            )
           )
         )
     )
