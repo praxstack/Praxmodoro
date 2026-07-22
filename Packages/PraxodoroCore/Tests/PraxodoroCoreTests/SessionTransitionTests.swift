@@ -2652,4 +2652,362 @@ struct SessionTransitionTests {
       ) == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
     )
   }
+
+  @Test("live focus schedule changes reanchor timing and replace the notification winner")
+  func liveFocusScheduleChangesAreExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    guard
+      case let .transition(prepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: sessionID,
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: prepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), case let .focusing(originalFocus) = started.snapshot.state,
+      let originalWinner = started.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected live focus fixture")
+      return
+    }
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200))
+    let schedule = CheckInSchedule.interval(try CheckInMinutes(30))
+    let fullThirtyMinutes = try CheckInRemainingSeconds(1_800)
+    let outcome = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 2,
+        intent: .setCheckInSchedule(schedule)
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: observedAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome,
+      case let .focusing(focus) = reduction.snapshot.state,
+      let replacement = reduction.snapshot.nextScheduledCheckIn,
+      let phaseToken = focus.phaseBoundaryToken,
+      let phaseEndsAt = focus.phaseEndsAt
+    else {
+      Issue.record("expected live configuration transition")
+      return
+    }
+
+    #expect(reduction.snapshot.configuration.checkInSchedule == schedule)
+    #expect(reduction.snapshot.revision == 3)
+    #expect(reduction.snapshot.eventSequence == 4)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 3)
+    #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+    #expect(focus.phase == originalFocus.phase)
+    #expect(focus.timingAtAnchor == .timed(remaining: try PhaseSeconds(1_400)))
+    #expect(focus.wallAnchor == observedAt)
+    #expect(focus.elapsedBeforeAnchorSeconds == 100)
+    #expect(focus.projectionToken == projectionToken)
+    #expect(replacement.token.sourceRevision == 3)
+    #expect(replacement.token.occurrence == 2)
+    #expect(replacement.dueAt.date.timeIntervalSinceReferenceDate == 2_000)
+    #expect(replacement.trustedRemaining == fullThirtyMinutes)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .configurationChanged(
+            fields: SessionConfigurationFieldChanges([.checkInSchedule])!)
+        ])
+    #expect(
+      reduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: originalWinner.token)),
+          .scheduleNotification(
+            SessionNotificationRequest(boundaryToken: phaseToken, fireAt: phaseEndsAt)),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ])
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+  }
+
+  @Test("due focus boundary supersedes a configuration request")
+  func dueFocusBoundarySupersedesConfiguration() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    guard
+      case let .transition(prepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: sessionID,
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: prepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), let scheduled = started.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected scheduled live focus fixture")
+      return
+    }
+
+    let outcome = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 2,
+        intent: .setLowCognitiveLoadEnabled(true)
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: scheduled.dueAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(900)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected due boundary transition")
+      return
+    }
+    #expect(reduction.snapshot.configuration == .defaults)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == scheduled.token)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .checkInOpened(
+            trigger: .scheduled(scheduled.token), continuation: .resumeSuspended)
+        ])
+    #expect(
+      !reduction.events.contains {
+        if case .configurationChanged = $0.payload { return true }
+        return false
+      })
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+  }
+
+  @Test("invalid live focus observations enter recovery without applying configuration")
+  func liveFocusConfigurationEntersRecovery() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    guard
+      case let .transition(prepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: sessionID,
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: prepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), case let .focusing(focus) = started.snapshot.state,
+      let scheduled = started.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected live focus fixture")
+      return
+    }
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200))
+    let cases: [(LiveProjectionObservation?, RecoveryReason)] = [
+      (nil, .missingLiveProjection),
+      (
+        LiveProjectionObservation(
+          projectionToken: UUID(),
+          rawWallAtProjectionAnchor: focus.wallAnchor.date,
+          monotonicElapsedSinceAnchor: .seconds(100)
+        ),
+        .staleLiveProjection
+      ),
+    ]
+
+    for (observation, reason) in cases {
+      let outcome = SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(
+          expectedRevision: 2,
+          intent: .setLowCognitiveLoadEnabled(true)
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: observedAt.date,
+            liveProjection: observation
+          ),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+      guard case let .transition(reduction) = outcome else {
+        Issue.record("expected recovery transition for \(reason)")
+        continue
+      }
+      let trustworthy = SuspendedFocusState(
+        phase: focus.phase,
+        timing: focus.timingAtAnchor,
+        resumeDisposition: .focusing,
+        scheduledCheckInRemaining: scheduled.trustedRemaining
+      )
+      #expect(
+        reduction.snapshot.state
+          == .recoveryNeeded(
+            RecoveryState(
+              reason: reason,
+              lastTrustworthyState: .focus(trustworthy),
+              safeChoices: Set(ClockRecoveryChoice.allCases)
+            )))
+      #expect(reduction.snapshot.configuration == .defaults)
+      #expect(reduction.snapshot.nextScheduledCheckIn == nil)
+      #expect(reduction.snapshot.lastConsumedBoundaryToken == nil)
+      #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+      #expect(reduction.events.map(\.payload) == [.clockRecoveryNeeded(reason: reason)])
+      #expect(
+        reduction.effects
+          == [
+            .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
+            .invalidateDisplayProjection(projectionToken: nil),
+          ])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+  }
+
+  @Test("live configuration event exhaustion precedes boundary allocation exhaustion")
+  func liveConfigurationFailurePrecedenceIsExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let phase = TimingPolicy.classic.phases[0]
+    let wall = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: phase.id,
+      sourceRevision: 2,
+      occurrence: 0
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 2,
+      occurrence: 1
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: UInt64.max,
+      nextBoundaryOccurrence: UInt64.max,
+      state: .focusing(
+        FocusState(
+          phase: phase,
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(1_500)),
+          wallAnchor: wall,
+          phaseEndsAt: SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 1_600)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: projectionToken,
+          phaseBoundaryToken: phaseToken
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: wall,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: wall,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 2,
+        intent: .setCheckInSchedule(.interval(try CheckInMinutes(30)))
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 200),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: wall.date,
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    #expect(
+      outcome
+        == .failed(
+          snapshot: snapshot,
+          reason: .eventSequenceExhausted(
+            requiredAdditionalEvents: 1,
+            remainingCapacity: 0
+          ))
+    )
+  }
 }
