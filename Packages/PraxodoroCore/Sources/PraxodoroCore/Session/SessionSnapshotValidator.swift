@@ -12,6 +12,9 @@ internal enum SessionSnapshotValidator {
 
     validateIdleBaseline(candidate, into: &violations)
     validateRootTimestamps(candidate, into: &violations)
+    if candidate.state.kind != .idle, candidate.lastWallObservationAt == nil {
+      violations.insert(.invalidWallObservation)
+    }
     validateScheduledCheckIn(
       candidate.nextScheduledCheckIn,
       schedule: candidate.configuration.checkInSchedule,

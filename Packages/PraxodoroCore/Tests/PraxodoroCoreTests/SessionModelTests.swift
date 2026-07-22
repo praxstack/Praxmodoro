@@ -330,6 +330,31 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidStartTimestamp))
   }
 
+  @Test("non-idle snapshots retain their last wall observation")
+  func nonIdleSnapshotRequiresLastWallObservation() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: nil,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidWallObservation))
+  }
+
   @Test("relational validation requires exactly one revision increment")
   func transitionRevisionMustIncrementExactlyOnce() {
     let candidate = SessionSnapshot.canonicalIdle
