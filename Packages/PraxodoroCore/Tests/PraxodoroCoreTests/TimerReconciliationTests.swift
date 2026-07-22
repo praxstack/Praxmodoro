@@ -216,6 +216,12 @@ struct TimerReconciliationTests {
         instant: SessionInstant(
           wallNow: Date(timeIntervalSinceReferenceDate: .infinity), liveProjection: nil))
     }
+    #expect(throws: ProjectionError.arithmeticOverflow) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil))
+    }
 
     #expect(throws: ProjectionError.arithmeticOverflow) {
       try SessionProjector.project(
@@ -564,20 +570,22 @@ struct TimerReconciliationTests {
 
   @Test("live entry rejects non-finite wall input before token allocation")
   func liveEntryRejectsNonFiniteWallInput() throws {
-    #expect(
-      SessionTimeKernel.materializeLiveEntry(
-        .focus(
-          sessionID: UUID(),
-          targetRevision: 1,
-          nextBoundaryOccurrence: 0,
-          wallNow: Date(timeIntervalSinceReferenceDate: .infinity),
-          projectionToken: UUID(),
-          phaseID: .focus,
-          timing: .timed(remaining: try PhaseSeconds(1)),
-          cadence: .fullInterval(.fifteen)
-        )
-      ) == .failure(.nonFiniteWallObservation)
-    )
+    for interval in [Double.nan, .infinity, -.infinity] {
+      #expect(
+        SessionTimeKernel.materializeLiveEntry(
+          .focus(
+            sessionID: UUID(),
+            targetRevision: 1,
+            nextBoundaryOccurrence: 0,
+            wallNow: Date(timeIntervalSinceReferenceDate: interval),
+            projectionToken: UUID(),
+            phaseID: .focus,
+            timing: .timed(remaining: try PhaseSeconds(1)),
+            cadence: .fullInterval(.fifteen)
+          )
+        ) == .failure(.nonFiniteWallObservation)
+      )
+    }
   }
 
   @Test("live entry rejects finite clocks that cannot represent an exact deadline")
@@ -878,6 +886,13 @@ struct TimerReconciliationTests {
         snapshot: snapshot,
         instant: SessionInstant(
           wallNow: Date(timeIntervalSinceReferenceDate: .infinity), liveProjection: nil)
+      ) == .failure(.nonFiniteWallObservation)
+    )
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil)
       ) == .failure(.nonFiniteWallObservation)
     )
     #expect(
@@ -1197,6 +1212,12 @@ struct TimerReconciliationTests {
       SessionTimeKernel.reconcileRelaunch(
         snapshot: snapshot,
         wallNow: Date(timeIntervalSinceReferenceDate: .infinity)
+      ) == .failure(.nonFiniteWallObservation)
+    )
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(
+        snapshot: snapshot,
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan)
       ) == .failure(.nonFiniteWallObservation)
     )
   }
