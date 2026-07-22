@@ -4602,6 +4602,137 @@ struct SessionTransitionTests {
       dueThoughtReduction.events.map(\.payload.kind) == [.thoughtParked, .checkInOpened])
     #expect(dueThoughtReduction.snapshot.lastConsumedBoundaryToken == scheduled.token)
     #expect(SessionSnapshotValidator.validateCandidate(dueThoughtReduction.snapshot).isEmpty)
+
+    let activeContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 200),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+          monotonicElapsedSinceAnchor: .seconds(100)
+        )),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let manual = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .openCheckIn(.manual)),
+      context: activeContext
+    )
+    guard case let .transition(manualReduction) = manual,
+      case let .checkingIn(manualCheckIn) = manualReduction.snapshot.state
+    else {
+      Issue.record("expected manual live check-in")
+      return
+    }
+    #expect(manualReduction.snapshot.accumulatedFocusSeconds == 100)
+    #expect(manualCheckIn.trigger == .manual)
+    #expect(manualCheckIn.continuation == .resumeSuspended)
+    #expect(manualCheckIn.suspended?.timing == .timed(remaining: try PhaseSeconds(1_400)))
+    let expectedManualCadence = try CheckInRemainingSeconds(800)
+    #expect(manualCheckIn.suspended?.scheduledCheckInRemaining == expectedManualCadence)
+    #expect(manualReduction.events.map(\.payload.kind) == [.checkInOpened])
+    #expect(
+      manualReduction.effects == [
+        .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
+        .announceAccessibility(.checkInPresented),
+        .invalidateDisplayProjection(projectionToken: nil),
+      ])
+    #expect(SessionSnapshotValidator.validateCandidate(manualReduction.snapshot).isEmpty)
+
+    let breakProjection = UUID()
+    let breakChoice = BreakChoice(kind: .move, duration: .timed(.five))
+    let breakOutcome = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .requestBreak(breakChoice)),
+      context: ReductionContext(
+        instant: activeContext.instant,
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: breakProjection
+      )
+    )
+    guard case let .transition(breakReduction) = breakOutcome,
+      case let .breaking(liveBreak) = breakReduction.snapshot.state,
+      let breakToken = liveBreak.boundaryToken,
+      let breakEndsAt = liveBreak.endsAt
+    else {
+      Issue.record("expected live focus break")
+      return
+    }
+    #expect(breakReduction.snapshot.accumulatedFocusSeconds == 100)
+    #expect(
+      liveBreak.wallAnchor == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200))
+    )
+    #expect(liveBreak.projectionToken == breakProjection)
+    #expect(liveBreak.resumeTarget.resumeDisposition == .focusing)
+    #expect(liveBreak.resumeTarget.timing == .timed(remaining: try PhaseSeconds(1_400)))
+    #expect(breakReduction.events.map(\.payload.kind) == [.breakStarted])
+    #expect(
+      breakReduction.effects == [
+        .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
+        .scheduleNotification(
+          SessionNotificationRequest(boundaryToken: breakToken, fireAt: breakEndsAt)),
+        .announceAccessibility(.breakStarted),
+        .invalidateDisplayProjection(projectionToken: breakProjection),
+      ])
+    #expect(SessionSnapshotValidator.validateCandidate(breakReduction.snapshot).isEmpty)
+
+    let driftBreakProjection = UUID()
+    let driftBreak = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .requestBreak(breakChoice)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 210),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: driftBreakProjection
+      )
+    )
+    guard case let .transition(driftBreakReduction) = driftBreak,
+      case let .breaking(driftedBreak) = driftBreakReduction.snapshot.state
+    else {
+      Issue.record("expected drifted live break request")
+      return
+    }
+    #expect(
+      driftedBreak.wallAnchor
+        == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 210)))
+    #expect(driftBreakReduction.snapshot.lastWallObservationAt == driftedBreak.wallAnchor)
+    #expect(driftBreakReduction.snapshot.accumulatedFocusSeconds == 100)
+    #expect(driftBreakReduction.events.map(\.payload.kind) == [.clockAdjusted, .breakStarted])
+    #expect(SessionSnapshotValidator.validateCandidate(driftBreakReduction.snapshot).isEmpty)
+
+    let dueBreakRequest = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .requestBreak(breakChoice)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: scheduled.dueAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(900)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(dueBreakReduction) = dueBreakRequest else {
+      Issue.record("expected due break request supersession")
+      return
+    }
+    #expect(dueBreakReduction.snapshot.state.kind == .checkingIn)
+    #expect(dueBreakReduction.events.map(\.payload.kind) == [.checkInOpened])
+    #expect(dueBreakReduction.snapshot.lastConsumedBoundaryToken == scheduled.token)
     let cases: [(SessionTimestamp, Duration, SessionStopChoice, UInt64)] = [
       (
         SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200)),
