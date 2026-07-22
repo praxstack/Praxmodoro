@@ -557,11 +557,93 @@ public enum SessionReducer {
     switch command.intent {
     case .resume:
       return resumePaused(snapshot: snapshot, context: context)
+    case let .openCheckIn(trigger):
+      return openCheckInFromPaused(
+        snapshot: snapshot,
+        trigger: trigger,
+        context: context
+      )
     case .reconcileTime:
       return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
+  }
+
+  private static func openCheckInFromPaused(
+    snapshot: SessionSnapshot,
+    trigger: CheckInTrigger,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard trigger == .manual || trigger == .pauseOffer else {
+      return invalidTransition(snapshot: snapshot, intent: .openCheckIn(trigger))
+    }
+    guard case let .paused(paused) = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(snapshot: snapshot, intent: .openCheckIn(trigger))
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 1 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let suspended = SuspendedFocusState(
+      phase: paused.phase,
+      timing: paused.timing,
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: paused.scheduledCheckInRemaining
+    )
+    let continuation = CheckInContinuation.resumeSuspended
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: trigger,
+          continuation: continuation,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .checkInOpened(trigger: trigger, continuation: continuation)
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
+        effects: [
+          .announceAccessibility(.checkInPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+      ))
   }
 
   private static func resumePaused(

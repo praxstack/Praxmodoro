@@ -758,4 +758,89 @@ struct SessionTransitionTests {
         ]
     )
   }
+
+  @Test(
+    "paused check-in preserves frozen resume disposition",
+    arguments: [CheckInTrigger.manual, .pauseOffer]
+  )
+  func pausedCheckInPreservesFrozenResumeDisposition(trigger: CheckInTrigger) throws {
+    let sessionID = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let pausedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let observedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 4,
+      nextBoundaryOccurrence: 2,
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(1_490)),
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 3, intent: .openCheckIn(trigger)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected paused check-in transition")
+      return
+    }
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+    )
+
+    #expect(reduction.snapshot.revision == 4)
+    #expect(reduction.snapshot.eventSequence == 5)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+    #expect(
+      reduction.snapshot.state
+        == .checkingIn(
+          CheckInState(
+            suspended: suspended,
+            trigger: trigger,
+            continuation: .resumeSuspended,
+            phaseBoundaryScheduledCheckInRemaining: nil
+          ))
+    )
+    #expect(
+      reduction.events.map(\.payload)
+        == [.checkInOpened(trigger: trigger, continuation: .resumeSuspended)])
+    #expect(reduction.events[0].occurredAt == observedAt)
+    #expect(
+      reduction.effects
+        == [
+          .announceAccessibility(.checkInPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+    )
+  }
 }
