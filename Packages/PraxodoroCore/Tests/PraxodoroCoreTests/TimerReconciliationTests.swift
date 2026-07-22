@@ -333,6 +333,70 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("equal phase and scheduled boundaries select phase and reset cadence")
+  func equalFocusBoundariesSelectPhase() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let due = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0)
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 2, occurrence: 1)
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: due,
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: phaseToken
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 4,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken, dueAt: due, trustedRemaining: try CheckInRemainingSeconds(300)),
+      lastConsumedBoundaryToken: nil
+    )
+
+    let decision = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: NormalizedLiveTiming(
+        observedWallNow: due,
+        expectedWallNow: due,
+        normalizedDueInstant: due,
+        phaseOrBreakDeadline: due,
+        scheduledCheckInAt: due,
+        admissionAdjustment: nil
+      ),
+      observedToken: phaseToken
+    )
+
+    #expect(
+      decision
+        == .winner(
+          BoundaryWinnerDecision(
+            token: phaseToken,
+            dueAt: due,
+            exitMaterialization: .phase(accumulatedFocusSeconds: 304),
+            scheduledCadence: .resetAfterPhaseCollision
+          )
+        )
+    )
+  }
+
   @Test("scheduled check-in wins before a later phase deadline")
   func scheduledCheckInWinsBeforeLaterPhaseDeadline() throws {
     let sessionID = UUID()

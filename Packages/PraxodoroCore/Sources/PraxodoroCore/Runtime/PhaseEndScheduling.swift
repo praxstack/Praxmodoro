@@ -784,42 +784,51 @@ internal enum SessionTimeKernel {
     guard observedToken == nil || observedToken == winner.token else {
       return .earlierBoundaryPending
     }
-    guard case let .timed(remaining) = focus.timingAtAnchor else {
-      return .recovery(.arithmeticOverflow)
-    }
-    let budget = UInt64(remaining.value)
-    let elapsed =
-      winner.dueAt.date.timeIntervalSinceReferenceDate
-      - focus.wallAnchor.date.timeIntervalSinceReferenceDate
-    guard elapsed.isFinite, elapsed >= 0, elapsed <= Double(budget) else {
-      return .recovery(.arithmeticOverflow)
-    }
-    let elapsedSeconds = UInt64(elapsed)
-    let carry = focus.elapsedBeforeAnchorSeconds.addingReportingOverflow(elapsedSeconds)
-    let total = snapshot.accumulatedFocusSeconds.addingReportingOverflow(carry.partialValue)
-    guard !carry.overflow, !total.overflow else { return .recovery(.arithmeticOverflow) }
     switch winner.token.kind {
     case .phase:
+      guard case let .timed(remaining) = focus.timingAtAnchor else {
+        return .recovery(.arithmeticOverflow)
+      }
+      let carry = focus.elapsedBeforeAnchorSeconds.addingReportingOverflow(UInt64(remaining.value))
+      let total = snapshot.accumulatedFocusSeconds.addingReportingOverflow(carry.partialValue)
+      guard !carry.overflow, !total.overflow else { return .recovery(.arithmeticOverflow) }
       return .winner(
         BoundaryWinnerDecision(
           token: winner.token,
           dueAt: winner.dueAt,
           exitMaterialization: .phase(accumulatedFocusSeconds: total.partialValue),
-          scheduledCadence: cadenceAfterPhase(snapshot.configuration.checkInSchedule)
+          scheduledCadence: cadenceAfterPhase(
+            snapshot: snapshot,
+            phaseDueAt: winner.dueAt,
+            normalizedDueInstant: timing.normalizedDueInstant
+          )
         )
       )
     case .scheduledCheckIn:
-      let remainingSeconds = budget - elapsedSeconds
-      guard let suspended = try? PhaseSeconds(UInt32(remainingSeconds)) else {
+      guard let elapsedSeconds = secondsBetween(winner.dueAt, focus.wallAnchor) else {
         return .recovery(.arithmeticOverflow)
       }
+      let suspended: PausedTiming
+      switch focus.timingAtAnchor {
+      case let .timed(remaining):
+        let budget = UInt64(remaining.value)
+        guard elapsedSeconds < budget,
+          let phaseSeconds = try? PhaseSeconds(UInt32(budget - elapsedSeconds))
+        else { return .recovery(.arithmeticOverflow) }
+        suspended = .timed(remaining: phaseSeconds)
+      case .openEnded:
+        suspended = .openEnded
+      }
+      let carry = focus.elapsedBeforeAnchorSeconds.addingReportingOverflow(elapsedSeconds)
+      let total = snapshot.accumulatedFocusSeconds.addingReportingOverflow(carry.partialValue)
+      guard !carry.overflow, !total.overflow else { return .recovery(.arithmeticOverflow) }
       return .winner(
         BoundaryWinnerDecision(
           token: winner.token,
           dueAt: winner.dueAt,
           exitMaterialization: .scheduledCheckIn(
             accumulatedFocusSeconds: total.partialValue,
-            suspendedTiming: .timed(remaining: suspended)
+            suspendedTiming: suspended
           ),
           scheduledCadence: .resetAfterScheduledOccurrence
         )
@@ -862,12 +871,21 @@ internal enum SessionTimeKernel {
   }
 
   private static func cadenceAfterPhase(
-    _ schedule: CheckInSchedule
+    snapshot: SessionSnapshot,
+    phaseDueAt: SessionTimestamp,
+    normalizedDueInstant: SessionTimestamp
   ) -> ScheduledCadenceAdmission {
-    switch schedule {
-    case .manualOnly: .manualOnly
-    case .interval: .resetAfterPhaseCollision
+    guard let scheduled = snapshot.nextScheduledCheckIn else { return .manualOnly }
+    if scheduled.dueAt == phaseDueAt { return .resetAfterPhaseCollision }
+    guard let remainingSeconds = secondsBetween(scheduled.dueAt, phaseDueAt) else {
+      return .resetAfterSupersededScheduledOccurrence
     }
+    if scheduled.dueAt.date <= normalizedDueInstant.date {
+      return .resetAfterSupersededScheduledOccurrence
+    }
+    guard let remaining = try? CheckInRemainingSeconds(UInt32(exactly: remainingSeconds) ?? 0)
+    else { return .resetAfterSupersededScheduledOccurrence }
+    return .preserve(remaining)
   }
 }
 
