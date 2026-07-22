@@ -209,6 +209,24 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("live entry rejects exhausted boundary occurrences before construction")
+  func liveEntryRejectsExhaustedBoundaryOccurrences() throws {
+    #expect(
+      SessionTimeKernel.materializeLiveEntry(
+        .focus(
+          sessionID: UUID(),
+          targetRevision: 1,
+          nextBoundaryOccurrence: .max,
+          wallNow: Date(timeIntervalSinceReferenceDate: 100),
+          projectionToken: UUID(),
+          phaseID: .focus,
+          timing: .timed(remaining: try PhaseSeconds(1)),
+          cadence: .manualOnly
+        )
+      ) == .failure(.boundaryOccurrenceExhausted)
+    )
+  }
+
   @Test("open-ended break entry has no deadline or boundary token")
   func openEndedBreakEntryHasNoBoundary() {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
