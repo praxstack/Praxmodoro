@@ -173,4 +173,73 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("live reconciliation retains expected timing within two seconds of drift")
+  func liveReconciliationRetainsExpectedTimingWithinTolerance() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let projectionToken = UUID()
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 1,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: projectionToken,
+          phaseBoundaryToken: BoundaryToken(
+            sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
+          )
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: SessionConfiguration(
+        checkInSchedule: .manualOnly,
+        breakSuggestionsEnabled: true,
+        lowCognitiveLoadEnabled: false,
+        reflectionPromptEnabled: true
+      ),
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let decision = SessionTimeKernel.reconcileLive(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 111),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(10)
+        )
+      )
+    )
+
+    #expect(
+      decision
+        == .normalized(
+          NormalizedLiveTiming(
+            observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 111)),
+            expectedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110)),
+            normalizedDueInstant: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 110)),
+            phaseOrBreakDeadline: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+            scheduledCheckInAt: nil,
+            admissionAdjustment: nil
+          )
+        )
+    )
+  }
 }

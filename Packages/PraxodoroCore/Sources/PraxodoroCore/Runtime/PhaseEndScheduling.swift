@@ -1,5 +1,20 @@
 import Foundation
 
+internal struct NormalizedLiveTiming: Equatable, Sendable {
+  let observedWallNow: SessionTimestamp
+  let expectedWallNow: SessionTimestamp
+  let normalizedDueInstant: SessionTimestamp
+  let phaseOrBreakDeadline: SessionTimestamp?
+  let scheduledCheckInAt: SessionTimestamp?
+  let admissionAdjustment: ClockAdjustmentEvent?
+}
+
+internal enum LiveTimeDecision: Equatable, Sendable {
+  case normalized(NormalizedLiveTiming)
+  case recovery(RecoveryReason)
+  case failure(ReductionFailure)
+}
+
 internal enum ScheduledCadenceSeed: Equatable, Sendable {
   case manualOnly
   case fullInterval(CheckInMinutes)
@@ -62,6 +77,68 @@ internal struct BreakEntryMaterialization: Equatable, Sendable {
 }
 
 internal enum SessionTimeKernel {
+  static func reconcileLive(
+    snapshot: SessionSnapshot,
+    instant: SessionInstant
+  ) -> LiveTimeDecision {
+    guard canonicalSecond(instant.wallNow) != nil else {
+      return .failure(.nonFiniteWallObservation)
+    }
+    guard let live = instant.liveProjection else { return .recovery(.missingLiveProjection) }
+    let liveValues: (token: UUID, anchor: SessionTimestamp, deadline: SessionTimestamp?)
+    switch snapshot.state {
+    case let .focusing(focus):
+      liveValues = (focus.projectionToken, focus.wallAnchor, focus.phaseEndsAt)
+    case let .breaking(breakState):
+      liveValues = (breakState.projectionToken, breakState.wallAnchor, breakState.endsAt)
+    default:
+      return .recovery(.missingLiveProjection)
+    }
+    guard live.projectionToken == liveValues.token else { return .recovery(.staleLiveProjection) }
+    guard let rawAnchor = canonicalSecond(live.rawWallAtProjectionAnchor),
+      rawAnchor == liveValues.anchor
+    else { return .recovery(.inconsistentLiveProjectionAnchor) }
+    guard live.monotonicElapsedSinceAnchor >= .zero else {
+      return .recovery(.negativeMonotonicElapsed)
+    }
+    guard
+      let expectedWallNow = canonicalDateAfter(
+        live.rawWallAtProjectionAnchor,
+        duration: live.monotonicElapsedSinceAnchor
+      ), let observedWallNow = canonicalSecond(instant.wallNow)
+    else { return .recovery(.arithmeticOverflow) }
+    let drift =
+      observedWallNow.date.timeIntervalSinceReferenceDate
+      - expectedWallNow.date.timeIntervalSinceReferenceDate
+    guard drift.isFinite else { return .recovery(.arithmeticOverflow) }
+    let rebase = abs(drift) > 2
+    let normalizedDeadline = rebase ? shifted(liveValues.deadline, by: drift) : liveValues.deadline
+    let oldScheduled = snapshot.nextScheduledCheckIn?.dueAt
+    let normalizedScheduled = rebase ? shifted(oldScheduled, by: drift) : oldScheduled
+    guard (!rebase || (liveValues.deadline == nil || normalizedDeadline != nil)),
+      (!rebase || (oldScheduled == nil || normalizedScheduled != nil))
+    else { return .recovery(.arithmeticOverflow) }
+    let adjustment =
+      rebase
+      ? ClockAdjustmentEvent(
+        previousPhaseOrBreakDeadline: liveValues.deadline,
+        newPhaseOrBreakDeadline: normalizedDeadline,
+        previousScheduledCheckInAt: oldScheduled,
+        newScheduledCheckInAt: normalizedScheduled,
+        drift: .seconds(drift)
+      ) : nil
+    return .normalized(
+      NormalizedLiveTiming(
+        observedWallNow: observedWallNow,
+        expectedWallNow: expectedWallNow,
+        normalizedDueInstant: rebase ? observedWallNow : expectedWallNow,
+        phaseOrBreakDeadline: normalizedDeadline,
+        scheduledCheckInAt: normalizedScheduled,
+        admissionAdjustment: adjustment
+      )
+    )
+  }
+
   static func materializeLiveEntry(_ request: LiveEntryRequest) -> LiveEntryDecision {
     switch request {
     case let .focus(
@@ -237,6 +314,28 @@ internal enum SessionTimeKernel {
     let deadline = base + Double(seconds)
     guard deadline.isFinite else { return nil }
     return canonicalSecond(Date(timeIntervalSinceReferenceDate: deadline))
+  }
+
+  private static func shifted(
+    _ timestamp: SessionTimestamp?,
+    by seconds: Double
+  ) -> SessionTimestamp? {
+    guard let timestamp else { return nil }
+    let shifted = timestamp.date.timeIntervalSinceReferenceDate + seconds
+    guard shifted.isFinite else { return nil }
+    return canonicalSecond(Date(timeIntervalSinceReferenceDate: shifted))
+  }
+
+  private static func canonicalDateAfter(
+    _ date: Date,
+    duration: Duration
+  ) -> SessionTimestamp? {
+    let components = duration.components
+    let seconds =
+      Double(components.seconds) + Double(components.attoseconds) / 1_000_000_000_000_000_000
+    let end = date.timeIntervalSinceReferenceDate + seconds
+    guard seconds.isFinite, end.isFinite else { return nil }
+    return canonicalSecond(Date(timeIntervalSinceReferenceDate: end))
   }
 }
 
