@@ -154,4 +154,18 @@ struct SessionModelTests {
   func stateKindMappingsCoverStaticStates() {
     #expect(SessionState.idle.kind == .idle)
   }
+
+  @Test("event change sets reject empty payloads")
+  func emptyEventChangeSetsAreUnconstructable() {
+    #expect(SessionPlanFieldChanges([]) == nil)
+    #expect(SessionConfigurationFieldChanges([]) == nil)
+  }
+
+  @Test("effects and check-in responses map to closed kinds")
+  func effectAndResponseKindsAreExhaustive() {
+    #expect(SessionEffect.playHaptic(.gentleBoundary).kind == .playHaptic)
+    #expect(CheckInResponse.dismiss.kind == .dismiss)
+    #expect(SessionEffectKind.allCases.count == 6)
+    #expect(CheckInResponseKind.allCases.count == 6)
+  }
 }
