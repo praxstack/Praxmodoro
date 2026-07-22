@@ -320,6 +320,8 @@ internal enum SessionSnapshotValidator {
         phase: value.phase,
         timing: value.timingAtAnchor,
         deadline: value.phaseEndsAt,
+        wallAnchor: value.wallAnchor,
+        elapsedBeforeAnchorSeconds: value.elapsedBeforeAnchorSeconds,
         into: &violations
       )
       validateBoundaryToken(
@@ -340,7 +342,14 @@ internal enum SessionSnapshotValidator {
       validate(value.wallAnchor, as: .breakWallAnchor, into: &violations)
       validate(value.endsAt, as: .breakDeadline, into: &violations)
       if lastWallObservationAt != value.wallAnchor { violations.insert(.invalidWallObservation) }
-      validateLiveBreak(choice: value.choice, timing: value.timingAtAnchor, deadline: value.endsAt, into: &violations)
+      validateLiveBreak(
+        choice: value.choice,
+        timing: value.timingAtAnchor,
+        deadline: value.endsAt,
+        wallAnchor: value.wallAnchor,
+        elapsedBeforeAnchorSeconds: value.elapsedBeforeAnchorSeconds,
+        into: &violations
+      )
       validateBoundaryToken(
         value.boundaryToken,
         sessionID: sessionID,
@@ -445,6 +454,8 @@ internal enum SessionSnapshotValidator {
     phase: SessionPhaseDescriptor,
     timing: PausedTiming,
     deadline: SessionTimestamp?,
+    wallAnchor: SessionTimestamp,
+    elapsedBeforeAnchorSeconds: UInt64,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch (phase.duration, timing, deadline) {
@@ -457,6 +468,14 @@ internal enum SessionSnapshotValidator {
     default:
       violations.insert(.timingShapeMismatch)
     }
+    validateTimedBudget(
+      timing: timing,
+      configuredDuration: phase.duration,
+      elapsedBeforeAnchorSeconds: elapsedBeforeAnchorSeconds,
+      wallAnchor: wallAnchor,
+      deadline: deadline,
+      into: &violations
+    )
   }
 
   private static func validatePausedPhase(
@@ -470,12 +489,22 @@ internal enum SessionSnapshotValidator {
     default:
       violations.insert(.timingShapeMismatch)
     }
+    validateTimedBudget(
+      timing: timing,
+      configuredDuration: phase.duration,
+      elapsedBeforeAnchorSeconds: 0,
+      wallAnchor: nil,
+      deadline: nil,
+      into: &violations
+    )
   }
 
   private static func validateLiveBreak(
     choice: BreakChoice,
     timing: PausedTiming,
     deadline: SessionTimestamp?,
+    wallAnchor: SessionTimestamp,
+    elapsedBeforeAnchorSeconds: UInt64,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch (choice.duration, timing, deadline) {
@@ -487,6 +516,39 @@ internal enum SessionSnapshotValidator {
       violations.insert(.invalidDeadline)
     default:
       violations.insert(.timingShapeMismatch)
+    }
+    let configuredDuration: PhaseDuration = switch choice.duration {
+    case .openEnded: .openEnded
+    case let .timed(minutes): .timed(try! PhaseSeconds(UInt32(minutes.value) * 60))
+    }
+    validateTimedBudget(
+      timing: timing,
+      configuredDuration: configuredDuration,
+      elapsedBeforeAnchorSeconds: elapsedBeforeAnchorSeconds,
+      wallAnchor: wallAnchor,
+      deadline: deadline,
+      into: &violations
+    )
+  }
+
+  private static func validateTimedBudget(
+    timing: PausedTiming,
+    configuredDuration: PhaseDuration,
+    elapsedBeforeAnchorSeconds: UInt64,
+    wallAnchor: SessionTimestamp?,
+    deadline: SessionTimestamp?,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard case let (.timed(remaining), .timed(duration)) = (timing, configuredDuration) else { return }
+    let total = elapsedBeforeAnchorSeconds.addingReportingOverflow(UInt64(remaining.value))
+    guard !total.overflow, total.partialValue <= UInt64(duration.value) else {
+      violations.insert(.timingShapeMismatch)
+      return
+    }
+    guard let wallAnchor, let deadline else { return }
+    let expectedDeadline = wallAnchor.date.timeIntervalSinceReferenceDate + Double(remaining.value)
+    if !expectedDeadline.isFinite || deadline.date.timeIntervalSinceReferenceDate != expectedDeadline {
+      violations.insert(.invalidDeadline)
     }
   }
 

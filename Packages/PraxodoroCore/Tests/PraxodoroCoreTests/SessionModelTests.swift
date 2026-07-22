@@ -471,6 +471,40 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidWallObservation))
   }
 
+  @Test("timed focus candidates cannot exceed their configured phase budget")
+  func timedFocusCandidateCannotExceedPhaseBudget() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let focus = FocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timingAtAnchor: .timed(remaining: try PhaseSeconds(1)),
+      wallAnchor: anchor,
+      phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 21)),
+      elapsedBeforeAnchorSeconds: 1_500,
+      projectionToken: UUID(),
+      phaseBoundaryToken: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .focusing(focus),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.timingShapeMismatch))
+  }
+
   @Test("boundary tokens require an owned discriminant and published occurrence")
   func boundaryTokenMustBeWellFormedAndPublished() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
