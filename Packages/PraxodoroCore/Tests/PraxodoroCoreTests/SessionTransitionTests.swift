@@ -1293,4 +1293,169 @@ struct SessionTransitionTests {
     #expect(reduction.snapshot.lastConsumedBoundaryToken == consumedToken)
     #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
   }
+
+  @Test("make smaller presents re-entry with the exact suspended focus target")
+  func makeSmallerPresentsReentryForSuspendedFocus() throws {
+    let sessionID = UUID()
+    let consumedToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 3,
+      occurrence: 2
+    )
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let openedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let resolvedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Open the outline", capacity: nil, timingPolicy: .classic)
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 3,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: .scheduled(consumedToken),
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: openedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: consumedToken
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .respondToCheckIn(.makeSmaller)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: resolvedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected make-smaller re-entry transition")
+      return
+    }
+    let resumeTarget = SuspendedFocusState(
+      phase: suspended.phase,
+      timing: suspended.timing,
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(900)
+    )
+
+    #expect(reduction.snapshot.revision == 5)
+    #expect(reduction.snapshot.eventSequence == 7)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 3)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(
+      reduction.snapshot.state
+        == .reentering(
+          ReentryState(
+            resumeTarget: resumeTarget,
+            proposedAction: "Open the outline",
+            enteredAt: resolvedAt
+          )))
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == consumedToken)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.events.map(\.payload)
+        == [.checkInResolved, .reentryPresented])
+    #expect(reduction.events.map(\.occurredAt) == [resolvedAt, resolvedAt])
+    #expect(
+      reduction.effects
+        == [
+          .announceAccessibility(.reentryPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ])
+  }
+
+  @Test("make smaller after a phase boundary uses the full next phase")
+  func makeSmallerAfterPhaseBoundaryUsesFullNextPhase() throws {
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .entry,
+      sourceRevision: 3,
+      occurrence: 1
+    )
+    let nextPhase = TimingPolicy.gentleStart.phases[1]
+    let cadence = try CheckInRemainingSeconds(400)
+    let resolvedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: nil,
+          trigger: .phaseBoundary(token),
+          continuation: .startPhase(nextPhase),
+          phaseBoundaryScheduledCheckInRemaining: cadence
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Open the outline", capacity: nil,
+        timingPolicy: .gentleStart),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 300,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .respondToCheckIn(.makeSmaller)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: resolvedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected phase-boundary make-smaller transition")
+      return
+    }
+    let expectedTarget = SuspendedFocusState(
+      phase: nextPhase,
+      timing: .timed(remaining: try PhaseSeconds(1_200)),
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: cadence
+    )
+
+    guard case let .reentering(reentry) = reduction.snapshot.state else {
+      Issue.record("expected re-entry state")
+      return
+    }
+    #expect(reentry.resumeTarget == expectedTarget)
+    #expect(reentry.proposedAction == "Open the outline")
+    #expect(reentry.enteredAt == resolvedAt)
+    #expect(reduction.snapshot.eventSequence == 8)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == token)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(reduction.events.map(\.payload) == [.checkInResolved, .reentryPresented])
+  }
 }

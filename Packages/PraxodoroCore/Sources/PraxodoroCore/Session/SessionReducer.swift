@@ -937,6 +937,9 @@ public enum SessionReducer {
   ) -> ReductionOutcome {
     switch command.intent {
     case let .respondToCheckIn(response):
+      if response == .makeSmaller {
+        return presentReentryFromCheckIn(snapshot: snapshot, context: context)
+      }
       return resolveRestoringCheckIn(
         snapshot: snapshot,
         response: response,
@@ -947,6 +950,121 @@ public enum SessionReducer {
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
+  }
+
+  private static func presentReentryFromCheckIn(
+    snapshot: SessionSnapshot,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .checkingIn(checkIn) = snapshot.state,
+      let sessionID = snapshot.sessionID,
+      let plan = snapshot.plan
+    else {
+      return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(.makeSmaller))
+    }
+    let resumeTarget: SuspendedFocusState
+    switch checkIn.continuation {
+    case .resumeSuspended:
+      guard let suspended = checkIn.suspended else {
+        return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(.makeSmaller))
+      }
+      let cadence: CheckInRemainingSeconds?
+      switch checkIn.trigger {
+      case .manual, .pauseOffer:
+        cadence = suspended.scheduledCheckInRemaining
+      case .scheduled:
+        cadence = SessionTimeKernel.materializeScheduledRemainder(
+          snapshot.configuration.checkInSchedule)
+      case .phaseBoundary:
+        return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(.makeSmaller))
+      }
+      resumeTarget = SuspendedFocusState(
+        phase: suspended.phase,
+        timing: suspended.timing,
+        resumeDisposition: suspended.resumeDisposition,
+        scheduledCheckInRemaining: cadence
+      )
+    case let .startPhase(phase):
+      guard case .phaseBoundary = checkIn.trigger else {
+        return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(.makeSmaller))
+      }
+      let timing: PausedTiming =
+        switch phase.duration {
+        case let .timed(seconds): .timed(remaining: seconds)
+        case .openEnded: .openEnded
+        }
+      let cadence =
+        checkIn.phaseBoundaryScheduledCheckInRemaining
+        ?? SessionTimeKernel.materializeScheduledRemainder(
+          snapshot.configuration.checkInSchedule)
+      resumeTarget = SuspendedFocusState(
+        phase: phase,
+        timing: timing,
+        resumeDisposition: .paused,
+        scheduledCheckInRemaining: cadence
+      )
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 2 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 2,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 2,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reentering(
+        ReentryState(
+          resumeTarget: resumeTarget,
+          proposedAction: plan.firstAction,
+          enteredAt: observedAt
+        )),
+      plan: plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let events = [
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 1,
+        occurredAt: observedAt,
+        payload: .checkInResolved
+      ),
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 2,
+        occurredAt: observedAt,
+        payload: .reentryPresented
+      ),
+    ]
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: events,
+        effects: [
+          .announceAccessibility(.reentryPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+      ))
   }
 
   private static func resolveRestoringCheckIn(
