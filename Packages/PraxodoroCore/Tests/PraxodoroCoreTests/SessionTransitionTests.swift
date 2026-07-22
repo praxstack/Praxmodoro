@@ -198,7 +198,7 @@ struct SessionTransitionTests {
     #expect(changed.snapshot.plan == changedPlan)
     #expect(changed.snapshot.configuration == changedConfiguration)
     #expect(changed.snapshot.lastWallObservationAt == changedAt)
-    #expect(changed.effects.isEmpty)
+    #expect(changed.effects == [.invalidateDisplayProjection(projectionToken: nil)])
     #expect(changed.events.map(\.sequence) == [2, 3])
     #expect(changed.events.map(\.occurredAt) == [changedAt, changedAt])
     #expect(
@@ -215,6 +215,124 @@ struct SessionTransitionTests {
             ])!),
         ]
     )
+  }
+
+  @Test("prepared configuration setters change one field or no-op identically")
+  func preparedConfigurationSettersAreExact() throws {
+    let sessionID = UUID()
+    let preparedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let changedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: preparedAt)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: preparedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let thirty = try CheckInMinutes(30)
+    let cases: [(SessionIntent, SessionConfiguration, SessionConfigurationField)] = [
+      (
+        .setCheckInSchedule(.interval(thirty)),
+        SessionConfiguration(
+          checkInSchedule: .interval(thirty),
+          breakSuggestionsEnabled: true,
+          lowCognitiveLoadEnabled: false,
+          reflectionPromptEnabled: true),
+        .checkInSchedule
+      ),
+      (
+        .setBreakSuggestionsEnabled(false),
+        SessionConfiguration(
+          checkInSchedule: .every15Minutes,
+          breakSuggestionsEnabled: false,
+          lowCognitiveLoadEnabled: false,
+          reflectionPromptEnabled: true),
+        .breakSuggestionsEnabled
+      ),
+      (
+        .setLowCognitiveLoadEnabled(true),
+        SessionConfiguration(
+          checkInSchedule: .every15Minutes,
+          breakSuggestionsEnabled: true,
+          lowCognitiveLoadEnabled: true,
+          reflectionPromptEnabled: true),
+        .lowCognitiveLoadEnabled
+      ),
+      (
+        .setReflectionPromptEnabled(false),
+        SessionConfiguration(
+          checkInSchedule: .every15Minutes,
+          breakSuggestionsEnabled: true,
+          lowCognitiveLoadEnabled: false,
+          reflectionPromptEnabled: false),
+        .reflectionPromptEnabled
+      ),
+    ]
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: changedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    for (intent, expectedConfiguration, field) in cases {
+      let outcome = SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: intent),
+        context: context
+      )
+      guard case let .transition(reduction) = outcome else {
+        Issue.record("expected prepared configuration transition for \(field)")
+        continue
+      }
+      #expect(reduction.snapshot.configuration == expectedConfiguration)
+      #expect(reduction.snapshot.plan == plan)
+      #expect(reduction.snapshot.revision == 2)
+      #expect(reduction.snapshot.eventSequence == 2)
+      #expect(
+        reduction.events.map(\.payload)
+          == [
+            .configurationChanged(
+              fields: SessionConfigurationFieldChanges([field])!)
+          ])
+      #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+    }
+
+    let identical: [SessionIntent] = [
+      .setCheckInSchedule(.every15Minutes),
+      .setBreakSuggestionsEnabled(true),
+      .setLowCognitiveLoadEnabled(false),
+      .setReflectionPromptEnabled(true),
+    ]
+    let nonFiniteContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    for intent in identical {
+      #expect(
+        SessionReducer.reduce(
+          snapshot: snapshot,
+          command: SessionCommand(expectedRevision: 1, intent: intent),
+          context: nonFiniteContext
+        )
+          == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+      )
+    }
   }
 
   @Test("prepared start installs exact live focus state and effects")

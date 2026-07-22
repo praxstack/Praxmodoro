@@ -95,6 +95,19 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    if let configuration = requestedConfiguration(
+      for: command.intent,
+      current: snapshot.configuration
+    ) {
+      guard let plan = snapshot.plan else {
+        return invalidTransition(snapshot: snapshot, intent: command.intent)
+      }
+      return updatePrepared(
+        snapshot: snapshot,
+        draft: SessionDraft(plan: plan, configuration: configuration),
+        context: context
+      )
+    }
     switch command.intent {
     case let .updatePrepared(draft):
       return updatePrepared(snapshot: snapshot, draft: draft, context: context)
@@ -176,7 +189,12 @@ public enum SessionReducer {
       nextScheduledCheckIn: snapshot.nextScheduledCheckIn,
       lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
     )
-    return .transition(Reduction(snapshot: candidate, events: events, effects: []))
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: events,
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
   }
 
   private static func startPrepared(
@@ -1720,6 +1738,44 @@ public enum SessionReducer {
     if old.capacity != new.capacity { fields.insert(.capacity) }
     if old.timingPolicy != new.timingPolicy { fields.insert(.timingPolicy) }
     return fields
+  }
+
+  private static func requestedConfiguration(
+    for intent: SessionIntent,
+    current: SessionConfiguration
+  ) -> SessionConfiguration? {
+    switch intent {
+    case let .setCheckInSchedule(schedule):
+      SessionConfiguration(
+        checkInSchedule: schedule,
+        breakSuggestionsEnabled: current.breakSuggestionsEnabled,
+        lowCognitiveLoadEnabled: current.lowCognitiveLoadEnabled,
+        reflectionPromptEnabled: current.reflectionPromptEnabled
+      )
+    case let .setBreakSuggestionsEnabled(enabled):
+      SessionConfiguration(
+        checkInSchedule: current.checkInSchedule,
+        breakSuggestionsEnabled: enabled,
+        lowCognitiveLoadEnabled: current.lowCognitiveLoadEnabled,
+        reflectionPromptEnabled: current.reflectionPromptEnabled
+      )
+    case let .setLowCognitiveLoadEnabled(enabled):
+      SessionConfiguration(
+        checkInSchedule: current.checkInSchedule,
+        breakSuggestionsEnabled: current.breakSuggestionsEnabled,
+        lowCognitiveLoadEnabled: enabled,
+        reflectionPromptEnabled: current.reflectionPromptEnabled
+      )
+    case let .setReflectionPromptEnabled(enabled):
+      SessionConfiguration(
+        checkInSchedule: current.checkInSchedule,
+        breakSuggestionsEnabled: current.breakSuggestionsEnabled,
+        lowCognitiveLoadEnabled: current.lowCognitiveLoadEnabled,
+        reflectionPromptEnabled: enabled
+      )
+    default:
+      nil
+    }
   }
 
   private static func changedConfigurationFields(
