@@ -640,4 +640,40 @@ struct SessionModelTests {
     )
     #expect(violations.contains(.nonCanonicalTimestamp(.eventPhaseStartedEndsAt)))
   }
+
+  @Test("post-start lifecycle snapshots retain identity and start timestamp")
+  func postStartStateRequiresIdentityAndStartTimestamp() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let focus = FocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+      wallAnchor: anchor,
+      phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+      elapsedBeforeAnchorSeconds: 0,
+      projectionToken: UUID(),
+      phaseBoundaryToken: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: nil,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .focusing(focus),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidIdentity))
+    #expect(violations.contains(.invalidStartTimestamp))
+  }
 }

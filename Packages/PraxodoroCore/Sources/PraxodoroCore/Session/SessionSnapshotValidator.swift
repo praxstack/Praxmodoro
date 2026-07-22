@@ -17,6 +17,7 @@ internal enum SessionSnapshotValidator {
       schedule: candidate.configuration.checkInSchedule,
       into: &violations
     )
+    validateIdentityAndStartTime(candidate, into: &violations)
     validateState(
       candidate.state,
       plan: candidate.plan,
@@ -45,6 +46,21 @@ internal enum SessionSnapshotValidator {
       validate(thought.createdAt, as: .thoughtCreatedAt, into: &violations)
     }
     return violations
+  }
+
+  private static func validateIdentityAndStartTime(
+    _ candidate: SessionSnapshot,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch candidate.state {
+    case .idle:
+      break
+    case .prepared:
+      if candidate.sessionID == nil { violations.insert(.invalidIdentity) }
+    case .focusing, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed, .recoveryNeeded:
+      if candidate.sessionID == nil { violations.insert(.invalidIdentity) }
+      if candidate.startedAt == nil { violations.insert(.invalidStartTimestamp) }
+    }
   }
 
   private static func validateScheduledCheckIn(
