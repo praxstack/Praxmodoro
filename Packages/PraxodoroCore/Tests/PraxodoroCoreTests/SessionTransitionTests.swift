@@ -1561,4 +1561,115 @@ struct SessionTransitionTests {
     #expect(SessionSnapshotValidator.validateCandidate(noted.snapshot).isEmpty)
     #expect(noted.effects == [.invalidateDisplayProjection(projectionToken: nil)])
   }
+
+  @Test("taking a break from check-in preserves the exact resume target")
+  func takingBreakFromCheckInPreservesResumeTarget() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let consumedToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 3,
+      occurrence: 2
+    )
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let choice = BreakChoice(kind: .breathe, duration: .timed(.five))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 3,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: .scheduled(consumedToken),
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Open the outline", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: consumedToken
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .respondToCheckIn(.takeBreak(choice))
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected take-break transition")
+      return
+    }
+    let endsAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 750))
+    let breakToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .breakEnd,
+      phaseID: nil,
+      sourceRevision: 5,
+      occurrence: 3
+    )
+    let resumeTarget = SuspendedFocusState(
+      phase: suspended.phase,
+      timing: suspended.timing,
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(900)
+    )
+
+    #expect(
+      reduction.snapshot.state
+        == .breaking(
+          BreakState(
+            choice: choice,
+            timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+            wallAnchor: observedAt,
+            endsAt: endsAt,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: projectionToken,
+            boundaryToken: breakToken,
+            resumeTarget: resumeTarget,
+            proposedAction: "Open the outline"
+          )))
+    #expect(reduction.snapshot.eventSequence == 7)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 4)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == consumedToken)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .checkInResolved,
+          .breakStarted(kind: .breathe, duration: .timed(.five), endsAt: endsAt),
+        ])
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(boundaryToken: breakToken, fireAt: endsAt)),
+          .announceAccessibility(.breakStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ])
+  }
 }

@@ -947,6 +947,13 @@ public enum SessionReducer {
           context: context
         )
       }
+      if case let .takeBreak(choice) = response {
+        return startBreakFromCheckIn(
+          snapshot: snapshot,
+          choice: choice,
+          context: context
+        )
+      }
       return resolveRestoringCheckIn(
         snapshot: snapshot,
         response: response,
@@ -957,6 +964,165 @@ public enum SessionReducer {
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
+  }
+
+  private static func startBreakFromCheckIn(
+    snapshot: SessionSnapshot,
+    choice: BreakChoice,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .checkingIn(checkIn) = snapshot.state,
+      let sessionID = snapshot.sessionID,
+      let plan = snapshot.plan
+    else {
+      return invalidTransition(
+        snapshot: snapshot,
+        intent: .respondToCheckIn(.takeBreak(choice))
+      )
+    }
+    let resumeTarget: SuspendedFocusState
+    switch checkIn.continuation {
+    case .resumeSuspended:
+      guard let suspended = checkIn.suspended else {
+        return invalidTransition(
+          snapshot: snapshot,
+          intent: .respondToCheckIn(.takeBreak(choice))
+        )
+      }
+      let cadence: CheckInRemainingSeconds?
+      switch checkIn.trigger {
+      case .manual, .pauseOffer:
+        cadence = suspended.scheduledCheckInRemaining
+      case .scheduled:
+        cadence = SessionTimeKernel.materializeScheduledRemainder(
+          snapshot.configuration.checkInSchedule)
+      case .phaseBoundary:
+        return invalidTransition(
+          snapshot: snapshot,
+          intent: .respondToCheckIn(.takeBreak(choice))
+        )
+      }
+      resumeTarget = SuspendedFocusState(
+        phase: suspended.phase,
+        timing: suspended.timing,
+        resumeDisposition: suspended.resumeDisposition,
+        scheduledCheckInRemaining: cadence
+      )
+    case let .startPhase(phase):
+      guard case .phaseBoundary = checkIn.trigger else {
+        return invalidTransition(
+          snapshot: snapshot,
+          intent: .respondToCheckIn(.takeBreak(choice))
+        )
+      }
+      let timing: PausedTiming =
+        switch phase.duration {
+        case let .timed(seconds): .timed(remaining: seconds)
+        case .openEnded: .openEnded
+        }
+      let cadence =
+        checkIn.phaseBoundaryScheduledCheckInRemaining
+        ?? SessionTimeKernel.materializeScheduledRemainder(
+          snapshot.configuration.checkInSchedule)
+      resumeTarget = SuspendedFocusState(
+        phase: phase,
+        timing: timing,
+        resumeDisposition: .paused,
+        scheduledCheckInRemaining: cadence
+      )
+    }
+    guard canonicalSecond(context.instant.wallNow) != nil else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 2 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 2,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let entry = SessionTimeKernel.materializeLiveEntry(
+      .breakState(
+        sessionID: sessionID,
+        targetRevision: nextRevision.partialValue,
+        nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+        wallNow: context.instant.wallNow,
+        projectionToken: context.generatedProjectionToken,
+        timing: .choice(choice.duration)
+      ))
+    let materialization: BreakEntryMaterialization
+    switch entry {
+    case let .materialized(.breakState(value)):
+      materialization = value
+    case .materialized(.focus):
+      return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+    case let .failure(reason):
+      return .failed(snapshot: snapshot, reason: reason)
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 2,
+      nextBoundaryOccurrence: materialization.nextBoundaryOccurrence,
+      state: .breaking(
+        BreakState(
+          choice: choice,
+          timingAtAnchor: materialization.timingAtAnchor,
+          wallAnchor: materialization.wallAnchor,
+          endsAt: materialization.endsAt,
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: materialization.projectionToken,
+          boundaryToken: materialization.boundaryToken,
+          resumeTarget: resumeTarget,
+          proposedAction: plan.firstAction
+        )),
+      plan: plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: materialization.wallAnchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let events = [
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 1,
+        occurredAt: materialization.wallAnchor,
+        payload: .checkInResolved
+      ),
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 2,
+        occurredAt: materialization.wallAnchor,
+        payload: .breakStarted(
+          kind: choice.kind,
+          duration: choice.duration,
+          endsAt: materialization.endsAt
+        )
+      ),
+    ]
+    var effects: [SessionEffect] = []
+    if let boundaryToken = materialization.boundaryToken,
+      let endsAt = materialization.endsAt
+    {
+      effects.append(
+        .scheduleNotification(
+          SessionNotificationRequest(boundaryToken: boundaryToken, fireAt: endsAt)))
+    }
+    effects.append(.announceAccessibility(.breakStarted))
+    effects.append(
+      .invalidateDisplayProjection(projectionToken: materialization.projectionToken))
+    return .transition(Reduction(snapshot: candidate, events: events, effects: effects))
   }
 
   private static func reportDetourFromCheckIn(
