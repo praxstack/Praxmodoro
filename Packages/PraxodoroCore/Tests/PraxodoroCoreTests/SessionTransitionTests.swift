@@ -3467,6 +3467,51 @@ struct SessionTransitionTests {
     #expect(!endReduction.effects.contains(.playSound(.breakComplete)))
     #expect(SessionSnapshotValidator.validateCandidate(endReduction.snapshot).isEmpty)
 
+    let reentryThoughtID = UUID()
+    let reentryThought = SessionReducer.reduce(
+      snapshot: endReduction.snapshot,
+      command: SessionCommand(expectedRevision: 5, intent: .parkThought("  Re-entry note  ")),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 410), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: reentryThoughtID,
+        generatedProjectionToken: UUID())
+    )
+    guard case let .transition(reentryThoughtReduction) = reentryThought else {
+      Issue.record("expected re-entry thought")
+      return
+    }
+    #expect(reentryThoughtReduction.snapshot.state == endReduction.snapshot.state)
+    #expect(reentryThoughtReduction.snapshot.parkedThoughts.map(\.text) == ["Re-entry note"])
+    #expect(reentryThoughtReduction.events.map(\.payload) == [.thoughtParked(id: reentryThoughtID)])
+
+    let secondBreakProjection = UUID()
+    let secondBreakChoice = BreakChoice(kind: .quiet, duration: .openEnded)
+    let secondBreak = SessionReducer.reduce(
+      snapshot: endReduction.snapshot,
+      command: SessionCommand(expectedRevision: 5, intent: .requestBreak(secondBreakChoice)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 410), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: secondBreakProjection)
+    )
+    guard case let .transition(secondBreakReduction) = secondBreak,
+      case let .breaking(secondLiveBreak) = secondBreakReduction.snapshot.state
+    else {
+      Issue.record("expected re-entry break")
+      return
+    }
+    #expect(secondLiveBreak.resumeTarget == reentry.resumeTarget)
+    #expect(secondLiveBreak.proposedAction == reentry.proposedAction)
+    #expect(secondLiveBreak.choice == secondBreakChoice)
+    #expect(secondLiveBreak.projectionToken == secondBreakProjection)
+    #expect(secondLiveBreak.boundaryToken == nil)
+    #expect(secondBreakReduction.events.map(\.payload.kind) == [.breakStarted])
+    #expect(SessionSnapshotValidator.validateCandidate(secondBreakReduction.snapshot).isEmpty)
+
     let driftedObservedAt = SessionTimestamp(
       unchecked: Date(timeIntervalSinceReferenceDate: 402))
     let drifted = SessionReducer.reduce(
@@ -3995,6 +4040,32 @@ struct SessionTransitionTests {
         ])
     #expect(finalReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
     #expect(SessionSnapshotValidator.validateCandidate(finalReduction.snapshot).isEmpty)
+
+    let nextSessionID = UUID()
+    let preparedNext = SessionReducer.reduce(
+      snapshot: finalReduction.snapshot,
+      command: SessionCommand(expectedRevision: 7, intent: .prepare(replacement)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 600), liveProjection: nil),
+        generatedSessionID: nextSessionID,
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID())
+    )
+    guard case let .transition(nextReduction) = preparedNext else {
+      Issue.record("expected completed-session preparation")
+      return
+    }
+    #expect(nextReduction.snapshot.state.kind == .prepared)
+    #expect(nextReduction.snapshot.sessionID == nextSessionID)
+    #expect(nextReduction.snapshot.revision == 8)
+    #expect(nextReduction.snapshot.eventSequence == 1)
+    #expect(nextReduction.snapshot.nextBoundaryOccurrence == 0)
+    #expect(nextReduction.snapshot.plan == replacement.plan)
+    #expect(nextReduction.snapshot.parkedThoughts.isEmpty)
+    #expect(nextReduction.snapshot.startedAt == nil)
+    #expect(nextReduction.events.map(\.payload.kind) == [.sessionPrepared])
+    #expect(SessionSnapshotValidator.validateCandidate(nextReduction.snapshot).isEmpty)
   }
 
   @Test("live relaunch restores fresh focus projection or enters typed recovery")
