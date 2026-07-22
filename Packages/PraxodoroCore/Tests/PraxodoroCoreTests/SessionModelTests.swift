@@ -1255,6 +1255,85 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidBoundaryOccurrence))
   }
 
+  @Test("material live clock drift requires adjustment or recovery")
+  func materialLiveClockDriftCannotBeSilent() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let sessionID = UUID()
+    let start = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 1, occurrence: 0
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 1, occurrence: 1
+    )
+    let previous = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(FocusState(
+        phase: TimingPolicy.classic.phases[0],
+        timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+        wallAnchor: start,
+        phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 310)),
+        elapsedBeforeAnchorSeconds: 0,
+        projectionToken: UUID(),
+        phaseBoundaryToken: phaseToken
+      )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: start,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: start,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 910)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+    let observed = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 2,
+      state: .paused(PausedState(
+        phase: TimingPolicy.classic.phases[0],
+        timing: .timed(remaining: try PhaseSeconds(300)),
+        pausedAt: observed,
+        scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+      )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: start,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: observed,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: observed.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    #expect(SessionSnapshotValidator.validate(
+      previous: previous,
+      command: SessionCommand(expectedRevision: 1, intent: .pause),
+      candidate: candidate,
+      emittedEvents: [],
+      context: context
+    ).contains(.invalidWallObservation))
+  }
+
   @Test("break snapshots require a normalized proposed re-entry action")
   func breakStateRequiresProposedAction() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)

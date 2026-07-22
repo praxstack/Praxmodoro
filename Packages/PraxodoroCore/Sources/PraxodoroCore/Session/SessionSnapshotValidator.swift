@@ -166,6 +166,12 @@ internal enum SessionSnapshotValidator {
         violations.insert(.invalidWallObservation)
       }
     }
+    validateLiveWallDrift(
+      previous: previous,
+      candidate: candidate,
+      emittedEvents: emittedEvents,
+      into: &violations
+    )
     let isNewSessionPreparation = isPrepareReset(from: previous, command: command)
     validatePrepareReset(
       from: previous,
@@ -198,6 +204,24 @@ internal enum SessionSnapshotValidator {
       validateEventPayloadTimestamps(event.payload, into: &violations)
     }
     return violations
+  }
+
+  private static func validateLiveWallDrift(
+    previous: SessionSnapshot,
+    candidate: SessionSnapshot,
+    emittedEvents: [SessionEvent],
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard previous.state.kind == .focusing || previous.state.kind == .breaking,
+          let previousWall = previous.lastWallObservationAt?.date.timeIntervalSinceReferenceDate,
+          let candidateWall = candidate.lastWallObservationAt?.date.timeIntervalSinceReferenceDate
+    else { return }
+    let drift = abs(candidateWall - previousWall)
+    guard drift > 2, candidate.state.kind != .recoveryNeeded else { return }
+    let hasClockAdjustment = emittedEvents.contains { $0.payload.kind == .clockAdjusted }
+    if !hasClockAdjustment {
+      violations.insert(.invalidWallObservation)
+    }
   }
 
   private static func isPrepareReset(from previous: SessionSnapshot, command: SessionCommand) -> Bool {
