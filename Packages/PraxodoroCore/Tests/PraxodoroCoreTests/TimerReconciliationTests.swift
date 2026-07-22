@@ -252,6 +252,100 @@ struct TimerReconciliationTests {
     #expect(projection.nextScheduledCheckInAt == nil)
   }
 
+  @Test("live break reconciliation materializes only break progress")
+  func liveBreakReconciliationMaterializesOnlyBreakProgress() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let deadline = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let projectionToken = UUID()
+    let boundaryToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .breakEnd,
+      phaseID: nil,
+      sourceRevision: 3,
+      occurrence: 0
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 3,
+      nextBoundaryOccurrence: 1,
+      state: .breaking(
+        BreakState(
+          choice: BreakChoice(kind: .quiet, duration: .timed(.five)),
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          endsAt: deadline,
+          elapsedBeforeAnchorSeconds: 5,
+          projectionToken: projectionToken,
+          boundaryToken: boundaryToken,
+          resumeTarget: SuspendedFocusState(
+            phase: TimingPolicy.classic.phases[0],
+            timing: .timed(remaining: try PhaseSeconds(240)),
+            resumeDisposition: .focusing,
+            scheduledCheckInRemaining: try CheckInRemainingSeconds(600)
+          ),
+          proposedAction: "Return"
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 120,
+      accumulatedBreakSeconds: 9,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 111),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )
+        ))
+        == .normalized(
+          NormalizedLiveTiming(
+            observedWallNow: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 111)),
+            expectedWallNow: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 110)),
+            normalizedDueInstant: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 110)),
+            phaseOrBreakDeadline: deadline,
+            scheduledCheckInAt: nil,
+            admissionAdjustment: nil,
+            nonBoundaryExitMaterialization: .breakState(
+              accumulatedBreakSeconds: 24),
+            liveCommitMaterialization: LiveCommitMaterialization(
+              wallAnchor: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 111)),
+              elapsedBeforeAnchorSeconds: 15,
+              timingAtAnchor: .timed(remaining: try PhaseSeconds(290)),
+              phaseOrBreakDeadline: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 401)),
+              scheduledCheckInAt: nil,
+              scheduledCheckInRemaining: nil,
+              adjustment: ClockAdjustmentEvent(
+                previousPhaseOrBreakDeadline: deadline,
+                newPhaseOrBreakDeadline: SessionTimestamp(
+                  unchecked: Date(timeIntervalSinceReferenceDate: 401)),
+                previousScheduledCheckInAt: nil,
+                newScheduledCheckInAt: nil,
+                drift: .seconds(1)
+              )
+            )
+          ))
+    )
+  }
+
   @Test("focus entry materializes exact deadlines and ordered tokens")
   func focusEntryMaterializesExactDeadlinesAndOrderedTokens() {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
