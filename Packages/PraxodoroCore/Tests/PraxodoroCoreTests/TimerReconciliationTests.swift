@@ -406,8 +406,8 @@ struct TimerReconciliationTests {
     )
   }
 
-  @Test("scheduled check-in wins before a later phase deadline")
-  func scheduledCheckInWinsBeforeLaterPhaseDeadline() throws {
+  @Test("scheduled check-in wins before a later phase deadline after a clock rebase")
+  func scheduledCheckInWinsBeforeLaterPhaseDeadlineAfterRebase() throws {
     let sessionID = UUID()
     let phaseToken = BoundaryToken(
       sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
@@ -450,14 +450,25 @@ struct TimerReconciliationTests {
     let decision = SessionTimeKernel.admitBoundary(
       snapshot: snapshot,
       timing: NormalizedLiveTiming(
-        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 4_200)),
         expectedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600)),
         normalizedDueInstant: SessionTimestamp(
-          unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+          unchecked: Date(timeIntervalSinceReferenceDate: 4_200)),
         phaseOrBreakDeadline: SessionTimestamp(
-          unchecked: Date(timeIntervalSinceReferenceDate: 500)),
-        scheduledCheckInAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300)),
-        admissionAdjustment: nil
+          unchecked: Date(timeIntervalSinceReferenceDate: 4_100)),
+        scheduledCheckInAt: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 3_900)),
+        admissionAdjustment: ClockAdjustmentEvent(
+          previousPhaseOrBreakDeadline: SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 500)),
+          newPhaseOrBreakDeadline: SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 4_100)),
+          previousScheduledCheckInAt: SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+          newScheduledCheckInAt: SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: 3_900)),
+          drift: .seconds(3_600)
+        )
       ),
       observedToken: scheduledToken
     )
@@ -467,7 +478,7 @@ struct TimerReconciliationTests {
         == .winner(
           BoundaryWinnerDecision(
             token: scheduledToken,
-            dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+            dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 3_900)),
             exitMaterialization: .scheduledCheckIn(
               accumulatedFocusSeconds: 208,
               suspendedTiming: .timed(remaining: try PhaseSeconds(200))

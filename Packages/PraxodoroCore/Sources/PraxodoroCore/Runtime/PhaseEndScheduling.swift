@@ -741,6 +741,19 @@ internal enum SessionTimeKernel {
     return .some(remaining)
   }
 
+  private static func rebaseAwareAnchor(
+    _ anchor: SessionTimestamp,
+    adjustment: ClockAdjustmentEvent?
+  ) -> SessionTimestamp? {
+    guard let adjustment else { return anchor }
+    let components = adjustment.drift.components
+    let seconds =
+      Double(components.seconds)
+      + Double(components.attoseconds) / 1_000_000_000_000_000_000
+    guard seconds.isFinite else { return nil }
+    return shifted(anchor, by: seconds)
+  }
+
   private static func shifted(
     _ timestamp: SessionTimestamp?,
     by seconds: Double
@@ -811,7 +824,12 @@ internal enum SessionTimeKernel {
         )
       )
     case .scheduledCheckIn:
-      guard let elapsedSeconds = secondsBetween(winner.dueAt, focus.wallAnchor) else {
+      guard
+        let effectiveAnchor = rebaseAwareAnchor(
+          focus.wallAnchor,
+          adjustment: timing.admissionAdjustment
+        ), let elapsedSeconds = secondsBetween(winner.dueAt, effectiveAnchor)
+      else {
         return .recovery(.arithmeticOverflow)
       }
       let suspended: PausedTiming
