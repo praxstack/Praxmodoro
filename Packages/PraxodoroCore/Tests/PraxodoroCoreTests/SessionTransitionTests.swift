@@ -3010,4 +3010,186 @@ struct SessionTransitionTests {
           ))
     )
   }
+
+  @Test("live break configuration preserves the break and obeys boundary and recovery preflight")
+  func liveBreakConfigurationIsExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let choice = BreakChoice(kind: .move, duration: .timed(.five))
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let breakStartedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let paused = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 4,
+      nextBoundaryOccurrence: 2,
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(1_490)),
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Return here", capacity: nil,
+        timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    guard
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: paused,
+        command: SessionCommand(expectedRevision: 3, intent: .requestBreak(choice)),
+        context: ReductionContext(
+          instant: SessionInstant(wallNow: breakStartedAt.date, liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), case let .breaking(originalBreak) = started.snapshot.state,
+      let boundaryToken = originalBreak.boundaryToken,
+      let endsAt = originalBreak.endsAt
+    else {
+      Issue.record("expected live break fixture")
+      return
+    }
+
+    let changedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let schedule = CheckInSchedule.interval(try CheckInMinutes(30))
+    let fullThirtyMinutes = try CheckInRemainingSeconds(1_800)
+    let changed = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .setCheckInSchedule(schedule)
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: changedAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: breakStartedAt.date,
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(changeReduction) = changed,
+      case let .breaking(changedBreak) = changeReduction.snapshot.state
+    else {
+      Issue.record("expected live break configuration transition")
+      return
+    }
+    #expect(changeReduction.snapshot.configuration.checkInSchedule == schedule)
+    #expect(changedBreak.choice == originalBreak.choice)
+    #expect(changedBreak.timingAtAnchor == .timed(remaining: try PhaseSeconds(200)))
+    #expect(changedBreak.wallAnchor == changedAt)
+    #expect(changedBreak.endsAt == endsAt)
+    #expect(changedBreak.elapsedBeforeAnchorSeconds == 100)
+    #expect(changedBreak.projectionToken == projectionToken)
+    #expect(changedBreak.boundaryToken == boundaryToken)
+    #expect(
+      changedBreak.resumeTarget.scheduledCheckInRemaining
+        == fullThirtyMinutes)
+    #expect(changeReduction.events.map(\.payload).count == 1)
+    #expect(
+      changeReduction.effects
+        == [.invalidateDisplayProjection(projectionToken: projectionToken)])
+    #expect(SessionSnapshotValidator.validateCandidate(changeReduction.snapshot).isEmpty)
+
+    let due = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .setLowCognitiveLoadEnabled(true)
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: endsAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: breakStartedAt.date,
+            monotonicElapsedSinceAnchor: .seconds(300)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(dueReduction) = due,
+      case let .reentering(reentry) = dueReduction.snapshot.state
+    else {
+      Issue.record("expected automatic break boundary transition")
+      return
+    }
+    #expect(dueReduction.snapshot.configuration == .defaults)
+    #expect(dueReduction.snapshot.accumulatedBreakSeconds == 300)
+    #expect(dueReduction.snapshot.lastConsumedBoundaryToken == boundaryToken)
+    #expect(reentry.resumeTarget == originalBreak.resumeTarget)
+    #expect(reentry.proposedAction == originalBreak.proposedAction)
+    #expect(reentry.enteredAt == endsAt)
+    #expect(dueReduction.events.map(\.payload) == [.breakEnded, .reentryPresented])
+    #expect(
+      dueReduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: boundaryToken)),
+          .playSound(.breakComplete),
+          .announceAccessibility(.reentryPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ])
+    #expect(SessionSnapshotValidator.validateCandidate(dueReduction.snapshot).isEmpty)
+
+    let recovery = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .setBreakSuggestionsEnabled(false)
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: changedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(recoveryReduction) = recovery else {
+      Issue.record("expected break recovery transition")
+      return
+    }
+    let trustworthy = SuspendedBreakState(
+      choice: originalBreak.choice,
+      timing: originalBreak.timingAtAnchor,
+      resumeTarget: originalBreak.resumeTarget,
+      proposedAction: originalBreak.proposedAction
+    )
+    #expect(
+      recoveryReduction.snapshot.state
+        == .recoveryNeeded(
+          RecoveryState(
+            reason: .missingLiveProjection,
+            lastTrustworthyState: .breakState(trustworthy),
+            safeChoices: Set(ClockRecoveryChoice.allCases)
+          )))
+    #expect(recoveryReduction.snapshot.configuration == .defaults)
+    #expect(
+      recoveryReduction.events.map(\.payload)
+        == [.clockRecoveryNeeded(reason: .missingLiveProjection)])
+    #expect(
+      recoveryReduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: boundaryToken)),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ])
+    #expect(SessionSnapshotValidator.validateCandidate(recoveryReduction.snapshot).isEmpty)
+  }
 }
