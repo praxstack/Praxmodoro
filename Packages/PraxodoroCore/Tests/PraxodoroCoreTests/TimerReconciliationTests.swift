@@ -96,4 +96,49 @@ struct TimerReconciliationTests {
     #expect(projection.remainingSeconds == 290)
     #expect(projection.nextScheduledCheckInAt == snapshot.nextScheduledCheckIn?.dueAt)
   }
+
+  @Test("focus entry materializes exact deadlines and ordered tokens")
+  func focusEntryMaterializesExactDeadlinesAndOrderedTokens() {
+    let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
+    let projectionToken = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
+    let decision = SessionTimeKernel.materializeLiveEntry(
+      .focus(
+        sessionID: sessionID,
+        targetRevision: 2,
+        nextBoundaryOccurrence: 0,
+        wallNow: Date(timeIntervalSinceReferenceDate: 100),
+        projectionToken: projectionToken,
+        phaseID: .focus,
+        timing: .timed(remaining: try! PhaseSeconds(300)),
+        cadence: .fullInterval(.fifteen)
+      )
+    )
+
+    let expectedPhaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
+    )
+    let expectedScheduledToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 2, occurrence: 1
+    )
+    #expect(
+      decision
+        == .materialized(
+          .focus(
+            FocusEntryMaterialization(
+              wallAnchor: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+              timingAtAnchor: .timed(remaining: try! PhaseSeconds(300)),
+              projectionToken: projectionToken,
+              phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+              phaseBoundaryToken: expectedPhaseToken,
+              scheduledCheckIn: ScheduledCheckInBoundary(
+                token: expectedScheduledToken,
+                dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
+                trustedRemaining: try! CheckInRemainingSeconds(900)
+              ),
+              nextBoundaryOccurrence: 2
+            )
+          )
+        )
+    )
+  }
 }
