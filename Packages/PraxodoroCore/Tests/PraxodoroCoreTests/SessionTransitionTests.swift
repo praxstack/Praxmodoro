@@ -1094,6 +1094,72 @@ struct SessionTransitionTests {
       ])
     #expect(SessionSnapshotValidator.validateCandidate(restoredReduction.snapshot).isEmpty)
 
+    let breakThoughtID = UUID()
+    let breakThought = SessionReducer.reduce(
+      snapshot: reduction.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .parkThought("Break idea")),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 400),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: observedAt.date,
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: breakThoughtID,
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(breakThoughtReduction) = breakThought else {
+      Issue.record("expected live break thought")
+      return
+    }
+    #expect(breakThoughtReduction.snapshot.state.kind == .breaking)
+    #expect(breakThoughtReduction.events.map(\.payload) == [.thoughtParked(id: breakThoughtID)])
+    #expect(breakThoughtReduction.snapshot.accumulatedBreakSeconds == 0)
+    #expect(SessionSnapshotValidator.validateCandidate(breakThoughtReduction.snapshot).isEmpty)
+
+    let dueBreakThoughtID = UUID()
+    let dueBreakThought = SessionReducer.reduce(
+      snapshot: reduction.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .parkThought("Due break idea")),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: endsAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: observedAt.date,
+            monotonicElapsedSinceAnchor: .seconds(300)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: dueBreakThoughtID,
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(dueBreakThoughtReduction) = dueBreakThought,
+      case let .reentering(dueReentry) = dueBreakThoughtReduction.snapshot.state
+    else {
+      Issue.record("expected due live break thought")
+      return
+    }
+    #expect(dueBreakThoughtReduction.snapshot.accumulatedBreakSeconds == 300)
+    #expect(dueBreakThoughtReduction.snapshot.lastConsumedBoundaryToken == boundaryToken)
+    #expect(
+      dueBreakThoughtReduction.events.map(\.payload.kind) == [
+        .thoughtParked, .breakEnded, .reentryPresented,
+      ])
+    #expect(dueBreakThoughtReduction.events[0].occurredAt == endsAt)
+    #expect(dueReentry.enteredAt == endsAt)
+    #expect(
+      dueBreakThoughtReduction.effects == [
+        .cancelNotification(SessionNotificationID(boundaryToken: boundaryToken)),
+        .playSound(.breakComplete),
+        .announceAccessibility(.reentryPresented),
+        .invalidateDisplayProjection(projectionToken: nil),
+      ])
+    #expect(SessionSnapshotValidator.validateCandidate(dueBreakThoughtReduction.snapshot).isEmpty)
+
     let due = SessionReducer.reduce(
       snapshot: reduction.snapshot,
       command: SessionCommand(expectedRevision: 4, intent: .reconcileTime(.relaunch)),
@@ -4412,6 +4478,130 @@ struct SessionTransitionTests {
         )
       ) == .rejected(snapshot: started.snapshot, reason: .activeSessionExists)
     )
+    let thoughtID = UUID()
+    let parked = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .parkThought("  Later idea  ")),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 200),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(100)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: thoughtID,
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(parkedReduction) = parked else {
+      Issue.record("expected live thought parking")
+      return
+    }
+    #expect(parkedReduction.snapshot.state.kind == .focusing)
+    #expect(parkedReduction.snapshot.parkedThoughts.map(\.text) == ["Later idea"])
+    #expect(parkedReduction.events.map(\.payload) == [.thoughtParked(id: thoughtID)])
+    #expect(SessionSnapshotValidator.validateCandidate(parkedReduction.snapshot).isEmpty)
+
+    let invalidThoughtContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .parkThought("   ")),
+        context: invalidThoughtContext
+      ) == .rejected(snapshot: started.snapshot, reason: .invalidText(.thought))
+    )
+    let fullThoughts = (0..<SessionDefaults.maximumParkedThoughts).map { index in
+      ParkedThought(
+        id: UUID(),
+        text: "Thought \(index)",
+        createdAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(index)))
+      )
+    }
+    let fullSnapshot = SessionSnapshot(
+      schemaVersion: started.snapshot.schemaVersion,
+      sessionID: started.snapshot.sessionID,
+      revision: started.snapshot.revision,
+      eventSequence: started.snapshot.eventSequence,
+      nextBoundaryOccurrence: started.snapshot.nextBoundaryOccurrence,
+      state: started.snapshot.state,
+      plan: started.snapshot.plan,
+      configuration: started.snapshot.configuration,
+      parkedThoughts: fullThoughts,
+      startedAt: started.snapshot.startedAt,
+      accumulatedFocusSeconds: started.snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: started.snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: started.snapshot.lastWallObservationAt,
+      nextScheduledCheckIn: started.snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: started.snapshot.lastConsumedBoundaryToken
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: fullSnapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .parkThought("One more")),
+        context: invalidThoughtContext
+      )
+        == .rejected(
+          snapshot: fullSnapshot,
+          reason: .thoughtLimitReached(maximum: UInt16(SessionDefaults.maximumParkedThoughts))
+        )
+    )
+    let missingProjection = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .parkThought("Keep only if safe")),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 200), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(recoveryReduction) = missingProjection else {
+      Issue.record("expected thought recovery")
+      return
+    }
+    #expect(recoveryReduction.snapshot.state.kind == .recoveryNeeded)
+    #expect(recoveryReduction.snapshot.parkedThoughts.isEmpty)
+    #expect(
+      recoveryReduction.events.map(\.payload) == [
+        .clockRecoveryNeeded(reason: .missingLiveProjection)
+      ])
+
+    let dueThoughtID = UUID()
+    let dueThought = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .parkThought("Due idea")),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: scheduled.dueAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(900)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: dueThoughtID,
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(dueThoughtReduction) = dueThought else {
+      Issue.record("expected due live thought transition")
+      return
+    }
+    #expect(dueThoughtReduction.snapshot.state.kind == .checkingIn)
+    #expect(dueThoughtReduction.snapshot.parkedThoughts.map(\.text) == ["Due idea"])
+    #expect(
+      dueThoughtReduction.events.map(\.payload.kind) == [.thoughtParked, .checkInOpened])
+    #expect(dueThoughtReduction.snapshot.lastConsumedBoundaryToken == scheduled.token)
+    #expect(SessionSnapshotValidator.validateCandidate(dueThoughtReduction.snapshot).isEmpty)
     let cases: [(SessionTimestamp, Duration, SessionStopChoice, UInt64)] = [
       (
         SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200)),
