@@ -379,6 +379,24 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("live entry rejects finite clocks that cannot represent an exact deadline")
+  func liveEntryRejectsUnrepresentableFiniteDeadline() throws {
+    #expect(
+      SessionTimeKernel.materializeLiveEntry(
+        .focus(
+          sessionID: UUID(),
+          targetRevision: 1,
+          nextBoundaryOccurrence: 0,
+          wallNow: Date(timeIntervalSinceReferenceDate: .greatestFiniteMagnitude),
+          projectionToken: UUID(),
+          phaseID: .focus,
+          timing: .timed(remaining: try PhaseSeconds(300)),
+          cadence: .manualOnly
+        )
+      ) == .failure(.arithmeticOverflow)
+    )
+  }
+
   @Test("open-ended break entry has no deadline or boundary token")
   func openEndedBreakEntryHasNoBoundary() {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!

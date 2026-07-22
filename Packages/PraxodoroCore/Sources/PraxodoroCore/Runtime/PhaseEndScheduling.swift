@@ -583,8 +583,9 @@ internal enum SessionTimeKernel {
   ) -> SessionTimestamp? {
     guard let seconds else { return nil }
     let base = anchor.date.timeIntervalSinceReferenceDate
-    let deadline = base + Double(seconds)
-    guard deadline.isFinite else { return nil }
+    let interval = Double(seconds)
+    let deadline = base + interval
+    guard deadline.isFinite, deadline > base, deadline - base == interval else { return nil }
     return canonicalSecond(Date(timeIntervalSinceReferenceDate: deadline))
   }
 
