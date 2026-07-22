@@ -363,6 +363,78 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidWallObservation))
   }
 
+  @Test("preparing a new session requires the complete closed reset")
+  func prepareResetIsCompleteAndSessionLocal() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: .steady, timingPolicy: .classic)
+    let draft = SessionDraft(plan: plan)
+    let previous = SessionSnapshot.canonicalIdle
+    let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
+    let wall = Date(timeIntervalSinceReferenceDate: 10)
+    let timestamp = SessionTimestamp(unchecked: wall)
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: wall, liveProjection: nil),
+      generatedSessionID: sessionID,
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: 1,
+      occurredAt: timestamp,
+      payload: .sessionPrepared(policy: .classic, capacitySpecified: true)
+    )
+
+    #expect(SessionSnapshotValidator.validate(
+      previous: previous,
+      command: SessionCommand(expectedRevision: 0, intent: .prepare(draft)),
+      candidate: candidate,
+      emittedEvents: [event],
+      context: context
+    ).isEmpty)
+
+    let leakingCandidate = SessionSnapshot(
+      schemaVersion: candidate.schemaVersion,
+      sessionID: candidate.sessionID,
+      revision: candidate.revision,
+      eventSequence: candidate.eventSequence,
+      nextBoundaryOccurrence: 1,
+      state: candidate.state,
+      plan: candidate.plan,
+      configuration: candidate.configuration,
+      parkedThoughts: candidate.parkedThoughts,
+      startedAt: candidate.startedAt,
+      accumulatedFocusSeconds: candidate.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: candidate.accumulatedBreakSeconds,
+      lastWallObservationAt: candidate.lastWallObservationAt,
+      nextScheduledCheckIn: candidate.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: candidate.lastConsumedBoundaryToken
+    )
+    #expect(SessionSnapshotValidator.validate(
+      previous: previous,
+      command: SessionCommand(expectedRevision: 0, intent: .prepare(draft)),
+      candidate: leakingCandidate,
+      emittedEvents: [event],
+      context: context
+    ).contains(.invalidSessionReset))
+  }
+
   @Test("timed focus candidates require both a matching live anchor and deadline")
   func timedFocusCandidateRequiresConsistentLiveShape() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)

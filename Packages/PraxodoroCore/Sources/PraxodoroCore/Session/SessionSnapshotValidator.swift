@@ -145,8 +145,24 @@ internal enum SessionSnapshotValidator {
         violations.insert(.invalidWallObservation)
       }
     }
-    let expectedSequence = previous.eventSequence.addingReportingOverflow(UInt64(emittedEvents.count))
-    if expectedSequence.overflow || candidate.eventSequence != expectedSequence.partialValue {
+    let isNewSessionPreparation = isPrepareReset(from: previous, command: command)
+    validatePrepareReset(
+      from: previous,
+      command: command,
+      candidate: candidate,
+      emittedEvents: emittedEvents,
+      context: context,
+      into: &violations
+    )
+    let eventSequenceIsValid: Bool
+    if isNewSessionPreparation {
+      eventSequenceIsValid = candidate.eventSequence == 1
+    } else {
+      let expectedSequence = previous.eventSequence.addingReportingOverflow(UInt64(emittedEvents.count))
+      eventSequenceIsValid = !expectedSequence.overflow
+        && candidate.eventSequence == expectedSequence.partialValue
+    }
+    if !eventSequenceIsValid {
       violations.insert(.invalidEventSequence)
     }
     let expectedWall = canonicalSecond(context.instant.wallNow)
@@ -159,8 +175,66 @@ internal enum SessionSnapshotValidator {
       }
       validateEventPayloadTimestamps(event.payload, into: &violations)
     }
-    _ = command
     return violations
+  }
+
+  private static func isPrepareReset(from previous: SessionSnapshot, command: SessionCommand) -> Bool {
+    guard case .prepare = command.intent else { return false }
+    return previous.state.kind == .idle || previous.state.kind == .completed
+  }
+
+  private static func validatePrepareReset(
+    from previous: SessionSnapshot,
+    command: SessionCommand,
+    candidate: SessionSnapshot,
+    emittedEvents: [SessionEvent],
+    context: ReductionContext,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    let priorAllowsPreparation = previous.state.kind == .idle || previous.state.kind == .completed
+    guard case let .prepare(draft) = command.intent else {
+      if priorAllowsPreparation && candidate.state.kind == .prepared {
+        violations.insert(.invalidSessionReset)
+      }
+      return
+    }
+
+    guard priorAllowsPreparation else {
+      violations.insert(.invalidSessionReset)
+      return
+    }
+
+    let expectedWall = canonicalSecond(context.instant.wallNow)
+    let expectedPayload = SessionEventPayload.sessionPrepared(
+      policy: draft.plan.timingPolicy.id,
+      capacitySpecified: draft.plan.capacity != nil
+    )
+    let stateMatches: Bool
+    if case let .prepared(prepared) = candidate.state {
+      stateMatches = prepared.preparedAt == expectedWall
+    } else {
+      stateMatches = false
+    }
+    let eventMatches = emittedEvents.count == 1
+      && emittedEvents.first?.payload == expectedPayload
+    let resetMatches = candidate.sessionID == context.generatedSessionID
+      && candidate.sessionID != previous.sessionID
+      && candidate.eventSequence == 1
+      && candidate.nextBoundaryOccurrence == 0
+      && stateMatches
+      && candidate.plan == draft.plan
+      && candidate.configuration == draft.configuration
+      && candidate.parkedThoughts.isEmpty
+      && candidate.startedAt == nil
+      && candidate.accumulatedFocusSeconds == 0
+      && candidate.accumulatedBreakSeconds == 0
+      && candidate.lastWallObservationAt == expectedWall
+      && candidate.nextScheduledCheckIn == nil
+      && candidate.lastConsumedBoundaryToken == nil
+      && eventMatches
+    if !resetMatches {
+      violations.insert(.invalidSessionReset)
+    }
   }
 
   private static func validateEventPayloadTimestamps(
