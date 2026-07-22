@@ -709,4 +709,58 @@ struct SessionModelTests {
     #expect(violations.contains(.timingShapeMismatch))
     #expect(violations.contains(.invalidScheduledCheckIn))
   }
+
+  @Test("relational candidates cannot regress totals or boundary occurrence")
+  func relationalCountersNeverRegress() {
+    let previous = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: nil,
+      revision: 2,
+      eventSequence: 0,
+      nextBoundaryOccurrence: 5,
+      state: .idle,
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 3,
+      lastWallObservationAt: nil,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: nil,
+      revision: 3,
+      eventSequence: 0,
+      nextBoundaryOccurrence: 4,
+      state: .idle,
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 9,
+      accumulatedBreakSeconds: 2,
+      lastWallObservationAt: nil,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: Date(timeIntervalSinceReferenceDate: 0), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    let violations = SessionSnapshotValidator.validate(
+      previous: previous,
+      command: SessionCommand(expectedRevision: 2, intent: .start),
+      candidate: candidate,
+      emittedEvents: [],
+      context: context
+    )
+    #expect(violations.contains(.counterRegression))
+    #expect(violations.contains(.invalidBoundaryOccurrence))
+  }
 }

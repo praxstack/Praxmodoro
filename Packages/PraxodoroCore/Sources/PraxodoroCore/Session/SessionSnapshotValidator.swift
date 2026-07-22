@@ -128,6 +128,14 @@ internal enum SessionSnapshotValidator {
     if candidate.revision != expectedRevision {
       violations.insert(.invalidRevision(expected: expectedRevision, actual: candidate.revision))
     }
+    if candidate.accumulatedFocusSeconds < previous.accumulatedFocusSeconds
+      || candidate.accumulatedBreakSeconds < previous.accumulatedBreakSeconds
+    {
+      violations.insert(.counterRegression)
+    }
+    if candidate.nextBoundaryOccurrence < previous.nextBoundaryOccurrence {
+      violations.insert(.invalidBoundaryOccurrence)
+    }
     if candidate.state.kind != .idle {
       if candidate.sessionID == nil || (previous.sessionID != nil && candidate.sessionID != previous.sessionID) {
         violations.insert(.invalidIdentity)
