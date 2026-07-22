@@ -216,4 +216,152 @@ struct SessionTransitionTests {
         ]
     )
   }
+
+  @Test("prepared start installs exact live focus state and effects")
+  func preparedStartInstallsExactLiveFocusStateAndEffects() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let prepareContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+      generatedSessionID: sessionID,
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    guard
+      case let .transition(preparation) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: prepareContext
+      )
+    else {
+      Issue.record("expected preparation transition")
+      return
+    }
+
+    let wall = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let outcome = SessionReducer.reduce(
+      snapshot: preparation.snapshot,
+      command: SessionCommand(expectedRevision: 1, intent: .start),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: wall.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected start transition")
+      return
+    }
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .focus,
+      sourceRevision: 2,
+      occurrence: 0
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 2,
+      occurrence: 1
+    )
+    let phaseDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_600))
+    let scheduledDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_000))
+
+    #expect(reduction.snapshot.revision == 2)
+    #expect(reduction.snapshot.eventSequence == 3)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 2)
+    #expect(reduction.snapshot.startedAt == wall)
+    #expect(reduction.snapshot.lastWallObservationAt == wall)
+    #expect(
+      reduction.snapshot.state
+        == .focusing(
+          FocusState(
+            phase: TimingPolicy.classic.phases[0],
+            timingAtAnchor: .timed(remaining: try PhaseSeconds(1_500)),
+            wallAnchor: wall,
+            phaseEndsAt: phaseDeadline,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: projectionToken,
+            phaseBoundaryToken: phaseToken
+          ))
+    )
+    #expect(
+      reduction.snapshot.nextScheduledCheckIn
+        == ScheduledCheckInBoundary(
+          token: scheduledToken,
+          dueAt: scheduledDeadline,
+          trustedRemaining: try CheckInRemainingSeconds(900)
+        ))
+    #expect(reduction.events.map(\.sequence) == [2, 3])
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .sessionStarted,
+          .phaseStarted(phase: TimingPolicy.classic.phases[0], endsAt: phaseDeadline),
+        ]
+    )
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(boundaryToken: scheduledToken, fireAt: scheduledDeadline)),
+          .announceAccessibility(.focusStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ]
+    )
+  }
+
+  @Test("prepared start rejects empty task and action before clock use")
+  func preparedStartRejectsInvalidPlanBeforeClockUse() throws {
+    let invalidPlan = try SessionPlan(
+      task: "", firstAction: "", capacity: nil, timingPolicy: .classic)
+    let context = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    guard
+      case let .transition(preparation) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: invalidPlan))
+        ),
+        context: context
+      )
+    else {
+      Issue.record("expected preparation transition")
+      return
+    }
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: preparation.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .rejected(
+          snapshot: preparation.snapshot,
+          reason: .invalidPlan(fields: [.task, .firstAction]))
+    )
+  }
 }
