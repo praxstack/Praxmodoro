@@ -234,7 +234,6 @@ internal enum SessionTimeKernel {
           rawAnchor: live.rawWallAtProjectionAnchor,
           expectedWallNow: expectedWallNow
         ),
-        expectedWallNow: expectedWallNow,
         commitAnchor: observedWallNow,
         deadline: commitDeadline(
           oldDeadline: liveValues.deadline,
@@ -356,7 +355,6 @@ internal enum SessionTimeKernel {
       let materialized = liveMaterializations(
         snapshot: snapshot,
         elapsedSinceAnchor: elapsed,
-        expectedWallNow: observed,
         commitAnchor: observed,
         deadline: values.deadline,
         scheduledAt: snapshot.nextScheduledCheckIn?.dueAt,
@@ -661,7 +659,6 @@ internal enum SessionTimeKernel {
   private static func liveMaterializations(
     snapshot: SessionSnapshot,
     elapsedSinceAnchor: UInt64?,
-    expectedWallNow: SessionTimestamp,
     commitAnchor: SessionTimestamp,
     deadline: SessionTimestamp?,
     scheduledAt: SessionTimestamp?,
@@ -673,7 +670,7 @@ internal enum SessionTimeKernel {
       guard let timing = reducedTiming(focus.timingAtAnchor, by: elapsedSinceAnchor),
         let elapsedBeforeAnchor = checkedAdd(focus.elapsedBeforeAnchorSeconds, elapsedSinceAnchor),
         let accumulated = checkedAdd(snapshot.accumulatedFocusSeconds, elapsedBeforeAnchor),
-        let scheduledRemaining = scheduledRemainder(at: scheduledAt, from: expectedWallNow)
+        let scheduledRemaining = scheduledRemainder(at: scheduledAt, from: commitAnchor)
       else { return nil }
       return (
         .focus(

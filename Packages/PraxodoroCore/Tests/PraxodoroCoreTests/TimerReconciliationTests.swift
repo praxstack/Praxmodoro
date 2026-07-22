@@ -199,18 +199,23 @@ struct TimerReconciliationTests {
         )),
       plan: try SessionPlan(
         task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
-      configuration: SessionConfiguration(
-        checkInSchedule: .manualOnly,
-        breakSuggestionsEnabled: true,
-        lowCognitiveLoadEnabled: false,
-        reflectionPromptEnabled: true
-      ),
+      configuration: .defaults,
       parkedThoughts: [],
       startedAt: anchor,
       accumulatedFocusSeconds: 0,
       accumulatedBreakSeconds: 0,
       lastWallObservationAt: anchor,
-      nextScheduledCheckIn: nil,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: BoundaryToken(
+          sessionID: sessionID,
+          kind: .scheduledCheckIn,
+          phaseID: nil,
+          sourceRevision: 2,
+          occurrence: 1
+        ),
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
       lastConsumedBoundaryToken: nil
     )
 
@@ -236,12 +241,13 @@ struct TimerReconciliationTests {
               unchecked: Date(timeIntervalSinceReferenceDate: 110)),
             phaseOrBreakDeadline: SessionTimestamp(
               unchecked: Date(timeIntervalSinceReferenceDate: 400)),
-            scheduledCheckInAt: nil,
+            scheduledCheckInAt: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
             admissionAdjustment: nil,
             nonBoundaryExitMaterialization: .focus(
               accumulatedFocusSeconds: 10,
               suspendedTiming: .timed(remaining: try PhaseSeconds(290)),
-              scheduledCheckInRemaining: nil
+              scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
             ),
             liveCommitMaterialization: LiveCommitMaterialization(
               wallAnchor: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 111)),
@@ -249,15 +255,18 @@ struct TimerReconciliationTests {
               timingAtAnchor: .timed(remaining: try PhaseSeconds(290)),
               phaseOrBreakDeadline: SessionTimestamp(
                 unchecked: Date(timeIntervalSinceReferenceDate: 401)),
-              scheduledCheckInAt: nil,
-              scheduledCheckInRemaining: nil,
+              scheduledCheckInAt: SessionTimestamp(
+                unchecked: Date(timeIntervalSinceReferenceDate: 1_001)),
+              scheduledCheckInRemaining: try CheckInRemainingSeconds(890),
               adjustment: ClockAdjustmentEvent(
                 previousPhaseOrBreakDeadline: SessionTimestamp(
                   unchecked: Date(timeIntervalSinceReferenceDate: 400)),
                 newPhaseOrBreakDeadline: SessionTimestamp(
                   unchecked: Date(timeIntervalSinceReferenceDate: 401)),
-                previousScheduledCheckInAt: nil,
-                newScheduledCheckInAt: nil,
+                previousScheduledCheckInAt: SessionTimestamp(
+                  unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
+                newScheduledCheckInAt: SessionTimestamp(
+                  unchecked: Date(timeIntervalSinceReferenceDate: 1_001)),
                 drift: .seconds(1)
               )
             )
