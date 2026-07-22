@@ -1310,6 +1310,126 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.timingShapeMismatch))
   }
 
+  @Test("newly installed boundary tokens bind to the candidate revision")
+  func newlyInstalledBoundaryTokensBindToCandidateRevision() throws {
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let previous = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: anchor)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let stalePhaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 1, occurrence: 0
+    )
+    let staleCheckInToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 1, occurrence: 1
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: stalePhaseToken
+        )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: staleCheckInToken,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 920)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: anchor.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    #expect(
+      SessionSnapshotValidator.validate(
+        previous: previous,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        candidate: candidate,
+        emittedEvents: [],
+        context: context
+      ).contains(.invalidBoundaryToken))
+  }
+
+  @Test("recovery reentry snapshots validate their nested timestamp")
+  func recoveryReentrySnapshotsValidateNestedTimestamp() throws {
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(300)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let reentry = ReentryState(
+      resumeTarget: suspended,
+      proposedAction: "Return",
+      enteredAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70.5))
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 0,
+      state: .recoveryNeeded(
+        RecoveryState(
+          reason: .negativeMonotonicElapsed,
+          lastTrustworthyState: .reentering(reentry),
+          safeChoices: Set(ClockRecoveryChoice.allCases)
+        )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(
+      SessionSnapshotValidator.validateCandidate(candidate).contains(
+        .nonCanonicalTimestamp(.reentryEnteredAt)))
+  }
+
   @Test("notification requests derive kind and private content from boundary tokens")
   func notificationRequestsAreTokenDerivedAndPrivate() {
     let token = BoundaryToken(

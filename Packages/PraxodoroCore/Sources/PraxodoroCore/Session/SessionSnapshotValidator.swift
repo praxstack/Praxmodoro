@@ -155,6 +155,11 @@ internal enum SessionSnapshotValidator {
     if candidate.nextBoundaryOccurrence < previous.nextBoundaryOccurrence {
       violations.insert(.invalidBoundaryOccurrence)
     }
+    validateNewBoundaryTokenRevisions(
+      previous: previous,
+      candidate: candidate,
+      into: &violations
+    )
     if candidate.state.kind == .completed && previous.state.kind != .reviewing {
       violations.insert(.invalidSummary)
     }
@@ -250,6 +255,34 @@ internal enum SessionSnapshotValidator {
     {
       violations.insert(.invalidSummary)
     }
+  }
+
+  private static func validateNewBoundaryTokenRevisions(
+    previous: SessionSnapshot,
+    candidate: SessionSnapshot,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    let previousTokens = installedBoundaryTokens(in: previous)
+    for token in installedBoundaryTokens(in: candidate) where !previousTokens.contains(token) {
+      if token.sourceRevision != candidate.revision {
+        violations.insert(.invalidBoundaryToken)
+      }
+    }
+  }
+
+  private static func installedBoundaryTokens(in snapshot: SessionSnapshot) -> [BoundaryToken] {
+    var tokens: [BoundaryToken] = []
+    switch snapshot.state {
+    case let .focusing(focus):
+      if let token = focus.phaseBoundaryToken { tokens.append(token) }
+    case let .breaking(breakState):
+      if let token = breakState.boundaryToken { tokens.append(token) }
+    case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
+      break
+    }
+    if let token = snapshot.nextScheduledCheckIn?.token { tokens.append(token) }
+    return tokens
   }
 
   private static func isPrepareReset(from previous: SessionSnapshot, command: SessionCommand)
@@ -653,6 +686,7 @@ internal enum SessionSnapshotValidator {
         into: &violations
       )
     case let .reentering(reentry):
+      validate(reentry.enteredAt, as: .reentryEnteredAt, into: &violations)
       validateSuspendedFocus(
         phase: reentry.resumeTarget.phase,
         timing: reentry.resumeTarget.timing,
