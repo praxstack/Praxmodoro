@@ -549,4 +549,98 @@ struct SessionTransitionTests {
         ]
     )
   }
+
+  @Test("due phase boundary supersedes pause with exact policy continuation")
+  func duePhaseBoundarySupersedesPauseWithContinuation() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .gentleStart)
+    let initialContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+      generatedSessionID: sessionID,
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    guard
+      case let .transition(preparation) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+        context: initialContext
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: preparation.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )),
+      case let .focusing(focus) = started.snapshot.state,
+      let phaseToken = focus.phaseBoundaryToken,
+      let phaseDue = focus.phaseEndsAt
+    else {
+      Issue.record("expected a timed Gentle Start fixture")
+      return
+    }
+    let outcome = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .pause),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: phaseDue.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(300)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected the phase winner to supersede pause")
+      return
+    }
+    let nextPhase = TimingPolicy.gentleStart.phases[1]
+
+    #expect(reduction.snapshot.revision == 3)
+    #expect(reduction.snapshot.eventSequence == 5)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 300)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == phaseToken)
+    #expect(reduction.snapshot.nextScheduledCheckIn == nil)
+    #expect(
+      reduction.snapshot.state
+        == .checkingIn(
+          CheckInState(
+            suspended: nil,
+            trigger: .phaseBoundary(phaseToken),
+            continuation: .startPhase(nextPhase),
+            phaseBoundaryScheduledCheckInRemaining: try CheckInRemainingSeconds(600)
+          ))
+    )
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .phaseElapsed(token: phaseToken),
+          .checkInOpened(
+            trigger: .phaseBoundary(phaseToken), continuation: .startPhase(nextPhase)),
+        ]
+    )
+    #expect(
+      reduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: phaseToken)),
+          .playSound(.gentleBoundary),
+          .playHaptic(.gentleBoundary),
+          .announceAccessibility(.checkInPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+    )
+  }
 }

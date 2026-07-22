@@ -450,7 +450,32 @@ public enum SessionReducer {
       payloads = [
         .checkInOpened(trigger: .scheduled(winner.token), continuation: .resumeSuspended)
       ]
-    case .phase, .breakEnd:
+    case let .phase(total):
+      guard winner.token.kind == .phase,
+        let plan = snapshot.plan,
+        let continuation = phaseContinuation(after: focus.phase, in: plan.timingPolicy)
+      else {
+        return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+      }
+      let cadenceRemainder: CheckInRemainingSeconds? =
+        switch winner.scheduledCadence {
+        case let .preserve(remaining): remaining
+        case .manualOnly, .resetAfterPhaseCollision, .resetAfterSupersededScheduledOccurrence: nil
+        case .resetAfterScheduledOccurrence, .notApplicable: nil
+        }
+      accumulatedFocusSeconds = total
+      checkingIn = CheckInState(
+        suspended: nil,
+        trigger: .phaseBoundary(winner.token),
+        continuation: .startPhase(continuation),
+        phaseBoundaryScheduledCheckInRemaining: cadenceRemainder
+      )
+      payloads = [
+        .phaseElapsed(token: winner.token),
+        .checkInOpened(
+          trigger: .phaseBoundary(winner.token), continuation: .startPhase(continuation)),
+      ]
+    case .breakEnd:
       return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
     }
     let nextRevision = snapshot.revision.addingReportingOverflow(1)
@@ -502,9 +527,24 @@ public enum SessionReducer {
       effects.append(
         .cancelNotification(SessionNotificationID(boundaryToken: previousWinner.token)))
     }
+    if winner.token.kind == .phase {
+      effects.append(.playSound(.gentleBoundary))
+      effects.append(.playHaptic(.gentleBoundary))
+    }
     effects.append(.announceAccessibility(.checkInPresented))
     effects.append(.invalidateDisplayProjection(projectionToken: nil))
     return .transition(Reduction(snapshot: candidate, events: events, effects: effects))
+  }
+
+  private static func phaseContinuation(
+    after elapsed: SessionPhaseDescriptor,
+    in policy: TimingPolicy
+  ) -> SessionPhaseDescriptor? {
+    guard case .timed = elapsed.duration,
+      let index = policy.phases.firstIndex(where: { $0.id == elapsed.id })
+    else { return nil }
+    let next = policy.phases.index(after: index)
+    return next < policy.phases.endIndex ? policy.phases[next] : elapsed
   }
 
   private static func changedPlanFields(
