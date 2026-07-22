@@ -118,4 +118,35 @@ struct SessionModelTests {
     #expect(SessionDefaults.askBeforeAnotherBlock)
     #expect(SessionDefaults.maximumParkedThoughts == 1_000)
   }
+
+  @Test("the projection value preserves its complete display contract")
+  func projectionVocabularyConstructsExactly() {
+    let projection = SessionProjection(
+      sourceRevision: 7,
+      sessionID: nil,
+      state: .idle,
+      task: nil,
+      firstAction: nil,
+      timingPolicy: nil,
+      phase: nil,
+      focusedSeconds: 0,
+      breakSeconds: 0,
+      remainingSeconds: nil,
+      isPaused: false,
+      isBoundaryAwaitingDecision: false,
+      nextScheduledCheckInAt: nil,
+      parkedThoughtCount: 0,
+      lowCognitiveLoadEnabled: false
+    )
+
+    #expect(projection.state == .idle)
+    #expect(projection.remainingSeconds == nil)
+    #expect(projection.timingPolicy == nil)
+  }
+
+  @Test("projection errors retain typed snapshot failures")
+  func projectionErrorsRetainTypedSnapshotFailures() {
+    #expect(ProjectionError.invalidSnapshot([.invalidIdleBaseline]) ==
+      .invalidSnapshot([.invalidIdleBaseline]))
+  }
 }
