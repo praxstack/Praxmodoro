@@ -1923,4 +1923,102 @@ struct SessionTransitionTests {
     #expect(reduction.events.map(\.payload) == [.thoughtParked(id: thoughtID)])
     #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
   }
+
+  @Test("phase-boundary take-break preserves an open-ended continuation target")
+  func phaseBoundaryTakeBreakPreservesOpenEndedContinuation() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .recoveryRamp,
+      sourceRevision: 3,
+      occurrence: 1
+    )
+    let nextPhase = TimingPolicy.recoveryFirst.phases[1]
+    let cadence = try CheckInRemainingSeconds(400)
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 750))
+    let choice = BreakChoice(kind: .quiet, duration: .openEnded)
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: nil,
+          trigger: .phaseBoundary(token),
+          continuation: .startPhase(nextPhase),
+          phaseBoundaryScheduledCheckInRemaining: cadence
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil,
+        timingPolicy: .recoveryFirst),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 600,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 700)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 4,
+        intent: .respondToCheckIn(.takeBreak(choice))
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected phase-boundary open break transition")
+      return
+    }
+    let resumeTarget = SuspendedFocusState(
+      phase: nextPhase,
+      timing: .openEnded,
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: cadence
+    )
+
+    #expect(
+      reduction.snapshot.state
+        == .breaking(
+          BreakState(
+            choice: choice,
+            timingAtAnchor: .openEnded,
+            wallAnchor: observedAt,
+            endsAt: nil,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: projectionToken,
+            boundaryToken: nil,
+            resumeTarget: resumeTarget,
+            proposedAction: "Action"
+          )))
+    #expect(reduction.snapshot.eventSequence == 8)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 2)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == token)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .checkInResolved,
+          .breakStarted(kind: .quiet, duration: .openEnded, endsAt: nil),
+        ])
+    #expect(
+      reduction.effects
+        == [
+          .announceAccessibility(.breakStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ])
+  }
 }
