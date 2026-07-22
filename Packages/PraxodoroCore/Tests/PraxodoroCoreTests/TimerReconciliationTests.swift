@@ -566,6 +566,31 @@ struct TimerReconciliationTests {
           )
         )
     )
+
+    let overdueDecision = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: NormalizedLiveTiming(
+        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        expectedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        normalizedDueInstant: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 600)),
+        phaseOrBreakDeadline: phaseDue,
+        scheduledCheckInAt: scheduledDue,
+        admissionAdjustment: nil
+      ),
+      observedToken: phaseToken
+    )
+    #expect(
+      overdueDecision
+        == .winner(
+          BoundaryWinnerDecision(
+            token: phaseToken,
+            dueAt: phaseDue,
+            exitMaterialization: .phase(accumulatedFocusSeconds: 304),
+            scheduledCadence: .resetAfterSupersededScheduledOccurrence
+          )
+        )
+    )
   }
 
   @Test("scheduled check-in wins before a later phase deadline after a clock rebase")
