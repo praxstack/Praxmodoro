@@ -805,4 +805,69 @@ struct SessionModelTests {
 
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidText(.revisedAction)))
   }
+
+  @Test("every lifecycle state has a constructible internal fixture and exact kind")
+  func lifecycleFixturesCoverEveryState() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 130))
+    let sessionID = UUID()
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let phase = TimingPolicy.classic.phases[0]
+    let suspended = SuspendedFocusState(
+      phase: phase,
+      timing: .timed(remaining: try PhaseSeconds(300)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let reviewDraft = SessionSummaryDraft(
+      endedAt: timestamp,
+      focusedSeconds: 1,
+      breakSeconds: 0,
+      parkedThoughtCount: 0,
+      optionalReflection: nil
+    )
+    let summary = SessionSummary(
+      sessionID: sessionID,
+      task: "Task",
+      finalAction: "Action",
+      startedAt: timestamp,
+      endedAt: timestamp,
+      focusedSeconds: 1,
+      breakSeconds: 0,
+      stopReason: .completed,
+      parkedThoughtCount: 0,
+      optionalReflection: nil
+    )
+    let states: [SessionState] = [
+      .idle,
+      .prepared(PreparedState(preparedAt: timestamp)),
+      .focusing(FocusState(
+        phase: phase, timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+        wallAnchor: timestamp, phaseEndsAt: timestamp, elapsedBeforeAnchorSeconds: 0,
+        projectionToken: UUID(), phaseBoundaryToken: nil
+      )),
+      .paused(PausedState(
+        phase: phase, timing: .timed(remaining: try PhaseSeconds(300)), pausedAt: timestamp,
+        scheduledCheckInRemaining: nil
+      )),
+      .checkingIn(CheckInState(
+        suspended: suspended, trigger: .manual, continuation: .resumeSuspended,
+        phaseBoundaryScheduledCheckInRemaining: nil
+      )),
+      .breaking(BreakState(
+        choice: BreakChoice(kind: .quiet, duration: .openEnded), timingAtAnchor: .openEnded,
+        wallAnchor: timestamp, endsAt: nil, elapsedBeforeAnchorSeconds: 0,
+        projectionToken: UUID(), boundaryToken: nil, resumeTarget: suspended, proposedAction: "Return"
+      )),
+      .reentering(ReentryState(resumeTarget: suspended, proposedAction: "Return", enteredAt: timestamp)),
+      .reviewing(ReviewState(draft: reviewDraft, stopReason: .completed, replacementDraft: nil)),
+      .completed(CompletedState(summary: summary, pendingReplacementDraft: nil)),
+      .recoveryNeeded(RecoveryState(
+        reason: .missingLiveProjection, lastTrustworthyState: .focus(suspended),
+        safeChoices: Set(ClockRecoveryChoice.allCases)
+      )),
+    ]
+
+    #expect(states.map(\.kind) == SessionStateKind.allCases)
+    #expect(plan.timingPolicy.id == .classic)
+  }
 }
