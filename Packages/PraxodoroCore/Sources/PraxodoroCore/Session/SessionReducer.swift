@@ -75,7 +75,9 @@ public enum SessionReducer {
       return reduceReviewing(snapshot: snapshot, command: command, context: context)
     case .breaking:
       return reduceBreaking(snapshot: snapshot, command: command, context: context)
-    case .completed, .recoveryNeeded:
+    case .recoveryNeeded:
+      return reduceRecoveryNeeded(snapshot: snapshot, command: command, context: context)
+    case .completed:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
   }
@@ -469,6 +471,8 @@ public enum SessionReducer {
     switch command.intent {
     case .pause:
       return pauseFocus(snapshot: snapshot, command: command, context: context)
+    case .reconcileTime(.relaunch):
+      return reconcileLiveRelaunch(snapshot: snapshot, context: context)
     default:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
@@ -731,6 +735,9 @@ public enum SessionReducer {
     }
     if case .endBreak = command.intent {
       return endLiveBreak(snapshot: snapshot, intent: command.intent, context: context)
+    }
+    if case .reconcileTime(.relaunch) = command.intent {
+      return reconcileLiveRelaunch(snapshot: snapshot, context: context)
     }
     guard
       let configuration = requestedConfiguration(
@@ -2358,6 +2365,424 @@ public enum SessionReducer {
     case let .replacement(draft):
       .resolveActiveSessionConflict(choice: .replaceAndReview, replacement: draft)
     }
+  }
+
+  private static func reduceRecoveryNeeded(
+    snapshot: SessionSnapshot,
+    command: SessionCommand,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    switch command.intent {
+    case let .recoverClock(choice):
+      return recoverClock(snapshot: snapshot, choice: choice, context: context)
+    case let .stop(choice):
+      return enterReviewFromNonLive(
+        snapshot: snapshot,
+        request: .stop(choice),
+        context: context
+      )
+    case .reconcileTime:
+      return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
+    default:
+      return invalidTransition(snapshot: snapshot, intent: command.intent)
+    }
+  }
+
+  private static func recoverClock(
+    snapshot: SessionSnapshot,
+    choice: ClockRecoveryChoice,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .recoveryNeeded(recovery) = snapshot.state else {
+      return invalidTransition(snapshot: snapshot, intent: .recoverClock(choice))
+    }
+    guard recovery.safeChoices.contains(choice) else {
+      return .rejected(snapshot: snapshot, reason: .invalidRecoveryChoice(choice))
+    }
+    switch choice {
+    case .resumeSavedRemainder:
+      return resumeRecovery(
+        snapshot: snapshot,
+        recovery: recovery,
+        context: context
+      )
+    case .reviewSession, .endSession:
+      return reviewRecovery(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
+    }
+  }
+
+  private static func reviewRecovery(
+    snapshot: SessionSnapshot,
+    choice: ClockRecoveryChoice,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard let observedAt = canonicalSecond(context.instant.wallNow),
+      let sessionID = snapshot.sessionID,
+      let startedAt = snapshot.startedAt
+    else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 2 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 2,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let stopReason: SessionStopReason =
+      choice == .reviewSession ? .clockRecoveryReview : .clockRecoveryEnd
+    let endedAt = observedAt.date >= startedAt.date ? observedAt : startedAt
+    let thoughtCount = UInt64(snapshot.parkedThoughts.count)
+    let draft = SessionSummaryDraft(
+      endedAt: endedAt,
+      focusedSeconds: snapshot.accumulatedFocusSeconds,
+      breakSeconds: snapshot.accumulatedBreakSeconds,
+      parkedThoughtCount: thoughtCount,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 2,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reviewing(
+        ReviewState(draft: draft, stopReason: stopReason, replacementDraft: nil)),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let events = [
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 1,
+        occurredAt: observedAt,
+        payload: .clockRecovered(choice: choice)
+      ),
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + 2,
+        occurredAt: observedAt,
+        payload: .reviewStarted(
+          SessionReviewEvent(
+            focusedSeconds: draft.focusedSeconds,
+            breakSeconds: draft.breakSeconds,
+            stopReason: stopReason,
+            parkedThoughtCount: thoughtCount,
+            hasReflection: false
+          ))
+      ),
+    ]
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: events,
+        effects: [
+          .announceAccessibility(.reviewPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+      ))
+  }
+
+  private static func resumeRecovery(
+    snapshot: SessionSnapshot,
+    recovery: RecoveryState,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard let observedAt = canonicalSecond(context.instant.wallNow),
+      let sessionID = snapshot.sessionID
+    else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    var nextOccurrence = snapshot.nextBoundaryOccurrence
+    var nextScheduled: ScheduledCheckInBoundary?
+    var restoredState: SessionState
+    var projectionToken: UUID?
+    switch recovery.lastTrustworthyState {
+    case let .focus(target):
+      if target.resumeDisposition == .paused {
+        restoredState = .paused(
+          PausedState(
+            phase: target.phase,
+            timing: target.timing,
+            pausedAt: observedAt,
+            scheduledCheckInRemaining: target.scheduledCheckInRemaining
+          ))
+      } else {
+        let cadence: ScheduledCadenceSeed =
+          target.scheduledCheckInRemaining.map {
+            .captured($0)
+          } ?? .manualOnly
+        let decision = SessionTimeKernel.materializeLiveEntry(
+          .focus(
+            sessionID: sessionID,
+            targetRevision: nextRevision.partialValue,
+            nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+            wallNow: observedAt.date,
+            projectionToken: context.generatedProjectionToken,
+            phaseID: target.phase.id,
+            timing: target.timing,
+            cadence: cadence
+          ))
+        guard case let .materialized(.focus(entry)) = decision else {
+          if case let .failure(reason) = decision {
+            return .failed(snapshot: snapshot, reason: reason)
+          }
+          return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+        }
+        restoredState = .focusing(
+          FocusState(
+            phase: target.phase,
+            timingAtAnchor: entry.timingAtAnchor,
+            wallAnchor: entry.wallAnchor,
+            phaseEndsAt: entry.phaseEndsAt,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: entry.projectionToken,
+            phaseBoundaryToken: entry.phaseBoundaryToken
+          ))
+        nextOccurrence = entry.nextBoundaryOccurrence
+        nextScheduled = entry.scheduledCheckIn
+        projectionToken = entry.projectionToken
+      }
+    case let .breakState(target):
+      let decision = SessionTimeKernel.materializeLiveEntry(
+        .breakState(
+          sessionID: sessionID,
+          targetRevision: nextRevision.partialValue,
+          nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+          wallNow: observedAt.date,
+          projectionToken: context.generatedProjectionToken,
+          timing: .saved(target.timing)
+        ))
+      guard case let .materialized(.breakState(entry)) = decision else {
+        if case let .failure(reason) = decision {
+          return .failed(snapshot: snapshot, reason: reason)
+        }
+        return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+      }
+      restoredState = .breaking(
+        BreakState(
+          choice: target.choice,
+          timingAtAnchor: entry.timingAtAnchor,
+          wallAnchor: entry.wallAnchor,
+          endsAt: entry.endsAt,
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: entry.projectionToken,
+          boundaryToken: entry.boundaryToken,
+          resumeTarget: target.resumeTarget,
+          proposedAction: target.proposedAction
+        ))
+      nextOccurrence = entry.nextBoundaryOccurrence
+      projectionToken = entry.projectionToken
+    case let .checkingIn(checkIn):
+      restoredState = .checkingIn(checkIn)
+    case let .reentering(reentry):
+      restoredState = .reentering(reentry)
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: nextOccurrence,
+      state: restoredState,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nextScheduled,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: observedAt,
+      payload: .clockRecovered(choice: .resumeSavedRemainder)
+    )
+    var effects: [SessionEffect] = []
+    if let winner = notificationWinner(in: candidate) {
+      effects.append(
+        .scheduleNotification(
+          SessionNotificationRequest(boundaryToken: winner.token, fireAt: winner.dueAt)))
+    }
+    effects.append(.invalidateDisplayProjection(projectionToken: projectionToken))
+    return .transition(Reduction(snapshot: candidate, events: [event], effects: effects))
+  }
+
+  private static func reconcileLiveRelaunch(
+    snapshot: SessionSnapshot,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    let decision = SessionTimeKernel.reconcileRelaunch(
+      snapshot: snapshot,
+      wallNow: context.instant.wallNow
+    )
+    let timing: NormalizedLiveTiming
+    switch decision {
+    case let .normalized(value):
+      timing = value
+    case let .failure(reason):
+      return .failed(snapshot: snapshot, reason: reason)
+    case let .recovery(reason):
+      switch snapshot.state {
+      case .focusing:
+        return focusRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      case .breaking:
+        return breakRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      default:
+        return invalidTransition(snapshot: snapshot, intent: .reconcileTime(.relaunch))
+      }
+    }
+    switch SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: timing,
+      observedToken: nil
+    ) {
+    case let .winner(winner):
+      switch snapshot.state {
+      case .focusing:
+        return focusBoundaryTransition(snapshot: snapshot, timing: timing, winner: winner)
+      case .breaking:
+        return breakBoundaryTransition(snapshot: snapshot, timing: timing, winner: winner)
+      default:
+        return invalidTransition(snapshot: snapshot, intent: .reconcileTime(.relaunch))
+      }
+    case let .recovery(reason):
+      switch snapshot.state {
+      case .focusing:
+        return focusRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      case .breaking:
+        return breakRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      default:
+        return invalidTransition(snapshot: snapshot, intent: .reconcileTime(.relaunch))
+      }
+    case .noneDue:
+      break
+    case .boundaryNotDue, .earlierBoundaryPending:
+      return invalidTransition(snapshot: snapshot, intent: .reconcileTime(.relaunch))
+    }
+    guard let materialization = timing.liveCommitMaterialization,
+      let sessionID = snapshot.sessionID
+    else {
+      return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    let restoredState: SessionState
+    let phase: SessionPhaseDescriptor
+    switch snapshot.state {
+    case let .focusing(focus):
+      phase = focus.phase
+      restoredState = .focusing(
+        FocusState(
+          phase: focus.phase,
+          timingAtAnchor: materialization.timingAtAnchor,
+          wallAnchor: materialization.wallAnchor,
+          phaseEndsAt: materialization.phaseOrBreakDeadline,
+          elapsedBeforeAnchorSeconds: materialization.elapsedBeforeAnchorSeconds,
+          projectionToken: context.generatedProjectionToken,
+          phaseBoundaryToken: focus.phaseBoundaryToken
+        ))
+    case let .breaking(breakState):
+      phase = breakState.resumeTarget.phase
+      restoredState = .breaking(
+        BreakState(
+          choice: breakState.choice,
+          timingAtAnchor: materialization.timingAtAnchor,
+          wallAnchor: materialization.wallAnchor,
+          endsAt: materialization.phaseOrBreakDeadline,
+          elapsedBeforeAnchorSeconds: materialization.elapsedBeforeAnchorSeconds,
+          projectionToken: context.generatedProjectionToken,
+          boundaryToken: breakState.boundaryToken,
+          resumeTarget: breakState.resumeTarget,
+          proposedAction: breakState.proposedAction
+        ))
+    default:
+      return invalidTransition(snapshot: snapshot, intent: .reconcileTime(.relaunch))
+    }
+    let scheduled = snapshot.nextScheduledCheckIn.map {
+      ScheduledCheckInBoundary(
+        token: $0.token,
+        dueAt: materialization.scheduledCheckInAt ?? $0.dueAt,
+        trustedRemaining: materialization.scheduledCheckInRemaining ?? $0.trustedRemaining
+      )
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: restoredState,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: timing.observedWallNow,
+      nextScheduledCheckIn: scheduled,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: timing.observedWallNow,
+      payload: .liveProjectionRestored(
+        phase: phase,
+        wallAnchor: materialization.wallAnchor,
+        endsAt: materialization.phaseOrBreakDeadline
+      )
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [event],
+        effects: [
+          .invalidateDisplayProjection(projectionToken: context.generatedProjectionToken)
+        ]
+      ))
   }
 
   private static func replacePendingDraftInReview(

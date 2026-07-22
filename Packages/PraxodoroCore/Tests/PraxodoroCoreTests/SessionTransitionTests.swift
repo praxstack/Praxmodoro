@@ -438,6 +438,7 @@ struct SessionTransitionTests {
           .invalidateDisplayProjection(projectionToken: projectionToken),
         ]
     )
+
   }
 
   @Test("prepared start rejects empty task and action before clock use")
@@ -1059,6 +1060,60 @@ struct SessionTransitionTests {
           .invalidateDisplayProjection(projectionToken: projectionToken),
         ]
     )
+
+    let restoredProjection = UUID()
+    let restored = SessionReducer.reduce(
+      snapshot: reduction.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .reconcileTime(.relaunch)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 400), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: restoredProjection
+      )
+    )
+    guard case let .transition(restoredReduction) = restored,
+      case let .breaking(restoredBreak) = restoredReduction.snapshot.state
+    else {
+      Issue.record("expected restored live break")
+      return
+    }
+    #expect(
+      restoredBreak.wallAnchor
+        == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)))
+    #expect(restoredBreak.elapsedBeforeAnchorSeconds == 100)
+    #expect(restoredBreak.timingAtAnchor == .timed(remaining: try PhaseSeconds(200)))
+    #expect(restoredBreak.endsAt == endsAt)
+    #expect(restoredBreak.projectionToken == restoredProjection)
+    #expect(restoredReduction.snapshot.accumulatedBreakSeconds == 0)
+    #expect(restoredReduction.events.map(\.payload.kind) == [.liveProjectionRestored])
+    #expect(
+      restoredReduction.effects == [
+        .invalidateDisplayProjection(projectionToken: restoredProjection)
+      ])
+    #expect(SessionSnapshotValidator.validateCandidate(restoredReduction.snapshot).isEmpty)
+
+    let due = SessionReducer.reduce(
+      snapshot: reduction.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .reconcileTime(.relaunch)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: endsAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(dueReduction) = due else {
+      Issue.record("expected due break relaunch transition")
+      return
+    }
+    #expect(dueReduction.snapshot.state.kind == .reentering)
+    #expect(dueReduction.snapshot.accumulatedBreakSeconds == 300)
+    #expect(dueReduction.snapshot.lastConsumedBoundaryToken == boundaryToken)
+    #expect(dueReduction.events.map(\.payload.kind) == [.breakEnded, .reentryPresented])
+    #expect(dueReduction.effects.contains(.playSound(.breakComplete)))
+    #expect(SessionSnapshotValidator.validateCandidate(dueReduction.snapshot).isEmpty)
   }
 
   @Test("paused thought parking normalizes text and preserves deterministic order")
@@ -2878,6 +2933,7 @@ struct SessionTransitionTests {
         .staleLiveProjection
       ),
     ]
+    var recoveryFixture: SessionSnapshot?
 
     for (observation, reason) in cases {
       let outcome = SessionReducer.reduce(
@@ -2925,6 +2981,71 @@ struct SessionTransitionTests {
             .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
             .invalidateDisplayProjection(projectionToken: nil),
           ])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+      if reason == .missingLiveProjection { recoveryFixture = reduction.snapshot }
+    }
+
+    let recoverySnapshot = try #require(recoveryFixture)
+    let recoveredProjection = UUID()
+    let resumed = SessionReducer.reduce(
+      snapshot: recoverySnapshot,
+      command: SessionCommand(
+        expectedRevision: 3,
+        intent: .recoverClock(.resumeSavedRemainder)
+      ),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 300), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: recoveredProjection
+      )
+    )
+    guard case let .transition(resumedReduction) = resumed,
+      case let .focusing(resumedFocus) = resumedReduction.snapshot.state
+    else {
+      Issue.record("expected saved focus recovery")
+      return
+    }
+    #expect(resumedFocus.timingAtAnchor == focus.timingAtAnchor)
+    #expect(
+      resumedFocus.wallAnchor
+        == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300)))
+    #expect(resumedFocus.elapsedBeforeAnchorSeconds == 0)
+    #expect(resumedFocus.projectionToken == recoveredProjection)
+    #expect(
+      resumedReduction.events.map(\.payload) == [.clockRecovered(choice: .resumeSavedRemainder)])
+    #expect(SessionSnapshotValidator.validateCandidate(resumedReduction.snapshot).isEmpty)
+
+    for (choice, reason) in [
+      (ClockRecoveryChoice.reviewSession, SessionStopReason.clockRecoveryReview),
+      (.endSession, .clockRecoveryEnd),
+    ] {
+      let outcome = SessionReducer.reduce(
+        snapshot: recoverySnapshot,
+        command: SessionCommand(expectedRevision: 3, intent: .recoverClock(choice)),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 300), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+      guard case let .transition(reduction) = outcome,
+        case let .reviewing(review) = reduction.snapshot.state
+      else {
+        Issue.record("expected recovery review for \(choice)")
+        continue
+      }
+      #expect(review.stopReason == reason)
+      #expect(
+        reduction.events.map(\.payload.kind) == [.clockRecovered, .reviewStarted])
+      #expect(
+        reduction.effects == [
+          .announceAccessibility(.reviewPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ])
       #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
     }
   }
@@ -3808,6 +3929,109 @@ struct SessionTransitionTests {
         ])
     #expect(finalReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
     #expect(SessionSnapshotValidator.validateCandidate(finalReduction.snapshot).isEmpty)
+  }
+
+  @Test("live relaunch restores fresh focus projection or enters typed recovery")
+  func liveFocusRelaunchIsExact() throws {
+    let sessionID = UUID()
+    let originalProjection = UUID()
+    let restoredProjection = UUID()
+    let plan = try SessionPlan(
+      task: "Relaunch task", firstAction: "Restore safely", capacity: nil,
+      timingPolicy: .classic)
+    guard
+      case let .transition(prepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: sessionID,
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: prepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: originalProjection
+        )
+      )
+    else {
+      Issue.record("expected relaunch fixture")
+      return
+    }
+    let restored = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .reconcileTime(.relaunch)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 200), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: restoredProjection
+      )
+    )
+    guard case let .transition(reduction) = restored,
+      case let .focusing(focus) = reduction.snapshot.state
+    else {
+      Issue.record("expected restored live focus")
+      return
+    }
+    #expect(
+      focus.wallAnchor == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200)))
+    #expect(focus.elapsedBeforeAnchorSeconds == 100)
+    #expect(focus.timingAtAnchor == .timed(remaining: try PhaseSeconds(1_400)))
+    #expect(focus.projectionToken == restoredProjection)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 0)
+    let expectedCadence = try CheckInRemainingSeconds(800)
+    #expect(reduction.snapshot.nextScheduledCheckIn?.trustedRemaining == expectedCadence)
+    #expect(reduction.events.map(\.payload.kind) == [.liveProjectionRestored])
+    #expect(
+      reduction.effects == [
+        .invalidateDisplayProjection(projectionToken: restoredProjection)
+      ])
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+
+    let ambiguous = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .reconcileTime(.relaunch)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 97), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(recovery) = ambiguous else {
+      Issue.record("expected relaunch recovery")
+      return
+    }
+    #expect(recovery.snapshot.state.kind == .recoveryNeeded)
+    #expect(
+      recovery.events.map(\.payload) == [
+        .clockRecoveryNeeded(reason: .wallClockAmbiguousAfterRelaunch)
+      ])
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .reconcileTime(.relaunch)),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .failed(snapshot: started.snapshot, reason: .nonFiniteWallObservation)
+    )
   }
 
   @Test("active-session conflict choices preserve old-session truth and replacement intent")
