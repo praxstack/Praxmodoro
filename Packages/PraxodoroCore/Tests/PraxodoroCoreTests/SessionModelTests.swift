@@ -557,4 +557,24 @@ struct SessionModelTests {
 
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidRecoveryChoices))
   }
+
+  @Test("notification requests derive kind and private content from boundary tokens")
+  func notificationRequestsAreTokenDerivedAndPrivate() {
+    let token = BoundaryToken(
+      sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
+      kind: .breakEnd,
+      phaseID: nil,
+      sourceRevision: 4,
+      occurrence: 2
+    )
+    let request = SessionNotificationRequest(
+      boundaryToken: token,
+      fireAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 80))
+    )
+
+    #expect(request.kind == .breakEnd)
+    #expect(request.contentPolicy == .privateGeneric)
+    #expect(request.id.value.contains("breakEnd"))
+    #expect(request.id.value.hasSuffix(".2"))
+  }
 }
