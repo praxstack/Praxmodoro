@@ -25,6 +25,7 @@ internal enum SessionSnapshotValidator {
       lastWallObservationAt: candidate.lastWallObservationAt,
       sessionID: candidate.sessionID,
       nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
+      currentRevision: candidate.revision,
       startedAt: candidate.startedAt,
       accumulatedFocusSeconds: candidate.accumulatedFocusSeconds,
       accumulatedBreakSeconds: candidate.accumulatedBreakSeconds,
@@ -37,12 +38,14 @@ internal enum SessionSnapshotValidator {
       candidate.lastConsumedBoundaryToken,
       sessionID: candidate.sessionID,
       nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
+      currentRevision: candidate.revision,
       into: &violations
     )
     validateBoundaryToken(
       candidate.nextScheduledCheckIn?.token,
       sessionID: candidate.sessionID,
       nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
+      currentRevision: candidate.revision,
       into: &violations
     )
     validateThoughts(candidate.parkedThoughts, into: &violations)
@@ -313,8 +316,9 @@ internal enum SessionSnapshotValidator {
     _ state: SessionState,
     plan: SessionPlan?,
     lastWallObservationAt: SessionTimestamp?,
-    sessionID: UUID?,
-    nextBoundaryOccurrence: UInt64,
+      sessionID: UUID?,
+      nextBoundaryOccurrence: UInt64,
+      currentRevision: UInt64,
     startedAt: SessionTimestamp?,
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
@@ -345,6 +349,7 @@ internal enum SessionSnapshotValidator {
         value.phaseBoundaryToken,
         sessionID: sessionID,
         nextBoundaryOccurrence: nextBoundaryOccurrence,
+        currentRevision: currentRevision,
         into: &violations
       )
       validateFocusBoundaryToken(
@@ -388,6 +393,7 @@ internal enum SessionSnapshotValidator {
         value.boundaryToken,
         sessionID: sessionID,
         nextBoundaryOccurrence: nextBoundaryOccurrence,
+        currentRevision: currentRevision,
         into: &violations
       )
       validateBreakBoundaryToken(value.boundaryToken, timing: value.timingAtAnchor, into: &violations)
@@ -604,6 +610,7 @@ internal enum SessionSnapshotValidator {
     _ token: BoundaryToken?,
     sessionID: UUID?,
     nextBoundaryOccurrence: UInt64,
+    currentRevision: UInt64,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     guard let token else { return }
@@ -611,7 +618,9 @@ internal enum SessionSnapshotValidator {
     case .phase: token.phaseID != nil
     case .scheduledCheckIn, .breakEnd: token.phaseID == nil
     }
-    if !discriminantIsValid || token.sessionID != sessionID || token.occurrence >= nextBoundaryOccurrence {
+    if !discriminantIsValid || token.sessionID != sessionID || token.occurrence >= nextBoundaryOccurrence
+      || token.sourceRevision > currentRevision
+    {
       violations.insert(.invalidBoundaryToken)
     }
   }

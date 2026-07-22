@@ -643,6 +643,38 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
   }
 
+  @Test("boundary tokens cannot originate from a future revision")
+  func boundaryTokenCannotClaimFutureRevision() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 30))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .focus,
+      sourceRevision: 2,
+      occurrence: 0
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 1,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidBoundaryToken))
+  }
+
   @Test("parked thoughts must be normalized, unique, and deterministically ordered")
   func parkedThoughtsRequireCanonicalContentAndOrder() {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 40))
