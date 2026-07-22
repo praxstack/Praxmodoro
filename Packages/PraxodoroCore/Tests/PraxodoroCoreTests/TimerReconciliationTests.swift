@@ -955,6 +955,18 @@ struct TimerReconciliationTests {
           nextBoundaryOccurrence: 10
         )
     )
+
+    #expect(
+      SessionTimeKernel.replaceScheduledCheckIn(
+        ScheduledCheckInReplacementRequest(
+          sessionID: sessionID,
+          targetRevision: 4,
+          nextBoundaryOccurrence: 10,
+          wallAnchor: anchor,
+          schedule: .manualOnly
+        )
+      ) == .materialized(boundary: nil, nextBoundaryOccurrence: 10)
+    )
   }
 
   @Test("scheduled cadence materializes no remainder or exact supported intervals")
