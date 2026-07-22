@@ -15,6 +15,36 @@ internal enum LiveTimeDecision: Equatable, Sendable {
   case failure(ReductionFailure)
 }
 
+internal enum BoundaryAdmissionDecision: Equatable, Sendable {
+  case noneDue
+  case boundaryNotDue(token: BoundaryToken, dueAt: SessionTimestamp, observedAt: SessionTimestamp)
+  case earlierBoundaryPending
+  case winner(BoundaryWinnerDecision)
+  case recovery(RecoveryReason)
+}
+
+internal struct BoundaryWinnerDecision: Equatable, Sendable {
+  let token: BoundaryToken
+  let dueAt: SessionTimestamp
+  let exitMaterialization: BoundaryExitMaterialization
+  let scheduledCadence: ScheduledCadenceAdmission
+}
+
+internal enum BoundaryExitMaterialization: Equatable, Sendable {
+  case phase(accumulatedFocusSeconds: UInt64)
+  case scheduledCheckIn(accumulatedFocusSeconds: UInt64, suspendedTiming: PausedTiming)
+  case breakEnd(accumulatedBreakSeconds: UInt64)
+}
+
+internal enum ScheduledCadenceAdmission: Equatable, Sendable {
+  case notApplicable
+  case manualOnly
+  case preserve(CheckInRemainingSeconds)
+  case resetAfterPhaseCollision
+  case resetAfterSupersededScheduledOccurrence
+  case resetAfterScheduledOccurrence
+}
+
 internal enum ScheduledCadenceSeed: Equatable, Sendable {
   case manualOnly
   case fullInterval(CheckInMinutes)
@@ -137,6 +167,43 @@ internal enum SessionTimeKernel {
         admissionAdjustment: adjustment
       )
     )
+  }
+
+  static func admitBoundary(
+    snapshot: SessionSnapshot,
+    timing: NormalizedLiveTiming,
+    observedToken: BoundaryToken?
+  ) -> BoundaryAdmissionDecision {
+    switch snapshot.state {
+    case let .focusing(focus):
+      guard let token = focus.phaseBoundaryToken,
+        let dueAt = timing.phaseOrBreakDeadline
+      else { return .noneDue }
+      guard dueAt.date <= timing.normalizedDueInstant.date else {
+        return observedToken.map {
+          .boundaryNotDue(token: $0, dueAt: dueAt, observedAt: timing.normalizedDueInstant)
+        } ?? .noneDue
+      }
+      guard observedToken == nil || observedToken == token else { return .earlierBoundaryPending }
+      guard case let .timed(remaining) = focus.timingAtAnchor else {
+        return .recovery(.arithmeticOverflow)
+      }
+      let carry = focus.elapsedBeforeAnchorSeconds.addingReportingOverflow(UInt64(remaining.value))
+      guard !carry.overflow else { return .recovery(.arithmeticOverflow) }
+      let total = snapshot.accumulatedFocusSeconds.addingReportingOverflow(carry.partialValue)
+      guard !total.overflow else { return .recovery(.arithmeticOverflow) }
+      return .winner(
+        BoundaryWinnerDecision(
+          token: token,
+          dueAt: dueAt,
+          exitMaterialization: .phase(accumulatedFocusSeconds: total.partialValue),
+          scheduledCadence: cadenceAfterPhase(snapshot.configuration.checkInSchedule)
+        )
+      )
+    case .idle, .prepared, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
+      return .noneDue
+    }
   }
 
   static func materializeLiveEntry(_ request: LiveEntryRequest) -> LiveEntryDecision {
@@ -336,6 +403,15 @@ internal enum SessionTimeKernel {
     let end = date.timeIntervalSinceReferenceDate + seconds
     guard seconds.isFinite, end.isFinite else { return nil }
     return canonicalSecond(Date(timeIntervalSinceReferenceDate: end))
+  }
+
+  private static func cadenceAfterPhase(
+    _ schedule: CheckInSchedule
+  ) -> ScheduledCadenceAdmission {
+    switch schedule {
+    case .manualOnly: .manualOnly
+    case .interval: .resetAfterPhaseCollision
+    }
   }
 }
 

@@ -242,4 +242,71 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("phase admission materializes at its deadline instead of a later observation")
+  func phaseAdmissionMaterializesAtDeadline() throws {
+    let sessionID = UUID()
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
+    )
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 1,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+          elapsedBeforeAnchorSeconds: 5,
+          projectionToken: UUID(),
+          phaseBoundaryToken: phaseToken
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: SessionConfiguration(
+        checkInSchedule: .manualOnly,
+        breakSuggestionsEnabled: true,
+        lowCognitiveLoadEnabled: false,
+        reflectionPromptEnabled: true
+      ),
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 11,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let deadline = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let decision = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: NormalizedLiveTiming(
+        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 700)),
+        expectedWallNow: deadline,
+        normalizedDueInstant: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 700)),
+        phaseOrBreakDeadline: deadline,
+        scheduledCheckInAt: nil,
+        admissionAdjustment: nil
+      ),
+      observedToken: phaseToken
+    )
+
+    #expect(
+      decision
+        == .winner(
+          BoundaryWinnerDecision(
+            token: phaseToken,
+            dueAt: deadline,
+            exitMaterialization: .phase(accumulatedFocusSeconds: 316),
+            scheduledCadence: .manualOnly
+          )
+        )
+    )
+  }
 }
