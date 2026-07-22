@@ -763,4 +763,46 @@ struct SessionModelTests {
     #expect(violations.contains(.counterRegression))
     #expect(violations.contains(.invalidBoundaryOccurrence))
   }
+
+  @Test("break snapshots require a normalized proposed re-entry action")
+  func breakStateRequiresProposedAction() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 120))
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(300)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let state = BreakState(
+      choice: BreakChoice(kind: .quiet, duration: .openEnded),
+      timingAtAnchor: .openEnded,
+      wallAnchor: anchor,
+      endsAt: nil,
+      elapsedBeforeAnchorSeconds: 0,
+      projectionToken: UUID(),
+      boundaryToken: nil,
+      resumeTarget: suspended,
+      proposedAction: "  "
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .breaking(state),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidText(.revisedAction)))
+  }
 }

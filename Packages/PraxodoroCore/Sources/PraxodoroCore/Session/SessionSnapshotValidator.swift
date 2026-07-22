@@ -273,9 +273,11 @@ internal enum SessionSnapshotValidator {
         nextBoundaryOccurrence: nextBoundaryOccurrence,
         into: &violations
       )
+      validateAction(value.proposedAction, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case let .reentering(value):
       validate(value.enteredAt, as: .reentryEnteredAt, into: &violations)
+      validateAction(value.proposedAction, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case let .reviewing(value):
       validate(value.draft.endedAt, as: .reviewEndedAt, into: &violations)
@@ -296,6 +298,13 @@ internal enum SessionSnapshotValidator {
       if value.safeChoices != Set(ClockRecoveryChoice.allCases) {
         violations.insert(.invalidRecoveryChoices)
       }
+    }
+  }
+
+  private static func validateAction(_ action: String, into violations: inout Set<SnapshotInvariantViolation>) {
+    let normalized = action.trimmingCharacters(in: .whitespacesAndNewlines)
+    if normalized.isEmpty || normalized.unicodeScalars.count > 500 {
+      violations.insert(.invalidText(.revisedAction))
     }
   }
 
