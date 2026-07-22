@@ -29,7 +29,9 @@ public struct SessionEvent: Equatable, Sendable {
   public let occurredAt: SessionTimestamp
   public let payload: SessionEventPayload
 
-  internal init(sessionID: UUID, sequence: UInt64, occurredAt: SessionTimestamp, payload: SessionEventPayload) {
+  internal init(
+    sessionID: UUID, sequence: UInt64, occurredAt: SessionTimestamp, payload: SessionEventPayload
+  ) {
     self.eventVersion = 1
     self.sessionID = sessionID
     self.sequence = sequence
@@ -69,7 +71,8 @@ public enum SessionEventPayload: Equatable, Sendable {
   case phaseStarted(phase: SessionPhaseDescriptor, endsAt: SessionTimestamp?)
   case phasePaused(timing: PausedTiming)
   case phaseResumed(phase: SessionPhaseDescriptor, endsAt: SessionTimestamp?)
-  case liveProjectionRestored(phase: SessionPhaseDescriptor, wallAnchor: SessionTimestamp, endsAt: SessionTimestamp?)
+  case liveProjectionRestored(
+    phase: SessionPhaseDescriptor, wallAnchor: SessionTimestamp, endsAt: SessionTimestamp?)
   case checkInOpened(trigger: CheckInTrigger, continuation: CheckInContinuation)
   case checkInResolved
   case detourReported(hasNote: Bool)

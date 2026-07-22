@@ -1,22 +1,25 @@
 import Foundation
 import Testing
+
 @testable import PraxodoroCore
 
 @Suite("Session domain model")
 struct SessionModelTests {
   @Test("the lifecycle vocabulary is closed")
   func lifecycleVocabularyIsClosed() {
-    #expect(SessionStateKind.allCases == [
-      .idle, .prepared, .focusing, .paused, .checkingIn,
-      .breaking, .reentering, .reviewing, .completed, .recoveryNeeded,
-    ])
+    #expect(
+      SessionStateKind.allCases == [
+        .idle, .prepared, .focusing, .paused, .checkingIn,
+        .breaking, .reentering, .reviewing, .completed, .recoveryNeeded,
+      ])
   }
 
   @Test("the V1 timing policy vocabulary is closed")
   func timingPolicyVocabularyIsClosed() {
-    #expect(TimingPolicyID.allCases == [
-      .gentleStart, .classic, .flow, .recoveryFirst,
-    ])
+    #expect(
+      TimingPolicyID.allCases == [
+        .gentleStart, .classic, .flow, .recoveryFirst,
+      ])
   }
 
   @Test("timestamps retain lawful equality for non-finite fixture values")
@@ -31,10 +34,14 @@ struct SessionModelTests {
   @Test("timestamps preserve bit-pattern identity for malformed fixtures")
   func timestampEqualityRemainsHashLawfulForMalformedValues() {
     let nanBits: UInt64 = 0x7FF8_0000_0000_0001
-    let sameNaN = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: nanBits)))
-    let duplicateNaN = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: nanBits)))
-    let distinctNaN = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: 0x7FF8_0000_0000_0002)))
-    let positiveInfinity = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: .infinity))
+    let sameNaN = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: nanBits)))
+    let duplicateNaN = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: nanBits)))
+    let distinctNaN = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: 0x7FF8_0000_0000_0002)))
+    let positiveInfinity = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: .infinity))
     let negativeZero = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: -0.0))
     let positiveZero = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 0.0))
 
@@ -47,33 +54,39 @@ struct SessionModelTests {
 
   @Test("canonical seconds reject non-finite clock input and floor finite values")
   func canonicalSecondIsDeterministic() {
-    #expect(canonicalSecond(Date(timeIntervalSinceReferenceDate: 7.9)) ==
-      SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 7)))
+    #expect(
+      canonicalSecond(Date(timeIntervalSinceReferenceDate: 7.9))
+        == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 7)))
     #expect(canonicalSecond(Date(timeIntervalSinceReferenceDate: -.infinity)) == nil)
   }
 
   @Test("the default configuration is ADHD-aware but low-load is opt-in")
   func defaultConfigurationIsExact() {
-    #expect(SessionConfiguration.defaults == SessionConfiguration(
-      checkInSchedule: .every15Minutes,
-      breakSuggestionsEnabled: true,
-      lowCognitiveLoadEnabled: false,
-      reflectionPromptEnabled: true
-    ))
+    #expect(
+      SessionConfiguration.defaults
+        == SessionConfiguration(
+          checkInSchedule: .every15Minutes,
+          breakSuggestionsEnabled: true,
+          lowCognitiveLoadEnabled: false,
+          reflectionPromptEnabled: true
+        ))
   }
 
   @Test("the immutable presets have their specified timing shapes")
   func timingPolicyShapesAreExact() {
-    #expect(TimingPolicy.allV1 == [
-      .gentleStart, .classic, .flow, .recoveryFirst,
-    ])
-    #expect(TimingPolicy.gentleStart.phases.map(\.duration) == [
-      .timed(try! PhaseSeconds(300)), .timed(try! PhaseSeconds(1_200)),
-    ])
+    #expect(
+      TimingPolicy.allV1 == [
+        .gentleStart, .classic, .flow, .recoveryFirst,
+      ])
+    #expect(
+      TimingPolicy.gentleStart.phases.map(\.duration) == [
+        .timed(try! PhaseSeconds(300)), .timed(try! PhaseSeconds(1_200)),
+      ])
     #expect(TimingPolicy.flow.suggestedBreak == nil)
-    #expect(TimingPolicy.recoveryFirst.phases.map(\.duration) == [
-      .timed(try! PhaseSeconds(600)), .openEnded,
-    ])
+    #expect(
+      TimingPolicy.recoveryFirst.phases.map(\.duration) == [
+        .timed(try! PhaseSeconds(600)), .openEnded,
+      ])
   }
 
   @Test("each V1 timing preset has its exact phase identity and feature gate")
@@ -115,7 +128,8 @@ struct SessionModelTests {
 
     let tooLong = String(repeating: "a", count: 501)
     #expect(throws: DomainValidationError.textTooLong(field: .task, maximumScalars: 500)) {
-      _ = try SessionPlan(task: tooLong, firstAction: "Action", capacity: nil, timingPolicy: .classic)
+      _ = try SessionPlan(
+        task: tooLong, firstAction: "Action", capacity: nil, timingPolicy: .classic)
     }
     #expect(throws: DomainValidationError.textTooLong(field: .firstAction, maximumScalars: 500)) {
       _ = try SessionPlan(task: "Task", firstAction: tooLong, capacity: nil, timingPolicy: .classic)
@@ -141,12 +155,15 @@ struct SessionModelTests {
     }
     #expect(try CheckInRemainingSeconds(1).value == 1)
     #expect(try CheckInRemainingSeconds(7_200).value == 7_200)
-    #expect(throws: DomainValidationError.checkInRemainingOutOfRange(actual: 0, allowed: 1...7_200)) {
+    #expect(throws: DomainValidationError.checkInRemainingOutOfRange(actual: 0, allowed: 1...7_200))
+    {
       _ = try CheckInRemainingSeconds(0)
     }
     #expect(try PhaseSeconds(1).value == 1)
     #expect(try PhaseSeconds(86_400).value == 86_400)
-    #expect(throws: DomainValidationError.phaseDurationOutOfRange(actual: 86_401, allowed: 1...86_400)) {
+    #expect(
+      throws: DomainValidationError.phaseDurationOutOfRange(actual: 86_401, allowed: 1...86_400)
+    ) {
       _ = try PhaseSeconds(86_401)
     }
   }
@@ -221,8 +238,9 @@ struct SessionModelTests {
 
   @Test("projection errors retain typed snapshot failures")
   func projectionErrorsRetainTypedSnapshotFailures() {
-    #expect(ProjectionError.invalidSnapshot([.invalidIdleBaseline]) ==
-      .invalidSnapshot([.invalidIdleBaseline]))
+    #expect(
+      ProjectionError.invalidSnapshot([.invalidIdleBaseline])
+        == .invalidSnapshot([.invalidIdleBaseline]))
   }
 
   @Test("state kinds map exhaustively without a default case")
@@ -270,15 +288,18 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
     )
 
-    #expect(SessionSnapshotValidator.validateCandidate(snapshot).contains(.nonCanonicalTimestamp(.startedAt)))
+    #expect(
+      SessionSnapshotValidator.validateCandidate(snapshot).contains(
+        .nonCanonicalTimestamp(.startedAt)))
   }
 
   @Test("result vocabulary retains snapshots and typed failure reasons")
   func resultVocabularyIsClosed() {
     let result = SessionResult.noChange(snapshot: .canonicalIdle, reason: .observationIrrelevant)
     #expect(result == .noChange(snapshot: .canonicalIdle, reason: .observationIrrelevant))
-    #expect(SessionEngineFailure.corruptSnapshot([.invalidIdleBaseline]) ==
-      .corruptSnapshot([.invalidIdleBaseline]))
+    #expect(
+      SessionEngineFailure.corruptSnapshot([.invalidIdleBaseline])
+        == .corruptSnapshot([.invalidIdleBaseline]))
   }
 
   @Test("prepared candidates require a session plan")
@@ -312,7 +333,8 @@ struct SessionModelTests {
     let token = BoundaryToken(
       sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 1, occurrence: 0
     )
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let candidate = SessionSnapshot(
       schemaVersion: 1,
       sessionID: sessionID,
@@ -339,7 +361,8 @@ struct SessionModelTests {
   @Test("prepared sessions never carry a start timestamp")
   func preparedSessionCannotCarryStartTimestamp() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let candidate = SessionSnapshot(
       schemaVersion: 1,
       sessionID: UUID(),
@@ -364,7 +387,8 @@ struct SessionModelTests {
   @Test("non-idle snapshots retain their last wall observation")
   func nonIdleSnapshotRequiresLastWallObservation() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let candidate = SessionSnapshot(
       schemaVersion: 1,
       sessionID: UUID(),
@@ -390,7 +414,8 @@ struct SessionModelTests {
   func transitionRevisionMustIncrementExactlyOnce() {
     let candidate = SessionSnapshot.canonicalIdle
     let context = ReductionContext(
-      instant: SessionInstant(wallNow: Date(timeIntervalSinceReferenceDate: 0), liveProjection: nil),
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 0), liveProjection: nil),
       generatedSessionID: UUID(),
       generatedThoughtID: UUID(),
       generatedProjectionToken: UUID()
@@ -408,7 +433,8 @@ struct SessionModelTests {
 
   @Test("non-idle commits record the context's canonical wall observation")
   func nonIdleCommitRequiresExactWallObservation() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let preparedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
     let candidate = SessionSnapshot(
       schemaVersion: 1,
@@ -428,7 +454,8 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
     let context = ReductionContext(
-      instant: SessionInstant(wallNow: Date(timeIntervalSinceReferenceDate: 11), liveProjection: nil),
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 11), liveProjection: nil),
       generatedSessionID: UUID(),
       generatedThoughtID: UUID(),
       generatedProjectionToken: UUID()
@@ -446,7 +473,8 @@ struct SessionModelTests {
 
   @Test("preparing a new session requires the complete closed reset")
   func prepareResetIsCompleteAndSessionLocal() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: .steady, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: .steady, timingPolicy: .classic)
     let draft = SessionDraft(plan: plan)
     let previous = SessionSnapshot.canonicalIdle
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000010")!
@@ -482,13 +510,14 @@ struct SessionModelTests {
       payload: .sessionPrepared(policy: .classic, capacitySpecified: true)
     )
 
-    #expect(SessionSnapshotValidator.validate(
-      previous: previous,
-      command: SessionCommand(expectedRevision: 0, intent: .prepare(draft)),
-      candidate: candidate,
-      emittedEvents: [event],
-      context: context
-    ).isEmpty)
+    #expect(
+      SessionSnapshotValidator.validate(
+        previous: previous,
+        command: SessionCommand(expectedRevision: 0, intent: .prepare(draft)),
+        candidate: candidate,
+        emittedEvents: [event],
+        context: context
+      ).isEmpty)
 
     let leakingCandidate = SessionSnapshot(
       schemaVersion: candidate.schemaVersion,
@@ -507,18 +536,20 @@ struct SessionModelTests {
       nextScheduledCheckIn: candidate.nextScheduledCheckIn,
       lastConsumedBoundaryToken: candidate.lastConsumedBoundaryToken
     )
-    #expect(SessionSnapshotValidator.validate(
-      previous: previous,
-      command: SessionCommand(expectedRevision: 0, intent: .prepare(draft)),
-      candidate: leakingCandidate,
-      emittedEvents: [event],
-      context: context
-    ).contains(.invalidSessionReset))
+    #expect(
+      SessionSnapshotValidator.validate(
+        previous: previous,
+        command: SessionCommand(expectedRevision: 0, intent: .prepare(draft)),
+        candidate: leakingCandidate,
+        emittedEvents: [event],
+        context: context
+      ).contains(.invalidSessionReset))
   }
 
   @Test("timed focus candidates require both a matching live anchor and deadline")
   func timedFocusCandidateRequiresConsistentLiveShape() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
     let focus = FocusState(
       phase: TimingPolicy.classic.phases[0],
@@ -569,15 +600,16 @@ struct SessionModelTests {
       revision: 1,
       eventSequence: 1,
       nextBoundaryOccurrence: 2,
-      state: .focusing(FocusState(
-        phase: TimingPolicy.classic.phases[0],
-        timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
-        wallAnchor: anchor,
-        phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
-        elapsedBeforeAnchorSeconds: 0,
-        projectionToken: UUID(),
-        phaseBoundaryToken: token
-      )),
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: token
+        )),
       plan: plan,
       configuration: .defaults,
       parkedThoughts: [],
@@ -600,7 +632,8 @@ struct SessionModelTests {
 
   @Test("active phases must belong to the selected timing policy")
   func activePhaseMustBelongToPlanPolicy() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
     let sessionID = UUID()
     let token = BoundaryToken(
@@ -615,15 +648,16 @@ struct SessionModelTests {
       revision: 1,
       eventSequence: 1,
       nextBoundaryOccurrence: 2,
-      state: .focusing(FocusState(
-        phase: TimingPolicy.gentleStart.phases[0],
-        timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
-        wallAnchor: anchor,
-        phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
-        elapsedBeforeAnchorSeconds: 0,
-        projectionToken: UUID(),
-        phaseBoundaryToken: token
-      )),
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.gentleStart.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: token
+        )),
       plan: plan,
       configuration: .defaults,
       parkedThoughts: [],
@@ -644,7 +678,8 @@ struct SessionModelTests {
 
   @Test("timed focus candidates cannot exceed their configured phase budget")
   func timedFocusCandidateCannotExceedPhaseBudget() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
     let focus = FocusState(
       phase: TimingPolicy.classic.phases[0],
@@ -678,7 +713,8 @@ struct SessionModelTests {
 
   @Test("live timing boundaries retain their owned token and exact scheduled deadline")
   func liveTimingBoundariesAreAtomic() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let sessionID = UUID()
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
     let phaseToken = BoundaryToken(
@@ -718,12 +754,14 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
 
-    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+    #expect(
+      SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
 
   @Test("suspended focus cannot preserve cadence when configuration is manual-only")
   func suspendedFocusCannotRetainManualOnlyCadence() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
     let candidate = SessionSnapshot(
       schemaVersion: 1,
@@ -731,12 +769,13 @@ struct SessionModelTests {
       revision: 2,
       eventSequence: 2,
       nextBoundaryOccurrence: 0,
-      state: .paused(PausedState(
-        phase: TimingPolicy.classic.phases[0],
-        timing: .timed(remaining: try PhaseSeconds(300)),
-        pausedAt: timestamp,
-        scheduledCheckInRemaining: try CheckInRemainingSeconds(60)
-      )),
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(300)),
+          pausedAt: timestamp,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(60)
+        )),
       plan: plan,
       configuration: SessionConfiguration(
         checkInSchedule: .manualOnly,
@@ -753,12 +792,14 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
 
-    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+    #expect(
+      SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
 
   @Test("boundary tokens require an owned discriminant and published occurrence")
   func boundaryTokenMustBeWellFormedAndPublished() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 30))
     let sessionID = UUID()
     let malformedToken = BoundaryToken(
@@ -807,7 +848,8 @@ struct SessionModelTests {
       eventSequence: 1,
       nextBoundaryOccurrence: 1,
       state: .prepared(PreparedState(preparedAt: timestamp)),
-      plan: try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
       configuration: .defaults,
       parkedThoughts: [],
       startedAt: nil,
@@ -1003,7 +1045,8 @@ struct SessionModelTests {
   func completionMustPreserveReviewDraft() throws {
     let sessionID = UUID()
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let draft = SessionSummaryDraft(
       endedAt: timestamp,
       focusedSeconds: 0,
@@ -1064,19 +1107,21 @@ struct SessionModelTests {
       generatedProjectionToken: UUID()
     )
 
-    #expect(SessionSnapshotValidator.validate(
-      previous: previous,
-      command: SessionCommand(expectedRevision: 1, intent: .finalizeReview),
-      candidate: candidate,
-      emittedEvents: [],
-      context: context
-    ).contains(.invalidSummary))
+    #expect(
+      SessionSnapshotValidator.validate(
+        previous: previous,
+        command: SessionCommand(expectedRevision: 1, intent: .finalizeReview),
+        candidate: candidate,
+        emittedEvents: [],
+        context: context
+      ).contains(.invalidSummary))
   }
 
   @Test("review drafts freeze the current totals and parked-thought count")
   func reviewDraftRequiresCurrentSummaryValues() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let draft = SessionSummaryDraft(
       endedAt: timestamp,
       focusedSeconds: 9,
@@ -1123,7 +1168,8 @@ struct SessionModelTests {
       eventSequence: 1,
       nextBoundaryOccurrence: 1,
       state: .prepared(PreparedState(preparedAt: timestamp)),
-      plan: try! SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      plan: try! SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
       configuration: SessionConfiguration(
         checkInSchedule: .manualOnly,
         breakSuggestionsEnabled: true,
@@ -1143,7 +1189,8 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
 
-    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+    #expect(
+      SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
 
   @Test("scheduled boundaries exist only in live focus snapshots")
@@ -1164,7 +1211,8 @@ struct SessionModelTests {
       eventSequence: 1,
       nextBoundaryOccurrence: 1,
       state: .prepared(PreparedState(preparedAt: timestamp)),
-      plan: try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
       configuration: .defaults,
       parkedThoughts: [],
       startedAt: nil,
@@ -1179,20 +1227,23 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
 
-    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+    #expect(
+      SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
 
   @Test("recovery states expose the complete safe-choice set")
   func recoveryStateRequiresAllSafeChoices() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let recovery = RecoveryState(
       reason: .negativeMonotonicElapsed,
-      lastTrustworthyState: .focus(SuspendedFocusState(
-        phase: TimingPolicy.classic.phases[0],
-        timing: .timed(remaining: try PhaseSeconds(300)),
-        resumeDisposition: .focusing,
-        scheduledCheckInRemaining: nil
-      )),
+      lastTrustworthyState: .focus(
+        SuspendedFocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(300)),
+          resumeDisposition: .focusing,
+          scheduledCheckInRemaining: nil
+        )),
       safeChoices: [.reviewSession]
     )
     let candidate = SessionSnapshot(
@@ -1218,7 +1269,8 @@ struct SessionModelTests {
 
   @Test("recovery preserves a break timing shape that matches its choice")
   func recoveryBreakRequiresMatchingFrozenTiming() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 70))
     let suspendedFocus = SuspendedFocusState(
       phase: TimingPolicy.classic.phases[0],
@@ -1228,12 +1280,13 @@ struct SessionModelTests {
     )
     let recovery = RecoveryState(
       reason: .negativeMonotonicElapsed,
-      lastTrustworthyState: .breakState(SuspendedBreakState(
-        choice: BreakChoice(kind: .quiet, duration: .timed(.five)),
-        timing: .openEnded,
-        resumeTarget: suspendedFocus,
-        proposedAction: "Return"
-      )),
+      lastTrustworthyState: .breakState(
+        SuspendedBreakState(
+          choice: BreakChoice(kind: .quiet, duration: .timed(.five)),
+          timing: .openEnded,
+          resumeTarget: suspendedFocus,
+          proposedAction: "Return"
+        )),
       safeChoices: Set(ClockRecoveryChoice.allCases)
     )
     let candidate = SessionSnapshot(
@@ -1279,7 +1332,8 @@ struct SessionModelTests {
 
   @Test("nested event payload timestamps retain field-specific validation")
   func eventPayloadTimestampUsesSpecificViolation() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let sessionID = UUID()
     let wall = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 90))
     let candidate = SessionSnapshot(
@@ -1328,7 +1382,8 @@ struct SessionModelTests {
 
   @Test("post-start lifecycle snapshots retain identity and start timestamp")
   func postStartStateRequiresIdentityAndStartTimestamp() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
     let focus = FocusState(
       phase: TimingPolicy.classic.phases[0],
@@ -1364,7 +1419,8 @@ struct SessionModelTests {
 
   @Test("check-in continuations cannot mix suspended and phase-boundary shapes")
   func checkInContinuationShapesAreDisjoint() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
     let state = CheckInState(
       suspended: nil,
@@ -1397,7 +1453,8 @@ struct SessionModelTests {
 
   @Test("phase-boundary check-ins retain the consumed token")
   func phaseBoundaryCheckInRequiresMatchingConsumedToken() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
     let sessionID = UUID()
     let token = BoundaryToken(
@@ -1432,7 +1489,8 @@ struct SessionModelTests {
 
   @Test("phase-boundary check-ins use the exact policy continuation")
   func phaseBoundaryCheckInRequiresExactContinuation() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .gentleStart)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .gentleStart)
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
     let sessionID = UUID()
     let token = BoundaryToken(
@@ -1502,7 +1560,8 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
     let context = ReductionContext(
-      instant: SessionInstant(wallNow: Date(timeIntervalSinceReferenceDate: 0), liveProjection: nil),
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 0), liveProjection: nil),
       generatedSessionID: UUID(),
       generatedThoughtID: UUID(),
       generatedProjectionToken: UUID()
@@ -1521,7 +1580,8 @@ struct SessionModelTests {
 
   @Test("material live clock drift requires adjustment or recovery")
   func materialLiveClockDriftCannotBeSilent() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let sessionID = UUID()
     let start = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
     let phaseToken = BoundaryToken(
@@ -1536,15 +1596,16 @@ struct SessionModelTests {
       revision: 1,
       eventSequence: 1,
       nextBoundaryOccurrence: 2,
-      state: .focusing(FocusState(
-        phase: TimingPolicy.classic.phases[0],
-        timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
-        wallAnchor: start,
-        phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 310)),
-        elapsedBeforeAnchorSeconds: 0,
-        projectionToken: UUID(),
-        phaseBoundaryToken: phaseToken
-      )),
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: start,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 310)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(),
+          phaseBoundaryToken: phaseToken
+        )),
       plan: plan,
       configuration: .defaults,
       parkedThoughts: [],
@@ -1566,12 +1627,13 @@ struct SessionModelTests {
       revision: 2,
       eventSequence: 1,
       nextBoundaryOccurrence: 2,
-      state: .paused(PausedState(
-        phase: TimingPolicy.classic.phases[0],
-        timing: .timed(remaining: try PhaseSeconds(300)),
-        pausedAt: observed,
-        scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
-      )),
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(300)),
+          pausedAt: observed,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
       plan: plan,
       configuration: .defaults,
       parkedThoughts: [],
@@ -1589,18 +1651,20 @@ struct SessionModelTests {
       generatedProjectionToken: UUID()
     )
 
-    #expect(SessionSnapshotValidator.validate(
-      previous: previous,
-      command: SessionCommand(expectedRevision: 1, intent: .pause),
-      candidate: candidate,
-      emittedEvents: [],
-      context: context
-    ).contains(.invalidWallObservation))
+    #expect(
+      SessionSnapshotValidator.validate(
+        previous: previous,
+        command: SessionCommand(expectedRevision: 1, intent: .pause),
+        candidate: candidate,
+        emittedEvents: [],
+        context: context
+      ).contains(.invalidWallObservation))
   }
 
   @Test("break snapshots require a normalized proposed re-entry action")
   func breakStateRequiresProposedAction() throws {
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 120))
     let suspended = SuspendedFocusState(
       phase: TimingPolicy.classic.phases[0],
@@ -1637,14 +1701,16 @@ struct SessionModelTests {
       lastConsumedBoundaryToken: nil
     )
 
-    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidText(.revisedAction)))
+    #expect(
+      SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidText(.revisedAction)))
   }
 
   @Test("every lifecycle state has a constructible internal fixture and exact kind")
   func lifecycleFixturesCoverEveryState() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 130))
     let sessionID = UUID()
-    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
     let phase = TimingPolicy.classic.phases[0]
     let suspended = SuspendedFocusState(
       phase: phase,
@@ -1674,31 +1740,38 @@ struct SessionModelTests {
     let states: [SessionState] = [
       .idle,
       .prepared(PreparedState(preparedAt: timestamp)),
-      .focusing(FocusState(
-        phase: phase, timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
-        wallAnchor: timestamp, phaseEndsAt: timestamp, elapsedBeforeAnchorSeconds: 0,
-        projectionToken: UUID(), phaseBoundaryToken: nil
-      )),
-      .paused(PausedState(
-        phase: phase, timing: .timed(remaining: try PhaseSeconds(300)), pausedAt: timestamp,
-        scheduledCheckInRemaining: nil
-      )),
-      .checkingIn(CheckInState(
-        suspended: suspended, trigger: .manual, continuation: .resumeSuspended,
-        phaseBoundaryScheduledCheckInRemaining: nil
-      )),
-      .breaking(BreakState(
-        choice: BreakChoice(kind: .quiet, duration: .openEnded), timingAtAnchor: .openEnded,
-        wallAnchor: timestamp, endsAt: nil, elapsedBeforeAnchorSeconds: 0,
-        projectionToken: UUID(), boundaryToken: nil, resumeTarget: suspended, proposedAction: "Return"
-      )),
-      .reentering(ReentryState(resumeTarget: suspended, proposedAction: "Return", enteredAt: timestamp)),
+      .focusing(
+        FocusState(
+          phase: phase, timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: timestamp, phaseEndsAt: timestamp, elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(), phaseBoundaryToken: nil
+        )),
+      .paused(
+        PausedState(
+          phase: phase, timing: .timed(remaining: try PhaseSeconds(300)), pausedAt: timestamp,
+          scheduledCheckInRemaining: nil
+        )),
+      .checkingIn(
+        CheckInState(
+          suspended: suspended, trigger: .manual, continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      .breaking(
+        BreakState(
+          choice: BreakChoice(kind: .quiet, duration: .openEnded), timingAtAnchor: .openEnded,
+          wallAnchor: timestamp, endsAt: nil, elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(), boundaryToken: nil, resumeTarget: suspended,
+          proposedAction: "Return"
+        )),
+      .reentering(
+        ReentryState(resumeTarget: suspended, proposedAction: "Return", enteredAt: timestamp)),
       .reviewing(ReviewState(draft: reviewDraft, stopReason: .completed, replacementDraft: nil)),
       .completed(CompletedState(summary: summary, pendingReplacementDraft: nil)),
-      .recoveryNeeded(RecoveryState(
-        reason: .missingLiveProjection, lastTrustworthyState: .focus(suspended),
-        safeChoices: Set(ClockRecoveryChoice.allCases)
-      )),
+      .recoveryNeeded(
+        RecoveryState(
+          reason: .missingLiveProjection, lastTrustworthyState: .focus(suspended),
+          safeChoices: Set(ClockRecoveryChoice.allCases)
+        )),
     ]
 
     #expect(states.map(\.kind) == SessionStateKind.allCases)

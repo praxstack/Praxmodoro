@@ -263,7 +263,9 @@ public struct TimingPolicy: Equatable, Sendable {
   public let phases: [SessionPhaseDescriptor]
   public let suggestedBreak: BreakDuration?
 
-  internal init(id: TimingPolicyID, phases: [SessionPhaseDescriptor], suggestedBreak: BreakDuration?) {
+  internal init(
+    id: TimingPolicyID, phases: [SessionPhaseDescriptor], suggestedBreak: BreakDuration?
+  ) {
     self.id = id
     self.phases = phases
     self.suggestedBreak = suggestedBreak
@@ -280,7 +282,9 @@ public struct TimingPolicy: Equatable, Sendable {
 
   public static let classic = TimingPolicy(
     id: .classic,
-    phases: [SessionPhaseDescriptor(id: .focus, ordinal: 0, duration: .timed(try! PhaseSeconds(1_500)))],
+    phases: [
+      SessionPhaseDescriptor(id: .focus, ordinal: 0, duration: .timed(try! PhaseSeconds(1_500)))
+    ],
     suggestedBreak: .timed(.five)
   )
 
@@ -293,7 +297,8 @@ public struct TimingPolicy: Equatable, Sendable {
   public static let recoveryFirst = TimingPolicy(
     id: .recoveryFirst,
     phases: [
-      SessionPhaseDescriptor(id: .recoveryRamp, ordinal: 0, duration: .timed(try! PhaseSeconds(600))),
+      SessionPhaseDescriptor(
+        id: .recoveryRamp, ordinal: 0, duration: .timed(try! PhaseSeconds(600))),
       SessionPhaseDescriptor(id: .focus, ordinal: 1, duration: .openEnded),
     ],
     suggestedBreak: .timed(.five)

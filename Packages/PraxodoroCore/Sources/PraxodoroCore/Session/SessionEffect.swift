@@ -4,7 +4,8 @@ public struct SessionNotificationID: Equatable, Hashable, Sendable {
   public let value: String
 
   internal init(boundaryToken: BoundaryToken) {
-    value = "praxodoro.\(boundaryToken.sessionID.uuidString).\(boundaryToken.kind.rawValue).\(boundaryToken.occurrence)"
+    value =
+      "praxodoro.\(boundaryToken.sessionID.uuidString).\(boundaryToken.kind.rawValue).\(boundaryToken.occurrence)"
   }
 }
 
@@ -29,11 +30,12 @@ public struct SessionNotificationRequest: Equatable, Sendable {
   internal init(boundaryToken: BoundaryToken, fireAt: SessionTimestamp) {
     self.id = SessionNotificationID(boundaryToken: boundaryToken)
     self.fireAt = fireAt
-    self.kind = switch boundaryToken.kind {
-    case .phase: .phaseBoundary
-    case .scheduledCheckIn: .scheduledCheckIn
-    case .breakEnd: .breakEnd
-    }
+    self.kind =
+      switch boundaryToken.kind {
+      case .phase: .phaseBoundary
+      case .scheduledCheckIn: .scheduledCheckIn
+      case .breakEnd: .breakEnd
+      }
     self.boundaryToken = boundaryToken
     self.contentPolicy = .privateGeneric
   }
@@ -101,7 +103,8 @@ public enum SessionRepositoryError: Error, Equatable, Sendable {
 }
 
 public enum PlatformStatus: String, CaseIterable, Equatable, Sendable {
-  case notificationPermissionDenied, notificationSchedulingFailed, soundUnavailable, hapticUnavailable
+  case notificationPermissionDenied, notificationSchedulingFailed, soundUnavailable,
+    hapticUnavailable
   case accessibilityAnnouncementUnavailable, adapterUnavailable, runtimeUnavailable
 }
 

@@ -69,7 +69,8 @@ internal enum SessionSnapshotValidator {
     case .prepared:
       if candidate.sessionID == nil { violations.insert(.invalidIdentity) }
       if candidate.startedAt != nil { violations.insert(.invalidStartTimestamp) }
-    case .focusing, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed, .recoveryNeeded:
+    case .focusing, .paused, .checkingIn, .breaking, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
       if candidate.sessionID == nil { violations.insert(.invalidIdentity) }
       if candidate.startedAt == nil { violations.insert(.invalidStartTimestamp) }
     }
@@ -159,7 +160,9 @@ internal enum SessionSnapshotValidator {
     }
     validateCompletionHandoff(previous: previous, candidate: candidate, into: &violations)
     if candidate.state.kind != .idle {
-      if candidate.sessionID == nil || (previous.sessionID != nil && candidate.sessionID != previous.sessionID) {
+      if candidate.sessionID == nil
+        || (previous.sessionID != nil && candidate.sessionID != previous.sessionID)
+      {
         violations.insert(.invalidIdentity)
       }
       let expectedObservation = canonicalSecond(context.instant.wallNow)
@@ -186,8 +189,10 @@ internal enum SessionSnapshotValidator {
     if isNewSessionPreparation {
       eventSequenceIsValid = candidate.eventSequence == 1
     } else {
-      let expectedSequence = previous.eventSequence.addingReportingOverflow(UInt64(emittedEvents.count))
-      eventSequenceIsValid = !expectedSequence.overflow
+      let expectedSequence = previous.eventSequence.addingReportingOverflow(
+        UInt64(emittedEvents.count))
+      eventSequenceIsValid =
+        !expectedSequence.overflow
         && candidate.eventSequence == expectedSequence.partialValue
     }
     if !eventSequenceIsValid {
@@ -214,8 +219,8 @@ internal enum SessionSnapshotValidator {
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     guard previous.state.kind == .focusing || previous.state.kind == .breaking,
-          let previousWall = previous.lastWallObservationAt?.date.timeIntervalSinceReferenceDate,
-          let candidateWall = candidate.lastWallObservationAt?.date.timeIntervalSinceReferenceDate
+      let previousWall = previous.lastWallObservationAt?.date.timeIntervalSinceReferenceDate,
+      let candidateWall = candidate.lastWallObservationAt?.date.timeIntervalSinceReferenceDate
     else { return }
     let drift = abs(candidateWall - previousWall)
     guard drift > 2, candidate.state.kind != .recoveryNeeded else { return }
@@ -231,7 +236,7 @@ internal enum SessionSnapshotValidator {
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     guard case let .reviewing(review) = previous.state,
-          case let .completed(completed) = candidate.state
+      case let .completed(completed) = candidate.state
     else { return }
     let summary = completed.summary
     let draft = review.draft
@@ -247,7 +252,9 @@ internal enum SessionSnapshotValidator {
     }
   }
 
-  private static func isPrepareReset(from previous: SessionSnapshot, command: SessionCommand) -> Bool {
+  private static func isPrepareReset(from previous: SessionSnapshot, command: SessionCommand)
+    -> Bool
+  {
     guard case .prepare = command.intent else { return false }
     return previous.state.kind == .idle || previous.state.kind == .completed
   }
@@ -284,9 +291,11 @@ internal enum SessionSnapshotValidator {
     } else {
       stateMatches = false
     }
-    let eventMatches = emittedEvents.count == 1
+    let eventMatches =
+      emittedEvents.count == 1
       && emittedEvents.first?.payload == expectedPayload
-    let resetMatches = candidate.sessionID == context.generatedSessionID
+    let resetMatches =
+      candidate.sessionID == context.generatedSessionID
       && candidate.sessionID != previous.sessionID
       && candidate.eventSequence == 1
       && candidate.nextBoundaryOccurrence == 0
@@ -321,15 +330,22 @@ internal enum SessionSnapshotValidator {
     case let .breakStarted(_, _, endsAt):
       validate(endsAt, as: .eventBreakStartedEndsAt, into: &violations)
     case let .clockAdjusted(event):
-      validate(event.previousPhaseOrBreakDeadline, as: .clockAdjustmentPreviousPhaseOrBreakDeadline, into: &violations)
-      validate(event.newPhaseOrBreakDeadline, as: .clockAdjustmentNewPhaseOrBreakDeadline, into: &violations)
-      validate(event.previousScheduledCheckInAt, as: .clockAdjustmentPreviousScheduledCheckInAt, into: &violations)
-      validate(event.newScheduledCheckInAt, as: .clockAdjustmentNewScheduledCheckInAt, into: &violations)
+      validate(
+        event.previousPhaseOrBreakDeadline, as: .clockAdjustmentPreviousPhaseOrBreakDeadline,
+        into: &violations)
+      validate(
+        event.newPhaseOrBreakDeadline, as: .clockAdjustmentNewPhaseOrBreakDeadline,
+        into: &violations)
+      validate(
+        event.previousScheduledCheckInAt, as: .clockAdjustmentPreviousScheduledCheckInAt,
+        into: &violations)
+      validate(
+        event.newScheduledCheckInAt, as: .clockAdjustmentNewScheduledCheckInAt, into: &violations)
     case .sessionPrepared, .planUpdated, .sessionStarted, .phasePaused, .checkInOpened,
-        .checkInResolved, .detourReported, .actionRevised, .configurationChanged,
-        .breakEnded, .reentryPresented, .thoughtParked, .phaseElapsed, .clockRecoveryNeeded,
-        .clockRecovered, .sessionStopRequested, .sessionReplacementRequested, .reviewStarted,
-        .reviewReflectionUpdated, .sessionCompleted:
+      .checkInResolved, .detourReported, .actionRevised, .configurationChanged,
+      .breakEnded, .reentryPresented, .thoughtParked, .phaseElapsed, .clockRecoveryNeeded,
+      .clockRecovered, .sessionStopRequested, .sessionReplacementRequested, .reviewStarted,
+      .reviewReflectionUpdated, .sessionCompleted:
       break
     }
   }
@@ -339,7 +355,8 @@ internal enum SessionSnapshotValidator {
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     guard candidate.state.kind == .idle else { return }
-    let isCanonical = candidate.sessionID == nil
+    let isCanonical =
+      candidate.sessionID == nil
       && candidate.revision == 0
       && candidate.eventSequence == 0
       && candidate.nextBoundaryOccurrence == 0
@@ -368,9 +385,9 @@ internal enum SessionSnapshotValidator {
     _ state: SessionState,
     plan: SessionPlan?,
     lastWallObservationAt: SessionTimestamp?,
-      sessionID: UUID?,
-      nextBoundaryOccurrence: UInt64,
-      currentRevision: UInt64,
+    sessionID: UUID?,
+    nextBoundaryOccurrence: UInt64,
+    currentRevision: UInt64,
     startedAt: SessionTimestamp?,
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
@@ -463,7 +480,8 @@ internal enum SessionSnapshotValidator {
         currentRevision: currentRevision,
         into: &violations
       )
-      validateBreakBoundaryToken(value.boundaryToken, timing: value.timingAtAnchor, into: &violations)
+      validateBreakBoundaryToken(
+        value.boundaryToken, timing: value.timingAtAnchor, into: &violations)
       validateAction(value.proposedAction, into: &violations)
       validateSuspendedFocus(
         phase: value.resumeTarget.phase,
@@ -525,7 +543,9 @@ internal enum SessionSnapshotValidator {
     }
   }
 
-  private static func validateAction(_ action: String, into violations: inout Set<SnapshotInvariantViolation>) {
+  private static func validateAction(
+    _ action: String, into violations: inout Set<SnapshotInvariantViolation>
+  ) {
     let normalized = action.trimmingCharacters(in: .whitespacesAndNewlines)
     if normalized.isEmpty || normalized.unicodeScalars.count > 500 {
       violations.insert(.invalidText(.revisedAction))
@@ -586,7 +606,7 @@ internal enum SessionSnapshotValidator {
     in plan: SessionPlan?
   ) -> SessionPhaseDescriptor? {
     guard let plan, let phaseID = token.phaseID,
-          let index = plan.timingPolicy.phases.firstIndex(where: { $0.id == phaseID })
+      let index = plan.timingPolicy.phases.firstIndex(where: { $0.id == phaseID })
     else { return nil }
     let elapsed = plan.timingPolicy.phases[index]
     guard case .timed = elapsed.duration else { return nil }
@@ -700,7 +720,8 @@ internal enum SessionSnapshotValidator {
       || summary.focusedSeconds != accumulatedFocusSeconds
       || summary.breakSeconds != accumulatedBreakSeconds
       || summary.parkedThoughtCount != UInt64(parkedThoughtCount)
-      || summary.endedAt.date.timeIntervalSinceReferenceDate < summary.startedAt.date.timeIntervalSinceReferenceDate
+      || summary.endedAt.date.timeIntervalSinceReferenceDate
+        < summary.startedAt.date.timeIntervalSinceReferenceDate
     {
       violations.insert(.invalidSummary)
     }
@@ -758,11 +779,13 @@ internal enum SessionSnapshotValidator {
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     guard let token else { return }
-    let discriminantIsValid = switch token.kind {
-    case .phase: token.phaseID != nil
-    case .scheduledCheckIn, .breakEnd: token.phaseID == nil
-    }
-    if !discriminantIsValid || token.sessionID != sessionID || token.occurrence >= nextBoundaryOccurrence
+    let discriminantIsValid =
+      switch token.kind {
+      case .phase: token.phaseID != nil
+      case .scheduledCheckIn, .breakEnd: token.phaseID == nil
+      }
+    if !discriminantIsValid || token.sessionID != sessionID
+      || token.occurrence >= nextBoundaryOccurrence
       || token.sourceRevision > currentRevision
     {
       violations.insert(.invalidBoundaryToken)
@@ -836,10 +859,11 @@ internal enum SessionSnapshotValidator {
     default:
       violations.insert(.timingShapeMismatch)
     }
-    let configuredDuration: PhaseDuration = switch choice.duration {
-    case .openEnded: .openEnded
-    case let .timed(minutes): .timed(try! PhaseSeconds(UInt32(minutes.value) * 60))
-    }
+    let configuredDuration: PhaseDuration =
+      switch choice.duration {
+      case .openEnded: .openEnded
+      case let .timed(minutes): .timed(try! PhaseSeconds(UInt32(minutes.value) * 60))
+      }
     validateTimedBudget(
       timing: timing,
       configuredDuration: configuredDuration,
@@ -871,7 +895,9 @@ internal enum SessionSnapshotValidator {
     deadline: SessionTimestamp?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
-    guard case let (.timed(remaining), .timed(duration)) = (timing, configuredDuration) else { return }
+    guard case let (.timed(remaining), .timed(duration)) = (timing, configuredDuration) else {
+      return
+    }
     let total = elapsedBeforeAnchorSeconds.addingReportingOverflow(UInt64(remaining.value))
     guard !total.overflow, total.partialValue <= UInt64(duration.value) else {
       violations.insert(.timingShapeMismatch)
@@ -879,7 +905,9 @@ internal enum SessionSnapshotValidator {
     }
     guard let wallAnchor, let deadline else { return }
     let expectedDeadline = wallAnchor.date.timeIntervalSinceReferenceDate + Double(remaining.value)
-    if !expectedDeadline.isFinite || deadline.date.timeIntervalSinceReferenceDate != expectedDeadline {
+    if !expectedDeadline.isFinite
+      || deadline.date.timeIntervalSinceReferenceDate != expectedDeadline
+    {
       violations.insert(.invalidDeadline)
     }
   }
@@ -921,9 +949,12 @@ internal enum SessionSnapshotValidator {
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     guard let scheduled else { return }
-    let expectedDueAt = wallAnchor.date.timeIntervalSinceReferenceDate
+    let expectedDueAt =
+      wallAnchor.date.timeIntervalSinceReferenceDate
       + Double(scheduled.trustedRemaining.value)
-    if !expectedDueAt.isFinite || scheduled.dueAt.date.timeIntervalSinceReferenceDate != expectedDueAt {
+    if !expectedDueAt.isFinite
+      || scheduled.dueAt.date.timeIntervalSinceReferenceDate != expectedDueAt
+    {
       violations.insert(.invalidScheduledCheckIn)
     }
   }
