@@ -1211,6 +1211,31 @@ struct TimerReconciliationTests {
         )
       ) == .materialized(boundary: nil, nextBoundaryOccurrence: 10)
     )
+
+    #expect(
+      SessionTimeKernel.replaceScheduledCheckIn(
+        ScheduledCheckInReplacementRequest(
+          sessionID: sessionID,
+          targetRevision: 4,
+          nextBoundaryOccurrence: .max,
+          wallAnchor: anchor,
+          schedule: .interval(try! CheckInMinutes(5))
+        )
+      ) == .failure(.boundaryOccurrenceExhausted)
+    )
+
+    #expect(
+      SessionTimeKernel.replaceScheduledCheckIn(
+        ScheduledCheckInReplacementRequest(
+          sessionID: sessionID,
+          targetRevision: 4,
+          nextBoundaryOccurrence: 10,
+          wallAnchor: SessionTimestamp(
+            unchecked: Date(timeIntervalSinceReferenceDate: .greatestFiniteMagnitude)),
+          schedule: .interval(try! CheckInMinutes(5))
+        )
+      ) == .failure(.arithmeticOverflow)
+    )
   }
 
   @Test("scheduled cadence materializes no remainder or exact supported intervals")
