@@ -390,6 +390,8 @@ internal enum SessionSnapshotValidator {
     case let .prepared(value):
       validate(value.preparedAt, as: .preparedAt, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
+      if nextBoundaryOccurrence != 0 { violations.insert(.invalidBoundaryOccurrence) }
+      if lastConsumedBoundaryToken != nil { violations.insert(.invalidBoundaryToken) }
     case let .focusing(value):
       validate(value.wallAnchor, as: .focusWallAnchor, into: &violations)
       validate(value.phaseEndsAt, as: .focusDeadline, into: &violations)

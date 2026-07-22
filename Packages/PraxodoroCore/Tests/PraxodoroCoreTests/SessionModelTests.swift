@@ -305,6 +305,37 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.missingPlan))
   }
 
+  @Test("prepared snapshots cannot retain boundary history")
+  func preparedSnapshotCannotRetainBoundaryHistory() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 1, occurrence: 0
+    )
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 1,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidBoundaryOccurrence))
+    #expect(violations.contains(.invalidBoundaryToken))
+  }
+
   @Test("prepared sessions never carry a start timestamp")
   func preparedSessionCannotCarryStartTimestamp() throws {
     let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
