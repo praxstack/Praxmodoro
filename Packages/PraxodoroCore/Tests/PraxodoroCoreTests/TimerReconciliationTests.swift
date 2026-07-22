@@ -648,6 +648,53 @@ struct TimerReconciliationTests {
       ) == .recovery(.arithmeticOverflow)
     )
 
+    for (drift, observed, phaseDeadline, scheduledDeadline) in [
+      (3_600.0, 3_710.0, 4_000.0, 4_600.0),
+      (-3_600.0, -3_490.0, -3_200.0, -2_600.0),
+    ] {
+      let rebaseDecision = SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: observed),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )
+        ))
+      guard case let .normalized(rebased) = rebaseDecision else {
+        Issue.record("expected a normalized one-hour clock rebase")
+        continue
+      }
+      let expectedPhaseDeadline = SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: phaseDeadline))
+      let expectedScheduledDeadline = SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: scheduledDeadline))
+      #expect(rebased.normalizedDueInstant.date.timeIntervalSinceReferenceDate == observed)
+      #expect(rebased.phaseOrBreakDeadline == expectedPhaseDeadline)
+      #expect(rebased.scheduledCheckInAt == expectedScheduledDeadline)
+      #expect(
+        rebased.admissionAdjustment
+          == ClockAdjustmentEvent(
+            previousPhaseOrBreakDeadline: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+            newPhaseOrBreakDeadline: expectedPhaseDeadline,
+            previousScheduledCheckInAt: SessionTimestamp(
+              unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
+            newScheduledCheckInAt: expectedScheduledDeadline,
+            drift: .seconds(drift)
+          ))
+      guard
+        case let .focus(accumulatedFocusSeconds, suspendedTiming, _) =
+          rebased.nonBoundaryExitMaterialization
+      else {
+        Issue.record("expected focus materialization after a clock rebase")
+        continue
+      }
+      #expect(accumulatedFocusSeconds == 10)
+      #expect(suspendedTiming == .timed(remaining: try PhaseSeconds(290)))
+    }
+
     let dueDecision = SessionTimeKernel.reconcileLive(
       snapshot: snapshot,
       instant: SessionInstant(
