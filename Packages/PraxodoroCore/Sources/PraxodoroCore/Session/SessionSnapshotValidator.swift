@@ -446,6 +446,7 @@ internal enum SessionSnapshotValidator {
       validate(value.summary.endedAt, as: .summaryEndedAt, into: &violations)
       validateSummary(
         value.summary,
+        sessionID: sessionID,
         startedAt: startedAt,
         accumulatedFocusSeconds: accumulatedFocusSeconds,
         accumulatedBreakSeconds: accumulatedBreakSeconds,
@@ -597,13 +598,15 @@ internal enum SessionSnapshotValidator {
 
   private static func validateSummary(
     _ summary: SessionSummary,
+    sessionID: UUID?,
     startedAt: SessionTimestamp?,
     accumulatedFocusSeconds: UInt64,
     accumulatedBreakSeconds: UInt64,
     parkedThoughtCount: Int,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
-    if summary.startedAt != startedAt
+    if summary.sessionID != sessionID
+      || summary.startedAt != startedAt
       || summary.focusedSeconds != accumulatedFocusSeconds
       || summary.breakSeconds != accumulatedBreakSeconds
       || summary.parkedThoughtCount != UInt64(parkedThoughtCount)
