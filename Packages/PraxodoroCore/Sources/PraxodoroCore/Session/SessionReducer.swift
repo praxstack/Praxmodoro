@@ -964,10 +964,14 @@ public enum SessionReducer {
     else {
       return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(response))
     }
+    let resolvedCadence: CheckInRemainingSeconds?
     switch checkIn.trigger {
     case .manual, .pauseOffer:
-      break
-    case .scheduled, .phaseBoundary:
+      resolvedCadence = suspended.scheduledCheckInRemaining
+    case .scheduled:
+      resolvedCadence = SessionTimeKernel.materializeScheduledRemainder(
+        snapshot.configuration.checkInSchedule)
+    case .phaseBoundary:
       return invalidTransition(snapshot: snapshot, intent: .respondToCheckIn(response))
     }
     guard let observedAt = canonicalSecond(context.instant.wallNow) else {
@@ -992,6 +996,7 @@ public enum SessionReducer {
         snapshot: snapshot,
         sessionID: sessionID,
         suspended: suspended,
+        resolvedCadence: resolvedCadence,
         observedAt: observedAt,
         nextRevision: nextRevision.partialValue,
         context: context
@@ -1008,7 +1013,7 @@ public enum SessionReducer {
           phase: suspended.phase,
           timing: suspended.timing,
           pausedAt: observedAt,
-          scheduledCheckInRemaining: suspended.scheduledCheckInRemaining
+          scheduledCheckInRemaining: resolvedCadence
         )),
       plan: snapshot.plan,
       configuration: snapshot.configuration,
@@ -1038,12 +1043,13 @@ public enum SessionReducer {
     snapshot: SessionSnapshot,
     sessionID: UUID,
     suspended: SuspendedFocusState,
+    resolvedCadence: CheckInRemainingSeconds?,
     observedAt: SessionTimestamp,
     nextRevision: UInt64,
     context: ReductionContext
   ) -> ReductionOutcome {
     let cadence: ScheduledCadenceSeed =
-      suspended.scheduledCheckInRemaining.map { .captured($0) } ?? .manualOnly
+      resolvedCadence.map { .captured($0) } ?? .manualOnly
     let entry = SessionTimeKernel.materializeLiveEntry(
       .focus(
         sessionID: sessionID,

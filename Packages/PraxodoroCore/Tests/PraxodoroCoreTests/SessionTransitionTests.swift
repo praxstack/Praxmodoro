@@ -1221,4 +1221,76 @@ struct SessionTransitionTests {
           .invalidateDisplayProjection(projectionToken: projectionToken),
         ])
   }
+
+  @Test("scheduled check-in resolution resets cadence to the full configured interval")
+  func scheduledCheckInResolutionResetsCadence() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let resolvedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let consumedToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 3,
+      occurrence: 2
+    )
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: nil
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 3,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: .scheduled(consumedToken),
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: consumedToken
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .respondToCheckIn(.continueFocus)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: resolvedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected scheduled check-in resolution")
+      return
+    }
+    let scheduled = try #require(reduction.snapshot.nextScheduledCheckIn)
+    let fullCadence = try CheckInRemainingSeconds(900)
+
+    #expect(scheduled.trustedRemaining == fullCadence)
+    #expect(
+      scheduled.dueAt
+        == SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_350)))
+    #expect(scheduled.token.occurrence == 4)
+    #expect(scheduled.token.sourceRevision == 5)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 5)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == consumedToken)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+  }
 }
