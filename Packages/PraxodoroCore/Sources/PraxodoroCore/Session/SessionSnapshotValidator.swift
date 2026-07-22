@@ -251,7 +251,8 @@ internal enum SessionSnapshotValidator {
       validate(value.pausedAt, as: .pausedAt, into: &violations)
       validatePausedPhase(phase: value.phase, timing: value.timing, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
-    case .checkingIn:
+    case let .checkingIn(value):
+      validateCheckIn(value, into: &violations)
       if plan == nil { violations.insert(.missingPlan) }
     case let .breaking(value):
       validate(value.wallAnchor, as: .breakWallAnchor, into: &violations)
@@ -286,6 +287,27 @@ internal enum SessionSnapshotValidator {
       if plan == nil { violations.insert(.missingPlan) }
       if value.safeChoices != Set(ClockRecoveryChoice.allCases) {
         violations.insert(.invalidRecoveryChoices)
+      }
+    }
+  }
+
+  private static func validateCheckIn(
+    _ checkIn: CheckInState,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    switch checkIn.continuation {
+    case .resumeSuspended:
+      if checkIn.suspended == nil { violations.insert(.timingShapeMismatch) }
+      if case .phaseBoundary = checkIn.trigger { violations.insert(.invalidBoundaryToken) }
+      if checkIn.phaseBoundaryScheduledCheckInRemaining != nil {
+        violations.insert(.invalidScheduledCheckIn)
+      }
+    case .startPhase:
+      if checkIn.suspended != nil { violations.insert(.timingShapeMismatch) }
+      if case .phaseBoundary = checkIn.trigger {
+        break
+      } else {
+        violations.insert(.invalidBoundaryToken)
       }
     }
   }

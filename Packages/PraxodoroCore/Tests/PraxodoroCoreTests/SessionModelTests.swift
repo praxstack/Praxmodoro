@@ -676,4 +676,37 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidIdentity))
     #expect(violations.contains(.invalidStartTimestamp))
   }
+
+  @Test("check-in continuations cannot mix suspended and phase-boundary shapes")
+  func checkInContinuationShapesAreDisjoint() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let state = CheckInState(
+      suspended: nil,
+      trigger: .manual,
+      continuation: .resumeSuspended,
+      phaseBoundaryScheduledCheckInRemaining: try CheckInRemainingSeconds(1)
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(),
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .checkingIn(state),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: timestamp,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.timingShapeMismatch))
+    #expect(violations.contains(.invalidScheduledCheckIn))
+  }
 }
