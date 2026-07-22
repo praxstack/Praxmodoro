@@ -436,6 +436,39 @@ struct TimerReconciliationTests {
         == SessionTimestamp(
           unchecked: Date(timeIntervalSinceReferenceDate: 400)))
     #expect(toleranceTiming.liveCommitMaterialization?.adjustment?.drift == .seconds(2))
+
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 111), liveProjection: nil)
+      ) == .recovery(.missingLiveProjection)
+    )
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 111),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: UUID(), rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )
+        )
+      ) == .recovery(.staleLiveProjection)
+    )
+    #expect(
+      SessionTimeKernel.reconcileLive(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 111),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 101),
+            monotonicElapsedSinceAnchor: .seconds(10)
+          )
+        )
+      ) == .recovery(.inconsistentLiveProjectionAnchor)
+    )
   }
 
   @Test("relaunch carries canonical wall elapsed into a fresh live anchor")
