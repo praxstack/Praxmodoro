@@ -169,6 +169,47 @@ internal enum SessionTimeKernel {
     )
   }
 
+  static func reconcileRelaunch(
+    snapshot: SessionSnapshot,
+    wallNow: Date
+  ) -> LiveTimeDecision {
+    guard let observed = canonicalSecond(wallNow) else {
+      return .failure(.nonFiniteWallObservation)
+    }
+    let values: (anchor: SessionTimestamp, deadline: SessionTimestamp?)
+    switch snapshot.state {
+    case let .focusing(focus):
+      values = (focus.wallAnchor, focus.phaseEndsAt)
+    case let .breaking(breakState):
+      values = (breakState.wallAnchor, breakState.endsAt)
+    case .idle, .prepared, .paused, .checkingIn, .reentering, .reviewing, .completed,
+      .recoveryNeeded:
+      return .normalized(
+        NormalizedLiveTiming(
+          observedWallNow: observed,
+          expectedWallNow: observed,
+          normalizedDueInstant: observed,
+          phaseOrBreakDeadline: nil,
+          scheduledCheckInAt: nil,
+          admissionAdjustment: nil
+        )
+      )
+    }
+    guard observed.date >= values.anchor.date else {
+      return .recovery(.wallClockAmbiguousAfterRelaunch)
+    }
+    return .normalized(
+      NormalizedLiveTiming(
+        observedWallNow: observed,
+        expectedWallNow: observed,
+        normalizedDueInstant: observed,
+        phaseOrBreakDeadline: values.deadline,
+        scheduledCheckInAt: snapshot.nextScheduledCheckIn?.dueAt,
+        admissionAdjustment: nil
+      )
+    )
+  }
+
   static func admitBoundary(
     snapshot: SessionSnapshot,
     timing: NormalizedLiveTiming,
