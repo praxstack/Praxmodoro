@@ -456,4 +456,97 @@ struct SessionTransitionTests {
         ]
     )
   }
+
+  @Test("due scheduled check-in supersedes a racing pause")
+  func dueScheduledCheckInSupersedesPause() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let initialContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+      generatedSessionID: sessionID,
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    guard
+      case let .transition(preparation) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+        context: initialContext
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: preparation.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )),
+      let scheduled = started.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected a scheduled focus fixture")
+      return
+    }
+    let dueAt = scheduled.dueAt
+    let outcome = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .pause),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: dueAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(900)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected the scheduled winner to supersede pause")
+      return
+    }
+
+    #expect(reduction.snapshot.revision == 3)
+    #expect(reduction.snapshot.eventSequence == 4)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 900)
+    #expect(reduction.snapshot.lastWallObservationAt == dueAt)
+    #expect(reduction.snapshot.nextScheduledCheckIn == nil)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == scheduled.token)
+    #expect(
+      reduction.snapshot.state
+        == .checkingIn(
+          CheckInState(
+            suspended: SuspendedFocusState(
+              phase: TimingPolicy.classic.phases[0],
+              timing: .timed(remaining: try PhaseSeconds(600)),
+              resumeDisposition: .focusing,
+              scheduledCheckInRemaining: nil
+            ),
+            trigger: .scheduled(scheduled.token),
+            continuation: .resumeSuspended,
+            phaseBoundaryScheduledCheckInRemaining: nil
+          ))
+    )
+    #expect(
+      reduction.events.map(\.payload) == [
+        .checkInOpened(trigger: .scheduled(scheduled.token), continuation: .resumeSuspended)
+      ])
+    #expect(reduction.events[0].occurredAt == dueAt)
+    #expect(
+      reduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
+          .announceAccessibility(.checkInPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ]
+    )
+  }
 }
