@@ -737,6 +737,72 @@ struct TimerReconciliationTests {
         )
     )
 
+    let exactAnchorDecision = LiveTimeDecision.normalized(
+      NormalizedLiveTiming(
+        observedWallNow: anchor,
+        expectedWallNow: anchor,
+        normalizedDueInstant: anchor,
+        phaseOrBreakDeadline: deadline,
+        scheduledCheckInAt: nil,
+        admissionAdjustment: nil,
+        nonBoundaryExitMaterialization: .focus(
+          accumulatedFocusSeconds: 12,
+          suspendedTiming: .timed(remaining: try PhaseSeconds(300)),
+          scheduledCheckInRemaining: nil
+        ),
+        liveCommitMaterialization: LiveCommitMaterialization(
+          wallAnchor: anchor,
+          elapsedBeforeAnchorSeconds: 0,
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          phaseOrBreakDeadline: deadline,
+          scheduledCheckInAt: nil,
+          scheduledCheckInRemaining: nil,
+          adjustment: nil
+        )
+      ))
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(snapshot: snapshot, wallNow: anchor.date)
+        == exactAnchorDecision
+    )
+
+    let rollbackSnapshot = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: snapshot.sessionID,
+      revision: snapshot.revision,
+      eventSequence: snapshot.eventSequence,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 102)),
+      nextScheduledCheckIn: snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(snapshot: rollbackSnapshot, wallNow: anchor.date)
+        == exactAnchorDecision
+    )
+
+    let afterDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 410))
+    #expect(
+      SessionTimeKernel.reconcileRelaunch(snapshot: snapshot, wallNow: afterDeadline.date)
+        == .normalized(
+          NormalizedLiveTiming(
+            observedWallNow: afterDeadline,
+            expectedWallNow: afterDeadline,
+            normalizedDueInstant: afterDeadline,
+            phaseOrBreakDeadline: deadline,
+            scheduledCheckInAt: nil,
+            admissionAdjustment: nil
+          ))
+    )
+
     #expect(
       SessionTimeKernel.reconcileRelaunch(
         snapshot: snapshot,
