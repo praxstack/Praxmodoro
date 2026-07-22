@@ -259,6 +259,44 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("saved timed break entry retains its exact remainder and break token")
+  func savedTimedBreakEntryRetainsRemainder() throws {
+    let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000008")!
+    let projectionToken = UUID(uuidString: "00000000-0000-0000-0000-000000000009")!
+    let remaining = try PhaseSeconds(120)
+    let decision = SessionTimeKernel.materializeLiveEntry(
+      .breakState(
+        sessionID: sessionID,
+        targetRevision: 6,
+        nextBoundaryOccurrence: 4,
+        wallNow: Date(timeIntervalSinceReferenceDate: 200),
+        projectionToken: projectionToken,
+        timing: .saved(.timed(remaining: remaining))
+      )
+    )
+    #expect(
+      decision
+        == .materialized(
+          .breakState(
+            BreakEntryMaterialization(
+              wallAnchor: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200)),
+              timingAtAnchor: .timed(remaining: remaining),
+              projectionToken: projectionToken,
+              endsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
+              boundaryToken: BoundaryToken(
+                sessionID: sessionID,
+                kind: .breakEnd,
+                phaseID: nil,
+                sourceRevision: 6,
+                occurrence: 4
+              ),
+              nextBoundaryOccurrence: 5
+            )
+          )
+        )
+    )
+  }
+
   @Test("live reconciliation retains expected timing within two seconds of drift")
   func liveReconciliationRetainsExpectedTimingWithinTolerance() throws {
     let sessionID = UUID()
