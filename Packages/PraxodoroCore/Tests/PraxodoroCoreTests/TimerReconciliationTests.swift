@@ -904,17 +904,18 @@ struct TimerReconciliationTests {
       lastConsumedBoundaryToken: nil
     )
     let deadline = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let dueTiming = NormalizedLiveTiming(
+      observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 700)),
+      expectedWallNow: deadline,
+      normalizedDueInstant: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 700)),
+      phaseOrBreakDeadline: deadline,
+      scheduledCheckInAt: nil,
+      admissionAdjustment: nil
+    )
     let decision = SessionTimeKernel.admitBoundary(
       snapshot: snapshot,
-      timing: NormalizedLiveTiming(
-        observedWallNow: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 700)),
-        expectedWallNow: deadline,
-        normalizedDueInstant: SessionTimestamp(
-          unchecked: Date(timeIntervalSinceReferenceDate: 700)),
-        phaseOrBreakDeadline: deadline,
-        scheduledCheckInAt: nil,
-        admissionAdjustment: nil
-      ),
+      timing: dueTiming,
       observedToken: phaseToken
     )
 
@@ -930,6 +931,30 @@ struct TimerReconciliationTests {
         )
     )
 
+    let overflowingSnapshot = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: snapshot.sessionID,
+      revision: snapshot.revision,
+      eventSequence: snapshot.eventSequence,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: .max,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: snapshot.lastWallObservationAt,
+      nextScheduledCheckIn: snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    #expect(
+      SessionTimeKernel.admitBoundary(
+        snapshot: overflowingSnapshot,
+        timing: dueTiming,
+        observedToken: phaseToken
+      ) == .recovery(.arithmeticOverflow)
+    )
   }
 
   @Test("equal phase and scheduled boundaries select phase and reset cadence")
