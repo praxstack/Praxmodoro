@@ -3809,4 +3809,460 @@ struct SessionTransitionTests {
     #expect(finalReduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
     #expect(SessionSnapshotValidator.validateCandidate(finalReduction.snapshot).isEmpty)
   }
+
+  @Test("live focus stop preserves the terminal request before and at a due boundary")
+  func liveFocusStopIsExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    guard
+      case let .transition(prepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: sessionID,
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: prepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), let scheduled = started.snapshot.nextScheduledCheckIn
+    else {
+      Issue.record("expected live focus fixture")
+      return
+    }
+    let cases: [(SessionTimestamp, Duration, SessionStopChoice, UInt64)] = [
+      (
+        SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200)),
+        .seconds(100),
+        .intentionalStop,
+        100
+      ),
+      (scheduled.dueAt, .seconds(900), .completed, 900),
+    ]
+
+    for (observedAt, elapsed, choice, expectedFocus) in cases {
+      let outcome = SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .stop(choice)),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: observedAt.date,
+            liveProjection: LiveProjectionObservation(
+              projectionToken: projectionToken,
+              rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+              monotonicElapsedSinceAnchor: elapsed
+            )),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+      guard case let .transition(reduction) = outcome,
+        case let .reviewing(review) = reduction.snapshot.state
+      else {
+        Issue.record("expected live focus review")
+        continue
+      }
+      let reason: SessionStopReason = choice == .completed ? .completed : .intentionalStop
+      #expect(review.draft.endedAt == observedAt)
+      #expect(review.draft.focusedSeconds == expectedFocus)
+      #expect(review.draft.breakSeconds == 0)
+      #expect(review.stopReason == reason)
+      #expect(reduction.snapshot.accumulatedFocusSeconds == expectedFocus)
+      #expect(reduction.snapshot.lastConsumedBoundaryToken == nil)
+      #expect(reduction.snapshot.nextBoundaryOccurrence == started.snapshot.nextBoundaryOccurrence)
+      #expect(reduction.snapshot.plan == started.snapshot.plan)
+      #expect(reduction.snapshot.configuration == started.snapshot.configuration)
+      #expect(
+        reduction.events.map(\.payload) == [
+          .sessionStopRequested(reason: reason),
+          .reviewStarted(
+            SessionReviewEvent(
+              focusedSeconds: expectedFocus,
+              breakSeconds: 0,
+              stopReason: reason,
+              parkedThoughtCount: 0,
+              hasReflection: false
+            )),
+        ])
+      #expect(
+        !reduction.events.contains {
+          $0.payload.kind == .phaseElapsed || $0.payload.kind == .checkInOpened
+        })
+      #expect(
+        reduction.effects
+          == [
+            .cancelNotification(SessionNotificationID(boundaryToken: scheduled.token)),
+            .announceAccessibility(.reviewPresented),
+            .invalidateDisplayProjection(projectionToken: nil),
+          ])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+
+    let driftedObservedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 210))
+    let driftContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: driftedObservedAt.date,
+        liveProjection: LiveProjectionObservation(
+          projectionToken: projectionToken,
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+          monotonicElapsedSinceAnchor: .seconds(100)
+        )),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let drifted = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .stop(.intentionalStop)),
+      context: driftContext
+    )
+    guard case let .transition(driftReduction) = drifted,
+      case let .reviewing(driftReview) = driftReduction.snapshot.state
+    else {
+      Issue.record("expected drifted live stop review")
+      return
+    }
+    let expectedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 200))
+    #expect(driftReview.draft.endedAt == expectedAt)
+    #expect(driftReduction.snapshot.lastWallObservationAt == driftedObservedAt)
+    #expect(
+      driftReduction.events.map(\.payload.kind) == [
+        .clockAdjusted, .sessionStopRequested, .reviewStarted,
+      ])
+    #expect(driftReduction.events.allSatisfy { $0.occurredAt == driftedObservedAt })
+
+    let constrained = SessionSnapshot(
+      schemaVersion: started.snapshot.schemaVersion,
+      sessionID: started.snapshot.sessionID,
+      revision: started.snapshot.revision,
+      eventSequence: UInt64.max - 2,
+      nextBoundaryOccurrence: started.snapshot.nextBoundaryOccurrence,
+      state: started.snapshot.state,
+      plan: started.snapshot.plan,
+      configuration: started.snapshot.configuration,
+      parkedThoughts: started.snapshot.parkedThoughts,
+      startedAt: started.snapshot.startedAt,
+      accumulatedFocusSeconds: started.snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: started.snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: started.snapshot.lastWallObservationAt,
+      nextScheduledCheckIn: started.snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: started.snapshot.lastConsumedBoundaryToken
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: constrained,
+        command: SessionCommand(expectedRevision: 2, intent: .stop(.completed)),
+        context: driftContext
+      )
+        == .failed(
+          snapshot: constrained,
+          reason: .eventSequenceExhausted(
+            requiredAdditionalEvents: 3,
+            remainingCapacity: 2
+          )))
+
+    let unadjustedConstrained = SessionSnapshot(
+      schemaVersion: started.snapshot.schemaVersion,
+      sessionID: started.snapshot.sessionID,
+      revision: started.snapshot.revision,
+      eventSequence: UInt64.max - 1,
+      nextBoundaryOccurrence: started.snapshot.nextBoundaryOccurrence,
+      state: started.snapshot.state,
+      plan: started.snapshot.plan,
+      configuration: started.snapshot.configuration,
+      parkedThoughts: started.snapshot.parkedThoughts,
+      startedAt: started.snapshot.startedAt,
+      accumulatedFocusSeconds: started.snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: started.snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: started.snapshot.lastWallObservationAt,
+      nextScheduledCheckIn: started.snapshot.nextScheduledCheckIn,
+      lastConsumedBoundaryToken: started.snapshot.lastConsumedBoundaryToken
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: unadjustedConstrained,
+        command: SessionCommand(expectedRevision: 2, intent: .stop(.completed)),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 200),
+            liveProjection: LiveProjectionObservation(
+              projectionToken: projectionToken,
+              rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+              monotonicElapsedSinceAnchor: .seconds(100)
+            )),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+        == .failed(
+          snapshot: unadjustedConstrained,
+          reason: .eventSequenceExhausted(
+            requiredAdditionalEvents: 2,
+            remainingCapacity: 1
+          )))
+
+    let recovery = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .stop(.completed)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 200), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(recoveryReduction) = recovery else {
+      Issue.record("expected live stop recovery")
+      return
+    }
+    #expect(recoveryReduction.snapshot.state.kind == .recoveryNeeded)
+    #expect(recoveryReduction.events.map(\.payload.kind) == [.clockRecoveryNeeded])
+    #expect(!recoveryReduction.effects.contains(.announceAccessibility(.reviewPresented)))
+    #expect(
+      SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .stop(.completed)),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .failed(snapshot: started.snapshot, reason: .nonFiniteWallObservation)
+    )
+
+    let manualConfiguration = SessionConfiguration(
+      checkInSchedule: .manualOnly,
+      breakSuggestionsEnabled: true,
+      lowCognitiveLoadEnabled: false,
+      reflectionPromptEnabled: true
+    )
+    guard
+      case let .transition(manualPrepared) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0,
+          intent: .prepare(SessionDraft(plan: plan, configuration: manualConfiguration))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ),
+      case let .transition(manualStarted) = SessionReducer.reduce(
+        snapshot: manualPrepared.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), case let .focusing(manualFocus) = manualStarted.snapshot.state,
+      let phaseToken = manualFocus.phaseBoundaryToken,
+      let phaseEndsAt = manualFocus.phaseEndsAt
+    else {
+      Issue.record("expected manual-only focus fixture")
+      return
+    }
+    let phaseStop = SessionReducer.reduce(
+      snapshot: manualStarted.snapshot,
+      command: SessionCommand(expectedRevision: 2, intent: .stop(.completed)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: phaseEndsAt.date,
+          liveProjection: LiveProjectionObservation(
+            projectionToken: projectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(1_500)
+          )),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(phaseReduction) = phaseStop,
+      case let .reviewing(phaseReview) = phaseReduction.snapshot.state
+    else {
+      Issue.record("expected phase-winner terminal review")
+      return
+    }
+    #expect(phaseReview.draft.focusedSeconds == 1_500)
+    #expect(phaseReduction.snapshot.lastConsumedBoundaryToken == nil)
+    #expect(
+      phaseReduction.events.map(\.payload.kind) == [
+        .sessionStopRequested, .reviewStarted,
+      ])
+    #expect(
+      phaseReduction.effects
+        == [
+          .cancelNotification(SessionNotificationID(boundaryToken: phaseToken)),
+          .announceAccessibility(.reviewPresented),
+          .invalidateDisplayProjection(projectionToken: nil),
+        ])
+    #expect(!phaseReduction.effects.contains(.playSound(.gentleBoundary)))
+    #expect(!phaseReduction.effects.contains(.playHaptic(.gentleBoundary)))
+    #expect(SessionSnapshotValidator.validateCandidate(phaseReduction.snapshot).isEmpty)
+  }
+
+  @Test("live break stop enters review without break completion flow")
+  func liveBreakStopIsExact() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let breakStartedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let paused = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 4,
+      nextBoundaryOccurrence: 2,
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(1_490)),
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Return here", capacity: nil,
+        timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let choice = BreakChoice(kind: .move, duration: .timed(.five))
+    guard
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: paused,
+        command: SessionCommand(expectedRevision: 3, intent: .requestBreak(choice)),
+        context: ReductionContext(
+          instant: SessionInstant(wallNow: breakStartedAt.date, liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: projectionToken
+        )
+      ), case let .breaking(liveBreak) = started.snapshot.state,
+      let boundaryToken = liveBreak.boundaryToken,
+      let endsAt = liveBreak.endsAt
+    else {
+      Issue.record("expected live break fixture")
+      return
+    }
+    let cases: [(SessionTimestamp, Duration, SessionStopChoice, UInt64)] = [
+      (
+        SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+        .seconds(100),
+        .intentionalStop,
+        100
+      ),
+      (endsAt, .seconds(300), .completed, 300),
+    ]
+
+    for (observedAt, elapsed, stopChoice, expectedBreak) in cases {
+      let outcome = SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 4, intent: .stop(stopChoice)),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: observedAt.date,
+            liveProjection: LiveProjectionObservation(
+              projectionToken: projectionToken,
+              rawWallAtProjectionAnchor: breakStartedAt.date,
+              monotonicElapsedSinceAnchor: elapsed
+            )),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      )
+      guard case let .transition(reduction) = outcome,
+        case let .reviewing(review) = reduction.snapshot.state
+      else {
+        Issue.record("expected live break review")
+        continue
+      }
+      let reason: SessionStopReason = stopChoice == .completed ? .completed : .intentionalStop
+      #expect(review.draft.focusedSeconds == 10)
+      #expect(review.draft.breakSeconds == expectedBreak)
+      #expect(review.draft.endedAt == observedAt)
+      #expect(reduction.snapshot.accumulatedBreakSeconds == expectedBreak)
+      #expect(reduction.snapshot.lastConsumedBoundaryToken == nil)
+      #expect(
+        reduction.events.map(\.payload) == [
+          .sessionStopRequested(reason: reason),
+          .reviewStarted(
+            SessionReviewEvent(
+              focusedSeconds: 10,
+              breakSeconds: expectedBreak,
+              stopReason: reason,
+              parkedThoughtCount: 0,
+              hasReflection: false
+            )),
+        ])
+      #expect(
+        !reduction.events.contains {
+          $0.payload.kind == .breakEnded || $0.payload.kind == .reentryPresented
+        })
+      #expect(!reduction.effects.contains(.playSound(.breakComplete)))
+      #expect(
+        reduction.effects
+          == [
+            .cancelNotification(SessionNotificationID(boundaryToken: boundaryToken)),
+            .announceAccessibility(.reviewPresented),
+            .invalidateDisplayProjection(projectionToken: nil),
+          ])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+
+    let recovery = SessionReducer.reduce(
+      snapshot: started.snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .stop(.completed)),
+      context: ReductionContext(
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 400), liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(recoveryReduction) = recovery else {
+      Issue.record("expected live break stop recovery")
+      return
+    }
+    #expect(recoveryReduction.snapshot.state.kind == .recoveryNeeded)
+    #expect(recoveryReduction.events.map(\.payload.kind) == [.clockRecoveryNeeded])
+    #expect(!recoveryReduction.effects.contains(.announceAccessibility(.reviewPresented)))
+  }
 }

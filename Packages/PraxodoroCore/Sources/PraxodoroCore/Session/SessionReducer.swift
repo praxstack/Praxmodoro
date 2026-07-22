@@ -349,6 +349,13 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    if case let .stop(choice) = command.intent {
+      return enterReviewFromLive(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
+    }
     if let configuration = requestedConfiguration(
       for: command.intent,
       current: snapshot.configuration
@@ -616,6 +623,13 @@ public enum SessionReducer {
     command: SessionCommand,
     context: ReductionContext
   ) -> ReductionOutcome {
+    if case let .stop(choice) = command.intent {
+      return enterReviewFromLive(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
+    }
     if case .endBreak = command.intent {
       return endLiveBreak(snapshot: snapshot, intent: command.intent, context: context)
     }
@@ -2336,6 +2350,157 @@ public enum SessionReducer {
           .invalidateDisplayProjection(projectionToken: nil),
         ]
       ))
+  }
+
+  private static func enterReviewFromLive(
+    snapshot: SessionSnapshot,
+    choice: SessionStopChoice,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    let timingDecision = SessionTimeKernel.reconcileLive(
+      snapshot: snapshot,
+      instant: context.instant
+    )
+    let timing: NormalizedLiveTiming
+    switch timingDecision {
+    case let .normalized(value):
+      timing = value
+    case let .failure(reason):
+      return .failed(snapshot: snapshot, reason: reason)
+    case let .recovery(reason):
+      switch snapshot.state {
+      case .focusing:
+        return focusRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      case .breaking:
+        return breakRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      default:
+        return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+      }
+    }
+    let admission = SessionTimeKernel.admitBoundary(
+      snapshot: snapshot,
+      timing: timing,
+      observedToken: nil
+    )
+    if case let .recovery(reason) = admission {
+      switch snapshot.state {
+      case .focusing:
+        return focusRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      case .breaking:
+        return breakRecoveryTransition(snapshot: snapshot, reason: reason, context: context)
+      default:
+        return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+      }
+    }
+    let focusedSeconds: UInt64
+    let breakSeconds: UInt64
+    switch admission {
+    case let .winner(winner):
+      switch winner.exitMaterialization {
+      case let .phase(total), let .scheduledCheckIn(total, _):
+        focusedSeconds = total
+        breakSeconds = snapshot.accumulatedBreakSeconds
+      case let .breakEnd(total):
+        focusedSeconds = snapshot.accumulatedFocusSeconds
+        breakSeconds = total
+      }
+    case .noneDue:
+      switch timing.nonBoundaryExitMaterialization {
+      case let .focus(total, _, _):
+        focusedSeconds = total
+        breakSeconds = snapshot.accumulatedBreakSeconds
+      case let .breakState(total):
+        focusedSeconds = snapshot.accumulatedFocusSeconds
+        breakSeconds = total
+      case nil:
+        return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+      }
+    case .boundaryNotDue, .earlierBoundaryPending, .recovery:
+      return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+    }
+    guard let sessionID = snapshot.sessionID,
+      let startedAt = snapshot.startedAt
+    else {
+      return invalidTransition(snapshot: snapshot, intent: .stop(choice))
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let eventCount = UInt64(2 + (timing.admissionAdjustment == nil ? 0 : 1))
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard eventCount <= remainingCapacity else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: eventCount,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let stopReason: SessionStopReason =
+      switch choice {
+      case .completed: .completed
+      case .intentionalStop: .intentionalStop
+      }
+    let endedAt =
+      timing.expectedWallNow.date >= startedAt.date
+      ? timing.expectedWallNow : startedAt
+    let thoughtCount = UInt64(snapshot.parkedThoughts.count)
+    let draft = SessionSummaryDraft(
+      endedAt: endedAt,
+      focusedSeconds: focusedSeconds,
+      breakSeconds: breakSeconds,
+      parkedThoughtCount: thoughtCount,
+      optionalReflection: nil
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + eventCount,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reviewing(
+        ReviewState(
+          draft: draft,
+          stopReason: stopReason,
+          replacementDraft: nil
+        )),
+      plan: snapshot.plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: startedAt,
+      accumulatedFocusSeconds: focusedSeconds,
+      accumulatedBreakSeconds: breakSeconds,
+      lastWallObservationAt: timing.observedWallNow,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    var payloads: [SessionEventPayload] = []
+    if let adjustment = timing.admissionAdjustment {
+      payloads.append(.clockAdjusted(adjustment))
+    }
+    payloads.append(.sessionStopRequested(reason: stopReason))
+    payloads.append(
+      .reviewStarted(
+        SessionReviewEvent(
+          focusedSeconds: focusedSeconds,
+          breakSeconds: breakSeconds,
+          stopReason: stopReason,
+          parkedThoughtCount: thoughtCount,
+          hasReflection: false
+        )))
+    let events = payloads.enumerated().map { offset, payload in
+      SessionEvent(
+        sessionID: sessionID,
+        sequence: snapshot.eventSequence + UInt64(offset) + 1,
+        occurredAt: timing.observedWallNow,
+        payload: payload
+      )
+    }
+    var effects = notificationReplacementEffects(from: snapshot, to: candidate)
+    effects.append(.announceAccessibility(.reviewPresented))
+    effects.append(.invalidateDisplayProjection(projectionToken: nil))
+    return .transition(Reduction(snapshot: candidate, events: events, effects: effects))
   }
 
   private static func updateReviewReflection(
