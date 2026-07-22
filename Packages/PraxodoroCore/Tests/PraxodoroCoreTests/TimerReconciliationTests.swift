@@ -35,4 +35,65 @@ struct TimerReconciliationTests {
     #expect(projection.parkedThoughtCount == 0)
     #expect(!projection.lowCognitiveLoadEnabled)
   }
+
+  @Test("live focus projection uses paired elapsed time without writing state")
+  func liveFocusProjectionUsesPairedElapsedTime() throws {
+    let sessionID = UUID()
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 2, occurrence: 1
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(
+        FocusState(
+          phase: TimingPolicy.classic.phases[0],
+          timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+          wallAnchor: anchor,
+          phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: UUID(uuidString: "00000000-0000-0000-0000-000000000010")!,
+          phaseBoundaryToken: phaseToken
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 12,
+      accumulatedBreakSeconds: 3,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduledToken,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 1_000)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+    let projection = try SessionProjector.project(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 110),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: UUID(uuidString: "00000000-0000-0000-0000-000000000010")!,
+          rawWallAtProjectionAnchor: anchor.date,
+          monotonicElapsedSinceAnchor: .seconds(10)
+        )
+      )
+    )
+
+    #expect(projection.sourceRevision == snapshot.revision)
+    #expect(projection.state == .focusing)
+    #expect(projection.focusedSeconds == 22)
+    #expect(projection.breakSeconds == 3)
+    #expect(projection.remainingSeconds == 290)
+    #expect(projection.nextScheduledCheckInAt == snapshot.nextScheduledCheckIn?.dueAt)
+  }
 }

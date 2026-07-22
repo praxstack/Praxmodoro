@@ -13,11 +13,142 @@ public enum SessionProjector {
     }
 
     switch snapshot.state {
-    case .focusing, .breaking:
-      throw .missingLiveProjection
+    case let .focusing(focus):
+      return try liveFocusProjection(snapshot: snapshot, focus: focus, instant: instant)
+    case let .breaking(breakState):
+      return try liveBreakProjection(snapshot: snapshot, breakState: breakState, instant: instant)
     default:
       return staticProjection(snapshot)
     }
+  }
+
+  private static func liveFocusProjection(
+    snapshot: SessionSnapshot,
+    focus: FocusState,
+    instant: SessionInstant
+  ) throws(ProjectionError) -> SessionProjection {
+    let elapsed = try pairedElapsedSeconds(
+      instant: instant,
+      expectedToken: focus.projectionToken,
+      wallAnchor: focus.wallAnchor
+    )
+    let projected = try projectedTiming(
+      accumulated: snapshot.accumulatedFocusSeconds,
+      elapsedBeforeAnchor: focus.elapsedBeforeAnchorSeconds,
+      timing: focus.timingAtAnchor,
+      pairedElapsed: elapsed
+    )
+    return SessionProjection(
+      sourceRevision: snapshot.revision,
+      sessionID: snapshot.sessionID,
+      state: .focusing,
+      task: snapshot.plan?.task,
+      firstAction: snapshot.plan?.firstAction,
+      timingPolicy: snapshot.plan?.timingPolicy.id,
+      phase: focus.phase.id,
+      focusedSeconds: projected.total,
+      breakSeconds: snapshot.accumulatedBreakSeconds,
+      remainingSeconds: projected.remaining,
+      isPaused: false,
+      isBoundaryAwaitingDecision: false,
+      nextScheduledCheckInAt: snapshot.nextScheduledCheckIn?.dueAt,
+      parkedThoughtCount: UInt64(snapshot.parkedThoughts.count),
+      lowCognitiveLoadEnabled: snapshot.configuration.lowCognitiveLoadEnabled
+    )
+  }
+
+  private static func liveBreakProjection(
+    snapshot: SessionSnapshot,
+    breakState: BreakState,
+    instant: SessionInstant
+  ) throws(ProjectionError) -> SessionProjection {
+    let elapsed = try pairedElapsedSeconds(
+      instant: instant,
+      expectedToken: breakState.projectionToken,
+      wallAnchor: breakState.wallAnchor
+    )
+    let projected = try projectedTiming(
+      accumulated: snapshot.accumulatedBreakSeconds,
+      elapsedBeforeAnchor: breakState.elapsedBeforeAnchorSeconds,
+      timing: breakState.timingAtAnchor,
+      pairedElapsed: elapsed
+    )
+    return SessionProjection(
+      sourceRevision: snapshot.revision,
+      sessionID: snapshot.sessionID,
+      state: .breaking,
+      task: snapshot.plan?.task,
+      firstAction: snapshot.plan?.firstAction,
+      timingPolicy: snapshot.plan?.timingPolicy.id,
+      phase: breakState.resumeTarget.phase.id,
+      focusedSeconds: snapshot.accumulatedFocusSeconds,
+      breakSeconds: projected.total,
+      remainingSeconds: projected.remaining,
+      isPaused: false,
+      isBoundaryAwaitingDecision: false,
+      nextScheduledCheckInAt: nil,
+      parkedThoughtCount: UInt64(snapshot.parkedThoughts.count),
+      lowCognitiveLoadEnabled: snapshot.configuration.lowCognitiveLoadEnabled
+    )
+  }
+
+  private static func pairedElapsedSeconds(
+    instant: SessionInstant,
+    expectedToken: UUID,
+    wallAnchor: SessionTimestamp
+  ) throws(ProjectionError) -> UInt64 {
+    guard canonicalSecond(instant.wallNow) != nil else { throw .arithmeticOverflow }
+    guard let live = instant.liveProjection else { throw .missingLiveProjection }
+    guard live.projectionToken == expectedToken else {
+      throw .staleProjectionToken(expected: expectedToken, actual: live.projectionToken)
+    }
+    guard let actualAnchor = canonicalSecond(live.rawWallAtProjectionAnchor) else {
+      throw .arithmeticOverflow
+    }
+    guard actualAnchor == wallAnchor else {
+      throw .inconsistentProjectionAnchor(
+        expectedCanonical: wallAnchor, actualCanonical: actualAnchor)
+    }
+    guard live.monotonicElapsedSinceAnchor >= .zero else { throw .negativeMonotonicElapsed }
+    let components = live.monotonicElapsedSinceAnchor.components
+    let seconds =
+      Double(components.seconds) + Double(components.attoseconds) / 1_000_000_000_000_000_000
+    guard seconds.isFinite else { throw .arithmeticOverflow }
+    let rawAnchor = live.rawWallAtProjectionAnchor.timeIntervalSinceReferenceDate
+    let pairedEnd = rawAnchor + seconds
+    guard pairedEnd.isFinite,
+      let canonicalEnd = canonicalSecond(Date(timeIntervalSinceReferenceDate: pairedEnd))
+    else { throw .arithmeticOverflow }
+    let elapsed =
+      canonicalEnd.date.timeIntervalSinceReferenceDate
+      - wallAnchor.date.timeIntervalSinceReferenceDate
+    guard elapsed.isFinite, elapsed >= 0, elapsed <= Double(UInt64.max) else {
+      throw .arithmeticOverflow
+    }
+    return UInt64(elapsed)
+  }
+
+  private static func projectedTiming(
+    accumulated: UInt64,
+    elapsedBeforeAnchor: UInt64,
+    timing: PausedTiming,
+    pairedElapsed: UInt64
+  ) throws(ProjectionError) -> (total: UInt64, remaining: UInt64?) {
+    let projectedIncrement: UInt64
+    let remaining: UInt64?
+    switch timing {
+    case let .timed(remainingTiming):
+      let budget = UInt64(remainingTiming.value)
+      projectedIncrement = min(pairedElapsed, budget)
+      remaining = budget - projectedIncrement
+    case .openEnded:
+      projectedIncrement = pairedElapsed
+      remaining = nil
+    }
+    let withCarry = elapsedBeforeAnchor.addingReportingOverflow(projectedIncrement)
+    let total = accumulated.addingReportingOverflow(withCarry.partialValue)
+    guard !withCarry.overflow, !total.overflow else { throw .arithmeticOverflow }
+    return (total.partialValue, remaining)
   }
 
   private static func staticProjection(_ snapshot: SessionSnapshot) -> SessionProjection {
