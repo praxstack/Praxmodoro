@@ -34,12 +34,34 @@ internal enum SessionSnapshotValidator {
       return violations
     }
 
-    let expectedRevision = previous!.revision == UInt64.max ? UInt64.max : previous!.revision + 1
+    let previous = previous!
+    let expectedRevision = previous.revision == UInt64.max ? UInt64.max : previous.revision + 1
     if candidate.revision != expectedRevision {
       violations.insert(.invalidRevision(expected: expectedRevision, actual: candidate.revision))
     }
+    if candidate.state.kind != .idle {
+      if candidate.sessionID == nil || (previous.sessionID != nil && candidate.sessionID != previous.sessionID) {
+        violations.insert(.invalidIdentity)
+      }
+      let expectedObservation = canonicalSecond(context.instant.wallNow)
+      if candidate.lastWallObservationAt != expectedObservation {
+        violations.insert(.invalidWallObservation)
+      }
+    }
+    let expectedSequence = previous.eventSequence.addingReportingOverflow(UInt64(emittedEvents.count))
+    if expectedSequence.overflow || candidate.eventSequence != expectedSequence.partialValue {
+      violations.insert(.invalidEventSequence)
+    }
+    let expectedWall = canonicalSecond(context.instant.wallNow)
+    for (offset, event) in emittedEvents.enumerated() {
+      let expectedEventSequence = previous.eventSequence.addingReportingOverflow(UInt64(offset + 1))
+      if expectedEventSequence.overflow || event.sequence != expectedEventSequence.partialValue
+        || event.sessionID != candidate.sessionID || event.occurredAt != expectedWall
+      {
+        violations.insert(.invalidEventEnvelope)
+      }
+    }
     _ = command
-    _ = context
     return violations
   }
 

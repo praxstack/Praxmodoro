@@ -273,4 +273,42 @@ struct SessionModelTests {
 
     #expect(violations.contains(.invalidRevision(expected: 1, actual: 0)))
   }
+
+  @Test("non-idle commits record the context's canonical wall observation")
+  func nonIdleCommitRequiresExactWallObservation() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let preparedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 10))
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: UUID(uuidString: "00000000-0000-0000-0000-000000000001"),
+      revision: 1,
+      eventSequence: 0,
+      nextBoundaryOccurrence: 0,
+      state: .prepared(PreparedState(preparedAt: preparedAt)),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: preparedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: Date(timeIntervalSinceReferenceDate: 11), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let violations = SessionSnapshotValidator.validate(
+      previous: .canonicalIdle,
+      command: SessionCommand(expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+      candidate: candidate,
+      emittedEvents: [],
+      context: context
+    )
+
+    #expect(violations.contains(.invalidWallObservation))
+  }
 }
