@@ -51,6 +51,19 @@ internal enum ScheduledCadenceSeed: Equatable, Sendable {
   case captured(CheckInRemainingSeconds)
 }
 
+internal struct ScheduledCheckInReplacementRequest: Equatable, Sendable {
+  let sessionID: UUID
+  let targetRevision: UInt64
+  let nextBoundaryOccurrence: UInt64
+  let wallAnchor: SessionTimestamp
+  let schedule: CheckInSchedule
+}
+
+internal enum ScheduledCheckInReplacementDecision: Equatable, Sendable {
+  case materialized(boundary: ScheduledCheckInBoundary?, nextBoundaryOccurrence: UInt64)
+  case failure(ReductionFailure)
+}
+
 internal enum LiveEntryRequest: Sendable {
   case focus(
     sessionID: UUID,
@@ -166,6 +179,36 @@ internal enum SessionTimeKernel {
         scheduledCheckInAt: normalizedScheduled,
         admissionAdjustment: adjustment
       )
+    )
+  }
+
+  static func replaceScheduledCheckIn(
+    _ request: ScheduledCheckInReplacementRequest
+  ) -> ScheduledCheckInReplacementDecision {
+    guard let remaining = materializeScheduledRemainder(request.schedule) else {
+      return .materialized(
+        boundary: nil,
+        nextBoundaryOccurrence: request.nextBoundaryOccurrence
+      )
+    }
+    let occurrence = request.nextBoundaryOccurrence.addingReportingOverflow(1)
+    guard !occurrence.overflow else { return .failure(.boundaryOccurrenceExhausted) }
+    guard let dueAt = deadline(anchor: request.wallAnchor, seconds: UInt64(remaining.value)) else {
+      return .failure(.arithmeticOverflow)
+    }
+    return .materialized(
+      boundary: ScheduledCheckInBoundary(
+        token: BoundaryToken(
+          sessionID: request.sessionID,
+          kind: .scheduledCheckIn,
+          phaseID: nil,
+          sourceRevision: request.targetRevision,
+          occurrence: request.nextBoundaryOccurrence
+        ),
+        dueAt: dueAt,
+        trustedRemaining: remaining
+      ),
+      nextBoundaryOccurrence: occurrence.partialValue
     )
   }
 

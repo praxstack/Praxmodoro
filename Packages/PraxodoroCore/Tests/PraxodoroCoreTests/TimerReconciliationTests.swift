@@ -450,4 +450,37 @@ struct TimerReconciliationTests {
         )
     )
   }
+
+  @Test("scheduled replacement allocates only a new scheduled token")
+  func scheduledReplacementAllocatesOnlyScheduledToken() {
+    let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000005")!
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let decision = SessionTimeKernel.replaceScheduledCheckIn(
+      ScheduledCheckInReplacementRequest(
+        sessionID: sessionID,
+        targetRevision: 4,
+        nextBoundaryOccurrence: 9,
+        wallAnchor: anchor,
+        schedule: .interval(try! CheckInMinutes(5))
+      )
+    )
+
+    #expect(
+      decision
+        == .materialized(
+          boundary: ScheduledCheckInBoundary(
+            token: BoundaryToken(
+              sessionID: sessionID,
+              kind: .scheduledCheckIn,
+              phaseID: nil,
+              sourceRevision: 4,
+              occurrence: 9
+            ),
+            dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+            trustedRemaining: try! CheckInRemainingSeconds(300)
+          ),
+          nextBoundaryOccurrence: 10
+        )
+    )
+  }
 }
