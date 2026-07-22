@@ -28,6 +28,30 @@ struct SessionModelTests {
     #expect(Set([finite, sameFinite]).count == 1)
   }
 
+  @Test("timestamps preserve bit-pattern identity for malformed fixtures")
+  func timestampEqualityRemainsHashLawfulForMalformedValues() {
+    let nanBits: UInt64 = 0x7FF8_0000_0000_0001
+    let sameNaN = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: nanBits)))
+    let duplicateNaN = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: nanBits)))
+    let distinctNaN = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: Double(bitPattern: 0x7FF8_0000_0000_0002)))
+    let positiveInfinity = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: .infinity))
+    let negativeZero = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: -0.0))
+    let positiveZero = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 0.0))
+
+    #expect(sameNaN == duplicateNaN)
+    #expect(sameNaN != distinctNaN)
+    #expect(Set([sameNaN, duplicateNaN]).count == 1)
+    #expect(positiveInfinity == positiveInfinity)
+    #expect(negativeZero == positiveZero)
+  }
+
+  @Test("canonical seconds reject non-finite clock input and floor finite values")
+  func canonicalSecondIsDeterministic() {
+    #expect(canonicalSecond(Date(timeIntervalSinceReferenceDate: 7.9)) ==
+      SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 7)))
+    #expect(canonicalSecond(Date(timeIntervalSinceReferenceDate: -.infinity)) == nil)
+  }
+
   @Test("the default configuration is ADHD-aware but low-load is opt-in")
   func defaultConfigurationIsExact() {
     #expect(SessionConfiguration.defaults == SessionConfiguration(
