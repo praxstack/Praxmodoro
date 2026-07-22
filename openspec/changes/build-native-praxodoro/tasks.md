@@ -39,7 +39,7 @@
 Execution order is `3.1 → 3.3 → 3.2`: the pure tested time kernel must exist before the exhaustive
 reducer integrates live rows. Numeric labels preserve criterion/history identity, not execution order.
 
-- [ ] 3.1 Define session state, intents, events, projections, and four data-defined timing presets.
+- [x] 3.1 Define session state, intents, events, projections, and four data-defined timing presets.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Session/SessionState.swift`, `SessionIntent.swift`, `SessionEvent.swift`, `SessionProjection.swift`, `TimingPolicy.swift`; create `SessionModelTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter SessionModelTests`; expect missing closed session model, exact default manifest, invariant, error-taxonomy, and preset symbols.
   - **Minimal implementation:** implement the Sendable closed value vocabulary, ten lifecycle states including re-entry, exact events/effects/results/errors, snapshot invariants, and the four exact timing policies/defaults from `docs/specification/session-domain-contract.md`.

@@ -1,8 +1,8 @@
 Praxodoro implementation status
 
-- Accepted atoms: 4 of 21 (19%).
-- Complete: native scaffold, project quality gates, edition catalog, and validated product access.
-- Current atom: 3.1, closed focus-session model.
+- Accepted atoms: 5 of 21 (24%).
+- Complete: native scaffold, project quality gates, edition catalog, validated product access, and the closed focus-session model.
+- Current atom: 3.3, canonical time projection and reconciliation.
 - Current contract: `docs/specification/session-domain-contract.md`.
-- Workflow: focused RED/GREEN while coding; one full suite and one independent final review at atom completion.
+- Workflow: focused RED/GREEN while coding; one full suite and one final review only when an atom is ready for acceptance.
 - Database safety remains scheduled for Atom 4.1 (actor serialization, revision gating, atomic repository commit); no safety code or tests were removed.
