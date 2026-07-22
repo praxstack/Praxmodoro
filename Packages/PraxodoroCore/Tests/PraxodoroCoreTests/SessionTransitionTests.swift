@@ -1672,4 +1672,193 @@ struct SessionTransitionTests {
           .invalidateDisplayProjection(projectionToken: projectionToken),
         ])
   }
+
+  @Test(
+    "phase-boundary skip and dismiss pause the full continuation phase",
+    arguments: [CheckInResponse.skip, .dismiss]
+  )
+  func phaseBoundarySkipAndDismissPauseFullContinuation(response: CheckInResponse) throws {
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .entry,
+      sourceRevision: 3,
+      occurrence: 1
+    )
+    let nextPhase = TimingPolicy.gentleStart.phases[1]
+    let cadence = try CheckInRemainingSeconds(400)
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: nil,
+          trigger: .phaseBoundary(token),
+          continuation: .startPhase(nextPhase),
+          phaseBoundaryScheduledCheckInRemaining: cadence
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .gentleStart),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 300,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .respondToCheckIn(response)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected phase-boundary paused resolution")
+      return
+    }
+    let fullTiming = PausedTiming.timed(remaining: try PhaseSeconds(1_200))
+
+    #expect(
+      reduction.snapshot.state
+        == .paused(
+          PausedState(
+            phase: nextPhase,
+            timing: fullTiming,
+            pausedAt: observedAt,
+            scheduledCheckInRemaining: cadence
+          )))
+    #expect(reduction.snapshot.revision == 5)
+    #expect(reduction.snapshot.eventSequence == 8)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 2)
+    #expect(reduction.snapshot.lastConsumedBoundaryToken == token)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.events.map(\.payload)
+        == [.checkInResolved, .phasePaused(timing: fullTiming)])
+    #expect(reduction.events.map(\.occurredAt) == [observedAt, observedAt])
+    #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+  }
+
+  @Test("phase-boundary continue starts the exact continuation phase")
+  func phaseBoundaryContinueStartsExactContinuation() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .entry,
+      sourceRevision: 3,
+      occurrence: 1
+    )
+    let nextPhase = TimingPolicy.gentleStart.phases[1]
+    let cadence = try CheckInRemainingSeconds(400)
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: nil,
+          trigger: .phaseBoundary(token),
+          continuation: .startPhase(nextPhase),
+          phaseBoundaryScheduledCheckInRemaining: cadence
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .gentleStart),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 300,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 400)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: token
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(
+        expectedRevision: 4, intent: .respondToCheckIn(.continueFocus)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected phase-boundary continue transition")
+      return
+    }
+    let phaseEndsAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_650))
+    let scheduledAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 850))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .focus,
+      sourceRevision: 5,
+      occurrence: 2
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 5,
+      occurrence: 3
+    )
+
+    guard case let .focusing(focus) = reduction.snapshot.state else {
+      Issue.record("expected focusing continuation")
+      return
+    }
+    #expect(focus.phase == nextPhase)
+    #expect(focus.timingAtAnchor == .timed(remaining: try PhaseSeconds(1_200)))
+    #expect(focus.phaseEndsAt == phaseEndsAt)
+    #expect(focus.phaseBoundaryToken == phaseToken)
+    #expect(focus.projectionToken == projectionToken)
+    #expect(
+      reduction.snapshot.nextScheduledCheckIn
+        == ScheduledCheckInBoundary(
+          token: scheduledToken,
+          dueAt: scheduledAt,
+          trustedRemaining: cadence
+        ))
+    #expect(reduction.snapshot.eventSequence == 8)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 4)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .checkInResolved,
+          .phaseStarted(phase: nextPhase, endsAt: phaseEndsAt),
+        ])
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(
+              boundaryToken: scheduledToken, fireAt: scheduledAt)),
+          .announceAccessibility(.focusStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ])
+  }
 }
