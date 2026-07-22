@@ -2021,4 +2021,90 @@ struct SessionTransitionTests {
           .invalidateDisplayProjection(projectionToken: projectionToken),
         ])
   }
+
+  @Test("check-in response failures preserve wall and counter precedence")
+  func checkInResponseFailurePrecedence() throws {
+    let sessionID = UUID()
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    func snapshot(revision: UInt64, eventSequence: UInt64) throws -> SessionSnapshot {
+      SessionSnapshot(
+        schemaVersion: 1,
+        sessionID: sessionID,
+        revision: revision,
+        eventSequence: eventSequence,
+        nextBoundaryOccurrence: 2,
+        state: .checkingIn(
+          CheckInState(
+            suspended: SuspendedFocusState(
+              phase: TimingPolicy.classic.phases[0],
+              timing: .timed(remaining: try PhaseSeconds(1_490)),
+              resumeDisposition: .paused,
+              scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+            ),
+            trigger: .manual,
+            continuation: .resumeSuspended,
+            phaseBoundaryScheduledCheckInRemaining: nil
+          )),
+        plan: try SessionPlan(
+          task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+        configuration: .defaults,
+        parkedThoughts: [],
+        startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+        accumulatedFocusSeconds: 10,
+        accumulatedBreakSeconds: 0,
+        lastWallObservationAt: SessionTimestamp(
+          unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+        nextScheduledCheckIn: nil,
+        lastConsumedBoundaryToken: nil
+      )
+    }
+    let exhausted = try snapshot(revision: .max, eventSequence: .max)
+    let finiteContext = ReductionContext(
+      instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    let nonFiniteContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: exhausted,
+        command: SessionCommand(
+          expectedRevision: .max, intent: .respondToCheckIn(.continueFocus)),
+        context: nonFiniteContext
+      )
+        == .failed(snapshot: exhausted, reason: .nonFiniteWallObservation)
+    )
+    #expect(
+      SessionReducer.reduce(
+        snapshot: exhausted,
+        command: SessionCommand(
+          expectedRevision: .max, intent: .respondToCheckIn(.continueFocus)),
+        context: finiteContext
+      )
+        == .failed(snapshot: exhausted, reason: .revisionExhausted)
+    )
+    let eventExhausted = try snapshot(revision: 4, eventSequence: .max)
+    #expect(
+      SessionReducer.reduce(
+        snapshot: eventExhausted,
+        command: SessionCommand(
+          expectedRevision: 4, intent: .respondToCheckIn(.continueFocus)),
+        context: finiteContext
+      )
+        == .failed(
+          snapshot: eventExhausted,
+          reason: .eventSequenceExhausted(
+            requiredAdditionalEvents: 1,
+            remainingCapacity: 0
+          ))
+    )
+  }
 }
