@@ -969,6 +969,12 @@ public enum SessionReducer {
         response: response,
         context: context
       )
+    case let .parkThought(text):
+      return parkThoughtInNonLiveState(
+        snapshot: snapshot,
+        text: text,
+        context: context
+      )
     case .reconcileTime:
       return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
     default:

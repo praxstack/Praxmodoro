@@ -1861,4 +1861,66 @@ struct SessionTransitionTests {
           .invalidateDisplayProjection(projectionToken: projectionToken),
         ])
   }
+
+  @Test("direct thought parking preserves the unresolved check-in")
+  func directThoughtParkingPreservesCheckIn() throws {
+    let sessionID = UUID()
+    let thoughtID = UUID()
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let checkIn = CheckInState(
+      suspended: SuspendedFocusState(
+        phase: TimingPolicy.classic.phases[0],
+        timing: .timed(remaining: try PhaseSeconds(1_490)),
+        resumeDisposition: .focusing,
+        scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+      ),
+      trigger: .manual,
+      continuation: .resumeSuspended,
+      phaseBoundaryScheduledCheckInRemaining: nil
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(checkIn),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: SessionTimestamp(
+        unchecked: Date(timeIntervalSinceReferenceDate: 300)),
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .parkThought("  Later idea  ")),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: thoughtID,
+        generatedProjectionToken: UUID()
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected checking-in thought transition")
+      return
+    }
+
+    #expect(reduction.snapshot.state == .checkingIn(checkIn))
+    #expect(
+      reduction.snapshot.parkedThoughts
+        == [ParkedThought(id: thoughtID, text: "Later idea", createdAt: observedAt)])
+    #expect(reduction.snapshot.revision == 5)
+    #expect(reduction.snapshot.eventSequence == 6)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(reduction.events.map(\.payload) == [.thoughtParked(id: thoughtID)])
+    #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+  }
 }
