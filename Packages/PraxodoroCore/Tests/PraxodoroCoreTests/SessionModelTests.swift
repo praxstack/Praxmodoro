@@ -521,6 +521,52 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidWallObservation))
   }
 
+  @Test("started states require a non-empty task and first action")
+  func startedStatesRequireNonEmptyPlanFields() throws {
+    let plan = try SessionPlan(task: "", firstAction: "", capacity: nil, timingPolicy: .classic)
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 1, occurrence: 0
+    )
+    let scheduled = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 1, occurrence: 1
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(FocusState(
+        phase: TimingPolicy.classic.phases[0],
+        timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+        wallAnchor: anchor,
+        phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
+        elapsedBeforeAnchorSeconds: 0,
+        projectionToken: UUID(),
+        phaseBoundaryToken: token
+      )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduled,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 920)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidText(.task)))
+    #expect(violations.contains(.invalidText(.firstAction)))
+  }
+
   @Test("timed focus candidates cannot exceed their configured phase budget")
   func timedFocusCandidateCannotExceedPhaseBudget() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)

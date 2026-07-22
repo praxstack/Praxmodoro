@@ -333,6 +333,10 @@ internal enum SessionSnapshotValidator {
     lastConsumedBoundaryToken: BoundaryToken?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
+    if state.kind != .idle && state.kind != .prepared && state.kind != .completed, let plan {
+      if plan.task.isEmpty { violations.insert(.invalidText(.task)) }
+      if plan.firstAction.isEmpty { violations.insert(.invalidText(.firstAction)) }
+    }
     switch state {
     case .idle:
       break
