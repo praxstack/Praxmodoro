@@ -227,6 +227,24 @@ struct TimerReconciliationTests {
     )
   }
 
+  @Test("live entry rejects non-finite wall input before token allocation")
+  func liveEntryRejectsNonFiniteWallInput() throws {
+    #expect(
+      SessionTimeKernel.materializeLiveEntry(
+        .focus(
+          sessionID: UUID(),
+          targetRevision: 1,
+          nextBoundaryOccurrence: 0,
+          wallNow: Date(timeIntervalSinceReferenceDate: .infinity),
+          projectionToken: UUID(),
+          phaseID: .focus,
+          timing: .timed(remaining: try PhaseSeconds(1)),
+          cadence: .fullInterval(.fifteen)
+        )
+      ) == .failure(.nonFiniteWallObservation)
+    )
+  }
+
   @Test("open-ended break entry has no deadline or boundary token")
   func openEndedBreakEntryHasNoBoundary() {
     let sessionID = UUID(uuidString: "00000000-0000-0000-0000-000000000003")!
