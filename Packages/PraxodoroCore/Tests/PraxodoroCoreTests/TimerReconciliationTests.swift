@@ -61,6 +61,8 @@ struct TimerReconciliationTests {
   func liveFocusProjectionUsesFractionalPairedElapsedTime() throws {
     let sessionID = UUID()
     let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100))
+    let focusProjectionToken = UUID(
+      uuidString: "00000000-0000-0000-0000-000000000010")!
     let phaseToken = BoundaryToken(
       sessionID: sessionID, kind: .phase, phaseID: .focus, sourceRevision: 2, occurrence: 0
     )
@@ -80,7 +82,7 @@ struct TimerReconciliationTests {
           wallAnchor: anchor,
           phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400)),
           elapsedBeforeAnchorSeconds: 0,
-          projectionToken: UUID(uuidString: "00000000-0000-0000-0000-000000000010")!,
+          projectionToken: focusProjectionToken,
           phaseBoundaryToken: phaseToken
         )),
       plan: try SessionPlan(
@@ -103,7 +105,7 @@ struct TimerReconciliationTests {
       instant: SessionInstant(
         wallNow: Date(timeIntervalSinceReferenceDate: 101),
         liveProjection: LiveProjectionObservation(
-          projectionToken: UUID(uuidString: "00000000-0000-0000-0000-000000000010")!,
+          projectionToken: focusProjectionToken,
           rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100.75),
           monotonicElapsedSinceAnchor: .milliseconds(250)
         )
@@ -116,6 +118,77 @@ struct TimerReconciliationTests {
     #expect(projection.breakSeconds == 3)
     #expect(projection.remainingSeconds == 299)
     #expect(projection.nextScheduledCheckInAt == snapshot.nextScheduledCheckIn?.dueAt)
+
+    #expect(throws: ProjectionError.missingLiveProjection) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 101), liveProjection: nil))
+    }
+
+    let staleToken = UUID(uuidString: "00000000-0000-0000-0000-000000000011")!
+    #expect(
+      throws: ProjectionError.staleProjectionToken(
+        expected: focusProjectionToken, actual: staleToken)
+    ) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 101),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: staleToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+            monotonicElapsedSinceAnchor: .seconds(1)
+          )))
+    }
+
+    let inconsistentAnchor = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 101))
+    #expect(
+      throws: ProjectionError.inconsistentProjectionAnchor(
+        expectedCanonical: anchor, actualCanonical: inconsistentAnchor)
+    ) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 101),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: focusProjectionToken,
+            rawWallAtProjectionAnchor: inconsistentAnchor.date,
+            monotonicElapsedSinceAnchor: .zero
+          )))
+    }
+
+    #expect(throws: ProjectionError.negativeMonotonicElapsed) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 101),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: focusProjectionToken,
+            rawWallAtProjectionAnchor: anchor.date,
+            monotonicElapsedSinceAnchor: .seconds(-1)
+          )))
+    }
+
+    #expect(throws: ProjectionError.arithmeticOverflow) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: .infinity), liveProjection: nil))
+    }
+
+    #expect(throws: ProjectionError.arithmeticOverflow) {
+      try SessionProjector.project(
+        snapshot: snapshot,
+        instant: SessionInstant(
+          wallNow: Date(timeIntervalSinceReferenceDate: 101),
+          liveProjection: LiveProjectionObservation(
+            projectionToken: focusProjectionToken,
+            rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: .infinity),
+            monotonicElapsedSinceAnchor: .zero
+          )))
+    }
   }
 
   @Test("focus entry materializes exact deadlines and ordered tokens")
