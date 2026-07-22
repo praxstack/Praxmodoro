@@ -28,7 +28,9 @@ public enum SessionReducer {
       return reducePaused(snapshot: snapshot, command: command, context: context)
     case .checkingIn:
       return reduceCheckingIn(snapshot: snapshot, command: command, context: context)
-    case .breaking, .reentering, .reviewing, .completed, .recoveryNeeded:
+    case .reentering:
+      return reduceReentering(snapshot: snapshot, command: command, context: context)
+    case .breaking, .reviewing, .completed, .recoveryNeeded:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
   }
@@ -1169,6 +1171,110 @@ public enum SessionReducer {
       eventSequence: snapshot.eventSequence + 1,
       nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
       state: .checkingIn(updatedCheckIn),
+      plan: snapshot.plan,
+      configuration: configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [
+          SessionEvent(
+            sessionID: sessionID,
+            sequence: snapshot.eventSequence + 1,
+            occurredAt: observedAt,
+            payload: .configurationChanged(fields: changes)
+          )
+        ],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
+  }
+
+  private static func reduceReentering(
+    snapshot: SessionSnapshot,
+    command: SessionCommand,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard
+      let configuration = requestedConfiguration(
+        for: command.intent,
+        current: snapshot.configuration
+      )
+    else {
+      if case .reconcileTime = command.intent {
+        return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
+      }
+      return invalidTransition(snapshot: snapshot, intent: command.intent)
+    }
+    return updateReentryConfiguration(
+      snapshot: snapshot,
+      intent: command.intent,
+      configuration: configuration,
+      context: context
+    )
+  }
+
+  private static func updateReentryConfiguration(
+    snapshot: SessionSnapshot,
+    intent: SessionIntent,
+    configuration: SessionConfiguration,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .reentering(reentry) = snapshot.state,
+      let sessionID = snapshot.sessionID
+    else {
+      return invalidTransition(snapshot: snapshot, intent: intent)
+    }
+    let fields = changedConfigurationFields(
+      from: snapshot.configuration,
+      to: configuration
+    )
+    guard let changes = SessionConfigurationFieldChanges(fields) else {
+      return .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    let target = reentry.resumeTarget
+    let cadence =
+      fields.contains(.checkInSchedule)
+      ? SessionTimeKernel.materializeScheduledRemainder(configuration.checkInSchedule)
+      : target.scheduledCheckInRemaining
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: .reentering(
+        ReentryState(
+          resumeTarget: SuspendedFocusState(
+            phase: target.phase,
+            timing: target.timing,
+            resumeDisposition: target.resumeDisposition,
+            scheduledCheckInRemaining: cadence
+          ),
+          proposedAction: reentry.proposedAction,
+          enteredAt: reentry.enteredAt
+        )),
       plan: snapshot.plan,
       configuration: configuration,
       parkedThoughts: snapshot.parkedThoughts,

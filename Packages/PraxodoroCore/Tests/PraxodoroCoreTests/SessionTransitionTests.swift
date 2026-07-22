@@ -2475,4 +2475,93 @@ struct SessionTransitionTests {
       #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
     }
   }
+
+  @Test("re-entry configuration changes preserve coaching context and replace cadence")
+  func reentryConfigurationChangesAreExact() throws {
+    let sessionID = UUID()
+    let enteredAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let originalCadence = try CheckInRemainingSeconds(890)
+    let target = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: originalCadence
+    )
+    let reentry = ReentryState(
+      resumeTarget: target,
+      proposedAction: "Open the outline",
+      enteredAt: enteredAt
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .reentering(reentry),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Open the outline", capacity: nil,
+        timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: enteredAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    for (intent, expectedCadence) in [
+      (SessionIntent.setCheckInSchedule(.manualOnly), nil),
+      (SessionIntent.setBreakSuggestionsEnabled(false), originalCadence),
+    ] {
+      guard
+        case let .transition(reduction) = SessionReducer.reduce(
+          snapshot: snapshot,
+          command: SessionCommand(expectedRevision: 4, intent: intent),
+          context: context
+        ), case let .reentering(candidate) = reduction.snapshot.state
+      else {
+        Issue.record("expected re-entry configuration transition")
+        continue
+      }
+      #expect(candidate.resumeTarget.phase == target.phase)
+      #expect(candidate.resumeTarget.timing == target.timing)
+      #expect(candidate.resumeTarget.resumeDisposition == target.resumeDisposition)
+      #expect(candidate.resumeTarget.scheduledCheckInRemaining == expectedCadence)
+      #expect(candidate.proposedAction == reentry.proposedAction)
+      #expect(candidate.enteredAt == enteredAt)
+      #expect(reduction.snapshot.revision == 5)
+      #expect(reduction.snapshot.eventSequence == 7)
+      #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+      #expect(reduction.events.count == 1)
+      #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+      #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    }
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4,
+          intent: .setReflectionPromptEnabled(true)
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    )
+  }
 }
