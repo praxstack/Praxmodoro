@@ -541,6 +541,43 @@ public struct SessionSummary: Equatable, Sendable {
 }
 ~~~
 
+#### Canonical idle baseline and new-session reset
+
+Repository creation installs exactly one canonical idle baseline. It is not a partially initialized
+snapshot and adapters may not choose alternate defaults:
+
+| `SessionSnapshot` field | Canonical revision-0 idle value |
+|---|---|
+| `schemaVersion` | `1` |
+| `sessionID` | `nil` |
+| `revision` / `eventSequence` / `nextBoundaryOccurrence` | `0` / `0` / `0` |
+| `state` | `.idle` |
+| `plan` | `nil` |
+| `configuration` | `.defaults` |
+| `parkedThoughts` | `[]` |
+| `startedAt` | `nil` |
+| `accumulatedFocusSeconds` / `accumulatedBreakSeconds` | `0` / `0` |
+| `lastWallObservationAt` / `nextScheduledCheckIn` / `lastConsumedBoundaryToken` | `nil` / `nil` / `nil` |
+
+An accepted `prepare(draft)` from idle or completed constructs one equally closed new-session
+candidate. It checked-increments the repository-global revision, uses
+`context.generatedSessionID` as a non-nil ID different from the prior completed session ID, emits
+only `sessionPrepared` at session-local sequence `1`, and resets
+`nextBoundaryOccurrence` to `0`. Its state is
+`.prepared(PreparedState(preparedAt: canonicalSecond(context.instant.wallNow)))`; `plan` and
+`configuration` are exact copies of the normalized validated draft; `parkedThoughts` is empty;
+`startedAt` is nil; both accumulators are zero; `lastWallObservationAt` is the same canonical prepare
+observation; and `nextScheduledCheckIn` plus `lastConsumedBoundaryToken` are nil. The completed
+summary and any pending replacement draft disappear with the old `CompletedState`; replacement
+content enters the new snapshot only through the command's explicit `draft`. The context's unused
+thought and projection identifiers remain ignored. `updatePrepared` may change only the plan and
+configuration plus ordinary revision/event/wall metadata; it preserves the prepared timestamp and
+every reset value above. Scheduled boundaries are first installed by `start`, never by `prepare`.
+
+Candidate validation enforces the complete idle row. Relational validation enforces the complete
+prepare reset against the previous snapshot, command draft, emitted event, and reduction context.
+There is no valid partial reset and no reducer-selected default outside this table.
+
 When a transition first enters review, `SessionSummaryDraft.endedAt` is a logical metadata timestamp,
 not an elapsed-time source. Leaving a live state uses the paired expected canonical wall instant;
 leaving a non-live state uses `canonicalSecond(context.instant.wallNow)`. The stored value is the
@@ -677,6 +714,19 @@ public enum ClockRecoveryChoice: String, CaseIterable, Hashable, Sendable {
 `resumeCurrent` and `cancel` require `replacement == nil`. `replaceAndReview` requires a non-nil
 draft whose task and action satisfy start validation. `stop` never accepts replacement as a reason;
 replacement is only the typed conflict-resolution path.
+
+Stop-reason materialization is exhaustive and never inferred from copy or elapsed totals:
+
+| Transition source | Stored `ReviewState.stopReason` |
+|---|---|
+| `stop(.completed)` | `.completed` |
+| `stop(.intentionalStop)` | `.intentionalStop` |
+| first valid `replaceAndReview` that enters review | `.replacedByAnotherSession` |
+| valid `replaceAndReview` while already reviewing | preserve the existing `stopReason`; replace only `replacementDraft` |
+
+Clock-recovery choices retain the separate Section 9 mappings. `finalizeReview` copies the exact
+stored review reason into `SessionSummary.stopReason`; a replacement draft never rewrites why the old
+session originally entered review.
 
 ### 3.6 Deterministic reducer context and time observations
 
@@ -905,6 +955,8 @@ Every candidate is validated before repository commit. The validator returns the
 | Area | Required invariant |
 |---|---|
 | schema | `schemaVersion == 1` |
+| idle baseline | idle is exactly the canonical revision-0 value in Section 3.4; no other idle snapshot is valid |
+| new-session reset | prepare from idle/completed is exactly the closed reset in Section 3.4; a completed session's identity, summary, replacement, thoughts, counters, timestamps, and tokens cannot leak into it |
 | identity | idle has nil session ID; every other state has one stable non-nil ID |
 | revision | idle baseline begins at 0; repository revision increases by exactly one per successful commit and never resets between sessions |
 | event sequence | idle is 0; a new prepared session commits `sessionPrepared` at sequence 1; within the same session the value increases by the exact emitted-event count; it resets only when a new session ID is prepared |
@@ -933,6 +985,8 @@ Every candidate is validated before repository commit. The validator returns the
 ~~~swift
 public enum SnapshotInvariantViolation: Hashable, Sendable {
   case unsupportedSchema(found: UInt16)
+  case invalidIdleBaseline
+  case invalidSessionReset
   case invalidIdentity
   case invalidRevision(expected: UInt64, actual: UInt64)
   case invalidEventSequence
@@ -1016,6 +1070,8 @@ field-specific `nonCanonicalTimestamp` violation.
 | Invariant row | Violation case(s) |
 |---|---|
 | schema | `unsupportedSchema` |
+| idle baseline | `invalidIdleBaseline` |
+| new-session reset | `invalidSessionReset` |
 | identity | `invalidIdentity` |
 | revision | `invalidRevision` |
 | event sequence | `invalidEventSequence`, or `invalidEventEnvelope` for an envelope-field mismatch |
@@ -1049,6 +1105,7 @@ internal enum SessionSnapshotValidator {
 
   static func validate(
     previous: SessionSnapshot?,
+    command: SessionCommand,
     candidate: SessionSnapshot,
     emittedEvents: [SessionEvent],
     context: ReductionContext
@@ -1059,7 +1116,7 @@ internal enum SessionSnapshotValidator {
 Candidate-local rules validate the candidate alone. Revision increment, stable identity, event
 sequence/count, counter non-regression, newly published token revision, reviewing-only completion,
 and the exact successful-commit wall observation compare `previous`, `candidate`, `emittedEvents`,
-and `context`. For every non-idle transition candidate,
+`command`, and `context`. For every non-idle transition candidate,
 `candidate.lastWallObservationAt == canonicalSecond(context.instant.wallNow)`, including a transition that emits no
 action-revision or resume event. This raw factual observation is not a globally monotonic session
 timestamp. It may move backward without `clockAdjusted` when the previous state is non-live because
@@ -1722,9 +1779,13 @@ Every check-in freezes focus first. It never retains an expired live deadline.
 | startPhase(next) | detour(valid note) | append note as parked thought; remain checkingIn | detourReported, thoughtParked |
 | startPhase(next) | takeBreak | breaking with paused full next phase | checkInResolved, breakStarted |
 
-For a scheduled occurrence, Continue/Skip/Dismiss schedule the next full configured interval after
-focus resumes. A manual occurrence preserves the captured remaining scheduled interval. Manual
-check-in never resets cadence. For a phase-boundary occurrence, admission captures a strictly future
+For a scheduled occurrence, every resolving response that creates a focusing, paused, re-entry, or
+break resume target stores the current full configured interval in that target; `manualOnly` stores
+nil. This includes Continue, Skip, Dismiss, Make Smaller, and Take Break. A Detour response that
+remains checking in retains the scheduled occurrence's `.resetAfterScheduledOccurrence` decision so
+the eventual resolving response applies that same full-interval-or-nil rule exactly once. A manual
+occurrence instead preserves the captured remaining scheduled interval and never resets cadence. For
+a phase-boundary occurrence, admission captures a strictly future
 scheduled check-in as `phaseBoundaryScheduledCheckInRemaining`; every response that creates a
 next-phase resume/paused/re-entry/break target preserves that exact remainder. If phase and scheduled
 boundaries are due at the same instant, phase wins, the captured field is nil, the scheduled token is
@@ -2010,8 +2071,10 @@ equal-time phase/scheduled collision uses `.resetAfterPhaseCollision`; a phase w
 later scheduled occurrence is already due at `normalizedDueInstant` uses
 `.resetAfterSupersededScheduledOccurrence`; and a scheduled-check-in winner uses
 `.resetAfterScheduledOccurrence`. Thus Atom 3.2 can populate/clear the phase-boundary cadence field
-without subtracting timestamps. Every reset case installs the then-current full interval only when
-the later response returns to an interval-cadence focus target; manual-only installs nothing.
+without subtracting timestamps. Every reset case installs the then-current full interval when the
+later response creates any focus-bearing target—live focus, paused focus, re-entry, or a break resume
+target. A Detour that remains checking in retains the decision until resolution. Manual-only installs
+nothing.
 
 `reconcileRelaunch` implements Section 8.3 without requiring a reducer: it returns `.normalized`
 with the canonical wall delta and preserved deadlines for a valid restore, `.recovery` for an
@@ -2353,7 +2416,8 @@ The Atom 4.1 engine order is fixed:
 3. Reducer returns transition/no-change/rejection/failure.
 4. Actor maps a reduction failure to the same-named `SessionEngineFailure` and performs no validation,
    write, publication, or effect.
-5. For transition, validate the complete candidate invariant set with the exact reduction context.
+5. For transition, validate the complete candidate invariant set with the exact command and reduction
+   context.
 6. Repository atomically commits snapshot plus ordered events at expected revision.
 7. Actor publishes the committed snapshot.
 8. Actor attempts effects and records each status.

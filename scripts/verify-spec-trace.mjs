@@ -578,6 +578,7 @@ const semanticSubjectPaths = [
   "docs/specification/acceptance-trace.md",
   "docs/superpowers/plans/2026-07-21-session-domain.md",
   "scripts/verify-spec-trace.mjs",
+  "scripts/test-spec-trace-mutations.sh",
   ".agent/evidence/atom-1.1-native-scaffold.md",
   ".agent/evidence/atom-1.2-native-quality.md",
   ".agent/evidence/atom-2.1-edition-catalog.md",
@@ -599,6 +600,7 @@ const semanticStageAllowlist = sorted([
   ".agent/reviews/acceptance-trace-review.md",
   ".agent/reviews/semantic-contract-receiving-review.md",
   ".agent/reviews/semantic-contract-review.md",
+  ".agent/sessions/2026-07-22T05-42-52Z-full-implementation-resume.md",
   "BLUEPRINT.md",
   "README.md",
   "SPEC.md",
@@ -617,6 +619,7 @@ const semanticStageAllowlist = sorted([
   "package.json",
   "prd.json",
   "progress.txt",
+  "scripts/test-spec-trace-mutations.sh",
   "scripts/verify-spec-trace.mjs",
 ]);
 const semanticReceivingPath = ".agent/reviews/semantic-contract-receiving-review.md";
@@ -630,9 +633,99 @@ const semanticRequiredTransitionPaths = sorted([
   "prd.json",
   "progress.txt",
 ]);
+const semanticReceiptRequirements = new Map([
+  [".agent/reviews/semantic-contract-review.md", ["Verdict", "READY"]],
+  [".agent/reviews/acceptance-trace-review.md", ["Verdict", "READY"]],
+  [".agent/council/semantic-contract-shipping-council.md", ["Chairman verdict", "SHIP"]],
+  [".agent/reviews/semantic-contract-receiving-review.md", ["Verdict", "ACCEPT"]],
+  [".agent/evidence/semantic-contract-gate.md", ["Gate status", "ACCEPTED"]],
+]);
 const semanticGateCommitSubject = "docs: accept session domain contract";
 const semanticGateCommits = commitsWithExactSubject(semanticGateCommitSubject);
-const latestSemanticGateCommit = semanticGateCommits[0] ?? null;
+
+function inspectHistoricalSemanticGateCommit(commit) {
+  const errors = [];
+  let subjectDigest = null;
+  let stagedPayloadDigest = null;
+  let stagedAllowlistDigest = null;
+  let changedPaths = [];
+  try {
+    const historicalPRD = JSON.parse(readCommit(commit, "prd.json").toString("utf8"));
+    const historicalGate = historicalPRD.semanticContractGate;
+    if (historicalGate?.status !== "done") errors.push("gate status is not done");
+    if (historicalGate?.blocksAtom !== "3.1") errors.push("blocksAtom is not 3.1");
+    if (!sameOrder(historicalGate?.required ?? [], expectedSemanticGateRequirements)) {
+      errors.push("required checks differ from the frozen gate");
+    }
+    if (!sameOrder(historicalGate?.evidence ?? [], semanticAcceptedEvidence)) {
+      errors.push("accepted evidence manifest differs from the frozen gate");
+    }
+
+    changedPaths = sorted(
+      execFileSync(
+        "git",
+        ["diff-tree", "--no-commit-id", "--no-renames", "--name-only", "-r", "-z", commit + "^", commit],
+        { cwd: root },
+      )
+        .toString("utf8")
+        .split("\0")
+        .filter(Boolean),
+    );
+    const changedPathSet = new Set(changedPaths);
+    if (!changedPaths.every((path) => semanticStageAllowlist.includes(path))) {
+      errors.push("changed paths exceed the semantic transition allowlist");
+    }
+    if (!semanticRequiredTransitionPaths.every((path) => changedPathSet.has(path))) {
+      errors.push("changed paths omit a required semantic transition path");
+    }
+    for (const path of changedPaths) {
+      if (readCommitMode(commit, path) !== "100644") {
+        errors.push(path + " is not a regular non-executable file");
+      }
+    }
+    for (const path of semanticAcceptedEvidence) readCommit(commit, path);
+
+    subjectDigest = commitDigest(commit, semanticSubjectPaths);
+    const payloadPaths = changedPaths.filter((path) => path !== semanticReceivingPath);
+    stagedPayloadDigest = commitDigest(commit, payloadPaths);
+    stagedAllowlistDigest = digestEntries(changedPaths.map((path) => [path, ""]));
+
+    for (const [path, [label, value]] of semanticReceiptRequirements) {
+      const body = readCommit(commit, path).toString("utf8");
+      if (!hasExactField(body, label, value)) errors.push(path + " lacks exact " + label);
+      if (!hasExactField(body, "Subject SHA-256", subjectDigest)) {
+        errors.push(path + " does not bind the historical semantic subject");
+      }
+    }
+    const receiving = readCommit(commit, semanticReceivingPath).toString("utf8");
+    if (!hasExactField(receiving, "Staged subject SHA-256", subjectDigest)) {
+      errors.push("receiving review does not bind the historical staged subject");
+    }
+    if (!hasExactField(receiving, "Staged allowlist SHA-256", stagedAllowlistDigest)) {
+      errors.push("receiving review does not bind the historical path allowlist");
+    }
+    if (!hasExactField(receiving, "Staged payload SHA-256", stagedPayloadDigest)) {
+      errors.push("receiving review does not bind the historical payload");
+    }
+  } catch (error) {
+    errors.push(error.message);
+  }
+  return {
+    commit,
+    valid: errors.length === 0,
+    errors,
+    subjectDigest,
+    stagedPayloadDigest,
+    stagedAllowlistDigest,
+    changedPaths,
+  };
+}
+
+const semanticGateCommitInspections = semanticGateCommits.map(inspectHistoricalSemanticGateCommit);
+const latestSemanticGateInspection = semanticGateCommitInspections[0] ?? null;
+const trustedHistoricalSemanticGate =
+  latestSemanticGateInspection?.valid === true ? latestSemanticGateInspection : null;
+const latestSemanticGateCommit = trustedHistoricalSemanticGate?.commit ?? null;
 const semanticStagedPaths = execFileSync(
   "git",
   ["diff", "--cached", "--no-renames", "--name-only", "-z"],
@@ -652,15 +745,92 @@ const hasPendingSemanticGateTransition =
   semanticStagedPaths.length > 0 &&
   semanticStagedPathsAreAllowed &&
   semanticStagedPathsAreComplete;
+const hasCompleteWorkingSemanticGateTransition =
+  prd.semanticContractGate?.status === "done" && hasPendingSemanticGateTransition;
+if (
+  latestSemanticGateInspection !== null &&
+  !latestSemanticGateInspection.valid &&
+  !hasCompleteWorkingSemanticGateTransition
+) {
+  fail(
+    "latest reserved semantic-gate commit is invalid: " + latestSemanticGateInspection.commit +
+      " -> " + latestSemanticGateInspection.errors.join("; "),
+  );
+}
+let historicalSemanticGateReopenedAt = null;
+if (trustedHistoricalSemanticGate !== null) {
+  const laterCommits = execFileSync(
+    "git",
+    ["rev-list", "--reverse", trustedHistoricalSemanticGate.commit + "..HEAD"],
+    { cwd: root },
+  )
+    .toString("utf8")
+    .split(/\r?\n/)
+    .filter(Boolean);
+  for (const commit of laterCommits) {
+    try {
+      const laterPRD = JSON.parse(readCommit(commit, "prd.json").toString("utf8"));
+      if (laterPRD.semanticContractGate?.status === "in_review") {
+        historicalSemanticGateReopenedAt = commit;
+      }
+    } catch (error) {
+      fail("cannot inspect semantic-gate history at " + commit + ": " + error.message);
+    }
+  }
+}
+function semanticGateFingerprint(gate) {
+  return JSON.stringify({
+    status: gate?.status ?? null,
+    blocksAtom: gate?.blocksAtom ?? null,
+    required: gate?.required ?? null,
+    evidence: gate?.evidence ?? null,
+  });
+}
+const headPRD = JSON.parse(readCommit("HEAD", "prd.json").toString("utf8"));
+const indexPRD = JSON.parse(readIndex("prd.json").toString("utf8"));
+const headSemanticGateFingerprint = semanticGateFingerprint(headPRD.semanticContractGate);
+const indexSemanticGateFingerprint = semanticGateFingerprint(indexPRD.semanticContractGate);
+const workingSemanticGateFingerprint = semanticGateFingerprint(prd.semanticContractGate);
+const hasSemanticGateObjectTransition =
+  indexSemanticGateFingerprint !== headSemanticGateFingerprint ||
+  workingSemanticGateFingerprint !== indexSemanticGateFingerprint;
+const semanticGateControlPaths = [
+  ...semanticCandidateEvidence,
+  ...semanticAcceptedEvidence.slice(3),
+  "scripts/test-spec-trace-mutations.sh",
+];
+const stagedSemanticGateControlPaths = semanticStagedPaths.filter((path) =>
+  semanticGateControlPaths.includes(path)
+);
+const unstagedSemanticGateControlPaths = execFileSync(
+  "git",
+  ["diff", "--no-renames", "--name-only", "-z", "--", ...semanticGateControlPaths],
+  { cwd: root },
+)
+  .toString("utf8")
+  .split("\0")
+  .filter(Boolean);
+const untrackedSemanticGateControlPaths = execFileSync(
+  "git",
+  ["ls-files", "--others", "--exclude-standard", "-z", "--", ...semanticGateControlPaths],
+  { cwd: root },
+)
+  .toString("utf8")
+  .split("\0")
+  .filter(Boolean);
+const hasSemanticGateControlMutation =
+  stagedSemanticGateControlPaths.length > 0 ||
+  unstagedSemanticGateControlPaths.length > 0 ||
+  untrackedSemanticGateControlPaths.length > 0;
 const expectedSemanticEvidence = prd.semanticContractGate?.status === "done"
   ? semanticAcceptedEvidence
   : semanticCandidateEvidence;
 if (!sameOrder(prd.semanticContractGate?.evidence ?? [], expectedSemanticEvidence)) {
   fail("semanticContractGate evidence differs from its frozen status-specific manifest");
 }
-if (prd.semanticContractGate?.status === "in_review" && latestSemanticGateCommit === null) {
+if (prd.semanticContractGate?.status === "in_review") {
   const atom31 = prd.atoms.find((entry) => entry.id === "3.1");
-  if (atom31?.status !== "todo" || atom31?.evidence !== null) {
+  if (atom31?.status !== "done" && (atom31?.status !== "todo" || atom31?.evidence !== null)) {
     fail("Atom 3.1 must remain incomplete with no evidence while semanticContractGate is in_review");
   }
 }
@@ -670,18 +840,21 @@ for (const path of prd.semanticContractGate?.evidence ?? []) {
 if (prd.semanticContractGate?.status === "done") {
   const historicalGateCommit = latestSemanticGateCommit;
   const useWorkingSemanticGateCandidate =
-    historicalGateCommit === null || hasPendingSemanticGateTransition;
+    historicalGateCommit === null ||
+    hasPendingSemanticGateTransition ||
+    hasSemanticGateObjectTransition ||
+    hasSemanticGateControlMutation;
+  if (!useWorkingSemanticGateCandidate && historicalSemanticGateReopenedAt !== null) {
+    fail(
+      "semantic gate was reopened after the latest trusted acceptance at " +
+        historicalSemanticGateReopenedAt +
+        "; current done state requires a newer fully validated reserved acceptance commit",
+    );
+  }
   let subjectDigest = null;
   let stagedSubjectDigest = null;
   let stagedPayloadDigest = null;
   let stagedAllowlistDigest = null;
-  const receiptRequirements = new Map([
-    [".agent/reviews/semantic-contract-review.md", ["Verdict", "READY"]],
-    [".agent/reviews/acceptance-trace-review.md", ["Verdict", "READY"]],
-    [".agent/council/semantic-contract-shipping-council.md", ["Chairman verdict", "SHIP"]],
-    [".agent/reviews/semantic-contract-receiving-review.md", ["Verdict", "ACCEPT"]],
-    [".agent/evidence/semantic-contract-gate.md", ["Gate status", "ACCEPTED"]],
-  ]);
 
   if (useWorkingSemanticGateCandidate) {
     const acceptedStagedPaths = sorted(semanticStagedPaths);
@@ -702,10 +875,35 @@ if (prd.semanticContractGate?.status === "done") {
     if (!semanticStagedPathsAreAllowed || !semanticStagedPathsAreComplete) {
       fail("accepted semantic gate staged paths violate the required/allowed transition manifest");
     }
+    const unstagedPaths = execFileSync(
+      "git",
+      ["diff", "--no-renames", "--name-only", "-z"],
+      { cwd: root },
+    )
+      .toString("utf8")
+      .split("\0")
+      .filter(Boolean);
+    const untrackedPaths = execFileSync(
+      "git",
+      ["ls-files", "--others", "--exclude-standard", "-z"],
+      { cwd: root },
+    )
+      .toString("utf8")
+      .split("\0")
+      .filter(Boolean);
+    if (unstagedPaths.length > 0) {
+      fail("accepted semantic gate has unstaged tracked paths: " + sorted(unstagedPaths).join(", "));
+    }
+    if (untrackedPaths.length > 0) {
+      fail("accepted semantic gate has nonignored untracked paths: " + sorted(untrackedPaths).join(", "));
+    }
     for (const path of acceptedStagedPaths) {
       try {
         if (workingTreeMode(path) !== "100644" || readIndexMode(path) !== "100644") {
           fail(path + " must remain a regular non-executable file in the semantic gate transition");
+        }
+        if (!readFileSync(join(root, path)).equals(readIndex(path))) {
+          fail(path + " working bytes differ from the exact Git-index gate transition");
         }
       } catch {
         fail(path + " has no verifiable working-tree/index mode in the semantic gate transition");
@@ -804,7 +1002,7 @@ if (prd.semanticContractGate?.status === "done") {
     }
   }
 
-  for (const [path, [label, value]] of receiptRequirements) {
+  for (const [path, [label, value]] of semanticReceiptRequirements) {
     let body = null;
     try {
       body = useWorkingSemanticGateCandidate
@@ -1026,6 +1224,7 @@ const expectedPackageScripts = new Map([
     "openspec validate --all --strict --no-interactive && node scripts/verify-spec-trace.mjs",
   ],
   ["spec:trace", "node scripts/verify-spec-trace.mjs"],
+  ["spec:trace:test", "bash scripts/test-spec-trace-mutations.sh"],
   ["spec:list", "openspec list"],
 ]);
 if (!sameMembers(Object.keys(packageJSON.scripts ?? {}), expectedPackageScripts.keys())) {
@@ -1121,5 +1320,10 @@ if (failures.length > 0) {
 
 console.log(
   "Specification trace verified: 57 frozen criteria, 12 frozen assumptions, " +
-    "122 immutable OpenSpec scenarios, 21 frozen atoms, exact owners/evidence state.",
+    "122 immutable OpenSpec scenarios, 21 frozen atoms, exact ownership and structural evidence markers. " +
+    (prd.semanticContractGate?.status === "done"
+      ? "Semantic gate=done."
+      : trustedHistoricalSemanticGate === null
+        ? "Semantic gate=in_review; initial Atom 3.1 entry BLOCKED."
+        : "Semantic gate=in_review; trusted historical acceptance exists but the reopened gate remains unaccepted."),
 );

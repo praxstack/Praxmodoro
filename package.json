@@ -6,6 +6,7 @@
   "scripts": {
     "spec:validate": "openspec validate --all --strict --no-interactive && node scripts/verify-spec-trace.mjs",
     "spec:trace": "node scripts/verify-spec-trace.mjs",
+    "spec:trace:test": "bash scripts/test-spec-trace-mutations.sh",
     "spec:list": "openspec list"
   },
   "devDependencies": {

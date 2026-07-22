@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="refresh" content="15">
+  <meta name="color-scheme" content="dark light">
+  <meta name="description" content="Praxodoro OpenSpec product cycle, recurring delivery loop, quality gates, roadmap, and path to 100 percent completion.">
+  <title>Praxodoro Delivery OS · OpenSpec Product Cycle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --void: #07090a;
+      --graphite: #0d1112;
+      --graphite-2: #131819;
+      --graphite-3: #1b2222;
+      --glass: rgba(24, 30, 30, .72);
+      --glass-strong: rgba(31, 38, 37, .9);
+      --paper: #f3efe5;
+      --ink: #f5f1e8;
+      --ink-soft: #c5c1b8;
+      --ink-dim: #888e89;
+      --amber: #ffb84d;
+      --amber-hi: #ffd797;
+      --amber-low: #6c4617;
+      --green: #8ed3a6;
+      --green-low: #1e5435;
+      --red: #f08a7d;
+      --red-low: #5c2924;
+      --cyan: #8bcbd0;
+      --cyan-low: #224d51;
+      --steel: #a6b5b2;
+      --line: rgba(243, 239, 229, .1);
+      --line-strong: rgba(243, 239, 229, .2);
+      --shadow: 0 28px 80px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .06);
+      --bevel: inset 0 1px 0 rgba(255, 255, 255, .08), inset 0 -1px 0 rgba(0, 0, 0, .56), 0 16px 46px rgba(0, 0, 0, .26);
+      --radius-xl: 30px;
+      --radius-lg: 20px;
+      --radius-md: 13px;
+      --page: 1460px;
+      --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      --sans: "Manrope", -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 92px; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      font-family: var(--sans);
+      color: var(--ink);
+      background:
+        radial-gradient(1100px 620px at 8% -12%, rgba(255, 184, 77, .14), transparent 64%),
+        radial-gradient(900px 640px at 96% 12%, rgba(139, 203, 208, .1), transparent 62%),
+        linear-gradient(155deg, #07090a 0%, #101415 48%, #090b0c 100%);
+      line-height: 1.55;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .27;
+      background-image: linear-gradient(rgba(255,255,255,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.018) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 88%);
+    }
+    a { color: inherit; }
+    button, input { font: inherit; }
+    button { color: inherit; }
+    :focus-visible { outline: 3px solid var(--amber); outline-offset: 3px; }
+    .skip-link { position: fixed; left: 18px; top: -80px; z-index: 100; background: var(--paper); color: #111; padding: 12px 16px; border-radius: 8px; }
+    .skip-link:focus { top: 18px; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 9, 10, .72);
+      backdrop-filter: blur(28px) saturate(145%);
+      -webkit-backdrop-filter: blur(28px) saturate(145%);
+    }
+    .topbar-inner {
+      width: min(var(--page), calc(100% - 40px));
+      min-height: 72px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .implementation-progress {
+      width: min(var(--page), calc(100% - 40px));
+      margin: 0 auto;
+      padding: 0 0 13px;
+      display: grid;
+      grid-template-columns: minmax(220px, .72fr) minmax(320px, 1.6fr) minmax(210px, .62fr);
+      gap: 18px;
+      align-items: center;
+    }
+    .progress-summary,
+    .progress-phase {
+      min-width: 0;
+      display: flex;
+      align-items: baseline;
+      gap: 9px;
+      white-space: nowrap;
+    }
+    .progress-summary strong {
+      color: var(--amber-hi);
+      font: 700 20px/1 var(--mono);
+      letter-spacing: -.05em;
+    }
+    .progress-summary span,
+    .progress-phase span {
+      overflow: hidden;
+      color: var(--ink-dim);
+      font: 500 9px/1.3 var(--mono);
+      letter-spacing: .08em;
+      text-overflow: ellipsis;
+      text-transform: uppercase;
+    }
+    .progress-phase { justify-content: flex-end; }
+    .progress-phase i {
+      width: 7px;
+      height: 7px;
+      flex: 0 0 auto;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 12px rgba(255,184,77,.7);
+    }
+    .progress-rail-wrap { position: relative; padding: 7px 0; }
+    .progress-rail {
+      position: relative;
+      height: 13px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background:
+        repeating-linear-gradient(90deg, transparent 0 calc(25% - 1px), rgba(255,255,255,.12) calc(25% - 1px) 25%),
+        linear-gradient(#0b0f10, #161c1c);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,.72), 0 1px 0 rgba(255,255,255,.04);
+    }
+    .progress-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #9d5a17, var(--amber) 72%, var(--amber-hi));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.5), 0 0 18px rgba(255,184,77,.4);
+      transition: width 680ms cubic-bezier(.2,.75,.2,1);
+    }
+    .progress-scale {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 4px;
+      color: #69706d;
+      font: 500 7px/1 var(--mono);
+    }
+    .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .brand-mark {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 215, 151, .42);
+      background: radial-gradient(circle at 34% 28%, #ffe0a9, #e18e23 42%, #4b2d0f 72%);
+      box-shadow: inset 0 1px 4px rgba(255,255,255,.54), 0 0 28px rgba(255,184,77,.2);
+      color: #25170a;
+      font: 700 11px var(--mono);
+    }
+    .brand-copy { display: grid; line-height: 1.06; }
+    .brand-copy strong { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; }
+    .brand-copy span { color: var(--ink-dim); font: 500 10px var(--mono); letter-spacing: .08em; }
+    nav { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+    nav::-webkit-scrollbar { display: none; }
+    nav a {
+      padding: 9px 10px;
+      color: var(--ink-dim);
+      text-decoration: none;
+      border-radius: 8px;
+      font: 500 11px var(--mono);
+      white-space: nowrap;
+    }
+    nav a:hover, nav a[aria-current="true"] { color: var(--ink); background: rgba(255,255,255,.055); }
+    .print-btn {
+      flex: 0 0 auto;
+      border: 1px solid var(--line-strong);
+      border-radius: 9px;
+      padding: 8px 11px;
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+      font: 600 11px var(--mono);
+    }
+
+    main { width: min(var(--page), calc(100% - 40px)); margin: 0 auto; padding: 46px 0 100px; }
+    section { margin-top: 92px; }
+    .hero {
+      margin-top: 0;
+      position: relative;
+      min-height: 640px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(390px, .85fr);
+      gap: 50px;
+      align-items: center;
+      padding: 64px;
+      border: 1px solid var(--line-strong);
+      border-radius: 36px;
+      background: linear-gradient(145deg, rgba(39, 45, 43, .78), rgba(12, 16, 17, .86));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(34px) saturate(130%);
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 540px;
+      height: 540px;
+      right: -110px;
+      bottom: -250px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,184,77,.16);
+      box-shadow: 0 0 0 44px rgba(255,184,77,.025), 0 0 0 92px rgba(255,184,77,.016);
+    }
+    .eyebrow { margin: 0 0 18px; color: var(--amber-hi); font: 600 11px var(--mono); letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 0; max-width: 920px; font-size: clamp(46px, 6vw, 84px); line-height: .98; letter-spacing: -.055em; font-weight: 700; }
+    h1 em { color: var(--amber); font-style: normal; }
+    .hero-lede { max-width: 760px; margin: 26px 0 0; color: var(--ink-soft); font-size: clamp(17px, 1.7vw, 22px); line-height: 1.56; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 30px; }
+    .hero-actions a { padding: 12px 16px; border-radius: 10px; text-decoration: none; border: 1px solid var(--line-strong); font: 600 12px var(--mono); }
+    .hero-actions a:first-child { background: var(--amber); color: #24170a; border-color: transparent; box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 8px 28px rgba(255,184,77,.2); }
+
+    .control-console {
+      position: relative;
+      z-index: 2;
+      width: min(100%, 470px);
+      justify-self: end;
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 28px;
+      background: linear-gradient(155deg, #252c2a, #111617 70%);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.1), inset 0 -2px 8px rgba(0,0,0,.5), 0 32px 64px rgba(0,0,0,.45);
+    }
+    .console-head { display: flex; align-items: center; justify-content: space-between; color: var(--ink-dim); font: 500 10px var(--mono); text-transform: uppercase; letter-spacing: .1em; }
+    .lights { display: flex; gap: 6px; }
+    .light { width: 7px; height: 7px; border-radius: 50%; background: #35403e; box-shadow: inset 0 1px 2px rgba(0,0,0,.8); }
+    .light.on { background: var(--green); box-shadow: 0 0 10px rgba(142,211,166,.65); }
+    .dial-wrap { display: grid; grid-template-columns: 188px 1fr; gap: 22px; align-items: center; margin-top: 24px; }
+    .dial {
+      position: relative;
+      width: 188px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: conic-gradient(var(--amber) 0 68.5deg, #27302f 68.5deg 360deg);
+      box-shadow: inset 0 0 0 10px #111616, inset 0 0 0 12px rgba(255,255,255,.1), 0 18px 38px rgba(0,0,0,.55), 0 0 42px rgba(255,184,77,.08);
+    }
+    .dial::before { content: ""; position: absolute; inset: 18px; border-radius: 50%; background: radial-gradient(circle at 36% 28%, #29312f, #111616 62%); border: 1px solid rgba(255,255,255,.09); box-shadow: inset 0 12px 28px rgba(255,255,255,.025), inset 0 -12px 30px rgba(0,0,0,.48); }
+    .dial-copy { position: relative; z-index: 1; display: grid; text-align: center; }
+    .dial-copy strong { color: var(--amber-hi); font: 600 42px/1 var(--mono); letter-spacing: -.08em; }
+    .dial-copy span { margin-top: 8px; color: var(--ink-dim); font: 500 9px var(--mono); letter-spacing: .14em; text-transform: uppercase; }
+    .readouts { display: grid; gap: 10px; }
+    .readout { padding: 10px 12px; border: 1px solid rgba(255,255,255,.08); border-radius: 9px; background: rgba(0,0,0,.2); box-shadow: inset 0 1px 5px rgba(0,0,0,.5); }
+    .readout span { display: block; color: var(--ink-dim); font: 500 9px var(--mono); text-transform: uppercase; }
+    .readout strong { display: block; margin-top: 2px; font: 600 12px var(--mono); }
+    .readout.warn strong { color: var(--amber-hi); }
+    .console-foot { margin-top: 20px; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.08); color: var(--ink-soft); font-size: 12px; }
+    .path-plate { margin-top: 12px; padding: 12px; border: 1px solid rgba(139,203,208,.2); border-radius: 9px; background: rgba(139,203,208,.045); }
+    .path-plate span { display: block; color: var(--cyan); font: 600 9px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+    .path-plate code { display: block; margin-top: 6px; color: var(--ink-soft); font: 500 9px/1.5 var(--mono); overflow-wrap: anywhere; user-select: all; }
+
+    .section-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, 510px); gap: 30px; align-items: end; margin-bottom: 28px; }
+    .section-kicker { color: var(--amber); font: 600 10px var(--mono); letter-spacing: .15em; text-transform: uppercase; }
+    h2 { margin: 8px 0 0; font-size: clamp(32px, 4vw, 54px); line-height: 1.04; letter-spacing: -.04em; }
+    .section-head p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+    h3 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+    h4 { margin: 0; font-size: 14px; }
+    .muted { color: var(--ink-dim); }
+    .mono { font-family: var(--mono); }
+
+    .truth-strip { display: grid; grid-template-columns: 1.2fr repeat(3, .7fr); border: 1px solid var(--line-strong); border-radius: var(--radius-xl); overflow: hidden; background: var(--glass); box-shadow: var(--bevel); }
+    .truth-cell { padding: 26px; min-height: 154px; }
+    .truth-cell + .truth-cell { border-left: 1px solid var(--line); }
+    .truth-cell small { display: block; color: var(--ink-dim); font: 500 10px var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+    .truth-cell strong { display: block; margin-top: 16px; font-size: 36px; line-height: 1; letter-spacing: -.04em; }
+    .truth-cell p { margin: 12px 0 0; color: var(--ink-soft); font-size: 13px; }
+    .truth-cell.primary { background: linear-gradient(135deg, rgba(255,184,77,.11), transparent 62%); }
+    .truth-cell.primary strong { color: var(--amber-hi); }
+
+    .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; }
+    .legend button, .filter-btn {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.025);
+      padding: 8px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      color: var(--ink-dim);
+      font: 500 10px var(--mono);
+    }
+    .legend button[aria-pressed="true"], .filter-btn[aria-pressed="true"] { color: #24170a; border-color: transparent; background: var(--amber); }
+
+    .lifecycle {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(9, minmax(142px, 1fr));
+      gap: 10px;
+      overflow-x: auto;
+      padding: 14px 2px 22px;
+      scrollbar-color: var(--amber-low) transparent;
+    }
+    .stage {
+      position: relative;
+      min-height: 226px;
+      padding: 18px 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-md);
+      background: linear-gradient(155deg, rgba(37,45,43,.72), rgba(15,19,20,.88));
+      box-shadow: var(--bevel);
+    }
+    .stage:not(:last-child)::after { content: ""; position: absolute; right: -11px; top: 48px; width: 11px; height: 1px; background: var(--line-strong); }
+    .stage-num { display: inline-grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--line-strong); border-radius: 50%; color: var(--amber-hi); font: 600 10px var(--mono); background: rgba(0,0,0,.2); }
+    .stage h3 { margin-top: 18px; font-size: 15px; }
+    .stage p { margin: 8px 0 0; color: var(--ink-dim); font-size: 12px; }
+    .stage .owner { position: absolute; left: 16px; bottom: 15px; color: var(--cyan); font: 500 9px var(--mono); text-transform: uppercase; }
+    .stage.done { border-color: rgba(142,211,166,.28); }
+    .stage.done .stage-num { color: #102a1b; background: var(--green); border-color: transparent; }
+    .stage.current { border-color: rgba(255,184,77,.5); box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 30px rgba(255,184,77,.09); }
+
+    .loop-shell { display: grid; grid-template-columns: minmax(540px, 1.25fr) minmax(300px, .75fr); gap: 20px; }
+    .loop-board, .detail-panel, .panel {
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-xl);
+      background: var(--glass);
+      box-shadow: var(--bevel);
+      backdrop-filter: blur(22px);
+    }
+    .loop-board { padding: 28px; }
+    .loop-grid { display: grid; grid-template-columns: repeat(4, minmax(130px, 1fr)); gap: 12px; }
+    .loop-step {
+      min-height: 150px;
+      padding: 16px;
+      text-align: left;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255,255,255,.025);
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+    .loop-step:hover { transform: translateY(-2px); border-color: rgba(255,184,77,.34); }
+    .loop-step[aria-selected="true"] { border-color: var(--amber); background: rgba(255,184,77,.09); }
+    .loop-step b { display: block; color: var(--amber-hi); font: 600 10px var(--mono); }
+    .loop-step strong { display: block; margin-top: 16px; font-size: 14px; }
+    .loop-step span { display: block; margin-top: 7px; color: var(--ink-dim); font-size: 11px; }
+    .loop-step[data-class="human"] b { color: var(--cyan); }
+    .loop-step[data-class="qa"] b { color: var(--green); }
+    .loop-step[data-class="automation"] b { color: var(--amber-hi); }
+    .detail-panel { position: sticky; top: 94px; align-self: start; min-height: 488px; padding: 28px; }
+    .detail-label { color: var(--amber); font: 600 10px var(--mono); letter-spacing: .12em; text-transform: uppercase; }
+    #detail-title { margin-top: 16px; font-size: 27px; }
+    #detail-purpose { color: var(--ink-soft); }
+    .detail-block { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+    .detail-block small { color: var(--ink-dim); font: 500 9px var(--mono); text-transform: uppercase; }
+    .detail-block p { margin: 7px 0 0; font-size: 13px; }
+    .return-loop { margin-top: 24px; padding: 14px; border-left: 3px solid var(--red); background: rgba(240,138,125,.06); color: var(--ink-soft); font-size: 12px; }
+
+    .gate-table-wrap, .roadmap-wrap { overflow-x: auto; border: 1px solid var(--line-strong); border-radius: var(--radius-xl); background: rgba(15,19,20,.72); box-shadow: var(--bevel); }
+    table { width: 100%; border-collapse: collapse; min-width: 1040px; }
+    th { padding: 15px 16px; text-align: left; color: var(--ink-dim); background: rgba(255,255,255,.025); border-bottom: 1px solid var(--line-strong); font: 600 9px var(--mono); letter-spacing: .09em; text-transform: uppercase; }
+    td { padding: 16px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 12px; }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: rgba(255,255,255,.018); }
+    td strong { display: block; font-size: 13px; }
+    td p { margin: 5px 0 0; color: var(--ink-dim); }
+    .gate-id { color: var(--amber-hi); font: 600 11px var(--mono); }
+    .badge { display: inline-flex; align-items: center; min-height: 22px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--line); font: 500 9px var(--mono); white-space: nowrap; }
+    .badge.auto { color: var(--amber-hi); background: rgba(255,184,77,.06); }
+    .badge.human { color: var(--cyan); background: rgba(139,203,208,.06); }
+    .badge.qa { color: var(--green); background: rgba(142,211,166,.06); }
+    .badge.block { color: var(--red); background: rgba(240,138,125,.07); }
+    .badge.done { color: var(--green); }
+
+    .review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .review-card { position: relative; min-height: 260px; padding: 24px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: linear-gradient(150deg, rgba(35,42,40,.7), rgba(14,18,19,.88)); box-shadow: var(--bevel); }
+    .review-card::before { content: ""; position: absolute; top: 18px; right: 18px; width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px rgba(142,211,166,.5); }
+    .review-card .tier { color: var(--amber); font: 600 10px var(--mono); }
+    .review-card h3 { margin-top: 18px; }
+    .review-card ul { margin: 14px 0 0; padding-left: 18px; color: var(--ink-soft); font-size: 12px; }
+    .review-card li + li { margin-top: 7px; }
+    .review-card .use { position: absolute; left: 24px; bottom: 20px; right: 24px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-dim); font: 500 9px var(--mono); text-transform: uppercase; }
+
+    .qa-grid { display: grid; grid-template-columns: minmax(0, .88fr) minmax(0, 1.12fr); gap: 20px; }
+    .qa-stack { display: grid; gap: 9px; padding: 26px; border: 1px solid var(--line-strong); border-radius: var(--radius-xl); background: var(--glass); box-shadow: var(--bevel); }
+    .qa-layer { position: relative; min-height: 62px; display: grid; grid-template-columns: 62px 1fr auto; align-items: center; gap: 14px; padding: 12px 16px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.025); }
+    .qa-layer::before { content: ""; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 4px; background: var(--cyan); }
+    .qa-layer:nth-child(-n+3)::before { background: var(--amber); }
+    .qa-layer:nth-last-child(-n+3)::before { background: var(--green); }
+    .qa-layer b { font: 600 10px var(--mono); color: var(--ink-dim); }
+    .qa-layer strong { font-size: 13px; }
+    .qa-layer span { color: var(--ink-dim); font: 500 9px var(--mono); }
+    .qa-notes { padding: 30px; border: 1px solid var(--line-strong); border-radius: var(--radius-xl); background: linear-gradient(145deg, rgba(255,184,77,.075), rgba(20,25,25,.78) 50%); box-shadow: var(--bevel); }
+    .qa-notes h3 { font-size: 25px; }
+    .qa-rule { display: grid; grid-template-columns: 116px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+    .qa-rule:last-child { border-bottom: 0; }
+    .qa-rule b { color: var(--amber-hi); font: 600 10px var(--mono); text-transform: uppercase; }
+    .qa-rule p { margin: 0; color: var(--ink-soft); font-size: 13px; }
+
+    .roadmap { display: grid; gap: 12px; padding: 26px; }
+    .wave { display: grid; grid-template-columns: 110px 210px minmax(240px, 1fr) 170px; gap: 20px; align-items: center; min-height: 84px; padding: 15px 18px; border: 1px solid var(--line); border-radius: 13px; background: rgba(255,255,255,.02); }
+    .wave-code { color: var(--amber-hi); font: 600 10px var(--mono); }
+    .wave h3 { font-size: 14px; }
+    .wave p { margin: 3px 0 0; color: var(--ink-dim); font-size: 11px; }
+    .atom-list { font: 500 11px var(--mono); color: var(--ink-soft); }
+    .wave-status { text-align: right; }
+    .wave.current { border-color: rgba(255,184,77,.42); background: rgba(255,184,77,.055); }
+    .wave.done { opacity: .82; border-color: rgba(142,211,166,.2); }
+
+    .first-five { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+    .first-task { min-height: 270px; padding: 22px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--glass); box-shadow: var(--bevel); }
+    .first-task .num { color: var(--amber); font: 600 11px var(--mono); }
+    .first-task h3 { margin-top: 28px; font-size: 16px; }
+    .first-task p { color: var(--ink-dim); font-size: 12px; }
+    .first-task ul { margin: 14px 0 0; padding-left: 16px; color: var(--ink-soft); font-size: 11px; }
+    .first-task li + li { margin-top: 6px; }
+
+    .packet { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .packet-item { min-height: 122px; padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.022); }
+    .packet-item b { color: var(--amber-hi); font: 600 10px var(--mono); }
+    .packet-item strong { display: block; margin-top: 11px; font-size: 13px; }
+    .packet-item p { margin: 5px 0 0; color: var(--ink-dim); font-size: 11px; }
+
+    .raci { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .role { min-height: 220px; padding: 20px; border: 1px solid var(--line); border-radius: 15px; background: rgba(255,255,255,.024); }
+    .role b { color: var(--cyan); font: 600 10px var(--mono); }
+    .role h3 { margin-top: 14px; font-size: 15px; }
+    .role p { color: var(--ink-dim); font-size: 11px; }
+    .role strong { display: block; margin-top: 18px; color: var(--ink-soft); font-size: 11px; }
+
+    .green-board { display: grid; grid-template-columns: 380px 1fr; gap: 24px; padding: 30px; border: 1px solid rgba(142,211,166,.34); border-radius: var(--radius-xl); background: linear-gradient(140deg, rgba(142,211,166,.075), rgba(16,21,20,.84) 42%); box-shadow: var(--shadow); }
+    .green-meter { min-height: 360px; display: grid; place-items: center; padding: 24px; border: 1px solid var(--line); border-radius: 24px; background: rgba(0,0,0,.18); }
+    .meter-ring { width: 230px; aspect-ratio: 1; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--green) 0 68.5deg, #222b29 68.5deg); box-shadow: inset 0 0 0 16px #101514, 0 20px 50px rgba(0,0,0,.35); }
+    .meter-inner { width: 172px; aspect-ratio: 1; border-radius: 50%; display: grid; place-items: center; text-align: center; background: radial-gradient(circle at 36% 28%, #2a3431, #111615 62%); border: 1px solid rgba(255,255,255,.08); }
+    .meter-inner strong { display: block; color: var(--green); font: 600 45px/1 var(--mono); }
+    .meter-inner span { display: block; margin-top: 8px; color: var(--ink-dim); font: 500 9px var(--mono); text-transform: uppercase; letter-spacing: .12em; }
+    .green-copy h3 { font-size: 30px; }
+    .green-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 22px; }
+    .green-item { min-height: 92px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.024); }
+    .green-item b { display: block; color: var(--green); font: 600 9px var(--mono); text-transform: uppercase; }
+    .green-item span { display: block; margin-top: 7px; color: var(--ink-soft); font-size: 11px; }
+
+    details { border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.022); }
+    details + details { margin-top: 10px; }
+    summary { cursor: pointer; padding: 17px 19px; font-weight: 600; font-size: 13px; }
+    details[open] summary { border-bottom: 1px solid var(--line); }
+    .details-body { padding: 18px; }
+    .command { display: flex; justify-content: space-between; gap: 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: rgba(0,0,0,.2); font: 500 10px var(--mono); overflow-x: auto; }
+    .command + .command { margin-top: 8px; }
+    .file-links { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .file-links a { padding: 12px 14px; border: 1px solid var(--line); border-radius: 9px; color: var(--ink-soft); text-decoration: none; font: 500 10px var(--mono); overflow-wrap: anywhere; }
+    .file-links a:hover { border-color: var(--amber-low); color: var(--ink); }
+
+    .editable-note { margin-top: 22px; min-height: 88px; padding: 18px; border: 1px dashed rgba(255,184,77,.34); border-radius: 13px; color: var(--ink-dim); background: rgba(255,184,77,.025); font-size: 12px; }
+    footer { margin-top: 100px; padding: 26px 0 10px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; gap: 20px; color: var(--ink-dim); font: 500 10px var(--mono); }
+
+    [data-filter-hidden="true"] { display: none !important; }
+
+    @media (max-width: 1200px) {
+      .hero { grid-template-columns: 1fr; min-height: 0; }
+      .control-console { justify-self: start; }
+      .truth-strip { grid-template-columns: repeat(2, 1fr); }
+      .truth-cell:nth-child(3) { border-left: 0; border-top: 1px solid var(--line); }
+      .truth-cell:nth-child(4) { border-top: 1px solid var(--line); }
+      .loop-shell { grid-template-columns: 1fr; }
+      .detail-panel { position: static; min-height: 0; }
+      .review-grid { grid-template-columns: 1fr 1fr; }
+      .first-five { grid-template-columns: repeat(3, 1fr); }
+      .packet, .raci { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 900px) {
+      .topbar-inner { align-items: flex-start; flex-direction: column; padding: 12px 0 8px; gap: 8px; }
+      .implementation-progress { grid-template-columns: 1fr auto; gap: 8px 14px; }
+      .progress-rail-wrap { grid-column: 1 / -1; grid-row: 2; }
+      nav { width: 100%; }
+      .print-btn { position: absolute; right: 20px; top: 12px; }
+      main { padding-top: 24px; }
+      .hero { padding: 36px 28px; }
+      .section-head { grid-template-columns: 1fr; align-items: start; }
+      .loop-grid { grid-template-columns: repeat(3, 1fr); }
+      .qa-grid { grid-template-columns: 1fr; }
+      .green-board { grid-template-columns: 1fr; }
+      .green-meter { min-height: 300px; }
+      .wave { grid-template-columns: 92px 1fr; }
+      .atom-list, .wave-status { grid-column: 2; text-align: left; }
+      .packet, .raci { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      main, .topbar-inner, .implementation-progress { width: min(100% - 24px, var(--page)); }
+      .implementation-progress { grid-template-columns: 1fr; gap: 5px; padding-bottom: 10px; }
+      .progress-rail-wrap { grid-column: 1; grid-row: 2; }
+      .progress-phase { grid-row: 3; justify-content: flex-start; }
+      section { margin-top: 70px; }
+      .hero { padding: 28px 20px; border-radius: 24px; }
+      h1 { font-size: 42px; }
+      .dial-wrap { grid-template-columns: 1fr; }
+      .dial { width: 176px; }
+      .truth-strip { grid-template-columns: 1fr; }
+      .truth-cell + .truth-cell { border-left: 0; border-top: 1px solid var(--line); }
+      .loop-board { padding: 18px; }
+      .loop-grid { grid-template-columns: repeat(2, 1fr); }
+      .review-grid, .first-five, .packet, .raci, .green-list, .file-links { grid-template-columns: 1fr; }
+      .qa-layer { grid-template-columns: 50px 1fr; }
+      .qa-layer span { grid-column: 2; }
+      footer { flex-direction: column; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { transition-duration: .001ms !important; animation-duration: .001ms !important; animation-iteration-count: 1 !important; }
+    }
+    @media (prefers-contrast: more) {
+      :root { --line: rgba(255,255,255,.28); --line-strong: rgba(255,255,255,.48); --ink-dim: #c5c9c6; }
+    }
+    @media print {
+      body { background: white; color: #111; }
+      body::before, .topbar, .hero-actions, .legend { display: none !important; }
+      main { width: 100%; padding: 0; }
+      .hero, .panel, .loop-board, .detail-panel, .gate-table-wrap, .roadmap-wrap, .green-board, .review-card, .first-task, .qa-stack, .qa-notes { color: #111; background: white; box-shadow: none; break-inside: avoid; }
+      .muted, p, td p, .stage p, .first-task p, .wave p { color: #444 !important; }
+      section { margin-top: 42px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to plan</a>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#overview" aria-label="Praxodoro Delivery OS home">
+        <span class="brand-mark" aria-hidden="true">PX</span>
+        <span class="brand-copy"><strong>Praxodoro Delivery OS</strong><span>OpenSpec operating model · v1.0</span></span>
+      </a>
+      <nav aria-label="Plan sections">
+        <a href="#lifecycle">Lifecycle</a>
+        <a href="#loop">Task loop</a>
+        <a href="#gates">Gates</a>
+        <a href="#qa">QA</a>
+        <a href="#roadmap">Roadmap</a>
+        <a href="#green">100% green</a>
+      </nav>
+      <button class="print-btn" type="button" onclick="window.print()">Print plan</button>
+    </div>
+    <div
+      class="implementation-progress"
+      id="implementation-progress"
+      role="progressbar"
+      aria-label="Accepted OpenSpec implementation atoms"
+      aria-valuemin="0"
+      aria-valuemax="21"
+      aria-valuenow="4"
+      aria-valuetext="4 of 21 implementation atoms accepted, 19 percent"
+    >
+      <div class="progress-summary"><strong id="progress-percent">19%</strong><span id="progress-count">4 accepted · 17 remaining</span></div>
+      <div class="progress-rail-wrap" aria-hidden="true">
+        <div class="progress-rail"><div class="progress-fill" id="progress-fill"></div></div>
+        <div class="progress-scale"><span>0</span><span>25</span><span>50</span><span>75</span><span>100%</span></div>
+      </div>
+      <div class="progress-phase"><i aria-hidden="true"></i><span id="progress-phase">Paused checkpoint · semantic gate HOLD · auto-refresh 15s</span></div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="overview" aria-labelledby="hero-title">
+      <div>
+        <p class="eyebrow">Enterprise product cycle · 22 July 2026</p>
+        <h1 id="hero-title" data-pretext>From <em>OpenSpec</em> to a product that deserves green.</h1>
+        <p class="hero-lede" data-pretext>One system for product intent, atomic implementation, adversarial review, QA, smoke evidence, release readiness, and archive. OpenSpec controls meaning. Tests control behavior. Review controls judgment. Evidence controls completion.</p>
+        <div class="hero-actions">
+          <a href="#first">Start with the next five actions</a>
+          <a href="#loop">Inspect the recurring atom loop</a>
+        </div>
+      </div>
+      <aside class="control-console" aria-label="Current delivery status">
+        <div class="console-head"><span>Canonical delivery console</span><span class="lights" aria-label="System indicators"><i class="light on"></i><i class="light on"></i><i class="light"></i></span></div>
+        <div class="dial-wrap">
+          <div class="dial" aria-label="19 percent of implementation atoms accepted"><div class="dial-copy"><strong>19%</strong><span>accepted</span></div></div>
+          <div class="readouts">
+            <div class="readout"><span>Branch</span><strong>feat/native-app</strong></div>
+            <div class="readout"><span>Atoms</span><strong>4 done · 17 queued</strong></div>
+            <div class="readout warn"><span>Current gate</span><strong>PAUSED · Council receipt HOLD</strong></div>
+            <div class="readout"><span>Next atom</span><strong>3.1 session model</strong></div>
+          </div>
+        </div>
+        <div class="console-foot" data-pretext><strong>Paused checkpoint:</strong> the user stopped the review loop before semantic acceptance. The implementation and six diagnostic-bound regressions are green, but the council unanimously HOLDed the required trace receipt because several historical checkpoints still use current tense, including a superseded first-parent statement. No acceptance was issued, Atom 3.1 remains untouched, and honest product completion remains 4 of 21 (19%). Resume by cleaning only that receipt chronology, rerunning the council, regenerating receiving digests, and earning a fresh independent ACCEPT.</div>
+        <div class="path-plate"><span>Canonical self-contained HTML · no server required</span><code>/Users/prax/Development/Praxodoro/finalized.html</code></div>
+      </aside>
+    </section>
+
+    <section aria-labelledby="truth-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Operating truth</span><h2 id="truth-title">Four different kinds of green</h2></div>
+        <p data-pretext>Enterprise teams fail when “the document exists,” “the code compiles,” and “the feature is ready” are treated as the same statement. This plan keeps them separate.</p>
+      </div>
+      <div class="truth-strip">
+        <div class="truth-cell primary"><small>Planning green</small><strong>4 / 4</strong><p>Proposal, capability specs, technical design, and atomized task plan exist and pass strict OpenSpec validation.</p></div>
+        <div class="truth-cell"><small>Implementation green</small><strong>4 / 21</strong><p>Only accepted atoms count. Candidate documents and mocks do not move this number.</p></div>
+        <div class="truth-cell"><small>Current trace</small><strong>57 · 122</strong><p>Frozen global criteria and immutable OpenSpec scenarios are machine traced to 21 owners.</p></div>
+        <div class="truth-cell"><small>Release green</small><strong>0 / 1</strong><p>No release candidate exists until signed smoke, QA, privacy, performance, CI, and final validation pass.</p></div>
+      </div>
+    </section>
+
+    <section id="lifecycle" aria-labelledby="lifecycle-title">
+      <div class="section-head">
+        <div><span class="section-kicker">The product operating system</span><h2 id="lifecycle-title">OpenSpec owns the lifecycle, not just the paperwork</h2></div>
+        <p data-pretext>The canonical flow is proposal → specs → design → tasks → apply → verify → release → archive → learn. Every arrow has an entry gate, an owner, and durable evidence.</p>
+      </div>
+      <div class="lifecycle" aria-label="Product lifecycle stages">
+        <article class="stage done"><span class="stage-num">01</span><h3>Product intent</h3><p>Problem, users, non-goals, evidence, edition effect, success measures.</p><span class="owner">PM · Research</span></article>
+        <article class="stage done"><span class="stage-num">02</span><h3>Proposal</h3><p>Why now, scope boundary, risks, measurable value, rollback premise.</p><span class="owner">PM · Tech lead</span></article>
+        <article class="stage done"><span class="stage-num">03</span><h3>Capability specs</h3><p>Binary EARS requirements plus happy, error, privacy, accessibility, and interruption scenarios.</p><span class="owner">Product · QA · Eng</span></article>
+        <article class="stage done"><span class="stage-num">04</span><h3>Design</h3><p>Architecture, data boundaries, alternatives, dependencies, UX states, verification.</p><span class="owner">Eng · Design · Privacy</span></article>
+        <article class="stage done"><span class="stage-num">05</span><h3>Atomic tasks</h3><p>Exact files, RED proof, minimal implementation, GREEN, smoke, review, commit.</p><span class="owner">Tech lead · QA</span></article>
+        <article class="stage current"><span class="stage-num">06</span><h3>Apply</h3><p>Implement one dependency-ready atom through the recurring delivery loop.</p><span class="owner">Implementer</span></article>
+        <article class="stage"><span class="stage-num">07</span><h3>Verify</h3><p>Focused and full suites, signed smoke, QA matrices, specialist evidence.</p><span class="owner">CI · QA · Reviewers</span></article>
+        <article class="stage"><span class="stage-num">08</span><h3>Release</h3><p>Clean build, release checklist, rollback, handoff, product acceptance.</p><span class="owner">Release manager</span></article>
+        <article class="stage"><span class="stage-num">09</span><h3>Archive + learn</h3><p>Archive OpenSpec only after evidence closes; retain decisions and feed failures forward.</p><span class="owner">Product ops</span></article>
+      </div>
+    </section>
+
+    <section id="loop" aria-labelledby="loop-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Repeated for every accepted atom</span><h2 id="loop-title">The inner delivery loop</h2></div>
+        <p data-pretext>Click any step. A failed exit condition returns the atom to the earliest invalid stage. Nothing becomes “done” because time was spent on it.</p>
+      </div>
+      <div class="legend" aria-label="Filter delivery steps">
+        <button type="button" class="filter-btn" data-filter="all" aria-pressed="true">All steps</button>
+        <button type="button" class="filter-btn" data-filter="automation" aria-pressed="false">Automation</button>
+        <button type="button" class="filter-btn" data-filter="human" aria-pressed="false">Human review</button>
+        <button type="button" class="filter-btn" data-filter="qa" aria-pressed="false">QA</button>
+      </div>
+      <div class="loop-shell">
+        <div class="loop-board">
+          <div class="loop-grid" role="tablist" aria-label="Recurring delivery loop">
+            <button class="loop-step" role="tab" aria-selected="true" data-class="human" data-step="0"><b>01 · HUMAN</b><strong>Pull a ready atom</strong><span>Dependencies, scope, owner, risk tier.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="human" data-step="1"><b>02 · HUMAN</b><strong>Confirm spec delta</strong><span>Scenario IDs, non-goals, UX and data states.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="human" data-step="2"><b>03 · HUMAN</b><strong>Readiness review</strong><span>Product, design, QA, eng, privacy as needed.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="automation" data-step="3"><b>04 · AUTOMATION</b><strong>Prove RED</strong><span>Fail for the named missing behavior.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="human" data-step="4"><b>05 · BUILD</b><strong>Minimal implementation</strong><span>Smallest complete slice inside the atom.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="automation" data-step="5"><b>06 · AUTOMATION</b><strong>Focused GREEN</strong><span>Named tests, compile, format, static checks.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="automation" data-step="6"><b>07 · AUTOMATION</b><strong>Integration GREEN</strong><span>Full suite, build, generation, trace, secrets.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="qa" data-step="7"><b>08 · QA</b><strong>Smoke the user outcome</strong><span>Signed app, isolated state, exact workflow.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="human" data-step="8"><b>09 · REVIEW</b><strong>Multi-axis review</strong><span>Code, OpenSpec trace, UX, privacy, security.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="qa" data-step="9"><b>10 · QA</b><strong>Fix and regress</strong><span>Reproduce findings, repair, rerun blast radius.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="human" data-step="10"><b>11 · HUMAN</b><strong>Receiving gate</strong><span>Independent exact-index audit and evidence.</span></button>
+            <button class="loop-step" role="tab" aria-selected="false" data-class="automation" data-step="11"><b>12 · MERGE TRAIN</b><strong>Commit + reconcile</strong><span>Exact allowlist, commit, post-commit proof, ledger.</span></button>
+          </div>
+        </div>
+        <aside class="detail-panel" aria-live="polite">
+          <span class="detail-label" id="detail-label">Step 01 · Human gate</span>
+          <h3 id="detail-title">Pull one dependency-ready atom</h3>
+          <p id="detail-purpose">The canonical branch accepts one independently reviewable slice. Parallel teams can prepare later work, but they cannot claim or merge it out of order.</p>
+          <div class="detail-block"><small>Entry evidence</small><p id="detail-entry">Previous dependency atoms are accepted; the working tree is clean; scope and risk tier are named.</p></div>
+          <div class="detail-block"><small>Exit condition</small><p id="detail-exit">Atom status moves to doing with one owner, exact files, dependencies, acceptance scenarios, review tier, and rollback boundary.</p></div>
+          <div class="detail-block"><small>Primary owner</small><p id="detail-owner">Tech lead + implementer</p></div>
+          <div class="return-loop"><strong>Failure rule:</strong> a red gate is routing information. Return to the earliest step whose assumption is now false, repair it, and replay every downstream gate.</div>
+        </aside>
+      </div>
+    </section>
+
+    <section id="gates" aria-labelledby="gates-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Blocking quality system</span><h2 id="gates-title">OpenSpec and delivery gates</h2></div>
+        <p data-pretext>Automate objective facts. Use humans for ambiguity, user impact, and irreversible decisions. A gate has one binary output: pass or return with named evidence.</p>
+      </div>
+      <div class="gate-table-wrap">
+        <table>
+          <thead><tr><th>Gate</th><th>Question</th><th>Required evidence</th><th>Control</th><th>When</th><th>Failure route</th></tr></thead>
+          <tbody>
+            <tr><td><span class="gate-id">G0</span><strong>Product intake</strong></td><td>Is this the right problem and success measure?</td><td>Research claims, user outcome, non-goals, edition effect, metric.</td><td><span class="badge human">Human</span></td><td>New capability/change</td><td>Back to discovery; do not draft tasks.</td></tr>
+            <tr><td><span class="gate-id">G1</span><strong>Proposal ready</strong></td><td>Is scope bounded and valuable?</td><td>OpenSpec proposal, assumptions, risks, rollback premise.</td><td><span class="badge human">PM + Eng</span></td><td>Before specs</td><td>Rewrite proposal or split the change.</td></tr>
+            <tr><td><span class="gate-id">G2</span><strong>Semantic ready</strong></td><td>Can every behavior be decided without invention?</td><td>EARS criteria, stable scenario IDs, errors, interruption, privacy, accessibility.</td><td><span class="badge human">Product + QA</span> <span class="badge auto">Trace</span></td><td>Before implementation</td><td>Repair contract and rerun semantic review.</td></tr>
+            <tr><td><span class="gate-id">G3</span><strong>Design ready</strong></td><td>Are architecture, data, UX states, and dependencies explicit?</td><td>Design doc, alternatives, diagrams, threat/data review, visual evidence.</td><td><span class="badge human">Eng + Design</span></td><td>Before tasking</td><td>Resolve design decision or record ADR.</td></tr>
+            <tr><td><span class="gate-id">G4</span><strong>Atom ready</strong></td><td>Can one engineer finish and prove this slice independently?</td><td>Exact files, RED, minimal work, GREEN, smoke, reviewers, commit.</td><td><span class="badge human">Tech lead + QA</span></td><td>Before coding</td><td>Split/reorder atom; repair dependency DAG.</td></tr>
+            <tr><td><span class="gate-id">G5</span><strong>RED authentic</strong></td><td>Did the test fail for the missing behavior?</td><td>Command, exit code, failure text, no zero-test false red.</td><td><span class="badge auto">Automation</span></td><td>Every behavior atom</td><td>Fix test harness before production code.</td></tr>
+            <tr><td><span class="gate-id">G6</span><strong>Engineering green</strong></td><td>Does code pass focused and blast-radius checks?</td><td>Focused/full tests, build, format, concurrency, generation, secret scan.</td><td><span class="badge auto">CI</span></td><td>Every candidate</td><td>Return to implementation; no review request.</td></tr>
+            <tr><td><span class="gate-id">G7</span><strong>Review accepted</strong></td><td>Is the change correct, traceable, maintainable, and safe?</td><td>Code review, OpenSpec review, risk-tier specialists, resolved findings.</td><td><span class="badge human">Independent</span></td><td>Before staging</td><td>Repair finding and replay G6 onward.</td></tr>
+            <tr><td><span class="gate-id">G8</span><strong>QA accepted</strong></td><td>Does the signed product produce the promised user outcome?</td><td>Smoke receipt, accessibility, visual, privacy, performance as applicable.</td><td><span class="badge qa">QA</span></td><td>Per atom + milestone</td><td>File repro; route to spec, design, or code.</td></tr>
+            <tr><td><span class="gate-id">G9</span><strong>Receiving accepted</strong></td><td>Is the exact staged index the reviewed candidate?</td><td>Allowlist, hashes, receipts, clean diff, state-ledger transition.</td><td><span class="badge human">Receiver</span> <span class="badge auto">Hash</span></td><td>Before commit</td><td>Unstage drift; rebuild reviewed candidate.</td></tr>
+            <tr><td><span class="gate-id">G10</span><strong>Release + archive</strong></td><td>Is the whole change releasable, supportable, and closed?</td><td>Clean CI, release smoke, rollback, docs, all criteria mapped, archive readiness.</td><td><span class="badge human">Release</span> <span class="badge auto">CI</span></td><td>Milestone end</td><td>Hold release; keep OpenSpec change active.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reviews" aria-labelledby="reviews-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Review without ceremony theatre</span><h2 id="reviews-title">Risk-tiered review model</h2></div>
+        <p data-pretext>Not every atom needs a council. Every atom needs independent review. The review depth rises with semantic, privacy, timing, data-loss, accessibility, or release risk.</p>
+      </div>
+      <div class="review-grid">
+        <article class="review-card"><span class="tier">TIER 1 · STANDARD</span><h3>Low-risk, locally reversible</h3><ul><li>One code reviewer</li><li>Machine OpenSpec trace</li><li>Focused + full CI</li><li>Task-level smoke</li></ul><span class="use">Examples · scaffolding, isolated visual tokens, docs-only correction</span></article>
+        <article class="review-card"><span class="tier">TIER 2 · SENSITIVE</span><h3>Behavior or user-trust boundary</h3><ul><li>Code reviewer + domain reviewer</li><li>QA acceptance</li><li>Independent receiving audit</li><li>Specialist review where affected</li></ul><span class="use">Examples · reducer, time, persistence, entitlement, notifications, accessibility</span></article>
+        <article class="review-card"><span class="tier">TIER 3 · PROGRAM</span><h3>Semantic or release decision</h3><ul><li>Blind multi-seat review</li><li>Adversarial second round</li><li>Independent chair / release authority</li><li>Digest-bound exact candidate</li></ul><span class="use">Examples · closed domain contract, data deletion, final release readiness</span></article>
+      </div>
+    </section>
+
+    <section id="qa" aria-labelledby="qa-title">
+      <div class="section-head">
+        <div><span class="section-kicker">QA is present before code exists</span><h2 id="qa-title">Quality engineering across the whole cycle</h2></div>
+        <p data-pretext>QA co-authors scenarios, tests implementation slices, challenges integration, and owns release confidence. Smoke testing is a thin repeated proof, not a substitute for QA.</p>
+      </div>
+      <div class="qa-grid">
+        <div class="qa-stack" aria-label="QA layers">
+          <div class="qa-layer"><b>Q0</b><strong>Scenario design</strong><span>Before code</span></div>
+          <div class="qa-layer"><b>Q1</b><strong>Unit + pure model tests</strong><span>Every edit</span></div>
+          <div class="qa-layer"><b>Q2</b><strong>Contract + trace verification</strong><span>Every candidate</span></div>
+          <div class="qa-layer"><b>Q3</b><strong>Repository + actor integration</strong><span>Every PR</span></div>
+          <div class="qa-layer"><b>Q4</b><strong>Signed UI automation</strong><span>Every UI atom</span></div>
+          <div class="qa-layer"><b>Q5</b><strong>Accessibility + visual matrix</strong><span>Milestone + UI diff</span></div>
+          <div class="qa-layer"><b>Q6</b><strong>Privacy, security, energy, performance</strong><span>Nightly + release</span></div>
+          <div class="qa-layer"><b>Q7</b><strong>Exploratory + clean-machine release</strong><span>Release candidate</span></div>
+        </div>
+        <div class="qa-notes">
+          <h3>Where smoke testing belongs</h3>
+          <div class="qa-rule"><b>Local atom</b><p>Immediately after focused and full green. Launch the exact Debug app with isolated state and prove the atom’s smallest user-visible outcome.</p></div>
+          <div class="qa-rule"><b>Pull request</b><p>Run the stable signed-app smoke plus affected-flow smoke. A UI runner timeout is red, not “probably okay.”</p></div>
+          <div class="qa-rule"><b>Nightly</b><p>Exercise sleep/wake, relaunch, reduced effects, multiple macOS configurations, data boundaries, and longer energy observation.</p></div>
+          <div class="qa-rule"><b>Milestone</b><p>Run the complete keyboard and VoiceOver focus loop from both main window and menu bar using a clean app-state root.</p></div>
+          <div class="qa-rule"><b>Release</b><p>Install the generated app on a clean account, run offline, inspect networking/entitlements/logging, validate rollback, and retain signed evidence.</p></div>
+          <div class="qa-rule"><b>Post-release</b><p>Run a tiny canary checklist against the shipped artifact. Any regression opens a new OpenSpec change or incident, never a silent patch.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="packet" aria-labelledby="packet-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Definition of a task</span><h2 id="packet-title">Every atom carries its own proof packet</h2></div>
+        <p data-pretext>A task is not a title. It is a closed contract that tells product, engineering, reviewers, QA, and release exactly what must change and what must remain untouched.</p>
+      </div>
+      <div class="packet">
+        <article class="packet-item"><b>01</b><strong>Identity + outcome</strong><p>Stable atom ID, user outcome, owner, priority, risk tier.</p></article>
+        <article class="packet-item"><b>02</b><strong>OpenSpec references</strong><p>Requirement and immutable scenario IDs owned by this atom.</p></article>
+        <article class="packet-item"><b>03</b><strong>Scope boundary</strong><p>Exact files, non-goals, dependencies, allowed adapters.</p></article>
+        <article class="packet-item"><b>04</b><strong>RED contract</strong><p>Command, expected failure, proof it selects real tests.</p></article>
+        <article class="packet-item"><b>05</b><strong>Minimal implementation</strong><p>Smallest complete behavior, no speculative infrastructure.</p></article>
+        <article class="packet-item"><b>06</b><strong>Focused GREEN</strong><p>Named tests and deterministic expected counts.</p></article>
+        <article class="packet-item"><b>07</b><strong>Blast-radius GREEN</strong><p>Full tests, build, format, generation, static and trace gates.</p></article>
+        <article class="packet-item"><b>08</b><strong>Smoke contract</strong><p>Exact user flow, environment, assertions, termination.</p></article>
+        <article class="packet-item"><b>09</b><strong>QA matrix</strong><p>Platforms, appearances, accessibility, interruptions, error paths.</p></article>
+        <article class="packet-item"><b>10</b><strong>Review plan</strong><p>Required roles, risk-specific specialists, receiving reviewer.</p></article>
+        <article class="packet-item"><b>11</b><strong>Rollback + rescue</strong><p>Failure mode, safe degradation, data and compatibility impact.</p></article>
+        <article class="packet-item"><b>12</b><strong>Evidence + commit</strong><p>Receipt paths, hashes, allowlist, conventional commit, ledger update.</p></article>
+      </div>
+    </section>
+
+    <section id="roadmap" aria-labelledby="roadmap-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Path from 19% to 100%</span><h2 id="roadmap-title">Seven delivery waves, one canonical merge train</h2></div>
+        <p data-pretext>Preparation may overlap across product, design, QA, and specialist lanes. Acceptance follows the dependency DAG. Core runtime remains the critical path.</p>
+      </div>
+      <div class="roadmap-wrap">
+        <div class="roadmap">
+          <article class="wave done"><span class="wave-code">BASELINE</span><div><h3>Foundation accepted</h3><p>Native scaffold, quality gates, editions and access.</p></div><div class="atom-list">1.1 · 1.2 · 2.1 · 2.2</div><div class="wave-status"><span class="badge done">4 / 4 done</span></div></article>
+          <article class="wave current"><span class="wave-code">WAVE 0</span><div><h3>Close semantic gate</h3><p>Receiving rejected a state-dependent test harness. The repaired exact index must earn fresh trace READY, council SHIP, digest-bound receiving ACCEPT, and postcommit green.</p></div><div class="atom-list">Blocks 3.1 · no atom credit</div><div class="wave-status"><span class="badge block">Repair review</span></div></article>
+          <article class="wave"><span class="wave-code">WAVE 1</span><div><h3>Deterministic domain</h3><p>Closed vocabulary, time kernel, exhaustive reducer and coach.</p></div><div class="atom-list">3.1 → 3.3 → 3.2</div><div class="wave-status"><span class="badge">0 / 3</span></div></article>
+          <article class="wave"><span class="wave-code">WAVE 2</span><div><h3>Runtime + persistence</h3><p>Actor engine, atomic repository, SwiftData recovery.</p></div><div class="atom-list">4.1 → 4.2</div><div class="wave-status"><span class="badge">0 / 2</span></div></article>
+          <article class="wave"><span class="wave-code">WAVE 3</span><div><h3>Liquid Instrument experience</h3><p>Render policy, shared scenes, full ADHD-aware focus loop.</p></div><div class="atom-list">5.1 → 5.2 → 5.3 → 5.4; then 5.5</div><div class="wave-status"><span class="badge">0 / 5</span></div></article>
+          <article class="wave"><span class="wave-code">WAVE 4</span><div><h3>Privacy + user control</h3><p>Retention, notifications, export, downgrade-safe deletion.</p></div><div class="atom-list">6.1 · 6.2 · 6.3</div><div class="wave-status"><span class="badge">0 / 3</span></div></article>
+          <article class="wave"><span class="wave-code">WAVE 5</span><div><h3>System QA</h3><p>Accessibility, visual evidence, zero-network and energy proof.</p></div><div class="atom-list">7.1 → 7.2</div><div class="wave-status"><span class="badge qa">0 / 2</span></div></article>
+          <article class="wave"><span class="wave-code">WAVE 6</span><div><h3>CI + release handoff</h3><p>One verification entry point, final specialist validation, archive readiness.</p></div><div class="atom-list">8.1 → 8.2</div><div class="wave-status"><span class="badge">0 / 2</span></div></article>
+        </div>
+      </div>
+    </section>
+
+    <section id="first" aria-labelledby="first-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Do this first</span><h2 id="first-title">The next five executable tasks</h2></div>
+        <p data-pretext>Do not start production implementation yet. First accept the exact staged behavioral substrate that every timer, check-in, break, persistence, and UI surface will consume.</p>
+      </div>
+      <div class="first-five">
+        <article class="first-task"><span class="num">DONE · 01</span><h3>Repair the mutation harness</h3><p>The council's counterexample is now covered by isolated, diagnostic-bound regression cases.</p><ul><li>Exact contract semantics</li><li>Six isolated mutation regressions</li><li>Explicitly valid acceptance base</li></ul></article>
+        <article class="first-task"><span class="num">PAUSED · 02</span><h3>Make the receipt internally historical</h3><p>Final identity is correct, but every superseded checkpoint must be rewritten in unmistakable past tense.</p><ul><li>Remove contradictory current tense</li><li>Mark first-parent behavior rejected</li><li>Fresh unanimous council required</li></ul></article>
+        <article class="first-task"><span class="num">NEXT · 03</span><h3>Receive and commit contract</h3><p>Only after re-review, bind every approval to the repaired exact staged index.</p><ul><li>Regenerated subject + payload digests</li><li>New independent receiving ACCEPT</li><li>Reserved commit + postcommit validation</li></ul></article>
+        <article class="first-task"><span class="num">ATOM · 3.1</span><h3>Closed session model</h3><p>Begin with a real compile-time RED for the missing vocabulary.</p><ul><li>States, intents, events</li><li>Projections and timing presets</li><li>Invariant/error fixtures</li></ul></article>
+        <article class="first-task"><span class="num">THEN · 3.3</span><h3>Canonical time kernel</h3><p>Implement pure projection and reconciliation before the reducer.</p><ul><li>Wall + monotonic anchors</li><li>Sleep/wake and drift</li><li>Zero-write countdown smoke</li></ul></article>
+      </div>
+    </section>
+
+    <section id="roles" aria-labelledby="roles-title">
+      <div class="section-head">
+        <div><span class="section-kicker">FANG-like accountability</span><h2 id="roles-title">Roles and separation of duties</h2></div>
+        <p data-pretext>In a small autonomous team, these can be separate agent contexts rather than separate employees. The rule remains: the author cannot be the only approver of their own claim.</p>
+      </div>
+      <div class="raci">
+        <article class="role"><b>PRODUCT</b><h3>PM / product owner</h3><p>Owns problem, user value, scope, metric, non-goals, edition boundary.</p><strong>Approves G0–G2 and release outcome.</strong></article>
+        <article class="role"><b>TECHNICAL</b><h3>Tech lead / architect</h3><p>Owns DAG, architecture, interfaces, risk tier, rollback, operational integrity.</p><strong>Approves G3–G4 and merge order.</strong></article>
+        <article class="role"><b>DELIVERY</b><h3>Implementer</h3><p>Owns authentic RED, minimal complete code, focused/full green, evidence packet.</p><strong>Cannot self-approve G7 or G9.</strong></article>
+        <article class="role"><b>QUALITY</b><h3>QA / SDET</h3><p>Co-authors scenarios, owns smoke, automation strategy, exploratory and regression plans.</p><strong>Approves G8 and release test evidence.</strong></article>
+        <article class="role"><b>EXPERIENCE</b><h3>Product designer</h3><p>Owns hierarchy, states, interaction semantics, Liquid Instrument fidelity and fallbacks.</p><strong>Required on UI and accessibility atoms.</strong></article>
+        <article class="role"><b>TRUST</b><h3>Privacy / security / accessibility</h3><p>Reviews data minimization, entitlements, logs, export/delete, input, inclusive paths.</p><strong>Risk-triggered approval, never decorative sign-off.</strong></article>
+        <article class="role"><b>INDEPENDENCE</b><h3>Code + receiving reviewers</h3><p>Challenge correctness and audit the exact staged candidate, receipts, hashes, scope.</p><strong>Own G7 and G9.</strong></article>
+        <article class="role"><b>RELEASE</b><h3>Release manager</h3><p>Owns CI, clean artifact, rollback, support readiness, documentation and archive decision.</p><strong>Owns G10.</strong></article>
+      </div>
+    </section>
+
+    <section id="green" aria-labelledby="green-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Definition of 100%</span><h2 id="green-title">The path to real green</h2></div>
+        <p data-pretext>One hundred percent is not every checkbox marked. It is every claim reproduced on the final diff, against the signed artifact, with no mandatory stage skipped.</p>
+      </div>
+      <div class="green-board">
+        <div class="green-meter"><div class="meter-ring"><div class="meter-inner"><div><strong>19%</strong><span>today · 4/21</span></div></div></div></div>
+        <div class="green-copy">
+          <h3>Release green requires all of these at once</h3>
+          <div class="green-list">
+            <div class="green-item"><b>Implementation</b><span>21 of 21 atoms accepted in dependency order with clean evidence.</span></div>
+            <div class="green-item"><b>Specification</b><span>57 criteria, 12 assumptions, and 122 scenarios mapped without drift.</span></div>
+            <div class="green-item"><b>Build + tests</b><span>Focused, full, signed app/UI, concurrency, persistence, and clean build green.</span></div>
+            <div class="green-item"><b>User journey</b><span>Offline initiate → focus → check-in → break → re-entry → review passes.</span></div>
+            <div class="green-item"><b>Accessibility</b><span>Keyboard, VoiceOver, contrast, motion, transparency, color and narrow-window paths.</span></div>
+            <div class="green-item"><b>Trust</b><span>Zero-network Lite, no surveillance, data retention, export and deletion proven.</span></div>
+            <div class="green-item"><b>Performance</b><span>No per-second writes, hidden renderer quiet, energy budgets and recovery proven.</span></div>
+            <div class="green-item"><b>Operations</b><span>One local verify command, macOS CI, release smoke, rollback and clean handoff.</span></div>
+            <div class="green-item"><b>Review</b><span>No unresolved critical/major finding; final diff independently received.</span></div>
+            <div class="green-item"><b>Closure</b><span>Docs reconciled, final evidence retained, OpenSpec change archive-ready.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="controls" aria-labelledby="controls-title">
+      <div class="section-head">
+        <div><span class="section-kicker">Canonical controls</span><h2 id="controls-title">Commands, evidence, and recurring cadence</h2></div>
+        <p data-pretext>These are the current repo-local controls. Atom 8.1 will consolidate them into one mandatory <span class="mono">scripts/verify.sh</span> entry point.</p>
+      </div>
+      <details open>
+        <summary>Current mandatory specification controls</summary>
+        <div class="details-body">
+          <div class="command"><span>npm run spec:validate</span><span>strict OpenSpec + trace</span></div>
+          <div class="command"><span>node scripts/verify-spec-trace.mjs</span><span>57 / 12 / 122 / 21 freeze</span></div>
+          <div class="command"><span>npx openspec status --change build-native-praxodoro --json</span><span>planning artifact state</span></div>
+        </div>
+      </details>
+      <details>
+        <summary>Current engineering and smoke controls</summary>
+        <div class="details-body">
+          <div class="command"><span>swift test --package-path Packages/PraxodoroCore</span><span>core focused/full suite</span></div>
+          <div class="command"><span>bash scripts/verify-project-generation.sh</span><span>toolchain + no-diff generation</span></div>
+          <div class="command"><span>bash scripts/run-app-tests.sh</span><span>signed app and UI tests</span></div>
+          <div class="command"><span>bash scripts/smoke-scaffold.sh</span><span>isolated launch smoke</span></div>
+        </div>
+      </details>
+      <details>
+        <summary>Canonical files</summary>
+        <div class="details-body file-links">
+          <a href="file:///Users/prax/Development/Praxodoro/.worktrees/native-app/openspec/changes/build-native-praxodoro/tasks.md">OpenSpec task atoms</a>
+          <a href="file:///Users/prax/Development/Praxodoro/.worktrees/native-app/openspec/changes/build-native-praxodoro/design.md">Technical design</a>
+          <a href="file:///Users/prax/Development/Praxodoro/.worktrees/native-app/prd.json">Atom ledger + semantic gate</a>
+          <a href="file:///Users/prax/Development/Praxodoro/.worktrees/native-app/progress.txt">Durable progress history</a>
+          <a href="file:///Users/prax/Development/Praxodoro/.worktrees/native-app/docs/specification/session-domain-contract.md">Session domain contract</a>
+          <a href="file:///Users/prax/Development/Praxodoro/.worktrees/native-app/docs/specification/acceptance-trace.md">Acceptance trace</a>
+        </div>
+      </details>
+      <details>
+        <summary>Generated-plan verification</summary>
+        <div class="details-body">
+          <div class="command"><span>HTML structure + fragment audit</span><span>PASS · 32 unique IDs</span></div>
+          <div class="command"><span>Module JavaScript syntax</span><span>PASS</span></div>
+          <div class="command"><span>Living HTML + calculated atom meter</span><span>19% · 4 / 21 accepted</span></div>
+          <div class="command"><span>OpenSpec strict validation + frozen trace</span><span>PASS · 57 / 12 / 122 / 21</span></div>
+          <div class="command"><span>Canonical HTML structural verification</span><span>PASS · browser reload still external</span></div>
+          <div class="command"><span>Canonical worktree base</span><span>dba5538 · gate transaction uncommitted</span></div>
+        </div>
+      </details>
+      <div class="editable-note" contenteditable="true" role="textbox" aria-label="Editable owner notes" data-pretext>Owner note: add decisions or execution constraints here during planning. This local edit is intentionally not written into the canonical repo.</div>
+    </section>
+
+    <footer>
+      <span>Praxodoro Delivery OS · living HTML · updated 22 July 2026 · branch feat/native-app</span>
+      <span>Rule: parallelize preparation · serialize acceptance · archive only after release evidence</span>
+    </footer>
+  </main>
+
+  <script>
+    const Pretext = { prepare: null, layout: null };
+    const atomLedger = [
+      ['1.1', 'done'], ['1.2', 'done'], ['2.1', 'done'], ['2.2', 'done'],
+      ['3.1', 'todo'], ['3.3', 'todo'], ['3.2', 'todo'], ['4.1', 'todo'], ['4.2', 'todo'],
+      ['5.1', 'todo'], ['5.2', 'todo'], ['5.3', 'todo'], ['5.4', 'todo'], ['5.5', 'todo'],
+      ['6.1', 'todo'], ['6.2', 'todo'], ['6.3', 'todo'], ['7.1', 'todo'], ['7.2', 'todo'],
+      ['8.1', 'todo'], ['8.2', 'todo']
+    ];
+    const acceptedAtoms = atomLedger.filter(([, status]) => status === 'done').length;
+    const totalAtoms = atomLedger.length;
+    const remainingAtoms = totalAtoms - acceptedAtoms;
+    const implementationPercent = Math.round((acceptedAtoms / totalAtoms) * 100);
+    const implementationDegrees = (acceptedAtoms / totalAtoms) * 360;
+    const progressRoot = document.getElementById('implementation-progress');
+    document.getElementById('progress-percent').textContent = implementationPercent + '%';
+    document.getElementById('progress-count').textContent = acceptedAtoms + ' accepted · ' + remainingAtoms + ' remaining';
+    document.getElementById('progress-fill').style.width = (acceptedAtoms / totalAtoms * 100) + '%';
+    progressRoot.setAttribute('aria-valuemax', String(totalAtoms));
+    progressRoot.setAttribute('aria-valuenow', String(acceptedAtoms));
+    progressRoot.setAttribute('aria-valuetext', acceptedAtoms + ' of ' + totalAtoms + ' implementation atoms accepted, ' + implementationPercent + ' percent');
+    document.querySelector('.dial').style.background = `conic-gradient(var(--amber) 0 ${implementationDegrees}deg, #27302f ${implementationDegrees}deg 360deg)`;
+    document.querySelector('.dial-copy strong').textContent = implementationPercent + '%';
+    document.querySelector('.meter-ring').style.background = `conic-gradient(var(--green) 0 ${implementationDegrees}deg, #222b29 ${implementationDegrees}deg)`;
+    document.querySelector('.meter-inner strong').textContent = implementationPercent + '%';
+    document.querySelector('.meter-inner span').textContent = 'today · ' + acceptedAtoms + '/' + totalAtoms;
+    const steps = [
+      {label:'Step 01 · Human gate', title:'Pull one dependency-ready atom', purpose:'The canonical branch accepts one independently reviewable slice. Parallel teams can prepare later work, but they cannot claim or merge it out of order.', entry:'Previous dependency atoms are accepted; the working tree is clean; scope and risk tier are named.', exit:'Atom status moves to doing with one owner, exact files, dependencies, acceptance scenarios, review tier, and rollback boundary.', owner:'Tech lead + implementer'},
+      {label:'Step 02 · Product and semantic gate', title:'Confirm the OpenSpec delta', purpose:'The team checks whether implementation can follow the written behavior without inventing missing policy, timestamps, states, error handling, or accessibility semantics.', entry:'Proposal, capability spec, design and stable scenario IDs exist.', exit:'Every changed behavior has binary criteria, positive and negative scenarios, named ownership, data/privacy effect, and non-goals.', owner:'Product owner + QA + domain engineer'},
+      {label:'Step 03 · Readiness review', title:'Review the plan before code', purpose:'Cheap ambiguity is removed before it becomes expensive code. Review depth is selected by risk, not by habit.', entry:'The atom proof packet is complete and the exact affected area is known.', exit:'Product, design, engineering, QA, privacy, accessibility and security concerns are either resolved or explicitly out of scope.', owner:'Tech lead; required specialists by risk tier'},
+      {label:'Step 04 · Automated test gate', title:'Prove an authentic RED', purpose:'A new failing test demonstrates the missing behavior and proves the harness selected the intended codepath. A compile failure is valid only when the missing symbol is the contract being introduced.', entry:'Test command and expected failure are written before production code.', exit:'The command exits non-zero for the named missing behavior, selects real tests, and does not fail because of an unrelated setup problem.', owner:'Implementer; CI records evidence'},
+      {label:'Step 05 · Implementation', title:'Build the smallest complete slice', purpose:'Implement only the atom contract, but cover its error and rescue paths. Do not create speculative frameworks for later atoms.', entry:'Authentic RED is retained and the allowed file set is known.', exit:'The atom behavior exists, invariants are explicit, fallbacks are safe, and no unrelated scope has leaked into the diff.', owner:'Implementer'},
+      {label:'Step 06 · Focused automation', title:'Reach focused GREEN', purpose:'The shortest relevant suite gives fast feedback on the code under construction.', entry:'Implementation compiles and the named focused suite is runnable.', exit:'Expected test counts pass with zero warnings/skips; formatter and local static checks are clean.', owner:'CI + implementer'},
+      {label:'Step 07 · Integration automation', title:'Prove blast-radius GREEN', purpose:'The candidate must coexist with the full product and generated project. This gate catches regression outside the focused test.', entry:'Focused green is stable.', exit:'Full package/app tests, unsigned build, generation no-diff, strict OpenSpec trace, secret scan and relevant performance checks pass.', owner:'CI / build engineering'},
+      {label:'Step 08 · QA smoke', title:'Smoke the promised user outcome', purpose:'A thin signed-product proof verifies that the code is wired into the application users actually run.', entry:'Integration gates pass and the exact app binary is identified.', exit:'The isolated signed app completes the task’s smallest real workflow with stable accessibility assertions and clean termination.', owner:'QA / SDET'},
+      {label:'Step 09 · Independent review', title:'Run multi-axis review', purpose:'Review is split by question: code quality, OpenSpec fidelity, user experience, privacy/security, performance and accessibility.', entry:'All author-owned gates are green and the candidate diff is stable.', exit:'Every required reviewer returns ready; findings are severity-ranked and resolved against the same candidate.', owner:'Independent code reviewer + domain reviewers'},
+      {label:'Step 10 · Repair loop', title:'Fix findings and regress the blast radius', purpose:'A review finding is converted into a reproducer or explicit contract correction before it is fixed.', entry:'A concrete finding names impact, evidence and affected boundary.', exit:'The finding is fixed; targeted proof passes; all downstream gates from the affected stage are replayed.', owner:'Implementer + QA'},
+      {label:'Step 11 · Receiving gate', title:'Audit the exact staged candidate', purpose:'A new reviewer proves that the files about to be committed are exactly the files that were tested and reviewed.', entry:'All findings are resolved and an exact path allowlist is prepared.', exit:'Index paths, hashes, receipts, OpenSpec/PRD state and clean working-tree expectations match the reviewed candidate.', owner:'Independent receiving reviewer'},
+      {label:'Step 12 · Merge train', title:'Commit, post-verify, and reconcile ledgers', purpose:'One conventional commit becomes the durable accepted unit. The state transition occurs only after pre-commit and post-commit kill criteria pass.', entry:'Receiving gate is ready and no unrelated path is staged.', exit:'Commit exists; regeneration remains no-diff; status is clean; tasks, prd.json, progress and evidence point to the accepted commit.', owner:'Release/merge owner + automation'}
+    ];
+
+    const stepButtons = [...document.querySelectorAll('.loop-step')];
+    const fields = {
+      label: document.getElementById('detail-label'),
+      title: document.getElementById('detail-title'),
+      purpose: document.getElementById('detail-purpose'),
+      entry: document.getElementById('detail-entry'),
+      exit: document.getElementById('detail-exit'),
+      owner: document.getElementById('detail-owner')
+    };
+    function selectStep(index) {
+      const data = steps[index];
+      stepButtons.forEach((button) => button.setAttribute('aria-selected', String(Number(button.dataset.step) === index)));
+      Object.entries(fields).forEach(([key, node]) => { node.textContent = data[key]; });
+    }
+    stepButtons.forEach((button) => button.addEventListener('click', () => selectStep(Number(button.dataset.step))));
+
+    document.querySelectorAll('.filter-btn').forEach((button) => {
+      button.addEventListener('click', () => {
+        const filter = button.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach((peer) => peer.setAttribute('aria-pressed', String(peer === button)));
+        stepButtons.forEach((step) => step.dataset.filterHidden = String(filter !== 'all' && step.dataset.class !== filter));
+      });
+    });
+
+    const navLinks = [...document.querySelectorAll('nav a')];
+    const sections = navLinks.map((link) => document.querySelector(link.getAttribute('href'))).filter(Boolean);
+    const sectionObserver = new IntersectionObserver((entries) => {
+      entries.filter((entry) => entry.isIntersecting).forEach((entry) => {
+        navLinks.forEach((link) => link.setAttribute('aria-current', String(link.getAttribute('href') === '#' + entry.target.id)));
+      });
+    }, {rootMargin: '-25% 0px -65% 0px'});
+    sections.forEach((section) => sectionObserver.observe(section));
+
+    const pretextElements = [...document.querySelectorAll('[data-pretext]')];
+    const prepared = new Map();
+    async function prepareText() {
+      await document.fonts.ready;
+      if (!Pretext.prepare) return;
+      pretextElements.forEach((element) => {
+        const font = getComputedStyle(element).font;
+        prepared.set(element, Pretext.prepare(element.textContent, font));
+      });
+      relayoutText();
+    }
+    function relayoutText() {
+      if (!Pretext.layout) return;
+      prepared.forEach((handle, element) => {
+        const style = getComputedStyle(element);
+        const lineHeight = Number.parseFloat(style.lineHeight);
+        if (!Number.isFinite(lineHeight) || element.clientWidth < 1) return;
+        const result = Pretext.layout(handle, element.clientWidth, lineHeight);
+        if (result && Number.isFinite(result.height)) element.style.minHeight = Math.ceil(result.height) + 'px';
+      });
+    }
+    const resizeObserver = new ResizeObserver(() => relayoutText());
+    resizeObserver.observe(document.body);
+    pretextElements.filter((element) => element.contentEditable === 'true').forEach((element) => {
+      new MutationObserver(() => {
+        if (!Pretext.prepare) return;
+        prepared.set(element, Pretext.prepare(element.textContent, getComputedStyle(element).font));
+        relayoutText();
+      }).observe(element, {characterData: true, subtree: true, childList: true});
+    });
+    prepareText();
+  </script>
+</body>
+</html>

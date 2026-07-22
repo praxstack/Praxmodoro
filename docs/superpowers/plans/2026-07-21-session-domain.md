@@ -65,7 +65,7 @@ group:
 - `SessionIntent`, `SessionCommand`, and every `SessionIntentKind` mapping;
 - `SessionEventPayload`, `SessionEffect`, result/rejection/failure vocabularies;
 - `SessionConfiguration.defaults` and all four `TimingPolicyID` values;
-- `SessionSnapshotValidator.validate(previous:candidate:emittedEvents:context:)`;
+- `SessionSnapshotValidator.validate(previous:command:candidate:emittedEvents:context:)`;
 - `SessionProjection` and `ProjectionError` value construction only.
 
 Run:
@@ -134,7 +134,8 @@ Do not implement `SessionReducer.reduce` or `SessionProjector.project` in this a
 Implement a validator that returns the complete set of applicable violations and never clamps or
 repairs. Partition tests by invariant row:
 
-1. schema, identity, revision, event sequence, and boundary occurrence;
+1. schema, the exact revision-0 idle baseline, the complete idle/completed-to-prepared reset,
+   identity, revision, event sequence, and boundary occurrence;
 2. plan/start/last-wall requirements;
 3. timestamp quantum for every `SessionTimestampField`, including fractional, NaN, and infinity;
 4. accumulator/counter regression;
