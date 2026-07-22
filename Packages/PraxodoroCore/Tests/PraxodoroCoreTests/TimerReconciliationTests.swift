@@ -106,8 +106,8 @@ struct TimerReconciliationTests {
         wallNow: Date(timeIntervalSinceReferenceDate: 101),
         liveProjection: LiveProjectionObservation(
           projectionToken: focusProjectionToken,
-          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100.75),
-          monotonicElapsedSinceAnchor: .milliseconds(250)
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100.9),
+          monotonicElapsedSinceAnchor: .milliseconds(200)
         )
       )
     )
@@ -118,6 +118,31 @@ struct TimerReconciliationTests {
     #expect(projection.breakSeconds == 3)
     #expect(projection.remainingSeconds == 299)
     #expect(projection.nextScheduledCheckInAt == snapshot.nextScheduledCheckIn?.dueAt)
+
+    let reconciliation = SessionTimeKernel.reconcileLive(
+      snapshot: snapshot,
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 101),
+        liveProjection: LiveProjectionObservation(
+          projectionToken: focusProjectionToken,
+          rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100.9),
+          monotonicElapsedSinceAnchor: .milliseconds(200)
+        )
+      ))
+    guard case let .normalized(reconciled) = reconciliation else {
+      Issue.record("expected fractional paired time to reconcile")
+      return
+    }
+    #expect(reconciled.expectedWallNow.date.timeIntervalSinceReferenceDate == 101)
+    #expect(
+      reconciled.nonBoundaryExitMaterialization
+        == .focus(
+          accumulatedFocusSeconds: 13,
+          suspendedTiming: .timed(remaining: try PhaseSeconds(299)),
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(899)
+        ))
+    #expect(reconciled.liveCommitMaterialization?.elapsedBeforeAnchorSeconds == 1)
+    #expect(reconciled.liveCommitMaterialization?.adjustment == nil)
 
     #expect(throws: ProjectionError.missingLiveProjection) {
       try SessionProjector.project(
