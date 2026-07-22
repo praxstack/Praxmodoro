@@ -2564,4 +2564,92 @@ struct SessionTransitionTests {
       ) == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
     )
   }
+
+  @Test("review configuration changes preserve the entire summary draft")
+  func reviewConfigurationChangesAreExact() throws {
+    let sessionID = UUID()
+    let endedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 400))
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let review = ReviewState(
+      draft: SessionSummaryDraft(
+        endedAt: endedAt,
+        focusedSeconds: 1_200,
+        breakSeconds: 300,
+        parkedThoughtCount: 1,
+        optionalReflection: nil
+      ),
+      stopReason: .completed,
+      replacementDraft: nil
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 6,
+      nextBoundaryOccurrence: 2,
+      state: .reviewing(review),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [
+        ParkedThought(id: UUID(), text: "Later", createdAt: endedAt)
+      ],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 1_200,
+      accumulatedBreakSeconds: 300,
+      lastWallObservationAt: endedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+    let context = ReductionContext(
+      instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+      generatedSessionID: UUID(),
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+
+    guard
+      case let .transition(reduction) = SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4,
+          intent: .setReflectionPromptEnabled(false)
+        ),
+        context: context
+      )
+    else {
+      Issue.record("expected review configuration transition")
+      return
+    }
+    #expect(reduction.snapshot.state == .reviewing(review))
+    #expect(reduction.snapshot.parkedThoughts == snapshot.parkedThoughts)
+    #expect(reduction.snapshot.revision == 5)
+    #expect(reduction.snapshot.eventSequence == 7)
+    #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .configurationChanged(
+            fields: SessionConfigurationFieldChanges([.reflectionPromptEnabled])!)
+        ])
+    #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+
+    #expect(
+      SessionReducer.reduce(
+        snapshot: snapshot,
+        command: SessionCommand(
+          expectedRevision: 4,
+          intent: .setCheckInSchedule(.interval(try CheckInMinutes(15)))
+        ),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: .nan), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        )
+      ) == .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    )
+  }
 }

@@ -30,7 +30,9 @@ public enum SessionReducer {
       return reduceCheckingIn(snapshot: snapshot, command: command, context: context)
     case .reentering:
       return reduceReentering(snapshot: snapshot, command: command, context: context)
-    case .breaking, .reviewing, .completed, .recoveryNeeded:
+    case .reviewing:
+      return reduceReviewing(snapshot: snapshot, command: command, context: context)
+    case .breaking, .completed, .recoveryNeeded:
       return invalidTransition(snapshot: snapshot, intent: command.intent)
     }
   }
@@ -1275,6 +1277,79 @@ public enum SessionReducer {
           proposedAction: reentry.proposedAction,
           enteredAt: reentry.enteredAt
         )),
+      plan: snapshot.plan,
+      configuration: configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: observedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    return .transition(
+      Reduction(
+        snapshot: candidate,
+        events: [
+          SessionEvent(
+            sessionID: sessionID,
+            sequence: snapshot.eventSequence + 1,
+            occurredAt: observedAt,
+            payload: .configurationChanged(fields: changes)
+          )
+        ],
+        effects: [.invalidateDisplayProjection(projectionToken: nil)]
+      ))
+  }
+
+  private static func reduceReviewing(
+    snapshot: SessionSnapshot,
+    command: SessionCommand,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard
+      let configuration = requestedConfiguration(
+        for: command.intent,
+        current: snapshot.configuration
+      )
+    else {
+      if case .reconcileTime = command.intent {
+        return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
+      }
+      return invalidTransition(snapshot: snapshot, intent: command.intent)
+    }
+    guard case .reviewing = snapshot.state, let sessionID = snapshot.sessionID else {
+      return invalidTransition(snapshot: snapshot, intent: command.intent)
+    }
+    let fields = changedConfigurationFields(
+      from: snapshot.configuration,
+      to: configuration
+    )
+    guard let changes = SessionConfigurationFieldChanges(fields) else {
+      return .noChange(snapshot: snapshot, reason: .alreadyInRequestedState)
+    }
+    guard let observedAt = canonicalSecond(context.instant.wallNow) else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    guard snapshot.eventSequence < UInt64.max else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: 0
+        ))
+    }
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+      state: snapshot.state,
       plan: snapshot.plan,
       configuration: configuration,
       parkedThoughts: snapshot.parkedThoughts,
