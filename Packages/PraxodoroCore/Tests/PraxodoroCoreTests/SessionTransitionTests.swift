@@ -1101,4 +1101,124 @@ struct SessionTransitionTests {
     #expect(reduction.events[0].occurredAt == resolvedAt)
     #expect(reduction.effects == [.invalidateDisplayProjection(projectionToken: nil)])
   }
+
+  @Test(
+    "live check-in resolutions reanchor focus and captured cadence",
+    arguments: [
+      CheckInResponse.continueFocus,
+      .skip,
+      .dismiss,
+    ]
+  )
+  func liveCheckInResolutionsReanchorFocusAndCapturedCadence(response: CheckInResponse) throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let openedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let resolvedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 450))
+    let suspended = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .focusing,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+    )
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 4,
+      eventSequence: 5,
+      nextBoundaryOccurrence: 2,
+      state: .checkingIn(
+        CheckInState(
+          suspended: suspended,
+          trigger: .manual,
+          continuation: .resumeSuspended,
+          phaseBoundaryScheduledCheckInRemaining: nil
+        )),
+      plan: try SessionPlan(
+        task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: openedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 4, intent: .respondToCheckIn(response)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: resolvedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected live check-in resolution")
+      return
+    }
+    let phaseDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_940))
+    let scheduledDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_340))
+    let phaseToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .phase,
+      phaseID: .focus,
+      sourceRevision: 5,
+      occurrence: 2
+    )
+    let scheduledToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 5,
+      occurrence: 3
+    )
+
+    #expect(reduction.snapshot.revision == 5)
+    #expect(reduction.snapshot.eventSequence == 7)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 4)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(reduction.snapshot.lastWallObservationAt == resolvedAt)
+    #expect(
+      reduction.snapshot.state
+        == .focusing(
+          FocusState(
+            phase: suspended.phase,
+            timingAtAnchor: suspended.timing,
+            wallAnchor: resolvedAt,
+            phaseEndsAt: phaseDeadline,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: projectionToken,
+            phaseBoundaryToken: phaseToken
+          )))
+    #expect(
+      reduction.snapshot.nextScheduledCheckIn
+        == ScheduledCheckInBoundary(
+          token: scheduledToken,
+          dueAt: scheduledDeadline,
+          trustedRemaining: try CheckInRemainingSeconds(890)
+        ))
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.events.map(\.payload)
+        == [
+          .checkInResolved,
+          .phaseResumed(phase: suspended.phase, endsAt: phaseDeadline),
+        ])
+    #expect(reduction.events.map(\.occurredAt) == [resolvedAt, resolvedAt])
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(
+              boundaryToken: scheduledToken, fireAt: scheduledDeadline)),
+          .announceAccessibility(.focusStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
+        ])
+  }
 }
