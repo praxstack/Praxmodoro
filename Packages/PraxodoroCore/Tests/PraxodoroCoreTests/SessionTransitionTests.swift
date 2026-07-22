@@ -643,4 +643,119 @@ struct SessionTransitionTests {
         ]
     )
   }
+
+  @Test("paused resume reanchors saved timing without accruing focus")
+  func pausedResumeReanchorsSavedTiming() throws {
+    let sessionID = UUID()
+    let firstProjectionToken = UUID()
+    let resumedProjectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let initialContext = ReductionContext(
+      instant: SessionInstant(
+        wallNow: Date(timeIntervalSinceReferenceDate: 10), liveProjection: nil),
+      generatedSessionID: sessionID,
+      generatedThoughtID: UUID(),
+      generatedProjectionToken: UUID()
+    )
+    guard
+      case let .transition(preparation) = SessionReducer.reduce(
+        snapshot: .canonicalIdle,
+        command: SessionCommand(
+          expectedRevision: 0, intent: .prepare(SessionDraft(plan: plan))),
+        context: initialContext
+      ),
+      case let .transition(started) = SessionReducer.reduce(
+        snapshot: preparation.snapshot,
+        command: SessionCommand(expectedRevision: 1, intent: .start),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 100), liveProjection: nil),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: firstProjectionToken
+        )),
+      case let .transition(paused) = SessionReducer.reduce(
+        snapshot: started.snapshot,
+        command: SessionCommand(expectedRevision: 2, intent: .pause),
+        context: ReductionContext(
+          instant: SessionInstant(
+            wallNow: Date(timeIntervalSinceReferenceDate: 110),
+            liveProjection: LiveProjectionObservation(
+              projectionToken: firstProjectionToken,
+              rawWallAtProjectionAnchor: Date(timeIntervalSinceReferenceDate: 100),
+              monotonicElapsedSinceAnchor: .seconds(10)
+            )),
+          generatedSessionID: UUID(),
+          generatedThoughtID: UUID(),
+          generatedProjectionToken: UUID()
+        ))
+    else {
+      Issue.record("expected a paused fixture")
+      return
+    }
+    let resumedAt = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 200))
+    let outcome = SessionReducer.reduce(
+      snapshot: paused.snapshot,
+      command: SessionCommand(expectedRevision: 3, intent: .resume),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: resumedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: resumedProjectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected resume transition")
+      return
+    }
+    let phaseDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_690))
+    let scheduledDeadline = SessionTimestamp(
+      unchecked: Date(timeIntervalSinceReferenceDate: 1_090))
+
+    #expect(reduction.snapshot.revision == 4)
+    #expect(reduction.snapshot.eventSequence == 5)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 4)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(reduction.snapshot.startedAt?.date.timeIntervalSinceReferenceDate == 100)
+    #expect(
+      reduction.snapshot.state
+        == .focusing(
+          FocusState(
+            phase: TimingPolicy.classic.phases[0],
+            timingAtAnchor: .timed(remaining: try PhaseSeconds(1_490)),
+            wallAnchor: resumedAt,
+            phaseEndsAt: phaseDeadline,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: resumedProjectionToken,
+            phaseBoundaryToken: BoundaryToken(
+              sessionID: sessionID,
+              kind: .phase,
+              phaseID: .focus,
+              sourceRevision: 4,
+              occurrence: 2
+            )
+          ))
+    )
+    let scheduled = try #require(reduction.snapshot.nextScheduledCheckIn)
+    let expectedScheduledRemaining = try CheckInRemainingSeconds(890)
+    #expect(scheduled.dueAt == scheduledDeadline)
+    #expect(scheduled.trustedRemaining == expectedScheduledRemaining)
+    #expect(scheduled.token.occurrence == 3)
+    #expect(
+      reduction.events.map(\.payload)
+        == [.phaseResumed(phase: TimingPolicy.classic.phases[0], endsAt: phaseDeadline)])
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(
+              boundaryToken: scheduled.token, fireAt: scheduledDeadline)),
+          .announceAccessibility(.focusStarted),
+          .invalidateDisplayProjection(projectionToken: resumedProjectionToken),
+        ]
+    )
+  }
 }
