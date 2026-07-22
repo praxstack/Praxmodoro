@@ -563,6 +563,12 @@ public enum SessionReducer {
         trigger: trigger,
         context: context
       )
+    case let .requestBreak(choice):
+      return startBreakFromPaused(
+        snapshot: snapshot,
+        choice: choice,
+        context: context
+      )
     case .reconcileTime:
       return .noChange(snapshot: snapshot, reason: .observationIrrelevant)
     default:
@@ -735,6 +741,109 @@ public enum SessionReducer {
     }
     effects.append(.announceAccessibility(.focusStarted))
     effects.append(.invalidateDisplayProjection(projectionToken: materialization.projectionToken))
+    return .transition(Reduction(snapshot: candidate, events: [event], effects: effects))
+  }
+
+  private static func startBreakFromPaused(
+    snapshot: SessionSnapshot,
+    choice: BreakChoice,
+    context: ReductionContext
+  ) -> ReductionOutcome {
+    guard case let .paused(paused) = snapshot.state,
+      let sessionID = snapshot.sessionID,
+      let plan = snapshot.plan
+    else {
+      return invalidTransition(snapshot: snapshot, intent: .requestBreak(choice))
+    }
+    guard canonicalSecond(context.instant.wallNow) != nil else {
+      return .failed(snapshot: snapshot, reason: .nonFiniteWallObservation)
+    }
+    let nextRevision = snapshot.revision.addingReportingOverflow(1)
+    guard !nextRevision.overflow else {
+      return .failed(snapshot: snapshot, reason: .revisionExhausted)
+    }
+    let remainingCapacity = UInt64.max - snapshot.eventSequence
+    guard remainingCapacity >= 1 else {
+      return .failed(
+        snapshot: snapshot,
+        reason: .eventSequenceExhausted(
+          requiredAdditionalEvents: 1,
+          remainingCapacity: remainingCapacity
+        ))
+    }
+    let entry = SessionTimeKernel.materializeLiveEntry(
+      .breakState(
+        sessionID: sessionID,
+        targetRevision: nextRevision.partialValue,
+        nextBoundaryOccurrence: snapshot.nextBoundaryOccurrence,
+        wallNow: context.instant.wallNow,
+        projectionToken: context.generatedProjectionToken,
+        timing: .choice(choice.duration)
+      ))
+    let materialization: BreakEntryMaterialization
+    switch entry {
+    case let .materialized(.breakState(value)):
+      materialization = value
+    case .materialized(.focus):
+      return .failed(snapshot: snapshot, reason: .arithmeticOverflow)
+    case let .failure(reason):
+      return .failed(snapshot: snapshot, reason: reason)
+    }
+    let resumeTarget = SuspendedFocusState(
+      phase: paused.phase,
+      timing: paused.timing,
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: paused.scheduledCheckInRemaining
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: snapshot.schemaVersion,
+      sessionID: sessionID,
+      revision: nextRevision.partialValue,
+      eventSequence: snapshot.eventSequence + 1,
+      nextBoundaryOccurrence: materialization.nextBoundaryOccurrence,
+      state: .breaking(
+        BreakState(
+          choice: choice,
+          timingAtAnchor: materialization.timingAtAnchor,
+          wallAnchor: materialization.wallAnchor,
+          endsAt: materialization.endsAt,
+          elapsedBeforeAnchorSeconds: 0,
+          projectionToken: materialization.projectionToken,
+          boundaryToken: materialization.boundaryToken,
+          resumeTarget: resumeTarget,
+          proposedAction: plan.firstAction
+        )),
+      plan: plan,
+      configuration: snapshot.configuration,
+      parkedThoughts: snapshot.parkedThoughts,
+      startedAt: snapshot.startedAt,
+      accumulatedFocusSeconds: snapshot.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: snapshot.accumulatedBreakSeconds,
+      lastWallObservationAt: materialization.wallAnchor,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: snapshot.lastConsumedBoundaryToken
+    )
+    let event = SessionEvent(
+      sessionID: sessionID,
+      sequence: snapshot.eventSequence + 1,
+      occurredAt: materialization.wallAnchor,
+      payload: .breakStarted(
+        kind: choice.kind,
+        duration: choice.duration,
+        endsAt: materialization.endsAt
+      )
+    )
+    var effects: [SessionEffect] = []
+    if let boundaryToken = materialization.boundaryToken,
+      let endsAt = materialization.endsAt
+    {
+      effects.append(
+        .scheduleNotification(
+          SessionNotificationRequest(boundaryToken: boundaryToken, fireAt: endsAt)))
+    }
+    effects.append(.announceAccessibility(.breakStarted))
+    effects.append(
+      .invalidateDisplayProjection(projectionToken: materialization.projectionToken))
     return .transition(Reduction(snapshot: candidate, events: [event], effects: effects))
   }
 

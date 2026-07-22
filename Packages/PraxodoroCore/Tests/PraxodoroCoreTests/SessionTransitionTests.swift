@@ -821,6 +821,7 @@ struct SessionTransitionTests {
     #expect(reduction.snapshot.eventSequence == 5)
     #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
     #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
     #expect(
       reduction.snapshot.state
         == .checkingIn(
@@ -840,6 +841,104 @@ struct SessionTransitionTests {
         == [
           .announceAccessibility(.checkInPresented),
           .invalidateDisplayProjection(projectionToken: nil),
+        ]
+    )
+  }
+
+  @Test("paused break starts from the frozen focus target")
+  func pausedBreakStartsFromFrozenFocusTarget() throws {
+    let sessionID = UUID()
+    let projectionToken = UUID()
+    let plan = try SessionPlan(
+      task: "Task", firstAction: "Return here", capacity: nil, timingPolicy: .classic)
+    let pausedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 110))
+    let observedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 300))
+    let choice = BreakChoice(kind: .move, duration: .timed(.five))
+    let snapshot = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 3,
+      eventSequence: 4,
+      nextBoundaryOccurrence: 2,
+      state: .paused(
+        PausedState(
+          phase: TimingPolicy.classic.phases[0],
+          timing: .timed(remaining: try PhaseSeconds(1_490)),
+          pausedAt: pausedAt,
+          scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+        )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 100)),
+      accumulatedFocusSeconds: 10,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: pausedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let outcome = SessionReducer.reduce(
+      snapshot: snapshot,
+      command: SessionCommand(expectedRevision: 3, intent: .requestBreak(choice)),
+      context: ReductionContext(
+        instant: SessionInstant(wallNow: observedAt.date, liveProjection: nil),
+        generatedSessionID: UUID(),
+        generatedThoughtID: UUID(),
+        generatedProjectionToken: projectionToken
+      )
+    )
+    guard case let .transition(reduction) = outcome else {
+      Issue.record("expected paused break transition")
+      return
+    }
+    let boundaryToken = BoundaryToken(
+      sessionID: sessionID,
+      kind: .breakEnd,
+      phaseID: nil,
+      sourceRevision: 4,
+      occurrence: 2
+    )
+    let endsAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 600))
+    let resumeTarget = SuspendedFocusState(
+      phase: TimingPolicy.classic.phases[0],
+      timing: .timed(remaining: try PhaseSeconds(1_490)),
+      resumeDisposition: .paused,
+      scheduledCheckInRemaining: try CheckInRemainingSeconds(890)
+    )
+
+    #expect(reduction.snapshot.revision == 4)
+    #expect(reduction.snapshot.eventSequence == 5)
+    #expect(reduction.snapshot.nextBoundaryOccurrence == 3)
+    #expect(reduction.snapshot.accumulatedFocusSeconds == 10)
+    #expect(reduction.snapshot.lastWallObservationAt == observedAt)
+    #expect(SessionSnapshotValidator.validateCandidate(reduction.snapshot).isEmpty)
+    #expect(
+      reduction.snapshot.state
+        == .breaking(
+          BreakState(
+            choice: choice,
+            timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+            wallAnchor: observedAt,
+            endsAt: endsAt,
+            elapsedBeforeAnchorSeconds: 0,
+            projectionToken: projectionToken,
+            boundaryToken: boundaryToken,
+            resumeTarget: resumeTarget,
+            proposedAction: "Return here"
+          ))
+    )
+    #expect(
+      reduction.events.map(\.payload)
+        == [.breakStarted(kind: .move, duration: .timed(.five), endsAt: endsAt)])
+    #expect(reduction.events[0].occurredAt == observedAt)
+    #expect(
+      reduction.effects
+        == [
+          .scheduleNotification(
+            SessionNotificationRequest(boundaryToken: boundaryToken, fireAt: endsAt)),
+          .announceAccessibility(.breakStarted),
+          .invalidateDisplayProjection(projectionToken: projectionToken),
         ]
     )
   }
