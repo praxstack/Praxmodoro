@@ -567,6 +567,50 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidText(.firstAction)))
   }
 
+  @Test("active phases must belong to the selected timing policy")
+  func activePhaseMustBelongToPlanPolicy() throws {
+    let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)
+    let anchor = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 20))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID, kind: .phase, phaseID: .entry, sourceRevision: 1, occurrence: 0
+    )
+    let scheduled = BoundaryToken(
+      sessionID: sessionID, kind: .scheduledCheckIn, phaseID: nil, sourceRevision: 1, occurrence: 1
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 2,
+      state: .focusing(FocusState(
+        phase: TimingPolicy.gentleStart.phases[0],
+        timingAtAnchor: .timed(remaining: try PhaseSeconds(300)),
+        wallAnchor: anchor,
+        phaseEndsAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 320)),
+        elapsedBeforeAnchorSeconds: 0,
+        projectionToken: UUID(),
+        phaseBoundaryToken: token
+      )),
+      plan: plan,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: anchor,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: anchor,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: scheduled,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 920)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.timingShapeMismatch))
+  }
+
   @Test("timed focus candidates cannot exceed their configured phase budget")
   func timedFocusCandidateCannotExceedPhaseBudget() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)

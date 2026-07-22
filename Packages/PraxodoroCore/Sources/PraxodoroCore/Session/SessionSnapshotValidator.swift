@@ -402,6 +402,7 @@ internal enum SessionSnapshotValidator {
         elapsedBeforeAnchorSeconds: value.elapsedBeforeAnchorSeconds,
         into: &violations
       )
+      validatePolicyPhase(value.phase, plan: plan, into: &violations)
       validateBoundaryToken(
         value.phaseBoundaryToken,
         sessionID: sessionID,
@@ -428,6 +429,7 @@ internal enum SessionSnapshotValidator {
         timing: value.timing,
         scheduledCheckInRemaining: value.scheduledCheckInRemaining,
         schedule: checkInSchedule,
+        plan: plan,
         into: &violations
       )
       if plan == nil { violations.insert(.missingPlan) }
@@ -466,6 +468,7 @@ internal enum SessionSnapshotValidator {
         timing: value.resumeTarget.timing,
         scheduledCheckInRemaining: value.resumeTarget.scheduledCheckInRemaining,
         schedule: checkInSchedule,
+        plan: plan,
         into: &violations
       )
       if plan == nil { violations.insert(.missingPlan) }
@@ -477,6 +480,7 @@ internal enum SessionSnapshotValidator {
         timing: value.resumeTarget.timing,
         scheduledCheckInRemaining: value.resumeTarget.scheduledCheckInRemaining,
         schedule: checkInSchedule,
+        plan: plan,
         into: &violations
       )
       if plan == nil { violations.insert(.missingPlan) }
@@ -546,6 +550,7 @@ internal enum SessionSnapshotValidator {
           timing: suspended.timing,
           scheduledCheckInRemaining: suspended.scheduledCheckInRemaining,
           schedule: schedule,
+          plan: plan,
           into: &violations
         )
       }
@@ -588,6 +593,7 @@ internal enum SessionSnapshotValidator {
         timing: suspended.timing,
         scheduledCheckInRemaining: suspended.scheduledCheckInRemaining,
         schedule: schedule,
+        plan: plan,
         into: &violations
       )
     case let .breakState(suspended):
@@ -597,6 +603,7 @@ internal enum SessionSnapshotValidator {
         timing: suspended.resumeTarget.timing,
         scheduledCheckInRemaining: suspended.resumeTarget.scheduledCheckInRemaining,
         schedule: schedule,
+        plan: plan,
         into: &violations
       )
       validateAction(suspended.proposedAction, into: &violations)
@@ -614,6 +621,7 @@ internal enum SessionSnapshotValidator {
         timing: reentry.resumeTarget.timing,
         scheduledCheckInRemaining: reentry.resumeTarget.scheduledCheckInRemaining,
         schedule: schedule,
+        plan: plan,
         into: &violations
       )
       validateAction(reentry.proposedAction, into: &violations)
@@ -625,10 +633,23 @@ internal enum SessionSnapshotValidator {
     timing: PausedTiming,
     scheduledCheckInRemaining: CheckInRemainingSeconds?,
     schedule: CheckInSchedule,
+    plan: SessionPlan?,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     validatePausedPhase(phase: phase, timing: timing, into: &violations)
+    validatePolicyPhase(phase, plan: plan, into: &violations)
     validateScheduledRemainder(scheduledCheckInRemaining, schedule: schedule, into: &violations)
+  }
+
+  private static func validatePolicyPhase(
+    _ phase: SessionPhaseDescriptor,
+    plan: SessionPlan?,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    guard let plan else { return }
+    if !plan.timingPolicy.phases.contains(phase) {
+      violations.insert(.timingShapeMismatch)
+    }
   }
 
   private static func validateScheduledRemainder(
