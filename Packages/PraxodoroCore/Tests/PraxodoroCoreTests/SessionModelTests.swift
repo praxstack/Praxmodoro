@@ -819,6 +819,42 @@ struct SessionModelTests {
     #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
   }
 
+  @Test("scheduled boundaries exist only in live focus snapshots")
+  func scheduledBoundaryCannotLeakOutsideLiveFocus() throws {
+    let timestamp = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 60))
+    let sessionID = UUID()
+    let token = BoundaryToken(
+      sessionID: sessionID,
+      kind: .scheduledCheckIn,
+      phaseID: nil,
+      sourceRevision: 1,
+      occurrence: 0
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: sessionID,
+      revision: 1,
+      eventSequence: 1,
+      nextBoundaryOccurrence: 1,
+      state: .prepared(PreparedState(preparedAt: timestamp)),
+      plan: try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic),
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: nil,
+      accumulatedFocusSeconds: 0,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: timestamp,
+      nextScheduledCheckIn: ScheduledCheckInBoundary(
+        token: token,
+        dueAt: SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 960)),
+        trustedRemaining: try CheckInRemainingSeconds(900)
+      ),
+      lastConsumedBoundaryToken: nil
+    )
+
+    #expect(SessionSnapshotValidator.validateCandidate(candidate).contains(.invalidScheduledCheckIn))
+  }
+
   @Test("recovery states expose the complete safe-choice set")
   func recoveryStateRequiresAllSafeChoices() throws {
     let plan = try SessionPlan(task: "Task", firstAction: "Action", capacity: nil, timingPolicy: .classic)

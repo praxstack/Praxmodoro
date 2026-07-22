@@ -15,6 +15,7 @@ internal enum SessionSnapshotValidator {
     validateScheduledCheckIn(
       candidate.nextScheduledCheckIn,
       schedule: candidate.configuration.checkInSchedule,
+      state: candidate.state.kind,
       into: &violations
     )
     validateIdentityAndStartTime(candidate, into: &violations)
@@ -70,17 +71,23 @@ internal enum SessionSnapshotValidator {
   private static func validateScheduledCheckIn(
     _ boundary: ScheduledCheckInBoundary?,
     schedule: CheckInSchedule,
+    state: SessionStateKind,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
-    switch (schedule, boundary) {
-    case (.manualOnly, .some):
+    if state != .focusing, boundary != nil {
       violations.insert(.invalidScheduledCheckIn)
-    case let (.interval(minutes), .some(boundary)):
+    }
+    switch (schedule, boundary, state) {
+    case (.manualOnly, .some, _):
+      violations.insert(.invalidScheduledCheckIn)
+    case let (.interval(minutes), .some(boundary), .focusing):
       let maximum = UInt32(minutes.value) * 60
       if boundary.trustedRemaining.value > maximum || boundary.token.kind != .scheduledCheckIn {
         violations.insert(.invalidScheduledCheckIn)
       }
-    case (.manualOnly, nil), (.interval, nil):
+    case (.interval, nil, .focusing):
+      violations.insert(.invalidScheduledCheckIn)
+    case (.manualOnly, nil, _), (.interval, .some, _), (.interval, nil, _):
       break
     }
   }
