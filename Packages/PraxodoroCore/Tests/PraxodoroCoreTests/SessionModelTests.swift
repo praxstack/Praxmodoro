@@ -443,4 +443,43 @@ struct SessionModelTests {
     #expect(violations.contains(.invalidText(.thought)))
     #expect(violations.contains(.invalidIdleBaseline))
   }
+
+  @Test("completed summaries must mirror totals and keep reflection normalized")
+  func completedSummaryRequiresConsistentPrivacySafeValues() {
+    let startedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 50))
+    let endedAt = SessionTimestamp(unchecked: Date(timeIntervalSinceReferenceDate: 51))
+    let summary = SessionSummary(
+      sessionID: UUID(),
+      task: "Task",
+      finalAction: "Action",
+      startedAt: startedAt,
+      endedAt: endedAt,
+      focusedSeconds: 10,
+      breakSeconds: 0,
+      stopReason: .completed,
+      parkedThoughtCount: 0,
+      optionalReflection: "   "
+    )
+    let candidate = SessionSnapshot(
+      schemaVersion: 1,
+      sessionID: summary.sessionID,
+      revision: 2,
+      eventSequence: 2,
+      nextBoundaryOccurrence: 0,
+      state: .completed(CompletedState(summary: summary, pendingReplacementDraft: nil)),
+      plan: nil,
+      configuration: .defaults,
+      parkedThoughts: [],
+      startedAt: startedAt,
+      accumulatedFocusSeconds: 9,
+      accumulatedBreakSeconds: 0,
+      lastWallObservationAt: endedAt,
+      nextScheduledCheckIn: nil,
+      lastConsumedBoundaryToken: nil
+    )
+
+    let violations = SessionSnapshotValidator.validateCandidate(candidate)
+    #expect(violations.contains(.invalidSummary))
+    #expect(violations.contains(.invalidText(.reflection)))
+  }
 }

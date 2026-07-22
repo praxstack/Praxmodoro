@@ -18,6 +18,9 @@ internal enum SessionSnapshotValidator {
       lastWallObservationAt: candidate.lastWallObservationAt,
       sessionID: candidate.sessionID,
       nextBoundaryOccurrence: candidate.nextBoundaryOccurrence,
+      startedAt: candidate.startedAt,
+      accumulatedFocusSeconds: candidate.accumulatedFocusSeconds,
+      accumulatedBreakSeconds: candidate.accumulatedBreakSeconds,
       into: &violations
     )
     validateBoundaryToken(
@@ -148,6 +151,9 @@ internal enum SessionSnapshotValidator {
     lastWallObservationAt: SessionTimestamp?,
     sessionID: UUID?,
     nextBoundaryOccurrence: UInt64,
+    startedAt: SessionTimestamp?,
+    accumulatedFocusSeconds: UInt64,
+    accumulatedBreakSeconds: UInt64,
     into violations: inout Set<SnapshotInvariantViolation>
   ) {
     switch state {
@@ -201,8 +207,37 @@ internal enum SessionSnapshotValidator {
       if plan != nil { violations.insert(.unexpectedPlan) }
       validate(value.summary.startedAt, as: .summaryStartedAt, into: &violations)
       validate(value.summary.endedAt, as: .summaryEndedAt, into: &violations)
+      validateSummary(
+        value.summary,
+        startedAt: startedAt,
+        accumulatedFocusSeconds: accumulatedFocusSeconds,
+        accumulatedBreakSeconds: accumulatedBreakSeconds,
+        into: &violations
+      )
     case .recoveryNeeded:
       if plan == nil { violations.insert(.missingPlan) }
+    }
+  }
+
+  private static func validateSummary(
+    _ summary: SessionSummary,
+    startedAt: SessionTimestamp?,
+    accumulatedFocusSeconds: UInt64,
+    accumulatedBreakSeconds: UInt64,
+    into violations: inout Set<SnapshotInvariantViolation>
+  ) {
+    if summary.startedAt != startedAt
+      || summary.focusedSeconds != accumulatedFocusSeconds
+      || summary.breakSeconds != accumulatedBreakSeconds
+      || summary.endedAt.date.timeIntervalSinceReferenceDate < summary.startedAt.date.timeIntervalSinceReferenceDate
+    {
+      violations.insert(.invalidSummary)
+    }
+    if let reflection = summary.optionalReflection {
+      let normalized = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
+      if normalized.isEmpty || normalized.unicodeScalars.count > 2_000 {
+        violations.insert(.invalidText(.reflection))
+      }
     }
   }
 
