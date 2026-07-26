@@ -9,6 +9,7 @@ Read, in order:
 3. The active change under `openspec/changes/` for proposal, capability specs, design, and tasks.
 4. `BLUEPRINT.md` and the dated implementation plan in `docs/superpowers/plans/`.
 5. Current code, tests, and Git history. Research and memories are evidence, not runtime proof.
+6. `CONTEXT.md` at the repo root for the canonical domain vocabulary used in every artifact above.
 
 ## Workflow
 
@@ -34,3 +35,17 @@ Read, in order:
 - Preserve unrelated user work.
 - No force-pushes, destructive resets, public repo creation, or release/deploy claims without explicit scope and rollback evidence.
 - Use conventional commits and include only the files belonging to the verified slice.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on `praxstack/PraxoDoro`, driven by the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical triage roles, each label string equal to its name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` plus `docs/adr/` at the repo root. See `docs/agents/domain.md`.
