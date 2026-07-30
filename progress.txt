@@ -12,3 +12,4 @@
 2026-07-20T13:50:00Z | actor=/root | atom=bootstrap | DECISION | Root AGENTS and OpenSpec config now encode spec-first, TDD, edition, ADHD, privacy, accessibility, and Liquid Instrument constraints.
 2026-07-20T13:51:00Z | actor=/root | atom=bootstrap | GATE | Withheld baseline commit because git diff --check found nine extra EOF blank lines; gitleaks and npm audit were clean.
 2026-07-20T13:51:00Z | actor=/root | atom=bootstrap | ANOMALY | Corrected staged metric: 14,100 was line changes, not bytes.
+2026-07-20T13:54:16Z | actor=/root | atom=bootstrap | COMMIT | Baseline commit 9a91032 (chore: establish Praxodoro research and OpenSpec baseline) landed research, Hallmark mocks, OpenSpec 1.6.0 scaffold, agent contract, and session audit trail after the EOF blank-line gate was resolved. (Recorded retroactively 2026-07-30.)
