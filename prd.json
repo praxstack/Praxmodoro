@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-30T19:40:00Z",
+  "updated": "2026-07-30T23:20:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -62,26 +62,26 @@
     {
       "id": "3.1",
       "title": "SwiftData models + SessionStoring",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: LocalStore missing (25 errors); green: SwiftData round-trip preserves ordered events + canonical timestamps"
     },
     {
       "id": "3.2",
       "title": "Append-only event log",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: editEvent missing; green: edit is a new event referencing the original, both retained"
     },
     {
       "id": "3.3",
       "title": "No-network/no-passive structural tests",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "structural audits green: no network symbols in sources; schema attribute scan finds no passive-observation fields"
     },
     {
       "id": "3.4",
       "title": "Corrupt-store recovery",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: open(at:) missing; green: garbage store file -> fresh store + preserved recovery file + plain-language notice (verified against real SwiftData open failure)"
     },
     {
       "id": "4.1",
