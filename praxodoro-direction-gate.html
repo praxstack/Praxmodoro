@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src http://127.0.0.1:*; img-src data:; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Praxodoro — approve the base visual direction</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,600;9..144,900&family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;600&display=swap" rel="stylesheet">
+<style>:root{
+  --bg:#0a0e14; --panel:#0f1520; --panel2:#131b29; --ink:#e8e4da; --ink-dim:#9a958a;
+  --blue:#4a7cff; --cyan:#39c5cf; --amber:#e8a33d; --rust:#c4553a; --green:#3fa66a;
+  --line:#1d2840; --mono:'JetBrains Mono',monospace; --body:'Space Grotesk',sans-serif; --disp:'Fraunces',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);line-height:1.65;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:48px 48px;background-position:-1px -1px}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px 120px}
+#bar{position:sticky;top:0;z-index:50;background:rgba(10,14,20,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);padding:10px 24px;display:flex;gap:18px;align-items:center;font-family:var(--mono);font-size:12px}
+#bar .st{color:var(--ink-dim)} #bar b{color:var(--cyan);font-weight:600}
+#bar .gate-pill{padding:2px 10px;border-radius:99px;border:1px solid var(--amber);color:var(--amber)}
+#bar .gate-pill.go{border-color:var(--green);color:var(--green)}
+#bar .gate-pill.hold{border-color:var(--rust);color:var(--rust)}
+#bar .spacer{flex:1}
+button{font-family:var(--mono);cursor:pointer;border-radius:6px;font-size:12px}
+#exportBtn{background:var(--blue);color:#fff;border:none;padding:8px 18px;font-weight:600}
+#exportBtn.subdued{background:transparent;border:1px solid var(--line);color:var(--ink-dim)}
+#resetBtn{background:transparent;border:1px solid var(--line);color:var(--ink-dim);padding:8px 12px}
+.hero{padding:72px 0 36px}
+.eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.18em;color:var(--cyan);text-transform:uppercase}
+h1{font-family:var(--disp);font-weight:900;font-size:clamp(34px,6vw,56px);line-height:1.05;margin:14px 0 18px}
+.lede{font-size:17px;color:var(--ink-dim);max-width:62ch}
+section{margin-top:56px}
+.snum{font-family:var(--mono);color:var(--blue);font-size:13px;letter-spacing:.1em}
+h2{font-family:var(--disp);font-weight:600;font-size:26px;margin:6px 0 6px}
+.sdesc{color:var(--ink-dim);font-size:14.5px;max-width:66ch;margin-bottom:18px}
+.context{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--cyan);
+  padding:12px 16px;font-size:13.5px;color:var(--ink-dim);margin-bottom:18px;border-radius:0 8px 8px 0}
+.carrysec{border:1px dashed var(--amber);border-radius:12px;padding:20px 22px;background:rgba(232,163,61,.04)}
+.qblock{margin-bottom:26px}
+.qprompt{font-weight:600;font-size:15.5px;margin-bottom:10px}
+.qprompt .lock{font-family:var(--mono);font-size:10.5px;color:var(--amber);border:1px solid var(--amber);border-radius:99px;padding:1px 8px;margin-left:8px}
+.cards{display:grid;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;cursor:pointer;position:relative;transition:border-color .15s}
+.card:hover{border-color:var(--blue)}
+.card.sel{border-color:var(--blue);background:var(--panel2)}
+.card.sel::before{content:'';position:absolute;left:18px;top:21px;width:10px;height:10px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px rgba(74,124,255,.25)}
+.card .ct{font-weight:600;font-size:15.5px;padding-left:26px}
+.card .cd{font-size:13.5px;color:var(--ink-dim);padding-left:26px;margin-top:4px}
+.card .rec{font-family:var(--mono);font-size:10.5px;color:var(--green);border:1px solid var(--green);border-radius:99px;padding:1px 8px;position:absolute;right:14px;top:14px}
+.card::after{content:'';position:absolute;left:18px;top:21px;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ink-dim)}
+.card.sel::after{border-color:var(--blue)}
+.card.locked{opacity:.55;cursor:not-allowed}
+.card.locked:hover{border-color:var(--line)}
+.chiprow{display:flex;flex-wrap:wrap;gap:8px}
+.tchip{font-family:var(--mono);font-size:11.5px;border:1px solid var(--line);border-radius:99px;padding:4px 12px;cursor:pointer;color:var(--ink-dim);background:var(--panel)}
+.tchip.on{border-color:var(--cyan);color:var(--cyan)}
+.titem{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);margin-bottom:8px}
+.titem .tname{flex:1;font-size:13.5px}
+.titem .tmeta{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim)}
+.titem button{padding:3px 10px;font-size:10.5px;border:1px solid var(--line);background:transparent;color:var(--ink-dim)}
+.titem button.on{border-color:var(--cyan);color:var(--cyan)}
+.titem.locked{opacity:.55}
+.qmeta{display:flex;gap:10px;align-items:center;margin-top:10px}
+.defer{background:transparent;border:1px dashed var(--amber);color:var(--amber);padding:5px 12px;font-size:11px}
+.defer.on{background:rgba(232,163,61,.12)}
+.touchnote{font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+.touchnote.explicit{color:var(--green)}
+textarea{width:100%;margin-top:12px;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  color:var(--ink);font-family:var(--body);font-size:13.5px;padding:10px 12px;min-height:64px;resize:vertical}
+textarea:focus{outline:none;border-color:var(--cyan)}
+.ww-badge{display:none;font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:6px}
+.ww-badge.show{display:block}
+.gatebox{display:flex;gap:12px}
+.gatebox .card{flex:1}
+.gatebox .card.go-card.sel{border-color:var(--green)} .gatebox .card.go-card.sel::before{background:var(--green);box-shadow:0 0 0 3px rgba(63,166,106,.25)}
+.gatebox .card.hold-card.sel{border-color:var(--rust)} .gatebox .card.hold-card.sel::before{background:var(--rust);box-shadow:0 0 0 3px rgba(196,85,58,.25)}
+#modal{display:none;position:fixed;inset:0;background:rgba(5,8,12,.85);z-index:100;padding:5vh 24px}
+#modal.show{display:flex;align-items:flex-start;justify-content:center}
+.mbox{background:var(--panel2);border:1px solid var(--line);border-radius:12px;max-width:760px;width:100%;max-height:90vh;display:flex;flex-direction:column}
+.mhead{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.mhead h3{font-family:var(--disp);font-size:18px}
+.mhead .spacer{flex:1}
+.mbtn{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:7px 14px}
+.mbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+#jsonOut{font-family:var(--mono);font-size:11.5px;color:#b8e0c2;white-space:pre;overflow:auto;padding:18px 20px;flex:1}
+.mnote{padding:10px 20px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:var(--ink-dim)}
+.copied{color:var(--green) !important}
+footer{margin-top:72px;border-top:1px solid var(--line);padding-top:18px;font-family:var(--mono);font-size:11.5px;color:var(--ink-dim)}
+a{color:var(--cyan)}</style>
+</head>
+<body>
+<div id="bar">
+  <span class="st">questions <b>2</b></span>
+  <span class="st">explicit <b id="nExp">0</b> · default <b id="nDef">2</b> · deferred <b id="nDfr">0</b></span>
+  <span class="gate-pill" id="gatePill">GATE: UNANSWERED</span>
+  <span class="spacer"></span>
+  <button id="resetBtn">reset</button>
+  <button id="exportBtn" class="subdued">Export decisions</button>
+</div>
+<div class="wrap">
+<div class="hero">
+
+<h1>Praxodoro — approve the base visual direction</h1>
+<p class="lede">All three directions from the Hallmark dossier are now mocked at equal fidelity (five screens each, same sample afternoon, same renderer). Look at design-mocks/direction-gate/compare.html first — it shows every screen side by side and links to the interactive mocks. This gate records the decision the design dossier has been waiting on: which direction becomes the base for the formal product/design spec.</p>
+</div>
+<section>
+<h2>Base visual direction</h2>
+<p class="sdesc">The research says the smallest differentiated product is the complete low-friction loop — all three mocks implement that same loop, so this choice is about identity and risk, not features. The dossier recommends A. Whichever you pick becomes the design language the OpenSpec change and every SwiftUI surface must trace to.</p>
+<div class="qblock">
+<div class="qprompt">Which direction is the base for Praxodoro?</div>
+<div class="cards" data-q="01KYSZMZQDXAVQXTQCCHH7ETYT">
+<div class="card" data-val="liquid-instrument"><span class="rec">recommended</span><div class="ct">A · Liquid Instrument</div><div class="cd">Nocturnal machined instrument: glass controls, tactile panels, amber signal. Quietest identity, cleanest SwiftUI/Metal mapping, dossier-recommended. Known risk: visual density (its own Restraint score was 3/5).</div></div>
+<div class="card" data-val="living-companion"><div class="ct">B · Living Companion</div><div class="cd">Warm dusk-light; an abstract breathing field is the visual centre. Most emotionally supportive, makes the ADHD-aware positioning unmistakable. Known risk: continuous organic motion can distract; heaviest Reduce-Motion burden; must never read juvenile.</div></div>
+<div class="card" data-val="focus-observatory"><div class="ct">C · Focus Observatory</div><div class="cd">Cyan/steel control room with day ledger, calendar, and automations at the rim; the dock sleeps until a block starts. Strongest power-user legibility. Known risk: density raises activation energy on the start path.</div></div>
+<div class="card" data-val="rework"><div class="ct">None — rework needed</div><div class="cd">No direction is right as a base. Say what&#39;s off in a comment (e.g. blend A&#39;s timer with B&#39;s warmth) and I&#39;ll iterate the mocks before any spec is written.</div></div>
+</div>
+<div class="qmeta"><button class="defer" data-qd="01KYSZMZQDXAVQXTQCCHH7ETYT">defer — decide later</button><span class="touchnote" data-qt="01KYSZMZQDXAVQXTQCCHH7ETYT"></span></div>
+<textarea data-qc="01KYSZMZQDXAVQXTQCCHH7ETYT" placeholder="Push back, ask, redirect — comments override widgets…"></textarea>
+<div class="ww-badge" data-qw="01KYSZMZQDXAVQXTQCCHH7ETYT">⚠ comment contains a question → exports as effective HOLD (words win)</div>
+</div>
+<div class="qblock">
+<div class="qprompt">Anything to carry into the spec from the losing directions? (e.g. keep C&#39;s day ledger in Review, keep B&#39;s check-in copy tone.)</div>
+<textarea data-qc="01KYSZMZQDXAVQXTQCCHH7ETYV" placeholder="Push back, ask, redirect — comments override widgets…"></textarea>
+<div class="ww-badge" data-qw="01KYSZMZQDXAVQXTQCCHH7ETYV">⚠ comment contains a question → exports as effective HOLD (words win)</div>
+</div>
+</section>
+<section>
+<h2>Next step after approval</h2>
+<p class="sdesc">Per the repo&#39;s own contract (AGENTS.md + the dossier&#39;s approval boundary), the step after direction approval is writing the formal product/design specification: SPEC.md, prd.json, and the first OpenSpec change (proposal, EARS capability specs, design, tasks) — all tracing to the chosen mocks and the validated research. Native Swift code stays gated until that spec is reviewed.</p>
+<div class="qblock">
+<div class="qprompt">GO: write the formal spec + first OpenSpec change from the chosen direction?</div>
+<div class="cards gatebox" data-q="01KYSZMZQDXAVQXTQCCHH7ETYX">
+<div class="card go-card" data-val="go"><div class="ct">GO</div></div>
+<div class="card hold-card" data-val="hold"><div class="ct">HOLD</div></div>
+</div>
+<div class="qmeta"><span class="touchnote" data-qt="01KYSZMZQDXAVQXTQCCHH7ETYX"></span></div>
+<textarea data-qc="01KYSZMZQDXAVQXTQCCHH7ETYX" placeholder="Push back, ask, redirect — comments override widgets…"></textarea>
+<div class="ww-badge" data-qw="01KYSZMZQDXAVQXTQCCHH7ETYX">⚠ comment contains a question → exports as effective HOLD (words win)</div>
+</div>
+</section>
+<footer>twin: <a href="praxodoro-direction-gate.md">praxodoro-direction-gate.md</a> · canvas 01KYSZMZQDXAVQXTQCCHH7ETYR · schema 0.1.0 · rendered by dcanvas</footer>
+</div>
+<div id="modal"><div class="mbox">
+  <div class="mhead"><h3>decisions export</h3><span class="spacer"></span>
+    <button class="mbtn" id="copyBtn">copy</button>
+    <button class="mbtn primary" id="dlBtn">download</button>
+    <button class="mbtn" id="closeBtn">close</button></div>
+  <pre id="jsonOut"></pre>
+  <div class="mnote" id="mnote">next: tell the agent "exported" → it runs dcanvas apply and reads your decisions back. words win: questions in comments hold the gate.</div>
+</div></div>
+<script>
+window.__DCANVAS__ = {"kind":"canvas","schemaVersion":"0.1.0","title":"Praxodoro — approve the base visual direction","lede":"All three directions from the Hallmark dossier are now mocked at equal fidelity (five screens each, same sample afternoon, same renderer). Look at design-mocks/direction-gate/compare.html first — it shows every screen side by side and links to the interactive mocks. This gate records the decision the design dossier has been waiting on: which direction becomes the base for the formal product/design spec.","generated":"2026-07-30T17:20:00Z","sections":[{"heading":"Base visual direction","description":"The research says the smallest differentiated product is the complete low-friction loop — all three mocks implement that same loop, so this choice is about identity and risk, not features. The dossier recommends A. Whichever you pick becomes the design language the OpenSpec change and every SwiftUI surface must trace to.","questions":[{"key":"base_direction","type":"single","prompt":"Which direction is the base for Praxodoro?","default":"liquid-instrument","options":[{"value":"liquid-instrument","label":"A · Liquid Instrument","description":"Nocturnal machined instrument: glass controls, tactile panels, amber signal. Quietest identity, cleanest SwiftUI/Metal mapping, dossier-recommended. Known risk: visual density (its own Restraint score was 3/5).","recommended":true},{"value":"living-companion","label":"B · Living Companion","description":"Warm dusk-light; an abstract breathing field is the visual centre. Most emotionally supportive, makes the ADHD-aware positioning unmistakable. Known risk: continuous organic motion can distract; heaviest Reduce-Motion burden; must never read juvenile."},{"value":"focus-observatory","label":"C · Focus Observatory","description":"Cyan/steel control room with day ledger, calendar, and automations at the rim; the dock sleeps until a block starts. Strongest power-user legibility. Known risk: density raises activation energy on the start path."},{"value":"rework","label":"None — rework needed","description":"No direction is right as a base. Say what's off in a comment (e.g. blend A's timer with B's warmth) and I'll iterate the mocks before any spec is written."}],"id":"01KYSZMZQDXAVQXTQCCHH7ETYT"},{"key":"direction_notes","type":"comment","prompt":"Anything to carry into the spec from the losing directions? (e.g. keep C's day ledger in Review, keep B's check-in copy tone.)","id":"01KYSZMZQDXAVQXTQCCHH7ETYV"}],"id":"01KYSZMZQDXAVQXTQCCHH7ETYS"},{"heading":"Next step after approval","description":"Per the repo's own contract (AGENTS.md + the dossier's approval boundary), the step after direction approval is writing the formal product/design specification: SPEC.md, prd.json, and the first OpenSpec change (proposal, EARS capability specs, design, tasks) — all tracing to the chosen mocks and the validated research. Native Swift code stays gated until that spec is reviewed.","questions":[{"key":"write_spec","type":"confirm","prompt":"GO: write the formal spec + first OpenSpec change from the chosen direction?","options":[{"value":"go","label":"GO"},{"value":"hold","label":"HOLD"}],"id":"01KYSZMZQDXAVQXTQCCHH7ETYX"}],"id":"01KYSZMZQDXAVQXTQCCHH7ETYW"}],"id":"01KYSZMZQDXAVQXTQCCHH7ETYR","baseline":"6ff9fa687a46b5dcc9b2d4a9cf1592976b25acb7120aaeaec2f741e345478b53","fileBase":"praxodoro-direction-gate"};
+window.__DCANVAS_LEXICON__ = {"rules":[{"id":"question-mark","pattern":"\\?","flags":""},{"id":"explain-request","pattern":"\\b(explain|layman|eli5|deep ?dive|clarify|elaborate|walk (me|us) (through|thru)|run (me|us) (through|thru)|break (it|this|that) down|tell me (what|how|why|more)|need more (info|information|details?|context)|show me|short version|tl;?dr|summar(y|ise|ize) first|recap)\\b","flags":"i"},{"id":"hesitate-doubt","pattern":"\\b(wait|hang on|hold (on|off|up)|unsure|not (\\w+ )?(sure|sold|convinced|comfortable|confident)|second thoughts?|doubts?|hmm+|iffy|sketchy|uneasy|hesitant|(bugs?|bothers?) me|worr(y|ied|ies)|concern(s|ed)?|feels (off|wrong)|seems (off|wrong|weird|odd)|(doesn'?t|dont|don'?t) (add up|sit right|feel right))\\b","flags":"i"},{"id":"pushback","pattern":"\\b(why (is|are|do|did|does|would|should)|what about|(are|r) (we|you|u) sure|u sure|you sure|todo|contradicts?)\\b","flags":"i"},{"id":"confusion","pattern":"\\b((did ?not|didn'?t|don'?t|dont|doesn'?t|can'?t|cant) (get|understand|follow)|not (getting|following)|confus(ed|ing|ion)|idk|dunno|no idea|makes no sense|(i'?m|im|i am) lost|lost me|over my head|went over)\\b","flags":"i"},{"id":"info-imperative","pattern":"\\b(remind me|gimme (the|a)|give me (the|a) (rundown|breakdown|summary|overview|gist)|fill me in|catch me up|spell (it|this|that) out)\\b","flags":"i"},{"id":"wh-question-lead","pattern":"(^|[,.;:]\\s*|\\b(but|and|also|btw|so)\\s+)(what|whats|what's|how|why|when|which|where)\\b","flags":"i"},{"id":"yesno-question-lead","pattern":"(^|[,.;:]\\s*|\\b(but|and|also|so)\\s+)(is|are|can|could|does|should|will|would)\\s+(this|that|it|we|you|the|i)\\b","flags":"i"},{"id":"pacing-defer","pattern":"\\b(discuss (this |it )?first|talk (about this|it) (first|before)|before (you|we|u) (run|execute|apply|do|ship|merge|push)|first tell me|slow down|pause (on|this|that|it)?\\b|not (yet|now)|until i (read|check|see|review)|let'?s wait|lets wait)\\b","flags":"i"}],"exemptions":[]};
+</script>
+<script>
+'use strict';
+const CANVAS = window.__DCANVAS__;
+const LEX = window.__DCANVAS_LEXICON__;
+const QS = [];
+for (const s of CANVAS.sections) for (const q of s.questions) QS.push(q);
+const state = {};
+for (const q of QS) {
+  if (q.type === 'triage') {
+    const t = {};
+    for (const it of q.items ?? []) t[it.id] = it.default ?? (q.buckets?.[0] ?? null);
+    state[q.id] = { val: t, confirmation: 'default', deferred: false, comment: '', touched: {} };
+  } else if (q.type === 'multi') {
+    state[q.id] = { val: [], confirmation: 'default', deferred: false, comment: '' };
+  } else {
+    state[q.id] = { val: q.default ?? null, confirmation: 'default', deferred: false, comment: '' };
+  }
+}
+function wwHit(t){
+  if(!t) return null;
+  for (const ex of LEX.exemptions) if (new RegExp(ex.pattern, ex.flags||'').test(t)) return null;
+  for (const r of LEX.rules) { const m = new RegExp(r.pattern, r.flags||'').exec(t); if (m) return r.id; }
+  return null;
+}
+const KEY = 'dcanvas-' + CANVAS.id;
+function persist(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function restore(){ try{ const s = JSON.parse(localStorage.getItem(KEY)||'null'); if(!s) return;
+  for (const q of QS) if (s[q.id]) Object.assign(state[q.id], s[q.id]); }catch(e){} }
+function ulidClient(){
+  const A='0123456789ABCDEFGHJKMNPQRSTVWXYZ'; let t=Date.now(), out='';
+  for(let i=0;i<10;i++){ out=A[t%32]+out; t=Math.floor(t/32); }
+  const r=crypto.getRandomValues(new Uint8Array(10)); let bits=0,acc=0,rs='';
+  for(const b of r){ acc=(acc<<8)|b; bits+=8; while(bits>=5){ rs+=A[(acc>>>(bits-5))&31]; bits-=5; } }
+  if(bits>0) rs+=A[(acc<<(5-bits))&31];
+  return out + rs.slice(0,16);
+}
+function renderState(){
+  let explicit=0, deferred=0;
+  for (const q of QS) {
+    const st = state[q.id];
+    if (st.confirmation==='explicit') explicit++;
+    if (st.deferred) deferred++;
+    const grid = document.querySelector('[data-q="'+q.id+'"]');
+    if (grid) {
+      if (q.type==='single'||q.type==='confirm') grid.querySelectorAll('.card').forEach(c=>c.classList.toggle('sel', !st.deferred && c.dataset.val===st.val));
+      if (q.type==='multi') grid.querySelectorAll('.tchip').forEach(c=>c.classList.toggle('on', st.val.includes(c.dataset.val)));
+      if (q.type==='triage') grid.querySelectorAll('.titem').forEach(row=>{
+        row.querySelectorAll('button[data-bucket]').forEach(b=>b.classList.toggle('on', st.val[row.dataset.item]===b.dataset.bucket)); });
+    }
+    const d = document.querySelector('.defer[data-qd="'+q.id+'"]'); if (d) d.classList.toggle('on', st.deferred);
+    const tn = document.querySelector('.touchnote[data-qt="'+q.id+'"]');
+    if (tn) { if (st.deferred){ tn.textContent='deferred — carries forward to the next doc'; tn.className='touchnote'; }
+      else if (st.confirmation==='explicit'){ tn.textContent='explicitly confirmed'; tn.className='touchnote explicit'; }
+      else { tn.textContent = q.type==='confirm' ? 'no default — needs your click' : 'pre-seeded — untouched (exports as default)'; tn.className='touchnote'; } }
+    const ta = document.querySelector('textarea[data-qc="'+q.id+'"]'); if (ta && ta.value!==st.comment) ta.value=st.comment;
+    const wb = document.querySelector('.ww-badge[data-qw="'+q.id+'"]'); if (wb) wb.classList.toggle('show', !!wwHit(st.comment));
+  }
+  document.getElementById('nExp').textContent = explicit;
+  document.getElementById('nDef').textContent = QS.length - explicit - deferred;
+  document.getElementById('nDfr').textContent = deferred;
+  const gateQ = QS.find(q=>q.type==='confirm');
+  const pill = document.getElementById('gatePill'), eb = document.getElementById('exportBtn');
+  const anyWW = QS.some(q=>state[q.id].comment && state[q.id].confirmation==='explicit' && wwHit(state[q.id].comment));
+  if (gateQ) {
+    const g = state[gateQ.id];
+    if (g.confirmation==='explicit' && g.val==='go' && !anyWW){ pill.textContent='GATE: GO'; pill.className='gate-pill go'; }
+    else if (g.confirmation==='explicit'){ pill.textContent = (anyWW && g.val==='go') ? 'GATE: GO\u2192HOLD (words win)' : 'GATE: HOLD'; pill.className='gate-pill hold'; }
+    else { pill.textContent='GATE: UNANSWERED'; pill.className='gate-pill'; }
+    eb.classList.toggle('subdued', g.confirmation!=='explicit');
+  } else { pill.style.display='none'; eb.classList.remove('subdued'); }
+  persist();
+}
+document.addEventListener('click', (e)=>{
+  const card = e.target.closest('.card[data-val]');
+  if (card) { const grid = card.closest('[data-q]'); const q = QS.find(x=>x.id===grid.dataset.q);
+    if (q && !q.locked) { const st=state[q.id]; st.val=card.dataset.val; st.confirmation='explicit'; st.deferred=false; renderState(); } return; }
+  const chip = e.target.closest('.tchip[data-val]');
+  if (chip) { const grid = chip.closest('[data-q]'); const q = QS.find(x=>x.id===grid.dataset.q);
+    if (q && !q.locked) { const st=state[q.id]; const i=st.val.indexOf(chip.dataset.val);
+      if (i===-1) st.val.push(chip.dataset.val); else st.val.splice(i,1);
+      st.confirmation='explicit'; st.deferred=false; renderState(); } return; }
+  const bk = e.target.closest('button[data-bucket]');
+  if (bk) { const row=bk.closest('.titem'); const grid=bk.closest('[data-q]'); const q=QS.find(x=>x.id===grid.dataset.q);
+    if (q && !row.classList.contains('locked')) { const st=state[q.id];
+      st.val[row.dataset.item]=bk.dataset.bucket; st.touched[row.dataset.item]=true;
+      st.confirmation='explicit'; st.deferred=false; renderState(); } return; }
+  const df = e.target.closest('.defer[data-qd]');
+  if (df) { const st=state[df.dataset.qd]; st.deferred=!st.deferred; if (st.deferred) st.confirmation='explicit'; renderState(); }
+});
+document.addEventListener('input', (e)=>{
+  const ta = e.target.closest('textarea[data-qc]'); if (!ta) return;
+  const st = state[ta.dataset.qc]; st.comment = ta.value;
+  if (ta.value) st.confirmation='explicit';
+  renderState();
+});
+function confirmReset(){
+  const n = QS.filter(q=>state[q.id].confirmation==='explicit'||state[q.id].comment).length;
+  if (n && !confirm('Discard '+n+' explicit change(s)/comment(s) and restore the recommended defaults?')) return;
+  for (const q of QS) {
+    if (q.type==='triage'){ const t={}; for(const it of q.items??[]) t[it.id]=it.default??(q.buckets?.[0]??null);
+      state[q.id]={val:t,confirmation:'default',deferred:false,comment:'',touched:{}}; }
+    else if (q.type==='multi') state[q.id]={val:[],confirmation:'default',deferred:false,comment:''};
+    else state[q.id]={val:q.default??null,confirmation:'default',deferred:false,comment:''};
+  }
+  try{ localStorage.removeItem(KEY); }catch(e){}
+  renderState();
+}
+function exportAll(){
+  const answers=[];
+  for (const q of QS) {
+    const st=state[q.id];
+    const a={ questionId:q.id, confirmation:st.confirmation };
+    if (q.key) a.key=q.key;
+    if (q.carryForwardFrom) a.canvasId=q.carryForwardFrom;
+    if (st.deferred) a.resolution='deferred';
+    else { a.resolution='answered'; if (q.type!=='comment') a.value=st.val; }
+    if (st.comment) a.comment=st.comment;
+    answers.push(a);
+  }
+  const gateQ=QS.find(q=>q.type==='confirm');
+  const anyWW=QS.some(q=>state[q.id].comment && state[q.id].confirmation==='explicit' && wwHit(state[q.id].comment));
+  const raw = gateQ && state[gateQ.id].confirmation==='explicit' ? state[gateQ.id].val : null;
+  const out={ kind:'decisions', schemaVersion:CANVAS.schemaVersion, canvasId:CANVAS.id,
+    exportId:ulidClient(), exportedAt:new Date().toISOString(),
+    baseline:CANVAS.baseline??null, answers,
+    gate:{ raw, effective:(raw==='go'&&!anyWW)?'go':'hold', wordsWinTriggered:anyWW } };
+  const j=JSON.stringify(out,null,2);
+  document.getElementById('jsonOut').textContent=j;
+  document.getElementById('modal').classList.add('show');
+  window._lastJson=j; window._lastName=(CANVAS.fileBase||'doc')+'.decisions.json';
+}
+function copyJson(){ navigator.clipboard.writeText(window._lastJson).then(()=>{
+  const b=document.getElementById('copyBtn'); b.textContent='copied \u2713'; b.classList.add('copied');
+  setTimeout(()=>{ b.textContent='copy'; b.classList.remove('copied'); },1600); }); }
+function downloadJson(){ const b=new Blob([window._lastJson],{type:'application/json'});
+  const u=URL.createObjectURL(b); const a=document.createElement('a'); a.href=u; a.download=window._lastName; a.click();
+  document.getElementById('mnote').textContent='downloaded \u2192 tell the agent "exported" (then: dcanvas apply '+window._lastName+')'; }
+document.getElementById('resetBtn').addEventListener('click', confirmReset);
+document.getElementById('exportBtn').addEventListener('click', exportAll);
+document.getElementById('copyBtn').addEventListener('click', copyJson);
+document.getElementById('dlBtn').addEventListener('click', downloadJson);
+document.getElementById('closeBtn').addEventListener('click', ()=>document.getElementById('modal').classList.remove('show'));
+restore(); renderState();
+</script>
+</body></html>

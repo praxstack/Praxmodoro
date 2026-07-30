@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praxodoro · Direction gate — three mocked approaches</title>
+<style>
+  /* Internal decision tool — deliberately neutral so it doesn't bias the choice. */
+  :root {
+    --paper: oklch(15% 0.008 260);
+    --panel: oklch(19% 0.01 260);
+    --ink: oklch(93% 0.005 260);
+    --muted: oklch(68% 0.01 260);
+    --rule: oklch(30% 0.01 260);
+    --link: oklch(80% 0.09 230);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; overflow-x: clip; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font: 15px/1.55 -apple-system, system-ui, sans-serif;
+    padding: 2.5rem clamp(1rem, 4vw, 3.5rem) 5rem;
+  }
+  h1 { font-size: 1.6rem; margin: 0 0 .3rem; }
+  .lede { color: var(--muted); max-width: 62ch; margin: 0 0 2rem; }
+  a { color: var(--link); }
+  .dirs { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+  .dir { background: var(--panel); border: 1px solid var(--rule); border-radius: .75rem; padding: 1rem 1.1rem; }
+  .dir h2 { font-size: 1.02rem; margin: 0 0 .35rem; }
+  .dir p { color: var(--muted); font-size: .86rem; margin: 0 0 .6rem; }
+  .dir a { font-size: .86rem; font-weight: 600; }
+  .screen { margin-bottom: 3rem; }
+  .screen h3 {
+    font-size: .8rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); border-bottom: 1px solid var(--rule);
+    padding-bottom: .45rem; margin: 0 0 .9rem;
+  }
+  .row { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 1rem; }
+  figure { margin: 0; }
+  figure img {
+    width: 100%; height: auto; display: block;
+    border: 1px solid var(--rule); border-radius: .5rem;
+  }
+  figcaption { font-size: .78rem; color: var(--muted); margin-top: .4rem; }
+  .gate {
+    background: var(--panel); border: 1px solid var(--rule); border-radius: .75rem;
+    padding: 1.2rem 1.4rem; max-width: 46rem;
+  }
+  .gate strong { display: block; margin-bottom: .3rem; }
+  @media (max-width: 64rem) { .dirs, .row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>Praxodoro — base direction gate</h1>
+<p class="lede">All three approaches from the Hallmark dossier, now at equal fidelity: five screens each, one consistent sample afternoon, identical viewport and renderer. Click any direction's interactive mock to drive it live (keys 1–5 switch screens, Space pauses the timer).</p>
+
+<div class="dirs">
+  <div class="dir">
+    <h2>A · Liquid Instrument <em>(dossier's recommendation)</em></h2>
+    <p>Nocturnal machined instrument — refractive glass controls, tactile panels, amber signal. Quiet identity; maps cleanly to SwiftUI/Metal. Known risk: visual density (Restraint 3/5).</p>
+    <a href="../hallmark/app-mocks.html">Open interactive mock →</a>
+  </div>
+  <div class="dir">
+    <h2>B · Living Companion</h2>
+    <p>Warm dusk-light; an abstract breathing field is the visual centre and changes with state. Most emotionally supportive. Known risk: continuous motion can distract; heaviest Reduce-Motion burden.</p>
+    <a href="../living-companion/app-mocks.html">Open interactive mock →</a>
+  </div>
+  <div class="dir">
+    <h2>C · Focus Observatory</h2>
+    <p>Cyan/steel control room — day ledger, calendar, automations at the rim; dock sleeps until a block starts. Power-user legibility. Known risk: density raises activation energy.</p>
+    <a href="../focus-observatory/app-mocks.html">Open interactive mock →</a>
+  </div>
+</div>
+
+<section class="screen"><h3>1 · Initiate — one task, one first action</h3>
+  <div class="row">
+    <figure><img src="shots/a-liquid-instrument--initiate.png" alt="Liquid Instrument initiate screen"><figcaption>A · Liquid Instrument</figcaption></figure>
+    <figure><img src="shots/b-living-companion--initiate.png" alt="Living Companion initiate screen"><figcaption>B · Living Companion</figcaption></figure>
+    <figure><img src="shots/c-focus-observatory--initiate.png" alt="Focus Observatory initiate screen"><figcaption>C · Focus Observatory</figcaption></figure>
+  </div>
+</section>
+
+<section class="screen"><h3>2 · Focus — the timer holds the task</h3>
+  <div class="row">
+    <figure><img src="shots/a-liquid-instrument--focus.png" alt="Liquid Instrument focus screen"><figcaption>A · Liquid Instrument</figcaption></figure>
+    <figure><img src="shots/b-living-companion--focus.png" alt="Living Companion focus screen"><figcaption>B · Living Companion</figcaption></figure>
+    <figure><img src="shots/c-focus-observatory--focus.png" alt="Focus Observatory focus screen"><figcaption>C · Focus Observatory</figcaption></figure>
+  </div>
+</section>
+
+<section class="screen"><h3>3 · Check-in — four answers, no failure state</h3>
+  <div class="row">
+    <figure><img src="shots/a-liquid-instrument--checkin.png" alt="Liquid Instrument check-in screen"><figcaption>A · Liquid Instrument</figcaption></figure>
+    <figure><img src="shots/b-living-companion--checkin.png" alt="Living Companion check-in screen"><figcaption>B · Living Companion</figcaption></figure>
+    <figure><img src="shots/c-focus-observatory--checkin.png" alt="Focus Observatory check-in screen"><figcaption>C · Focus Observatory</figcaption></figure>
+  </div>
+</section>
+
+<section class="screen"><h3>4 · Break — user-steerable, with re-entry card</h3>
+  <div class="row">
+    <figure><img src="shots/a-liquid-instrument--break.png" alt="Liquid Instrument break screen"><figcaption>A · Liquid Instrument</figcaption></figure>
+    <figure><img src="shots/b-living-companion--break.png" alt="Living Companion break screen"><figcaption>B · Living Companion</figcaption></figure>
+    <figure><img src="shots/c-focus-observatory--break.png" alt="Focus Observatory break screen"><figcaption>C · Focus Observatory</figcaption></figure>
+  </div>
+</section>
+
+<section class="screen"><h3>5 · Review — a record, not a verdict</h3>
+  <div class="row">
+    <figure><img src="shots/a-liquid-instrument--review.png" alt="Liquid Instrument review screen"><figcaption>A · Liquid Instrument</figcaption></figure>
+    <figure><img src="shots/b-living-companion--review.png" alt="Living Companion review screen"><figcaption>B · Living Companion</figcaption></figure>
+    <figure><img src="shots/c-focus-observatory--review.png" alt="Focus Observatory review screen"><figcaption>C · Focus Observatory</figcaption></figure>
+  </div>
+</section>
+
+<div class="gate">
+  <strong>Ready to decide?</strong>
+  Record your call in the decision gate: <a href="../../praxodoro-direction-gate.html">praxodoro-direction-gate.html</a> — pick the base direction, click GO/HOLD on writing the formal spec, then hit Export.
+</div>
+</body>
+</html>

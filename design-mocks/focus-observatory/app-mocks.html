@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Praxodoro — Focus Observatory interactive macOS mocks</title>
+  <link rel="stylesheet" href="/files/mockups.css">
+  <link rel="stylesheet" href="./mockups.css">
+</head>
+<body>
+  <div class="console-shell" id="consoleShell" data-effects="full" data-dock="receded">
+    <header class="command-bar">
+      <div class="brand-block">
+        <span class="brand-sigil" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/><circle cx="12" cy="12" r="1.6"/></svg>
+        </span>
+        <span class="brand-word">Praxodoro<span class="brand-tag">Focus Observatory · C</span></span>
+      </div>
+
+      <nav class="tab-strip" aria-label="Mockup screens">
+        <button class="tab" type="button" data-screen-target="initiate" aria-selected="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          <span class="tab-key" aria-hidden="true">1</span><span class="tab-label">Initiate</span>
+        </button>
+        <button class="tab" type="button" data-screen-target="focus" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"/><path d="M12 8v4l3 2"/></svg>
+          <span class="tab-key" aria-hidden="true">2</span><span class="tab-label">Focus</span>
+        </button>
+        <button class="tab" type="button" data-screen-target="checkin" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M9 10h6"/></svg>
+          <span class="tab-key" aria-hidden="true">3</span><span class="tab-label">Check-in</span>
+        </button>
+        <button class="tab" type="button" data-screen-target="break" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+          <span class="tab-key" aria-hidden="true">4</span><span class="tab-label">Break</span>
+        </button>
+        <button class="tab" type="button" data-screen-target="review" aria-selected="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19V9M12 19V4M19 19v-7"/></svg>
+          <span class="tab-key" aria-hidden="true">5</span><span class="tab-label">Review</span>
+        </button>
+      </nav>
+
+      <div class="bar-status">
+        <span class="bar-timer" id="barTimer" aria-label="Time remaining in block">T−17:42</span>
+        <span class="bar-note" id="barNote">Standby · context receded until start</span>
+        <button class="bar-chip" type="button" id="quickCapture">Capture</button>
+        <button class="bar-chip" type="button" id="effectsToggle" aria-pressed="false">Effects: full</button>
+      </div>
+    </header>
+
+    <div class="console-body">
+      <main class="stage">
+        <section class="screen is-current" id="screen-initiate" data-screen="initiate" aria-labelledby="initiate-title">
+          <div class="screen-heading">
+            <div><h1 id="initiate-title">One task. The room can wait.</h1></div>
+            <p>Everything the console knows stays receded at the edge until a block starts. Starting asks for one task, one small action, one honest read of capacity.</p>
+          </div>
+
+          <div class="initiate-grid">
+            <article class="console-panel init-main">
+              <div class="task-composer">
+                <span class="quiet-label">What gets the next block?</span>
+                <label for="taskInput">Choose one task</label>
+                <input class="task-input" id="taskInput" value="Write migration notes for the reducer change" autocomplete="off">
+              </div>
+
+              <div>
+                <span class="quiet-label">The first visible action</span>
+                <div class="first-action">
+                  <span class="first-action-index">1</span>
+                  <div>
+                    <strong>Open MIGRATION.md and write the first bullet in plain words.</strong>
+                    <span>Concrete and small — about five minutes. Edit it if it reads too big.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <span class="quiet-label">Capacity right now</span>
+                <div class="choice-row" role="group" aria-label="Current capacity">
+                  <button class="choice-chip" type="button" aria-pressed="false">Foggy</button>
+                  <button class="choice-chip" type="button" aria-pressed="true">Steady</button>
+                  <button class="choice-chip" type="button" aria-pressed="false">Restless</button>
+                  <button class="choice-chip" type="button" aria-pressed="false">Charged</button>
+                </div>
+              </div>
+
+              <div>
+                <span class="quiet-label">Timing policy</span>
+                <div class="mode-row" role="group" aria-label="Timing policy">
+                  <button class="mode-chip" type="button" aria-pressed="true">Classic · 25 + 5</button>
+                  <button class="mode-chip" type="button" aria-pressed="false">Gentle start · 5 + 20</button>
+                  <button class="mode-chip" type="button" aria-pressed="false">Flow · open ended</button>
+                  <button class="mode-chip" type="button" aria-pressed="false">Recovery first</button>
+                </div>
+              </div>
+
+              <button class="start-control control-button" type="button" id="beginSession">
+                <span class="start-puck" aria-hidden="true">▶</span>
+                <span>
+                  <strong>Start block 04</strong>
+                  <small>25 minutes. The dock wakes when you do — not before.</small>
+                </span>
+                <span class="start-shortcut">⌘ ↩</span>
+              </button>
+              <div class="state-message" id="initiateMessage" aria-live="polite"></div>
+
+              <details class="advanced-fold">
+                <summary>Advanced · automations at the block boundary</summary>
+                <div class="fold-body">
+                  <div class="fold-row"><div class="fold-copy"><strong>macOS Focus · Coding</strong><span>Turns on at start; previous state restored at close.</span></div><span class="fold-state" data-state="armed">armed</span></div>
+                  <div class="fold-row"><div class="fold-copy"><strong>Slack notifications</strong><span>Snoozed for the block; nothing is sent on your behalf.</span></div><span class="fold-state" data-state="armed">armed</span></div>
+                  <div class="fold-row"><div class="fold-copy"><strong>Session log</strong><span>Events append to a local file. No account, no upload.</span></div><span class="fold-state" data-state="local">local</span></div>
+                  <div class="fold-row"><div class="fold-copy"><strong>System-wide blocking</strong><span>Separate, optional install. Not part of starting.</span></div><button class="bar-chip" type="button" disabled>Not installed</button></div>
+                  <p class="fold-note">Automations run deterministically at block boundaries. None are required to start.</p>
+                </div>
+              </details>
+            </article>
+
+            <aside class="veil-panel init-aside">
+              <div>
+                <span class="quiet-label">Why the room is dim</span>
+                <h3>Density is for later, not for starting.</h3>
+                <p>A control room can raise the cost of beginning. So the dock sleeps until you start: nothing at the edge needs reading, and the only decision on this surface is the next five minutes.</p>
+                <p>Check-ins have four answers and no failure state. A detour becomes a row in the ledger — never a broken streak.</p>
+              </div>
+              <div class="privacy-note">Local first. Ledger, captures, and capacity stay on this Mac. Optional sync would carry history only — never live countdown ticks.</div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-focus" data-screen="focus" aria-labelledby="focus-title" inert>
+          <div class="screen-heading">
+            <div><h2 id="focus-title">The task holds the center.</h2></div>
+            <p>Telemetry stays at the rim: session facts in small type. Nothing on this surface measures you — it measures the block.</p>
+          </div>
+
+          <div class="focus-stack">
+            <article class="console-panel focus-stage">
+              <div class="focus-head">
+                <div>
+                  <span class="block-tag">Block 04 · Classic 25 + 5</span>
+                  <h2 class="focus-task">Write migration notes for the reducer change</h2>
+                  <p class="next-action">Next: write the first bullet in plain words.</p>
+                </div>
+              </div>
+
+              <div class="readout">
+                <span class="timer-time" id="timerTime">17:42</span>
+                <span class="timer-state" id="timerState">Holding the block · next check-in ~15:16</span>
+              </div>
+
+              <div class="meter-block" aria-label="Block progress">
+                <div class="meter"><span class="meter-fill" id="meterFill"></span></div>
+                <div class="meter-ticks" aria-hidden="true"><span>00</span><span>05</span><span>10</span><span>15</span><span>20</span><span>25</span></div>
+              </div>
+
+              <div class="key-row" aria-label="Timer controls">
+                <button class="console-key" type="button" id="rewindButton" aria-label="Subtract one minute">−1</button>
+                <button class="console-key" type="button" id="timerToggle" data-primary="true" aria-label="Pause timer">Ⅱ</button>
+                <button class="console-key" type="button" id="forwardButton" aria-label="Add one minute">+1</button>
+              </div>
+
+              <div class="telemetry-strip" role="group" aria-label="Session telemetry">
+                <div class="tele-cell"><span class="tele-key">Started</span><span class="tele-val">15:04</span></div>
+                <div class="tele-cell"><span class="tele-key">Policy</span><span class="tele-val">25 + 5</span></div>
+                <div class="tele-cell"><span class="tele-key">Next check-in</span><span class="tele-val">~15:16</span></div>
+                <div class="tele-cell"><span class="tele-key">Parked today</span><span class="tele-val">3</span></div>
+              </div>
+            </article>
+
+            <aside class="veil-panel coach-line">
+              <div>
+                <strong>Quiet until ~15:16.</strong>
+                <span>A drift, a pause, or your own request opens the check-in sooner. Nothing else is watched.</span>
+              </div>
+              <div class="nudge-actions">
+                <button class="text-action" type="button" data-screen-jump="checkin">Check in now</button>
+                <button class="text-action" type="button" data-screen-jump="break">Take a break</button>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-checkin" data-screen="checkin" aria-labelledby="checkin-title" inert>
+          <div class="screen-heading">
+            <div><h2 id="checkin-title">A reading, not a grade.</h2></div>
+            <p>Four answers, no failure state. The console adjusts the next step or the break — never a score.</p>
+          </div>
+
+          <div class="checkin-layout">
+            <article class="console-panel checkin-card">
+              <span class="quiet-label">Scheduled check-in · T+12:00 · timer held</span>
+              <h2 class="checkin-question">Still with the plan?</h2>
+              <p class="checkin-note">Choose the closest answer. It changes the next step or the break suggestion — not a score, not a streak.</p>
+              <div class="checkin-options" role="group" aria-label="Check-in answer">
+                <button class="checkin-option" type="button" data-checkin="holding"><span class="option-key">1</span><span><strong>Yes, keep holding</strong><small>Close this reading and let the block continue.</small></span></button>
+                <button class="checkin-option" type="button" data-checkin="smaller"><span class="option-key">2</span><span><strong>Make the step smaller</strong><small>Turn the next action into a two-minute move.</small></span></button>
+                <button class="checkin-option" type="button" data-checkin="detour"><span class="option-key">3</span><span><strong>I got pulled away</strong><small>Log the detour as data, then choose whether to return.</small></span></button>
+                <button class="checkin-option" type="button" data-checkin="break"><span class="option-key">4</span><span><strong>I need a break</strong><small>Open the break console with re-entry preserved.</small></span></button>
+              </div>
+              <div class="state-message" id="checkinMessage" aria-live="polite">No answer is a failure state. The block simply waits.</div>
+            </article>
+
+            <aside class="veil-panel session-side">
+              <div>
+                <span class="quiet-label">Session log · this afternoon only</span>
+                <h3>The ledger keeps the plan visible.</h3>
+                <p>Check-ins fire on time, on pause, or on request — not by watching every app you open.</p>
+                <ol class="session-log">
+                  <li><time>13:30</time><span>Movement break chosen · returned in 3 min.</span></li>
+                  <li><time>14:21</time><span>Detour acknowledged · returned to the block.</span></li>
+                  <li><time>15:04</time><span>Block 04 started · capacity steady.</span></li>
+                  <li><time>15:16</time><span>Check-in opened · timer held.</span></li>
+                </ol>
+              </div>
+              <button class="start-control control-button" type="button" data-screen-jump="focus">
+                <span class="start-puck" aria-hidden="true">↩</span>
+                <span><strong>Return to focus</strong><small>The timer resumes exactly where it was held.</small></span>
+                <span class="start-shortcut">⌘ ↩</span>
+              </button>
+            </aside>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-break" data-screen="break" aria-labelledby="break-title" inert>
+          <div class="screen-heading">
+            <div><h2 id="break-title">A break with instruments off.</h2></div>
+            <p>Suggestions follow what you told the console — not a claimed optimum. The only persistent object is the way back.</p>
+          </div>
+
+          <div class="break-layout">
+            <article class="console-panel break-stage">
+              <div>
+                <span class="quiet-label">Reset · user-steerable</span>
+                <div class="break-time">03:00</div>
+                <h2>What would help the return?</h2>
+                <p>Pick one, or none. The break can end early; finishing it is not the point.</p>
+                <div class="break-actions" role="group" aria-label="Break actions">
+                  <button class="break-action" type="button" data-break="water"><strong>Water</strong><span>Stand, drink, return.</span></button>
+                  <button class="break-action" type="button" data-break="eyes"><strong>Distance</strong><span>Look past the screens.</span></button>
+                  <button class="break-action" type="button" data-break="move"><strong>Move</strong><span>Shoulders, hands, hallway.</span></button>
+                  <button class="break-action" type="button" data-break="quiet"><strong>Quiet</strong><span>No prompt, no instruction.</span></button>
+                </div>
+              </div>
+            </article>
+
+            <aside class="veil-panel reentry-panel">
+              <div>
+                <span class="quiet-label">Re-entry card</span>
+                <h3>Your place is held.</h3>
+                <p>When the break ends, this card is the only instruction on screen.</p>
+                <div class="reentry-step">
+                  <strong>Write the first migration bullet in plain words.</strong>
+                  <span>MIGRATION.md is already open. Rough is fine; the block resumes at 17:42.</span>
+                </div>
+                <div class="adaptive-disclosure"><strong>Why movement first?</strong> You chose movement at your 13:30 break and marked this block steady. That ordering is a preference you set — not a computed optimum. Reorder or ignore it freely.</div>
+              </div>
+              <button class="start-control control-button" type="button" data-screen-jump="focus">
+                <span class="start-puck" aria-hidden="true">▶</span>
+                <span><strong>Ready to return</strong><small>Resume with the re-entry card visible for 30 seconds.</small></span>
+                <span class="start-shortcut">R</span>
+              </button>
+            </aside>
+          </div>
+        </section>
+
+        <section class="screen" id="screen-review" data-screen="review" aria-labelledby="review-title" inert>
+          <div class="screen-heading">
+            <div><h2 id="review-title">A record, not a verdict.</h2></div>
+            <p>The ledger describes starts, returns, captures, and exits. It reports one afternoon; it does not diagnose a person.</p>
+          </div>
+
+          <div class="review-grid">
+            <section class="panel table-panel">
+              <div class="panel-header">
+                <div><h3>Session ledger</h3><p>Thursday 30 July · afternoon · local record</p></div>
+                <button class="bar-chip" type="button">Add note</button>
+              </div>
+              <div class="table-scroll">
+                <table class="ledger-table">
+                  <caption class="sr-only">Blocks recorded this afternoon with start, end, task, check-in answer, and exit state</caption>
+                  <thead>
+                    <tr><th scope="col">Block</th><th scope="col">Start</th><th scope="col">End</th><th scope="col">Task</th><th scope="col">Check-in</th><th scope="col">Exit</th></tr>
+                  </thead>
+                  <tbody>
+                    <tr><td>01</td><td>13:05</td><td>13:30</td><td>Refactor session-state reducer</td><td>continue</td><td><span class="exit-tag" data-kind="closed">closed as planned</span></td></tr>
+                    <tr><td>02</td><td>13:36</td><td>14:01</td><td>Refactor session-state reducer</td><td>continue</td><td><span class="exit-tag" data-kind="closed">closed as planned</span></td></tr>
+                    <tr><td>03</td><td>14:10</td><td>14:39</td><td>Reducer refactor · write tests</td><td>detour acknowledged</td><td><span class="exit-tag" data-kind="adjusted">closed · +4 min detour</span></td></tr>
+                    <tr><td>04</td><td>15:04</td><td>—</td><td>Write migration notes for the reducer change</td><td>due ~15:16</td><td><span class="exit-tag" data-kind="live"><span class="pulse" aria-hidden="true"></span>live</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="table-note">Untracked time appears as gaps. Gaps are not failures; they are simply not recorded.</p>
+            </section>
+
+            <aside class="insight-stack">
+              <section class="veil-panel insight-card">
+                <span class="quiet-label">Observed, not diagnosed</span>
+                <h3>Post-break blocks closed on time.</h3>
+                <p>Both blocks after a chosen break closed as planned. That is one afternoon of data — enough to keep the option visible, not enough to make it a rule.</p>
+              </section>
+              <section class="panel insight-card">
+                <h3>Capacity you reported</h3>
+                <div class="capacity-plot" aria-label="Reported capacity across four blocks">
+                  <div class="capacity-col"><span class="capacity-bar" style="height:62%"></span><span class="capacity-key">B01</span></div>
+                  <div class="capacity-col"><span class="capacity-bar" style="height:58%"></span><span class="capacity-key">B02</span></div>
+                  <div class="capacity-col"><span class="capacity-bar is-low" style="height:40%"></span><span class="capacity-key">B03</span></div>
+                  <div class="capacity-col"><span class="capacity-bar" style="height:60%"></span><span class="capacity-key">B04</span></div>
+                </div>
+                <p class="plot-note">Steady · steady · restless · steady. Self-reported, kept local.</p>
+              </section>
+              <section class="panel insight-card">
+                <div class="metric-line"><span>Time in blocks</span><strong>1 h 15 m + live</strong></div>
+                <div class="metric-line"><span>Returns after breaks</span><strong>2 / 2</strong></div>
+                <div class="metric-line"><span>Thoughts parked</span><strong>3</strong></div>
+                <div class="metric-line"><span>Detours acknowledged</span><strong>1 · returned</strong></div>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <footer class="console-footer">
+          <strong>Density serves the return, not the dashboard.</strong>
+          <span>Focus Observatory · direction C · research-backed, non-medical positioning</span>
+        </footer>
+      </main>
+
+      <aside class="context-dock" aria-label="Session context">
+        <p class="dock-note">Receded until a block starts. Nothing here needs attention to begin.</p>
+
+        <section class="dock-module">
+          <h2 class="dock-head">Day ledger <span>local</span></h2>
+          <ol class="ledger">
+            <li class="ledger-row"><time class="ledger-time">13:05</time><span class="ledger-label">Block 01 · Reducer refactor</span><span class="ledger-tag" data-kind="closed">closed</span></li>
+            <li class="ledger-row"><time class="ledger-time">13:36</time><span class="ledger-label">Block 02 · Reducer refactor</span><span class="ledger-tag" data-kind="closed">closed</span></li>
+            <li class="ledger-row"><time class="ledger-time">14:10</time><span class="ledger-label">Block 03 · Reducer tests</span><span class="ledger-tag" data-kind="closed">closed</span></li>
+            <li class="ledger-row"><time class="ledger-time">14:39</time><span class="ledger-label">Untracked · inbox, coffee</span><span class="ledger-tag" data-kind="gap">gap</span></li>
+            <li class="ledger-row"><time class="ledger-time">15:04</time><span class="ledger-label">Block 04 · Migration notes</span><span class="ledger-tag" data-kind="live"><span class="pulse" aria-hidden="true"></span>live</span></li>
+            <li class="ledger-row"><time class="ledger-time">16:30</time><span class="ledger-label">Design sync · calendar</span><span class="ledger-tag" data-kind="cal">cal</span></li>
+          </ol>
+        </section>
+
+        <section class="dock-module">
+          <h2 class="dock-head">Calendar <span>read-only</span></h2>
+          <div class="cal-event">
+            <strong>16:30 · Design sync</strong>
+            <span>45 min · invite accepted</span>
+          </div>
+          <div class="runway">1 h 19 m clear before it</div>
+        </section>
+
+        <section class="dock-module">
+          <h2 class="dock-head">Automations <span>deterministic</span></h2>
+          <div class="auto-list">
+            <div class="auto-row"><span class="state-dot" data-state="on" aria-hidden="true"></span><div class="auto-copy"><strong>macOS Focus · Coding</strong><span>On while a block is live.</span></div></div>
+            <div class="auto-row"><span class="state-dot" data-state="on" aria-hidden="true"></span><div class="auto-copy"><strong>Slack snoozed</strong><span>Until the block ends.</span></div></div>
+            <div class="auto-row"><span class="state-dot" data-state="on" aria-hidden="true"></span><div class="auto-copy"><strong>Session events → local log</strong><span>Appending on this Mac.</span></div></div>
+            <div class="auto-row"><span class="state-dot" data-state="off" aria-hidden="true"></span><div class="auto-copy"><strong>System-wide blocking</strong><span>Not installed.</span></div></div>
+          </div>
+        </section>
+
+        <section class="dock-module">
+          <h2 class="dock-head">Capture <span>⌘ ⇧ D</span></h2>
+          <div class="scratch-list" id="scratchList">
+            <div class="scratch-item"><span class="scratch-time">13:48</span><span>Ask Mira about the migration order</span><span class="scratch-type">later</span></div>
+            <div class="scratch-item"><span class="scratch-time">14:12</span><span>File the flaky pause test</span><span class="scratch-type">later</span></div>
+            <div class="scratch-item"><span class="scratch-time">14:53</span><span>Renew the domain before Friday</span><span class="scratch-type">errand</span></div>
+          </div>
+          <div class="scratch-entry">
+            <label class="sr-only" for="scratchInput">Park a thought</label>
+            <input class="scratch-input" id="scratchInput" placeholder="Park a thought…">
+            <button class="icon-button" type="button" id="scratchAdd" aria-label="Add thought">＋</button>
+          </div>
+        </section>
+
+        <section class="dock-module">
+          <h2 class="dock-head">Telemetry <span>today</span></h2>
+          <div class="tele-grid">
+            <div class="tele-cell"><span class="tele-key">Focused</span><span class="tele-val">1 h 15 m</span></div>
+            <div class="tele-cell"><span class="tele-key">Blocks</span><span class="tele-val">3 + live</span></div>
+            <div class="tele-cell"><span class="tele-key">Parked</span><span class="tele-val">3</span></div>
+            <div class="tele-cell"><span class="tele-key">Returns</span><span class="tele-val">2 / 2</span></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+
+    <aside class="prototype-feedback" aria-label="Design feedback">
+      <span>Direction</span>
+      <button type="button" data-choice="approve-focus-observatory" onclick="recordChoice(this)">Approve</button>
+      <button type="button" data-choice="less-dense" onclick="recordChoice(this)">Less dense</button>
+      <button type="button" data-choice="more-telemetry" onclick="recordChoice(this)">More telemetry</button>
+    </aside>
+  </div>
+  <script src="/files/app-mocks.js"></script>
+  <script src="./app-mocks.js"></script>
+</body>
+</html>
