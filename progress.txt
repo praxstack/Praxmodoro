@@ -12,3 +12,5 @@
 2026-07-20T13:50:00Z | actor=/root | atom=bootstrap | DECISION | Root AGENTS and OpenSpec config now encode spec-first, TDD, edition, ADHD, privacy, accessibility, and Liquid Instrument constraints.
 2026-07-20T13:51:00Z | actor=/root | atom=bootstrap | GATE | Withheld baseline commit because git diff --check found nine extra EOF blank lines; gitleaks and npm audit were clean.
 2026-07-20T13:51:00Z | actor=/root | atom=bootstrap | ANOMALY | Corrected staged metric: 14,100 was line changes, not bytes.
+2026-07-30T17:58:00Z | actor=claude | atom=spec-m1 | DECISION | Direction B "Living Companion" approved by Prax in chat; openspec config context updated; A/C mocks retained as comparative records.
+2026-07-30T17:58:00Z | actor=claude | atom=spec-m1 | SPEC | Authored SPEC.md, prd.json (28 pending atoms), and OpenSpec change add-app-scaffold-core-loop (proposal, 4 capability specs, design, tasks); openspec validate --all --strict passed.

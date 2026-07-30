@@ -5,9 +5,9 @@ context: |
   Platform: macOS 26+, Xcode 26.6, Swift 6.3, SwiftUI, local-first by default.
   Editions: Lite, Pro, and Enterprise share one codebase with explicit capability gates.
   Product boundary: initiation help, gentle check-ins, adaptive breaks, and low-cognitive-load modes are core behavior and must remain available in Lite.
-  Design direction: “Liquid Instrument” — advanced liquid glass and controlled skeuomorphic depth, with Reduce Transparency, Increase Contrast, and Reduce Motion fallbacks.
+  Design direction: “Living Companion” (approved 2026-07-30, superseding the Liquid Instrument recommendation) — warm dusk-light paper, an abstract breathing companion field with spring-damper physics as the visual centre, rounded-humanist type; Reduce Transparency, Increase Contrast, and Reduce Motion get complete calm static alternates, never degraded ones.
   Engineering: spec-first, test-first, deterministic timer state, canonical wall-clock timestamps, conventional commits, no hidden cloud dependency.
-  Evidence: product claims must trace to research/pomodoro-landscape-20260720; visual decisions trace to design-mocks/hallmark.
+  Evidence: product claims must trace to research/pomodoro-landscape-20260720; visual decisions trace to design-mocks/living-companion (physics contract in companion-physics.js); design-mocks/hallmark and design-mocks/focus-observatory remain comparative records.
 
 rules:
   proposal:
