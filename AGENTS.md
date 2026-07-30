@@ -34,3 +34,13 @@ Read, in order:
 - Preserve unrelated user work.
 - No force-pushes, destructive resets, public repo creation, or release/deploy claims without explicit scope and rollback evidence.
 - Use conventional commits and include only the files belonging to the verified slice.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on `praxstack/PraxoDoro` (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root (created lazily as decisions land). See `docs/agents/domain.md`.
