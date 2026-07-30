@@ -1,4 +1,4 @@
-# Praxodoro agent contract
+# Praxmodoro agent contract
 
 ## Source of truth
 
@@ -39,7 +39,7 @@ Read, in order:
 
 ### Issue tracker
 
-Issues live in GitHub Issues on `praxstack/PraxoDoro` (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
+Issues live in GitHub Issues on `praxstack/Praxmodoro` (via the `gh` CLI). See `docs/agents/issue-tracker.md`.
 
 ### Domain docs
 

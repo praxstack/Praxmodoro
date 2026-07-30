@@ -1,7 +1,7 @@
 schema: spec-driven
 
 context: |
-  Product: Praxodoro, a native macOS focus timer and non-clinical ADHD-aware focus coach.
+  Product: Praxmodoro, a native macOS focus timer and non-clinical ADHD-aware focus coach.
   Platform: macOS 26+, Xcode 26.6, Swift 6.3, SwiftUI, local-first by default.
   Editions: Lite, Pro, and Enterprise share one codebase with explicit capability gates.
   Product boundary: initiation help, gentle check-ins, adaptive breaks, and low-cognitive-load modes are core behavior and must remain available in Lite.

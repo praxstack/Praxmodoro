@@ -1,8 +1,8 @@
 {
-  "name": "praxodoro-spec-tooling",
+  "name": "praxmodoro-spec-tooling",
   "version": "0.1.0",
   "private": true,
-  "description": "Pinned specification tooling for the native Praxodoro macOS app.",
+  "description": "Pinned specification tooling for the native Praxmodoro macOS app.",
   "scripts": {
     "spec:validate": "openspec validate --all --strict --no-interactive",
     "spec:list": "openspec list"

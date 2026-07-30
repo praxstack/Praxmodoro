@@ -4,20 +4,20 @@ Every task follows AGENTS.md TDD law: write the named failing test, observe the 
 
 ## 1. Scaffold
 
-- [ ] 1.1 Create `app/project.yml` (app + PraxodoroTests + PraxodoroUITests targets, macOS 26, Swift 6.3) and `scripts/generate.sh`; red: `scripts/verify-project.sh` fails absent; green: `xcodegen generate` + build succeeds; smoke: app launches to an empty window.
-- [ ] 1.2 Create SwiftPM packages `app/Packages/PraxodoroCore` and `app/Packages/PraxodoroStore` wired into the app target; red: `swift test --package-path app/Packages/PraxodoroCore` has no tests; green: placeholder test passes headless.
+- [ ] 1.1 Create `app/project.yml` (app + PraxmodoroTests + PraxmodoroUITests targets, macOS 26, Swift 6.3) and `scripts/generate.sh`; red: `scripts/verify-project.sh` fails absent; green: `xcodegen generate` + build succeeds; smoke: app launches to an empty window.
+- [ ] 1.2 Create SwiftPM packages `app/Packages/PraxmodoroCore` and `app/Packages/PraxmodoroStore` wired into the app target; red: `swift test --package-path app/Packages/PraxmodoroCore` has no tests; green: placeholder test passes headless.
 - [ ] 1.3 Add `scripts/verify-project.sh` (regenerate + git-diff clean + build + both test targets) and document generate/build/test/run commands in README; smoke: every documented command exits 0 verbatim.
 
-## 2. Timer engine (PraxodoroCore)
+## 2. Timer engine (PraxmodoroCore)
 
-- [ ] 2.1 `SessionStateMachine` states + intents; red: `SessionStateMachineTests.testValidLifecycle` and `testInvalidTransitionReturnsTypedError`; files: `Sources/PraxodoroCore/SessionStateMachine.swift`.
+- [ ] 2.1 `SessionStateMachine` states + intents; red: `SessionStateMachineTests.testValidLifecycle` and `testInvalidTransitionReturnsTypedError`; files: `Sources/PraxmodoroCore/SessionStateMachine.swift`.
 - [ ] 2.2 Canonical timestamp arithmetic with injected `ClockProviding`; red: `testRemainingDerivedNotCounted`, `testBackwardsClockClampsAndLogsAnomaly`; files: `SessionTimeline.swift`.
 - [ ] 2.3 Hold/resume place-keeping; red: `testHoldFreezesRemainingExactly`; same files.
 - [ ] 2.4 Sleep/wake/relaunch reconstruction from persisted transitions; red: `testWakeAfterSleepShowsTrueRemaining`, `testRelaunchRestoresHeldState`, `testExpiryWhileAsleepBackdated`; files: `SessionReconstruction.swift`.
 - [ ] 2.5 Timing policies as data (gentle/classic/flow/recovery-first), flow never auto-ends; red: `testGentleStartPromotesSeamlessly`, `testFlowNeverAutoTransitions`; files: `TimingPolicy.swift`.
 - [ ] 2.6 Module purity gate; red: `ModuleIsolationTests.testCoreLinksOnlyFoundation`; smoke: `swift test` headless on a machine without Xcode GUI.
 
-## 3. Persistence (PraxodoroStore)
+## 3. Persistence (PraxmodoroStore)
 
 - [ ] 3.1 SwiftData models `TaskRecord`, `Session`, `SessionEvent`, `CapacityReport` behind `SessionStoring` protocol; red: `StoreRoundTripTests.testFullSessionRoundTrip`.
 - [ ] 3.2 Append-only event log with referencing edit events; red: `testEditCreatesReferencingEventNotMutation`.

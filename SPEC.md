@@ -1,10 +1,10 @@
-# SPEC.md — Praxodoro completion contract
+# SPEC.md — Praxmodoro completion contract
 
 The durable definition of done. The independent validator checks work against this file, not against session claims. Detailed binary requirements live in the OpenSpec capability specs; this file states the contract's shape and the global gates.
 
 ## Product
 
-Praxodoro: native macOS focus timer and non-clinical ADHD-aware focus coach. macOS 26+, Swift 6.3, SwiftUI, local-first. Editions Lite/Pro/Enterprise share one codebase behind explicit capability gates; initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load modes are Lite, always.
+Praxmodoro: native macOS focus timer and non-clinical ADHD-aware focus coach. macOS 26+, Swift 6.3, SwiftUI, local-first. Editions Lite/Pro/Enterprise share one codebase behind explicit capability gates; initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load modes are Lite, always.
 
 Visual direction: **Living Companion** (approved 2026-07-30; binding reference `design-mocks/living-companion/`, physics contract `companion-physics.js`). Evidence roots: `research/pomodoro-landscape-20260720/` for product claims, the mocks for visual decisions.
 

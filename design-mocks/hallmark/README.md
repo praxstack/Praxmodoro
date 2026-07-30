@@ -1,4 +1,4 @@
-# Praxodoro Hallmark Mock Dossier
+# Praxmodoro Hallmark Mock Dossier
 
 Status: **design exploration awaiting user approval**. These are interactive browser mocks, not production macOS code.
 
