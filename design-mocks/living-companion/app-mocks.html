@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Praxodoro — Living Companion interactive macOS mocks</title>
+  <link rel="stylesheet" href="./mockups.css">
+</head>
+<body>
+  <div class="prototype-shell" id="prototypeShell" data-effects="full">
+    <aside class="rail" aria-label="Mockup screens">
+      <div class="brand-mark" aria-label="Praxodoro">P</div>
+      <nav class="rail-nav" aria-label="Product areas">
+        <button class="rail-button" type="button" data-screen-target="initiate" aria-selected="true" aria-label="Initiate, shortcut 1">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>
+          <span class="rail-label">Begin</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="focus" aria-selected="false" aria-label="Focus, shortcut 2">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/></svg>
+          <span class="rail-label">Focus</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="checkin" aria-selected="false" aria-label="Check-in, shortcut 3">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M9 10h6"/></svg>
+          <span class="rail-label">Check-in</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="break" aria-selected="false" aria-label="Break, shortcut 4">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1.7"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.7"/></svg>
+          <span class="rail-label">Break</span>
+        </button>
+        <button class="rail-button" type="button" data-screen-target="review" aria-selected="false" aria-label="Review, shortcut 5">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19v-6M12 19V5M19 19v-9"/></svg>
+          <span class="rail-label">Review</span>
+        </button>
+      </nav>
+      <div class="rail-bottom">
+        <span>Keys 1–5</span>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="app-hud">
+        <div class="hud-title">Praxodoro <span class="status-dot" aria-hidden="true"></span></div>
+        <div class="hud-center" id="hudCenter">Ready · nothing running</div>
+        <div class="hud-actions">
+          <button class="motion-toggle" type="button" id="effectsToggle" aria-pressed="false">
+            <span class="motion-dot" aria-hidden="true"></span>
+            <span class="motion-label">Motion: gentle</span>
+          </button>
+          <button class="hud-chip" type="button" id="quickCapture">Park a thought</button>
+          <button class="hud-chip" type="button" data-tone="accent" data-screen-jump="focus">Start focus</button>
+        </div>
+      </header>
+
+      <section class="screen is-current" id="screen-initiate" data-screen="initiate" aria-labelledby="initiate-title">
+        <div class="screen-heading">
+          <div>
+            <h1 id="initiate-title">One small step, held with you.</h1>
+          </div>
+          <p>Choose one task, one tiny first action, and how much you have right now. The companion gathers around what you pick — nothing else is asked.</p>
+        </div>
+
+        <div class="initiate-grid">
+          <aside class="veil-panel companion-intro">
+            <span class="quiet-label">Your companion · gathering</span>
+            <div class="companion-field" data-state="gathering" aria-hidden="true">
+              <span class="field-layer field-a"></span>
+              <span class="field-layer field-b"></span>
+              <span class="field-layer field-c"></span>
+              <span class="field-core"></span>
+              <span class="field-ring"></span>
+            </div>
+            <div class="companion-copy">
+              <h3>I gather while you decide.</h3>
+              <p>I hold the plan and the clock so you don’t have to. At check-ins I ask how the step fits — never how well you performed.</p>
+            </div>
+            <div class="privacy-note">Your task, capacity, and answers stay on this Mac. No account. Optional sync carries history only — never the live timer.</div>
+          </aside>
+
+          <article class="soft-panel init-main">
+            <div class="task-composer">
+              <span class="quiet-label">What has your attention?</span>
+              <label for="taskInput">Choose one task</label>
+              <input class="task-input" id="taskInput" value="Edit the conference talk outline" autocomplete="off">
+            </div>
+
+            <div>
+              <span class="quiet-label">The first visible action</span>
+              <div class="first-action">
+                <span class="first-action-index">1</span>
+                <div>
+                  <strong>Open the outline and mark the one section that already feels done.</strong>
+                  <span>Concrete, reversible, about two minutes. Edit it if it feels too large.</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <span class="quiet-label">Capacity right now</span>
+              <div class="choice-row" role="group" aria-label="Current capacity">
+                <button class="pill-chip" type="button" aria-pressed="false">Foggy</button>
+                <button class="pill-chip" type="button" aria-pressed="true">Steady</button>
+                <button class="pill-chip" type="button" aria-pressed="false">Restless</button>
+                <button class="pill-chip" type="button" aria-pressed="false">Charged</button>
+              </div>
+            </div>
+
+            <div>
+              <span class="quiet-label">Session policy</span>
+              <div class="mode-row" role="group" aria-label="Session policy">
+                <button class="pill-chip" type="button" aria-pressed="true">Gentle start · 5 + 20</button>
+                <button class="pill-chip" type="button" aria-pressed="false">Classic · 25 + 5</button>
+                <button class="pill-chip" type="button" aria-pressed="false">Flow · open ended</button>
+                <button class="pill-chip" type="button" aria-pressed="false">Recovery first</button>
+              </div>
+            </div>
+
+            <button class="begin-control control-button" type="button" id="beginSession">
+              <span class="begin-puck" aria-hidden="true">▶</span>
+              <span>
+                <strong>Begin gentle start</strong>
+                <small>Five minutes to arrive. Nothing is owed beyond them.</small>
+              </span>
+              <span class="begin-shortcut">⌘ ↩</span>
+            </button>
+            <div class="state-message" id="initiateMessage" aria-live="polite"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-focus" data-screen="focus" aria-labelledby="focus-title">
+        <div class="screen-heading">
+          <div><h2 id="focus-title">The companion breathes; the task stays near.</h2></div>
+          <p>The field moves at breathing pace and never accelerates. Time stays legible in the centre; nothing on this screen scores you.</p>
+        </div>
+
+        <div class="focus-layout">
+          <article class="soft-panel focus-stage">
+            <div class="focus-task">
+              <div>
+                <span class="quiet-label">Now focusing</span>
+                <h2>Edit the conference talk outline</h2>
+                <p>Next: mark the one section that already feels done.</p>
+              </div>
+              <span class="focus-status">Gentle start · block 1</span>
+            </div>
+
+            <div class="companion-field focus-field" data-state="breathing" id="focusField">
+              <span class="field-layer field-a" aria-hidden="true"></span>
+              <span class="field-layer field-b" aria-hidden="true"></span>
+              <span class="field-layer field-c" aria-hidden="true"></span>
+              <span class="field-core" aria-hidden="true"></span>
+              <span class="field-ring" aria-hidden="true"></span>
+              <div class="field-timer">
+                <span class="timer-time" id="timerTime">17:26</span>
+                <span class="timer-state" id="timerState">Breathing with you · check-in in 6 min</span>
+              </div>
+            </div>
+
+            <div class="timer-control-row" aria-label="Timer controls">
+              <button class="orb-button" type="button" id="rewindButton" aria-label="Subtract one minute">−1</button>
+              <button class="orb-button" type="button" id="timerToggle" data-primary="true" aria-label="Pause timer">Ⅱ</button>
+              <button class="orb-button" type="button" id="forwardButton" aria-label="Add one minute">+1</button>
+            </div>
+
+            <div class="session-rail" aria-label="Session progress">
+              <span class="session-step is-complete"></span>
+              <span class="session-step is-current"></span>
+              <span class="session-step"></span>
+              <span class="session-step"></span>
+            </div>
+          </article>
+
+          <aside class="focus-side">
+            <section class="veil-panel companion-note">
+              <span class="quiet-label">Companion · quiet</span>
+              <h3>Nothing owed right now.</h3>
+              <p>The next check-in arrives softly. Drift, pause, or call it early — all of those are ordinary.</p>
+              <div class="nudge-actions">
+                <button class="ghost-action" type="button" data-screen-jump="checkin">Check in now</button>
+                <button class="ghost-action" type="button" data-screen-jump="break">Take a break</button>
+              </div>
+            </section>
+
+            <section class="soft-panel scratch-panel">
+              <div class="panel-header">
+                <div><h3>Thought parking</h3><p>Capture without changing context.</p></div>
+                <span class="quiet-label">⌘ ⇧ D</span>
+              </div>
+              <div class="scratch-list" id="scratchList">
+                <div class="scratch-item"><span class="scratch-time">13:18</span><span>Ask Mira about the demo laptop</span><span class="scratch-type">later</span></div>
+                <div class="scratch-item"><span class="scratch-time">13:22</span><span>Slide 9 wants a simpler chart</span><span class="scratch-type">later</span></div>
+              </div>
+              <div class="scratch-entry">
+                <label class="sr-only" for="scratchInput">Capture a thought</label>
+                <input class="scratch-input" id="scratchInput" placeholder="Park a thought…">
+                <button class="icon-button" type="button" id="scratchAdd" aria-label="Add thought">＋</button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-checkin" data-screen="checkin" aria-labelledby="checkin-title">
+        <div class="screen-heading">
+          <div><h2 id="checkin-title">A question, not a report card.</h2></div>
+          <p>Four honest answers. None of them is a failure state — each one only changes what happens next.</p>
+        </div>
+
+        <div class="checkin-layout">
+          <article class="soft-panel checkin-card">
+            <div class="checkin-head">
+              <div>
+                <span class="quiet-label">Check-in · 22 minutes in · timer held</span>
+                <h2 class="checkin-question">How does the step fit right now?</h2>
+              </div>
+              <div class="companion-field field-sm" data-state="ripple" aria-hidden="true">
+                <span class="field-layer field-a"></span>
+                <span class="field-layer field-b"></span>
+                <span class="field-layer field-c"></span>
+                <span class="field-core"></span>
+                <span class="field-ring"></span>
+              </div>
+            </div>
+            <p class="checkin-note">Pick the closest one. Your answer adjusts the next step or the break — never a score, never a streak.</p>
+            <div class="checkin-options" role="group" aria-label="Check-in answer">
+              <button class="checkin-option" type="button" data-checkin="holding"><span class="option-key">1</span><span><strong>Still fits — keep going</strong><small>This folds away and the block continues.</small></span></button>
+              <button class="checkin-option" type="button" data-checkin="smaller"><span class="option-key">2</span><span><strong>Make the step smaller</strong><small>Shrink the next action to a one-line move.</small></span></button>
+              <button class="checkin-option" type="button" data-checkin="detour"><span class="option-key">3</span><span><strong>I drifted somewhere else</strong><small>Name it as information. Choose your return freely.</small></span></button>
+              <button class="checkin-option" type="button" data-checkin="break"><span class="option-key">4</span><span><strong>I could use a break</strong><small>Rest is a real next step. Your place is held.</small></span></button>
+            </div>
+            <div class="state-message" id="checkinMessage" aria-live="polite">No answer here is wrong.</div>
+          </article>
+
+          <aside class="veil-panel session-held">
+            <div>
+              <span class="quiet-label">This session · stays on this Mac</span>
+              <h3>What the companion holds.</h3>
+              <p>Check-ins arrive on a gentle cadence, on pause, or when you ask. The companion never watches your other apps.</p>
+              <ol class="companion-log">
+                <li><time>13:04</time><span>Started · steady capacity.</span></li>
+                <li><time>13:09</time><span>Gentle start became a full block.</span></li>
+                <li><time>13:18</time><span>Parked a thought, stayed in focus.</span></li>
+              </ol>
+            </div>
+            <button class="begin-control control-button" type="button" data-tone="quiet" data-screen-jump="focus">
+              <span class="begin-puck" aria-hidden="true">↩</span>
+              <span><strong>Return to focus</strong><small>The timer resumes exactly where it held.</small></span>
+              <span class="begin-shortcut">⌘ ↩</span>
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-break" data-screen="break" aria-labelledby="break-title">
+        <div class="screen-heading">
+          <div><h2 id="break-title">Rest that keeps your place.</h2></div>
+          <p>Suggestions come from what you told the companion — never from a claim about what is optimal. Change or ignore them freely.</p>
+        </div>
+
+        <div class="break-layout">
+          <article class="soft-panel break-stage">
+            <span class="quiet-label">Intentional break · yours to shape</span>
+            <div class="companion-field break-field" data-state="expanded">
+              <span class="field-layer field-a" aria-hidden="true"></span>
+              <span class="field-layer field-b" aria-hidden="true"></span>
+              <span class="field-layer field-c" aria-hidden="true"></span>
+              <span class="field-core" aria-hidden="true"></span>
+              <span class="field-ring" aria-hidden="true"></span>
+              <div class="field-timer">
+                <span class="timer-time">03:00</span>
+                <span class="timer-state">Softening · ending early is fine</span>
+              </div>
+            </div>
+            <h2>What would feel like rest?</h2>
+            <p>Pick one or none. The break can end whenever you say — completion is not the point.</p>
+            <div class="break-actions" role="group" aria-label="Break actions">
+              <button class="break-action" type="button" data-break="water"><strong>Water</strong><span>Stand, pour, sip slowly.</span></button>
+              <button class="break-action" type="button" data-break="stretch"><strong>Stretch</strong><span>Unclench the jaw, drop the shoulders.</span></button>
+              <button class="break-action" type="button" data-break="away"><strong>Step away</strong><span>A doorway or a window counts.</span></button>
+              <button class="break-action" type="button" data-break="quiet"><strong>Quiet</strong><span>No prompt. Just the held place.</span></button>
+            </div>
+            <div class="state-message" id="breakMessage" aria-live="polite"></div>
+          </article>
+
+          <aside class="veil-panel reentry-panel">
+            <div>
+              <span class="quiet-label">Re-entry card</span>
+              <h3>The way back is already set.</h3>
+              <p>When you return, this is the only instruction on screen.</p>
+              <div class="reentry-step">
+                <strong>Mark the one section that feels done.</strong>
+                <span>Open the outline → add a check beside it. Rough is fine.</span>
+              </div>
+              <div class="adaptive-disclosure"><strong>Why this suggestion?</strong> You said “restless” and have been sitting for about forty minutes, so movement came first. This pattern is editable and can be turned off entirely.</div>
+            </div>
+            <button class="begin-control control-button" type="button" data-screen-jump="focus">
+              <span class="begin-puck" aria-hidden="true">▶</span>
+              <span><strong>Ready when you are</strong><small>The re-entry card stays visible for the first 30 seconds.</small></span>
+              <span class="begin-shortcut">R</span>
+            </button>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="screen-review" data-screen="review" aria-labelledby="review-title">
+        <div class="screen-heading">
+          <div><h2 id="review-title">Today, written down gently.</h2></div>
+          <p>The timeline records what happened. Notes stay descriptive and uncertain — nothing here diagnoses, grades, or moralises.</p>
+        </div>
+
+        <div class="review-grid">
+          <section class="soft-panel timeline-panel">
+            <div class="panel-header"><div><h3>Afternoon focus trail</h3><p>Local record · Wednesday, 30 July</p></div><button class="hud-chip" type="button">Add note</button></div>
+            <div class="timeline">
+              <div class="timeline-row"><time class="timeline-time">13:04</time><div><strong>Began the outline edit</strong><span>Gentle start · steady capacity</span></div><span class="timeline-kind">start</span></div>
+              <div class="timeline-row"><time class="timeline-time">13:09</time><div><strong>Continued past the gentle start</strong><span>First action still fit</span></div><span class="timeline-kind">choice</span></div>
+              <div class="timeline-row"><time class="timeline-time">13:18</time><div><strong>Parked a thought</strong><span>Stayed on the focus surface</span></div><span class="timeline-kind">capture</span></div>
+              <div class="timeline-row"><time class="timeline-time">13:26</time><div><strong>Made the step smaller</strong><span>One-line move chosen at check-in</span></div><span class="timeline-kind">choice</span></div>
+              <div class="timeline-row"><time class="timeline-time">13:44</time><div><strong>Took a movement break</strong><span>Returned after 2 min 40 s</span></div><span class="timeline-kind">recovery</span></div>
+              <div class="timeline-row"><time class="timeline-time">14:22</time><div><strong>Closed the session</strong><span>One section marked done; intro still rough</span></div><span class="timeline-kind">finish</span></div>
+            </div>
+          </section>
+
+          <aside class="insight-stack">
+            <section class="veil-panel insight-card">
+              <span class="quiet-label">Observed, not concluded</span>
+              <div class="companion-field field-sm" data-state="settled" aria-hidden="true">
+                <span class="field-layer field-a"></span>
+                <span class="field-layer field-b"></span>
+                <span class="field-layer field-c"></span>
+                <span class="field-core"></span>
+                <span class="field-ring"></span>
+              </div>
+              <h3>Smaller steps kept today moving.</h3>
+              <p>You shrank the step once and stayed with the work for 38 more minutes afterward. One afternoon is not a pattern — the option simply stays offered.</p>
+            </section>
+            <section class="soft-panel insight-card">
+              <h3>Capacity you reported</h3>
+              <div class="capacity-plot" aria-label="Self-reported capacity across five check-ins">
+                <span class="capacity-bar" style="height:46%"></span><span class="capacity-bar is-focus" style="height:62%"></span><span class="capacity-bar is-best" style="height:72%"></span><span class="capacity-bar" style="height:40%"></span><span class="capacity-bar is-focus" style="height:58%"></span>
+              </div>
+              <div class="plot-caption">Self-reported at check-ins. Gaps mean you skipped — skipping is fine.</div>
+            </section>
+            <section class="soft-panel insight-card">
+              <div class="metric-line"><span>Focused time</span><strong>1 h 02 m</strong></div>
+              <div class="metric-line"><span>Returned after break</span><strong>1 / 1</strong></div>
+              <div class="metric-line"><span>Thoughts parked</span><strong>2</strong></div>
+              <div class="metric-line"><span>Steps resized</span><strong>1</strong></div>
+            </section>
+          </aside>
+        </div>
+      </section>
+
+      <footer class="prototype-footer">
+        <strong>The companion holds your place, never your score.</strong>
+        <span>Living Companion design exploration · ADHD-aware, non-medical positioning</span>
+      </footer>
+    </main>
+    <aside class="prototype-feedback" aria-label="Design feedback">
+      <span>Direction</span>
+      <button type="button" data-choice="approve-living-companion" onclick="recordChoice(this)">Approve</button>
+      <button type="button" data-choice="warmer" onclick="recordChoice(this)">Warmer</button>
+      <button type="button" data-choice="calmer" onclick="recordChoice(this)">Calmer</button>
+    </aside>
+  </div>
+  <script src="./app-mocks.js"></script>
+  <script src="./companion-physics.js"></script>
+</body>
+</html>

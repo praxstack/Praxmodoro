@@ -1,0 +1,110 @@
+@import url("https://fonts.googleapis.com/css2?family=Gabarito:wght@400..900&family=Hanken+Grotesk:wght@300..800&family=Sono:wght@300..700&display=swap");
+
+:root {
+  /* Living Companion custom theme · all colour and type declarations route through tokens. */
+  --color-paper: oklch(96.5% 0.014 78);
+  --color-paper-2: oklch(94% 0.018 74);
+  --color-paper-3: oklch(91.5% 0.022 70);
+  --color-paper-4: oklch(88.5% 0.026 66);
+  --color-ink: oklch(27% 0.035 38);
+  --color-ink-2: oklch(38% 0.032 36);
+  --color-muted: oklch(47% 0.03 40);
+  --color-neutral: oklch(57% 0.026 46);
+  --color-rule: oklch(83% 0.026 62);
+  --color-rule-2: oklch(88.5% 0.02 68);
+  --color-accent: oklch(56% 0.145 22);
+  --color-accent-strong: oklch(48% 0.15 22);
+  --color-accent-soft: oklch(78% 0.07 24);
+  --color-accent-ink: oklch(98% 0.008 80);
+  --color-focus: oklch(45% 0.15 22);
+  --color-calm: oklch(52% 0.075 168);
+  --color-calm-soft: oklch(87% 0.045 164);
+  --color-danger: oklch(50% 0.13 30);
+  --color-danger-ink: oklch(98% 0.008 30);
+  --color-veil: oklch(98% 0.01 80 / 0.6);
+  --color-veil-strong: oklch(98.5% 0.008 80 / 0.82);
+  --color-veil-edge: oklch(62% 0.05 44 / 0.3);
+  --color-scrim: oklch(30% 0.03 40 / 0.4);
+  --color-shadow: oklch(38% 0.06 36 / 0.16);
+  --color-shadow-deep: oklch(32% 0.06 34 / 0.24);
+  --color-selection: oklch(56% 0.145 22 / 0.13);
+  --color-noise: oklch(45% 0.05 40 / 0.05);
+  --color-field-rose: oklch(83% 0.07 20);
+  --color-field-rose-faint: oklch(83% 0.07 20 / 0.55);
+  --color-field-apricot: oklch(88% 0.075 62);
+  --color-field-apricot-faint: oklch(88% 0.075 62 / 0.55);
+  --color-field-lavender: oklch(85% 0.055 300);
+  --color-field-lavender-faint: oklch(85% 0.055 300 / 0.5);
+  --color-field-sage: oklch(87% 0.055 162);
+  --color-field-sage-faint: oklch(87% 0.055 162 / 0.55);
+  --color-field-gold: oklch(90.5% 0.06 88);
+  --color-clear: transparent;
+
+  --gradient-room:
+    radial-gradient(circle at 82% -8%, var(--color-field-apricot-faint), var(--color-clear) 42%),
+    radial-gradient(circle at -6% 104%, var(--color-field-lavender-faint), var(--color-clear) 38%),
+    linear-gradient(180deg, var(--color-paper), var(--color-paper-2));
+  --gradient-veil: linear-gradient(180deg, var(--color-veil-strong), var(--color-veil));
+  --gradient-panel: linear-gradient(170deg, var(--color-paper), var(--color-paper-2));
+  --gradient-accent: linear-gradient(150deg, var(--color-accent), var(--color-accent-strong));
+  --gradient-blob-apricot: radial-gradient(circle at 38% 32%, var(--color-field-apricot), var(--color-field-apricot-faint) 52%, var(--color-clear) 72%);
+  --gradient-blob-rose: radial-gradient(circle at 62% 60%, var(--color-field-rose), var(--color-field-rose-faint) 50%, var(--color-clear) 72%);
+  --gradient-blob-lavender: radial-gradient(circle at 46% 68%, var(--color-field-lavender), var(--color-field-lavender-faint) 48%, var(--color-clear) 70%);
+  --gradient-blob-sage: radial-gradient(circle at 44% 40%, var(--color-field-sage), var(--color-field-sage-faint) 50%, var(--color-clear) 72%);
+  --gradient-core: radial-gradient(circle at 50% 44%, var(--color-field-gold), var(--color-clear) 68%);
+
+  --shadow-soft: 0 1px 2px var(--color-shadow), 0 12px 32px -18px var(--color-shadow);
+  --shadow-float: 0 2px 6px var(--color-shadow), 0 24px 48px -22px var(--color-shadow-deep);
+
+  --font-display: "Gabarito", "Avenir Next Rounded", "Avenir Next", sans-serif;
+  --font-body: "Hanken Grotesk", "Avenir Next", sans-serif;
+  --font-outlier: "Sono", "SFMono-Regular", monospace;
+
+  --text-xs: 0.7rem;
+  --text-sm: 0.82rem;
+  --text-base: 0.96rem;
+  --text-md: 1.14rem;
+  --text-lg: 1.45rem;
+  --text-xl: 1.9rem;
+  --text-2xl: 2.6rem;
+  --text-3xl: 3.3rem;
+  --text-display: clamp(3.4rem, 7.5vw, 6.4rem);
+
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  --radius-xs: 0.6rem;
+  --radius-sm: 0.95rem;
+  --radius-md: 1.3rem;
+  --radius-lg: 1.9rem;
+  --radius-xl: 2.6rem;
+  --radius-round: 999rem;
+  --rule-hair: 1px;
+  --rule-control: 1.5px;
+
+  --dur-micro: 110ms;
+  --dur-short: 200ms;
+  --dur-medium: 320ms;
+  --dur-long: 500ms;
+  --dur-breathe: 8400ms;
+  --dur-drift: 13000ms;
+  --dur-ripple: 3200ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-drift: cubic-bezier(0.37, 0, 0.63, 1);
+
+  --z-base: 1;
+  --z-raised: 10;
+  --z-dropdown: 100;
+  --z-sticky: 200;
+  --z-modal: 400;
+  --z-toast: 500;
+  --z-tooltip: 600;
+}
