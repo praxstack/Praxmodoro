@@ -154,7 +154,7 @@ document.querySelectorAll("[data-surface]").forEach((button) => {
     const title = document.querySelector("#surfacePreview .menu-head strong");
     const task = document.querySelector("#surfacePreview .menu-task strong");
     const descriptions = {
-      menu: ["Praxodoro", "Write the product brief"],
+      menu: ["Praxmodoro", "Write the product brief"],
       capsule: ["Focus capsule", "Three core promises"],
       lock: ["Return overlay", "Your place is preserved"]
     };

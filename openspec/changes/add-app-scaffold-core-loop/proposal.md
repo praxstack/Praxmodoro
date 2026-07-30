@@ -2,7 +2,7 @@
 
 ## Why
 
-Praxodoro has a validated research corpus, an approved visual direction (Living Companion, chosen 2026-07-30 over two mocked alternatives), and zero native code. The research's central finding is that the smallest differentiated product is not a shorter feature list but one complete low-friction execution-and-recovery loop (research claim w2-product-scope-adjudication-001). This change creates the native macOS app and that complete loop, so every later change extends a runnable, testable product instead of a scaffold-in-waiting.
+Praxmodoro has a validated research corpus, an approved visual direction (Living Companion, chosen 2026-07-30 over two mocked alternatives), and zero native code. The research's central finding is that the smallest differentiated product is not a shorter feature list but one complete low-friction execution-and-recovery loop (research claim w2-product-scope-adjudication-001). This change creates the native macOS app and that complete loop, so every later change extends a runnable, testable product instead of a scaffold-in-waiting.
 
 ## Goals, non-goals, assumptions
 

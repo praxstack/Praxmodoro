@@ -1,7 +1,7 @@
 {
   "kind": "canvas",
   "schemaVersion": "0.1.0",
-  "title": "Praxodoro — approve the base visual direction",
+  "title": "Praxmodoro — approve the base visual direction",
   "lede": "All three directions from the Hallmark dossier are now mocked at equal fidelity (five screens each, same sample afternoon, same renderer). Look at design-mocks/direction-gate/compare.html first — it shows every screen side by side and links to the interactive mocks. This gate records the decision the design dossier has been waiting on: which direction becomes the base for the formal product/design spec.",
   "generated": "2026-07-30T17:20:00Z",
   "sections": [
@@ -12,7 +12,7 @@
         {
           "key": "base_direction",
           "type": "single",
-          "prompt": "Which direction is the base for Praxodoro?",
+          "prompt": "Which direction is the base for Praxmodoro?",
           "default": "liquid-instrument",
           "options": [
             {

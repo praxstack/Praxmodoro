@@ -1,6 +1,6 @@
-# Praxodoro
+# Praxmodoro
 
-Praxodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. This glossary fixes the language of the focus loop: how a stretch of work is opened, divided, interrupted, recovered from, and looked back on.
+Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. This glossary fixes the language of the focus loop: how a stretch of work is opened, divided, interrupted, recovered from, and looked back on.
 
 ## Language
 
