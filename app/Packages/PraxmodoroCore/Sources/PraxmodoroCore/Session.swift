@@ -31,7 +31,7 @@ public struct TransitionRecord: Equatable, Sendable, Codable {
 /// The deterministic session value. Pure Foundation; UI-free and edition-free.
 public struct Session: Equatable, Sendable, Codable {
     public let policy: TimingPolicy
-    public private(set) var transitions: [TransitionRecord]
+    public internal(set) var transitions: [TransitionRecord]
     var anomalyLog: [ClockAnomaly] = []
 
     public init(policy: TimingPolicy, startedAt: Date?) {
