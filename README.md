@@ -34,4 +34,26 @@ npm run spec:list
 npm run spec:validate
 ```
 
-OpenSpec is pinned to 1.6.0. Native build and test commands will be added with the first app scaffold.
+OpenSpec is pinned to 1.6.0.
+
+## Native app commands
+
+Requires Xcode 26.6+ and XcodeGen (`brew install xcodegen`). The `.xcodeproj` is generated — edit `app/project.yml`, never the project file.
+
+```bash
+./scripts/generate.sh
+```
+
+```bash
+./scripts/verify-project.sh
+```
+
+```bash
+swift test --package-path app/Packages/PraxmodoroCore
+```
+
+```bash
+xcodebuild -project app/Praxmodoro.xcodeproj -scheme Praxmodoro -destination 'platform=macOS' build
+```
+
+`verify-project.sh` is the scaffold gate: it fails if the generated project is missing or stale, then runs the package tests and a full build.
