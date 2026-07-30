@@ -32,6 +32,7 @@ public struct TransitionRecord: Equatable, Sendable, Codable {
 public struct Session: Equatable, Sendable, Codable {
     public let policy: TimingPolicy
     public private(set) var transitions: [TransitionRecord]
+    var anomalyLog: [ClockAnomaly] = []
 
     public init(policy: TimingPolicy, startedAt: Date?) {
         self.policy = policy
