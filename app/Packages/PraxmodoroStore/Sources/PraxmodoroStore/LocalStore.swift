@@ -117,6 +117,12 @@ public final class LocalStore {
         return id
     }
 
+    /// Corrections never mutate: an edit is a new event referencing the
+    /// original (spec: "Event log is append-only" / "No silent rewrites").
+    public func editEvent(sessionID: UUID, originalID: UUID, newPayload: String, at: Date) throws {
+        try appendEvent(sessionID: sessionID, kind: .edit, payload: newPayload, at: at, references: originalID)
+    }
+
     public func events(sessionID: UUID) throws -> [StoredEvent] {
         let descriptor = FetchDescriptor<SessionEventModel>(
             predicate: #Predicate { $0.sessionID == sessionID },
