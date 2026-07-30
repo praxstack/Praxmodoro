@@ -1,0 +1,53 @@
+name: Praxmodoro
+options:
+  bundleIdPrefix: com.praxstack
+  deploymentTarget:
+    macOS: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.3"
+    SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
+    MACOSX_DEPLOYMENT_TARGET: "26.0"
+    CODE_SIGN_STYLE: Automatic
+    ENABLE_HARDENED_RUNTIME: YES
+    GENERATE_INFOPLIST_FILE: YES
+packages:
+  PraxmodoroCore:
+    path: Packages/PraxmodoroCore
+  PraxmodoroStore:
+    path: Packages/PraxmodoroStore
+targets:
+  Praxmodoro:
+    type: application
+    platform: macOS
+    sources: [Sources]
+    dependencies:
+      - package: PraxmodoroCore
+      - package: PraxmodoroStore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.praxstack.praxmodoro
+        INFOPLIST_KEY_NSHumanReadableCopyright: ""
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+  PraxmodoroTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [Tests/PraxmodoroTests]
+    dependencies:
+      - target: Praxmodoro
+  PraxmodoroUITests:
+    type: bundle.ui-testing
+    platform: macOS
+    sources: [Tests/PraxmodoroUITests]
+    dependencies:
+      - target: Praxmodoro
+schemes:
+  Praxmodoro:
+    build:
+      targets:
+        Praxmodoro: all
+    test:
+      targets:
+        - PraxmodoroTests
+        - PraxmodoroUITests

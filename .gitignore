@@ -23,3 +23,7 @@ node_modules/
 # Read-only upstream research clones; curated evidence remains tracked.
 research/skill-sources/
 research/library-sources/
+
+# Generated Xcode project (artifact of scripts/generate.sh)
+app/Praxmodoro.xcodeproj/
+app/**/.build/
