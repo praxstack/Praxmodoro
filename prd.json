@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-30T18:55:00Z",
+  "updated": "2026-07-30T19:40:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -26,38 +26,38 @@
     {
       "id": "2.1",
       "title": "Session state machine",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: cannot find Session (compile); green: 3 tests pass incl. typed invalid-transition error"
     },
     {
       "id": "2.2",
       "title": "Canonical timestamp arithmetic",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: 9 compile errors; green: remaining derived from timestamps, backwards clock logs anomaly + clamps"
     },
     {
       "id": "2.3",
       "title": "Hold/resume place-keeping",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "regression guard (behavior emerged from 2.2 interval construction); testHoldFreezesRemainingExactly green"
     },
     {
       "id": "2.4",
       "title": "Sleep/wake/relaunch reconstruction",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: reconciled missing; green: sleep/wake true remaining, relaunch restores held, expiry backdated to canonical instant"
     },
     {
       "id": "2.5",
       "title": "Timing policies as data",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: promotion event missing; green: gentle promotes seamlessly + recorded, flow never auto-transitions"
     },
     {
       "id": "2.6",
       "title": "Core module purity gate",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "structural scan green: PraxmodoroCore imports Foundation only"
     },
     {
       "id": "3.1",

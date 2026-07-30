@@ -19,3 +19,4 @@
 2026-07-30T18:55:00Z | actor=claude | atom=1.1 | TEST | Red observed (verify-project.sh exit 1, project missing); green after xcodegen generate: BUILD SUCCEEDED, app launched to window.
 2026-07-30T18:55:00Z | actor=claude | atom=1.2 | TEST | PraxmodoroCore and PraxmodoroStore SwiftPM packages test green headless (swift test, 1 placeholder test each).
 2026-07-30T18:55:00Z | actor=claude | atom=1.3 | TEST | verify-project.sh full gate OK (staleness diff + package tests + build); README native commands documented and run verbatim.
+2026-07-30T19:40:00Z | actor=claude | atom=2.1-2.6 | TEST | Timer engine complete: 12 tests green (state machine, canonical timestamps, anomaly log, hold freeze, sleep/wake reconciliation with backdated expiry, gentle promotion event, flow never auto-ends, Foundation-only purity gate).
