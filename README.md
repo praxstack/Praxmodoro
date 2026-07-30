@@ -4,7 +4,7 @@ Praxodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach.
 
 ## Current state
 
-The product research and interactive visual mocks are complete. Native implementation has not started; it will begin with an OpenSpec change and a test-first autonomous workflow. No shipping app or Enterprise service is claimed yet.
+Research is complete, three visual directions were mocked at equal fidelity, and **Living Companion** was approved as the base direction (2026-07-30). Milestone M1 (app scaffold + core loop) is specified in the OpenSpec change `add-app-scaffold-core-loop`; native implementation is beginning against that spec. No shipping app or Enterprise service is claimed yet.
 
 ## Editions
 
@@ -17,12 +17,14 @@ Core accessibility and ADHD-aware focus support are not paywalled.
 ## Repository map
 
 - `research/pomodoro-landscape-20260720/` — sourced product and platform research.
-- `design-mocks/hallmark/` — interactive Hallmark mocks, screenshots, and design dossier.
-- `openspec/` — OpenSpec configuration; canonical specs and change artifacts will live here once the first change is proposed.
+- `design-mocks/living-companion/` — the approved direction: interactive mocks and the companion-field physics contract.
+- `design-mocks/hallmark/`, `design-mocks/focus-observatory/` — comparative direction records (A and C).
+- `design-mocks/direction-gate/` — side-by-side comparison and the recorded direction decision.
+- `openspec/` — OpenSpec configuration and change artifacts (active change: `add-app-scaffold-core-loop`).
 - `.agent/sessions/` — continuous autonomous build audit trail.
 - `progress.txt` — append-only execution log.
 
-`SPEC.md`, `BLUEPRINT.md`, and `prd.json` — the durable completion contract and execution state referenced in `AGENTS.md` — are planned artifacts that have not been created yet.
+`SPEC.md` (completion contract) and `prd.json` (atom state) now exist and govern milestone M1. `BLUEPRINT.md` remains a planned artifact for the implementation phase.
 
 ## Specification commands
 
