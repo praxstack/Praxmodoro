@@ -81,6 +81,13 @@ public enum StoreError: Error, Equatable {
     case unknownSession(UUID)
 }
 
+/// Plain-language record of a store recovery (spec: "Store corruption
+/// degrades gracefully"). Informational, never blaming.
+public struct RecoveryNotice: Equatable, Sendable {
+    public let recoveredTo: URL
+    public let message: String
+}
+
 /// Local-first store. Everything stays in the on-device container; this module
 /// has no networking imports by construction (spec: no network, no account).
 /// Named SessionRecordModel etc. to avoid shadowing PraxmodoroCore.Session.
@@ -101,6 +108,39 @@ public final class LocalStore {
     init(container: ModelContainer) {
         self.container = container
         self.context = ModelContext(container)
+    }
+
+    public init(url: URL) throws {
+        let config = ModelConfiguration(url: url)
+        self.container = try ModelContainer(for: Self.schema, configurations: [config])
+        self.context = ModelContext(container)
+    }
+
+    /// Open the store at `url`. If it cannot be opened or migrated, the
+    /// unreadable file is preserved under a recovery name, a fresh store is
+    /// created, and the returned notice says plainly what happened.
+    public static func open(at url: URL, now: Date) throws -> (LocalStore, RecoveryNotice?) {
+        do {
+            return (try LocalStore(url: url), nil)
+        } catch {
+            let stamp = ISO8601DateFormatter().string(from: now).replacingOccurrences(of: ":", with: "-")
+            let recovery = url.deletingLastPathComponent()
+                .appendingPathComponent("\(url.lastPathComponent).recovery-\(stamp)")
+            let fm = FileManager.default
+            try fm.moveItem(at: url, to: recovery)
+            for suffix in ["-wal", "-shm"] {
+                let sidecar = URL(fileURLWithPath: url.path + suffix)
+                if fm.fileExists(atPath: sidecar.path) {
+                    try? fm.moveItem(at: sidecar, to: URL(fileURLWithPath: recovery.path + suffix))
+                }
+            }
+            let fresh = try LocalStore(url: url)
+            let notice = RecoveryNotice(
+                recoveredTo: recovery,
+                message: "Your session records could not be read, so Praxmodoro started a fresh local store. Nothing was deleted — the previous file is preserved as \(recovery.lastPathComponent) in the same folder."
+            )
+            return (fresh, notice)
+        }
     }
 
     public func createSession(id: UUID, policyName: String, startedAt: Date) throws {
