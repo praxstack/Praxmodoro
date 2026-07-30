@@ -16,3 +16,6 @@
 2026-07-30T17:58:00Z | actor=claude | atom=spec-m1 | DECISION | Direction B "Living Companion" approved by Prax in chat; openspec config context updated; A/C mocks retained as comparative records.
 2026-07-30T17:58:00Z | actor=claude | atom=spec-m1 | SPEC | Authored SPEC.md, prd.json (28 pending atoms), and OpenSpec change add-app-scaffold-core-loop (proposal, 4 capability specs, design, tasks); openspec validate --all --strict passed.
 2026-07-30T18:20:00Z | actor=claude | atom=rename | DECISION | Product renamed Praxodoro -> Praxmodoro per Prax; new private repo praxstack/Praxmodoro created; historical records (research/, .agent/, progress.txt history, .dcanvas ledger) intentionally left under the old name.
+2026-07-30T18:55:00Z | actor=claude | atom=1.1 | TEST | Red observed (verify-project.sh exit 1, project missing); green after xcodegen generate: BUILD SUCCEEDED, app launched to window.
+2026-07-30T18:55:00Z | actor=claude | atom=1.2 | TEST | PraxmodoroCore and PraxmodoroStore SwiftPM packages test green headless (swift test, 1 placeholder test each).
+2026-07-30T18:55:00Z | actor=claude | atom=1.3 | TEST | verify-project.sh full gate OK (staleness diff + package tests + build); README native commands documented and run verbatim.
