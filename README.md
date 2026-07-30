@@ -4,7 +4,7 @@ Praxodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach.
 
 ## Current state
 
-The product research and interactive visual mocks are complete. Native implementation is beginning through an OpenSpec change and a test-first autonomous workflow; no shipping app or Enterprise service is claimed yet.
+The product research and interactive visual mocks are complete. Native implementation has not started; it will begin with an OpenSpec change and a test-first autonomous workflow. No shipping app or Enterprise service is claimed yet.
 
 ## Editions
 
@@ -18,9 +18,11 @@ Core accessibility and ADHD-aware focus support are not paywalled.
 
 - `research/pomodoro-landscape-20260720/` — sourced product and platform research.
 - `design-mocks/hallmark/` — interactive Hallmark mocks, screenshots, and design dossier.
-- `openspec/` — canonical product specs and active change artifacts.
+- `openspec/` — OpenSpec configuration; canonical specs and change artifacts will live here once the first change is proposed.
 - `.agent/sessions/` — continuous autonomous build audit trail.
-- `SPEC.md`, `BLUEPRINT.md`, `prd.json`, `progress.txt` — durable completion contract and execution state.
+- `progress.txt` — append-only execution log.
+
+`SPEC.md`, `BLUEPRINT.md`, and `prd.json` — the durable completion contract and execution state referenced in `AGENTS.md` — are planned artifacts that have not been created yet.
 
 ## Specification commands
 
