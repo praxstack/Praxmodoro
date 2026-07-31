@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-31T00:45:00Z",
+  "updated": "2026-07-31T13:10:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -92,14 +92,14 @@
     {
       "id": "4.2",
       "title": "Canvas field renderer",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "FieldModel mirrors JS Field.step 1:1 over golden-verified primitives; determinism + hold-glide tests green; ImageRenderer smoke stills (breathing/held/expanded) visually verified against mock"
     },
     {
       "id": "4.3",
       "title": "Total reduced-motion standdown",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "CompanionFieldView: model nil exactly when motionStilled; static alternate renders same composition at rest; testReduceMotionNeverInstantiatesPhysics green"
     },
     {
       "id": "5.1",
