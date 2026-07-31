@@ -6,10 +6,6 @@
  * Never runs under prefers-reduced-motion or the "Motion: still" toggle.
  */
 (() => {
-  const reducedQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const shell = document.querySelector("#prototypeShell");
-  if (!shell) return;
-
   /* ---------- primitives ---------- */
 
   // Critically-damped-by-default spring integrator.
@@ -71,6 +67,18 @@
     { sel: ".field-core", gain: 1.15, phase: 0.15, wander: 0.55 },
     { sel: ".field-ring", gain: 0.4, phase: 0.0, wander: 0.0 }
   ];
+
+  /* Pure-core export seam: under Node (golden-value generation for the native
+   * port) expose the math and stop; in the browser this block is inert and
+   * behavior is unchanged. The values below ARE the design contract. */
+  if (typeof module !== "undefined" && module.exports) {
+    module.exports = { spring, smooth, breathValue, drift, BREATH, BREATH_TOTAL, STATES, LAYERS };
+    return;
+  }
+
+  const reducedQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const shell = document.querySelector("#prototypeShell");
+  if (!shell) return;
 
   /* ---------- field ---------- */
 
