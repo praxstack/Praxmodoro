@@ -39,9 +39,38 @@ final class AppModel {
         sessionID = id
         surface = .focus
         try store?.createSession(id: id, policyName: policy.name, startedAt: now)
+        try store?.saveTask(sessionID: id, title: taskTitle, firstAction: firstAction, at: now)
         try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
         if !capacity.isEmpty {
             try store?.appendEvent(sessionID: id, kind: .capacityReport, payload: capacity, at: now)
+        }
+    }
+
+    /// Relaunch lands the user exactly where they were: rebuild the session
+    /// purely from persisted transitions (spec: app-scaffold lifecycle).
+    func restore() throws {
+        guard let store, let summary = try store.latestSession() else { return }
+        let events = try store.events(sessionID: summary.id)
+        let transitions = events
+            .filter { $0.kind == .transition }
+            .map { TransitionRecord(intent: nil, state: SessionState(rawValue: $0.payload) ?? .running, at: $0.at) }
+        guard let last = transitions.last, last.state != .closed else { return }
+
+        let records = [TransitionRecord(intent: nil, state: .idle, at: summary.startedAt)] + transitions
+        session = Session(policy: TimingPolicy.named(summary.policyName), transitions: records)
+        sessionID = summary.id
+        policy = TimingPolicy.named(summary.policyName)
+        if let task = try store.task(sessionID: summary.id) {
+            taskTitle = task.title
+            firstAction = task.firstAction
+        }
+        parkedThoughts = events.filter { $0.kind == .thoughtParked }.map(\.payload)
+
+        let now = clock()
+        switch session?.reconciled(at: now).state(at: now) {
+        case .running, .held: surface = .focus
+        case .onBreak: surface = .onBreak
+        default: surface = .initiate
         }
     }
 

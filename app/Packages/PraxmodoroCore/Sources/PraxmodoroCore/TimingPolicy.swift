@@ -18,6 +18,11 @@ public struct TimingPolicy: Hashable, Sendable, Codable {
         self.suggestedBreak = suggestedBreak
     }
 
+    /// Resolve a persisted policy name back to its definition.
+    public static func named(_ name: String) -> TimingPolicy {
+        [gentleStart, classic, flow, recoveryFirst].first { $0.name == name } ?? classic
+    }
+
     public static let gentleStart = TimingPolicy(name: "gentle-start", arrival: 5 * 60, focus: 25 * 60, suggestedBreak: 5 * 60)
     public static let classic = TimingPolicy(name: "classic", arrival: nil, focus: 25 * 60, suggestedBreak: 5 * 60)
     public static let flow = TimingPolicy(name: "flow", arrival: nil, focus: nil, suggestedBreak: 5 * 60)
