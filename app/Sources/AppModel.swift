@@ -18,6 +18,9 @@ final class AppModel {
     var capacity = "steady"
     var policy: TimingPolicy = .gentleStart
 
+    /// Increments once per acknowledged user choice; the field blooms on change.
+    private(set) var fieldPulse = 0
+
     private(set) var session: Session?
     private(set) var sessionID: UUID?
     private(set) var parkedThoughts: [String] = []
@@ -137,6 +140,7 @@ final class AppModel {
     }
 
     func answer(_ answer: CheckinAnswer) throws {
+        fieldPulse += 1
         lastCheckinResponse = answer.response
         let now = clock()
         if let id = sessionID {
@@ -179,6 +183,7 @@ final class AppModel {
     var reentryStep: String { firstAction }
 
     func chooseBreak(_ choice: String) throws {
+        fieldPulse += 1
         if let id = sessionID {
             try store?.appendEvent(sessionID: id, kind: .breakChoice, payload: choice, at: clock())
         }

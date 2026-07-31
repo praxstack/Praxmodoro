@@ -19,12 +19,15 @@ enum FieldPalette {
 struct CompanionFieldView: View {
     let state: String
     let motionStilled: Bool
+    /// Increment to bloom the field once (choice acknowledgement).
+    var pulseSignal: Int = 0
     /// Physics state — nil exactly when motion is stilled.
     private(set) var model: FieldModel?
 
-    init(state: String, motionStilled: Bool, seed: Double = 1) {
+    init(state: String, motionStilled: Bool, pulseSignal: Int = 0, seed: Double = 1) {
         self.state = state
         self.motionStilled = motionStilled
+        self.pulseSignal = pulseSignal
         self.model = motionStilled ? nil : FieldModel(state: state, seed: seed)
     }
 
@@ -32,7 +35,7 @@ struct CompanionFieldView: View {
         if motionStilled {
             StaticCompanionField(state: state)
         } else {
-            AnimatedCompanionField(initialModel: model ?? FieldModel(state: state))
+            AnimatedCompanionField(initialModel: model ?? FieldModel(state: state), pulseSignal: pulseSignal)
         }
     }
 }
@@ -53,9 +56,11 @@ struct StaticCompanionField: View {
 struct AnimatedCompanionField: View {
     @State private var model: FieldModel
     @State private var lastTick: Date?
+    var pulseSignal: Int = 0
 
-    init(initialModel: FieldModel) {
+    init(initialModel: FieldModel, pulseSignal: Int = 0) {
         self._model = State(initialValue: initialModel)
+        self.pulseSignal = pulseSignal
     }
 
     var body: some View {
@@ -63,6 +68,9 @@ struct AnimatedCompanionField: View {
             FieldCanvas(transforms: currentTransforms(now: context.date), expanded: false)
         }
         .accessibilityHidden(true)
+        .onChange(of: pulseSignal) {
+            model.acknowledge()
+        }
     }
 
     private func currentTransforms(now: Date) -> [FieldLayerTransform] {

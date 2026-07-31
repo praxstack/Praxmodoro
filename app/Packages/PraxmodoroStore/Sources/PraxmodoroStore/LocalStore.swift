@@ -95,7 +95,7 @@ public final class LocalStore {
     private let container: ModelContainer
     private let context: ModelContext
 
-    static var schema: Schema {
+    public static var schema: Schema {
         Schema([SessionRecordModel.self, SessionEventModel.self, TaskRecordModel.self, CapacityReportModel.self])
     }
 

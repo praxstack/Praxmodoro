@@ -56,4 +56,8 @@ swift test --package-path app/Packages/PraxmodoroCore
 xcodebuild -project app/Praxmodoro.xcodeproj -scheme Praxmodoro -destination 'platform=macOS' build
 ```
 
+```bash
+./scripts/run.sh
+```
+
 `verify-project.sh` is the scaffold gate: it fails if the generated project is missing or stale, then runs the package tests and a full build.
