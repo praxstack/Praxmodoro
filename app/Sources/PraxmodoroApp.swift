@@ -28,5 +28,9 @@ struct PraxmodoroApp: App {
             }
             .frame(minWidth: 720, minHeight: 520)
         }
+        Window("About Praxmodoro", id: "about") {
+            AboutView()
+        }
+        .windowResizability(.contentSize)
     }
 }

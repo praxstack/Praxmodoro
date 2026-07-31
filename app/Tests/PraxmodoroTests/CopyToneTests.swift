@@ -23,11 +23,23 @@ import Testing
             scanned += 1
             let source = try String(contentsOf: file, encoding: .utf8)
             // Only string literals — identifiers/comments may use these words.
-            let literals = source.matches(of: /"((?:[^"\\]|\\.)*)"/).map { String($0.1).lowercased() }
+            // Strip comment text first (quotes inside comments break pairing),
+            // then match per line (no multiline literals in these sources).
+            let literals = source.split(separator: "\n", omittingEmptySubsequences: false).flatMap { line -> [String] in
+                var code = String(line)
+                if let commentStart = code.range(of: "//"),
+                   !code[..<commentStart.lowerBound].contains("\"") {
+                    code = String(code[..<commentStart.lowerBound])
+                }
+                return code.matches(of: /"((?:[^"\\]|\\.)*)"/).map { String($0.1).lowercased() }
+            }
             // Copy that explicitly promises the ABSENCE of a mechanic is
             // compliant ("never a streak"); strip negations before linting.
             let negations = ["never a score, never a streak", "never a streak", "no streaks", "no scores"]
             for var literal in literals {
+                // Identifier-shaped literals (no whitespace) are not copy —
+                // e.g. "about-provenance" false-matching "proven".
+                guard literal.contains(" ") else { continue }
                 for negation in negations {
                     literal = literal.replacingOccurrences(of: negation, with: "")
                 }

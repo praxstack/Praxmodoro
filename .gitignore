@@ -27,3 +27,4 @@ research/library-sources/
 # Generated Xcode project (artifact of scripts/generate.sh)
 app/Praxmodoro.xcodeproj/
 app/**/.build/
+app/Sources/Generated/
