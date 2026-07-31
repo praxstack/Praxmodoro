@@ -6,6 +6,11 @@ struct PraxmodoroApp: App {
     @State private var model: AppModel
 
     init() {
+        // UI tests pass this flag for a hermetic, fresh in-memory store.
+        if CommandLine.arguments.contains("-praxmodoro-ephemeral-store") {
+            self._model = State(initialValue: AppModel(store: try? LocalStore(inMemory: true)))
+            return
+        }
         let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Praxmodoro", isDirectory: true)
         try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
