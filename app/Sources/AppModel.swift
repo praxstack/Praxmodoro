@@ -121,6 +121,46 @@ final class AppModel {
         }
     }
 
+    // MARK: Break (spec: user-steerable, held place, ending early is ordinary)
+
+    /// Suggestion derived only from what the user reported — never from a
+    /// claim about what is optimal. Pure over reported inputs, so early break
+    /// ends can never alter future suggestion weight.
+    var breakSuggestion: String {
+        switch capacity {
+        case "restless": "Stretch — unclench the jaw, drop the shoulders."
+        case "foggy": "Water — stand, pour, sip slowly."
+        case "charged": "Step away — a doorway or a window counts."
+        default: "Quiet — no prompt, just the held place."
+        }
+    }
+
+    var breakSuggestionProvenance: String {
+        "You said “\(capacity)”, so this suggestion came first. This pattern is editable and can be turned off entirely."
+    }
+
+    /// The re-entry card: the exact next action, waiting for the return.
+    var reentryStep: String { firstAction }
+
+    func chooseBreak(_ choice: String) throws {
+        if let id = sessionID {
+            try store?.appendEvent(sessionID: id, kind: .breakChoice, payload: choice, at: clock())
+        }
+    }
+
+    /// Ending a break — at any moment — is ordinary: resume and return to
+    /// focus with no notice, penalty, or record beyond the transition itself.
+    func endBreak() throws {
+        guard var current = session else { return }
+        let now = clock()
+        try current.apply(.endBreak, at: now)
+        session = current
+        if let id = sessionID {
+            try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
+        }
+        surface = .focus
+    }
+
     var isHeld: Bool {
         guard let session else { return false }
         let now = clock()
