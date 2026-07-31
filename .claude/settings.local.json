@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Read(//Users/prax/.agents/skills/triage/**)",
-      "Read(//Users/prax/.agents/skills/setup-matt-pocock-skills/**)"
-    ]
-  }
-}

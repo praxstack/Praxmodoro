@@ -28,3 +28,4 @@ research/library-sources/
 app/Praxmodoro.xcodeproj/
 app/**/.build/
 app/Sources/Generated/
+.claude/
