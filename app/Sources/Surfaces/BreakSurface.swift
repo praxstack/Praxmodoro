@@ -18,7 +18,7 @@ struct BreakSurface: View {
                     .font(.system(size: 26, weight: .bold, design: .rounded))
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                CompanionFieldView(state: "expanded", motionStilled: reduceMotion)
+                CompanionFieldView(state: "expanded", motionStilled: reduceMotion, pulseSignal: model.fieldPulse)
                     .frame(width: 220, height: 220)
                     .accessibilityIdentifier("companion-field")
 

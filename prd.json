@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-31T14:45:00Z",
+  "updated": "2026-07-31T15:40:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -152,26 +152,26 @@
     {
       "id": "6.3",
       "title": "Accessibility scenario suite",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "VoiceOver summary strings pinned; keyboard map covers full loop; structural transparency/contrast gates; runtime standdown pinned in 4.3"
     },
     {
       "id": "6.4",
       "title": "Network-silence harness",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "URLProtocol canary over a real full loop observed zero requests; whole-app source scan clean of network symbols"
     },
     {
       "id": "6.5",
       "title": "Provenance About surface",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "generate.sh stamps version/SHA/edition into BuildProvenance; About window shows all three; test rejects 'unknown' SHA"
     },
     {
       "id": "6.6",
       "title": "Full gauntlet + validator pass",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "Full gauntlet green: 33 unit + 1 UI test, verify gate (lint+build+full suite), spec:validate strict. Independent validator (fresh context) found 4 EARS gaps + unwired pulse + bookkeeping + missing run command - ALL fixed and re-tested: pulse wired model->surfaces, drift/first-run/schema-parity tests added, scripts/run.sh documented."
     }
   ]
 }
