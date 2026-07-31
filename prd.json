@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-31T14:15:00Z",
+  "updated": "2026-07-31T14:45:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -134,20 +134,20 @@
     {
       "id": "5.6",
       "title": "Lifecycle restore",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: restore missing; green: relaunch over same container lands on focus with title/action restored and remaining 15:00 at T+10; fresh state -> initiate; closed sessions stay closed"
     },
     {
       "id": "6.1",
       "title": "Capability registry + never-paywalled validation",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: CapabilityRegistry missing; green: Lite grant total; paywall attempt on checkins fails validation AND self-heals to available; wired into AppModel startup"
     },
     {
       "id": "6.2",
       "title": "Copy-tone lint",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red then refined: lint caught approved negation copy ('never a streak'), lexicon made negation-aware; all source string literals pass banned-claims scan"
     },
     {
       "id": "6.3",
