@@ -249,6 +249,17 @@ final class AppModel {
         return base + " One session is not a pattern — the options simply stay offered."
     }
 
+    // MARK: Accessibility (spec: VoiceOver reads a concise field summary)
+
+    func fieldAccessibilitySummary(at now: Date) -> String {
+        guard let session else { return "Companion: resting" }
+        let state = session.reconciled(at: now).state(at: now)
+        if state == .held { return "Companion: holding your place" }
+        guard let remaining = remaining(at: now) else { return "Companion: breathing, open-ended block" }
+        let minutes = Int((remaining / 60).rounded())
+        return "Companion: breathing, \(minutes) minute\(minutes == 1 ? "" : "s") remaining"
+    }
+
     var isHeld: Bool {
         guard let session else { return false }
         let now = clock()
