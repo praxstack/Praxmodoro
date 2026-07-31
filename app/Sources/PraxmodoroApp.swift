@@ -10,7 +10,9 @@ struct PraxmodoroApp: App {
             .appendingPathComponent("Praxmodoro", isDirectory: true)
         try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
         let opened = try? LocalStore.open(at: supportDir.appendingPathComponent("praxmodoro.store"), now: Date())
-        self._model = State(initialValue: AppModel(store: opened?.0))
+        let model = AppModel(store: opened?.0)
+        try? model.restore()
+        self._model = State(initialValue: model)
     }
 
     var body: some Scene {

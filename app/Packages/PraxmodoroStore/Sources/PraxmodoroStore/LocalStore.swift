@@ -163,6 +163,32 @@ public final class LocalStore {
         try appendEvent(sessionID: sessionID, kind: .edit, payload: newPayload, at: at, references: originalID)
     }
 
+    public struct SessionSummary: Equatable, Sendable {
+        public let id: UUID
+        public let policyName: String
+        public let startedAt: Date
+    }
+
+    /// Most recently started session, if any (relaunch restore).
+    public func latestSession() throws -> SessionSummary? {
+        var descriptor = FetchDescriptor<SessionRecordModel>(sortBy: [SortDescriptor(\.startedAt, order: .reverse)])
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first.map {
+            SessionSummary(id: $0.id, policyName: $0.policyName, startedAt: $0.startedAt)
+        }
+    }
+
+    /// The session's one task (M1: 1:1, task id == session id).
+    public func saveTask(sessionID: UUID, title: String, firstAction: String, at: Date) throws {
+        context.insert(TaskRecordModel(id: sessionID, title: title, firstAction: firstAction, createdAt: at))
+        try context.save()
+    }
+
+    public func task(sessionID: UUID) throws -> (title: String, firstAction: String)? {
+        let descriptor = FetchDescriptor<TaskRecordModel>(predicate: #Predicate { $0.id == sessionID })
+        return try context.fetch(descriptor).first.map { ($0.title, $0.firstAction) }
+    }
+
     public func events(sessionID: UUID) throws -> [StoredEvent] {
         let descriptor = FetchDescriptor<SessionEventModel>(
             predicate: #Predicate { $0.sessionID == sessionID },
