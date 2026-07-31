@@ -26,7 +26,9 @@ final class AppModel {
     let capabilities: CapabilityRegistry
     private let clock: () -> Date
 
-    init(store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite), clock: @escaping () -> Date = { Date() }) {
+    init(
+        store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite), clock: @escaping () -> Date = { Date() }
+    ) {
         self.store = store
         self.capabilities = capabilities
         self.clock = clock
@@ -55,7 +57,8 @@ final class AppModel {
     func restore() throws {
         guard let store, let summary = try store.latestSession() else { return }
         let events = try store.events(sessionID: summary.id)
-        let transitions = events
+        let transitions =
+            events
             .filter { $0.kind == .transition }
             .map { TransitionRecord(intent: nil, state: SessionState(rawValue: $0.payload) ?? .running, at: $0.at) }
         guard let last = transitions.last, last.state != .closed else { return }
@@ -220,13 +223,14 @@ final class AppModel {
             let label: String
             switch event.kind {
             case .transition:
-                label = switch event.payload {
-                case "running": "Focus resumed"
-                case "held": "Held — place kept"
-                case "break": "Chose an intentional break"
-                case "closed": "Closed the session"
-                default: "State: \(event.payload)"
-                }
+                label =
+                    switch event.payload {
+                    case "running": "Focus resumed"
+                    case "held": "Held — place kept"
+                    case "break": "Chose an intentional break"
+                    case "closed": "Closed the session"
+                    default: "State: \(event.payload)"
+                    }
             case .checkinAnswer:
                 label = "Check-in: \(CheckinAnswer(rawValue: event.payload)?.label ?? event.payload)"
             case .thoughtParked: label = "Parked a thought"
@@ -243,7 +247,8 @@ final class AppModel {
     /// states its limits (spec: "Single-day observations stay tentative").
     var reviewInsight: String {
         let resized = (try? reviewTimeline())?.contains { $0.label.contains("smaller") } ?? false
-        let base = resized
+        let base =
+            resized
             ? "Making the step smaller kept things moving today."
             : "You stayed with the loop today."
         return base + " One session is not a pattern — the options simply stay offered."

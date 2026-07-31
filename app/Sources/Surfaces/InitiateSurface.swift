@@ -1,5 +1,5 @@
-import SwiftUI
 import PraxmodoroCore
+import SwiftUI
 
 /// One task, one tiny first action, capacity, policy, begin — and nothing
 /// else on the start path (spec: focus-loop-ui "One-task initiation").

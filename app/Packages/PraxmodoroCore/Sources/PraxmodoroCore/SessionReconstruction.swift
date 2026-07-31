@@ -9,7 +9,8 @@ public extension Session {
     /// transitions so far — nil for open-ended policies or non-running tails.
     func expiryInstant() -> Date? {
         guard let focus = policy.focus,
-              let last = transitions.last, last.state == .running else { return nil }
+            let last = transitions.last, last.state == .running
+        else { return nil }
         let elapsedBeforeTail = focusElapsed(at: last.at)
         return last.at.addingTimeInterval(focus - elapsedBeforeTail)
     }
@@ -18,7 +19,8 @@ public extension Session {
     /// the policy has no arrival phase or the block never ran that long.
     func promotionInstant() -> Date? {
         guard let arrival = policy.arrival,
-              let firstRun = transitions.first(where: { $0.state == .running }) else { return nil }
+            let firstRun = transitions.first(where: { $0.state == .running })
+        else { return nil }
         return firstRun.at.addingTimeInterval(arrival)
     }
 
@@ -30,7 +32,8 @@ public extension Session {
     func reconciled(at now: Date) -> Session {
         var copy = self
         if let promotion = promotionInstant(), promotion <= now,
-           !copy.transitions.contains(where: { $0.at == promotion && $0.intent == nil }) {
+            !copy.transitions.contains(where: { $0.at == promotion && $0.intent == nil })
+        {
             let index = copy.transitions.firstIndex(where: { $0.at > promotion }) ?? copy.transitions.endIndex
             copy.transitions.insert(TransitionRecord(intent: nil, state: .running, at: promotion), at: index)
         }

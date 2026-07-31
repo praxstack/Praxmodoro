@@ -42,7 +42,8 @@ public struct Session: Equatable, Sendable, Codable {
     /// Rebuild from persisted transitions (spec: relaunch recovery).
     public init(policy: TimingPolicy, transitions: [TransitionRecord]) {
         self.policy = policy
-        self.transitions = transitions.isEmpty
+        self.transitions =
+            transitions.isEmpty
             ? [TransitionRecord(intent: nil, state: .idle, at: .distantPast)]
             : transitions
     }

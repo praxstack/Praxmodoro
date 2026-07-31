@@ -1,5 +1,5 @@
-import SwiftUI
 import PraxmodoroStore
+import SwiftUI
 
 @main
 struct PraxmodoroApp: App {

@@ -14,5 +14,9 @@ after=$(find app/Praxmodoro.xcodeproj -name project.pbxproj -exec shasum {} \;)
 
 swift test --package-path app/Packages/PraxmodoroCore
 swift test --package-path app/Packages/PraxmodoroStore
+swift format lint --strict --recursive app/Sources app/Packages/PraxmodoroCore/Sources app/Packages/PraxmodoroStore/Sources
 xcodebuild -project app/Praxmodoro.xcodeproj -scheme Praxmodoro -destination 'platform=macOS' build | tail -3
+# UI tests run unsigned locally: the runner and an ad-hoc-signed bundle
+# otherwise carry mismatched Team IDs (no signing team configured yet).
+xcodebuild -project app/Praxmodoro.xcodeproj -scheme Praxmodoro -destination 'platform=macOS' test CODE_SIGNING_ALLOWED=NO | tail -2
 echo "verify-project: OK"
