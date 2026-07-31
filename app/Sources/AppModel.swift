@@ -68,6 +68,59 @@ final class AppModel {
         }
     }
 
+    // MARK: Check-in (spec: no failure state; never interrupts destructively)
+
+    private(set) var checkinPending = false
+    private(set) var isEditingThought = false
+    private(set) var lastCheckinResponse: String?
+
+    /// Open the check-in: the timer holds while the question is open.
+    func openCheckin() throws {
+        if !isHeld { try toggleHold() }
+        surface = .checkin
+    }
+
+    /// A due check-in defers while the user is mid-keystroke in thought
+    /// parking; it presents when the field loses focus.
+    func checkinBecameDue() throws {
+        if isEditingThought {
+            checkinPending = true
+        } else {
+            try openCheckin()
+        }
+    }
+
+    func thoughtEditingBegan() { isEditingThought = true }
+
+    func thoughtEditingEnded() throws {
+        isEditingThought = false
+        if checkinPending {
+            checkinPending = false
+            try openCheckin()
+        }
+    }
+
+    func answer(_ answer: CheckinAnswer) throws {
+        lastCheckinResponse = answer.response
+        let now = clock()
+        if let id = sessionID {
+            try store?.appendEvent(sessionID: id, kind: .checkinAnswer, payload: answer.rawValue, at: now)
+        }
+        switch answer {
+        case .stillFits, .smallerStep, .drifted:
+            if isHeld { try toggleHold() }
+            surface = .focus
+        case .needBreak:
+            guard var current = session else { return }
+            try current.apply(.startBreak, at: now)
+            session = current
+            if let id = sessionID {
+                try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
+            }
+            surface = .onBreak
+        }
+    }
+
     var isHeld: Bool {
         guard let session else { return false }
         let now = clock()
