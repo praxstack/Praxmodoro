@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-30T23:20:00Z",
+  "updated": "2026-07-31T00:45:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -86,8 +86,8 @@
     {
       "id": "4.1",
       "title": "FieldPhysics port with golden tests",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: FieldBreath/FieldSpring/FieldPhysics missing (compile); green: golden parity 1e-9 vs JS-exported vectors (17 breath samples, 6 drift, 4 spring traces incl. pulse omega7/zeta0.34, states, layers); browser mock verified unaffected by export seam"
     },
     {
       "id": "4.2",
