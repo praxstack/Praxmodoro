@@ -45,6 +45,7 @@ struct ReviewSurface: View {
                         .frame(maxWidth: .infinity, minHeight: 38)
                 }
                 .buttonStyle(.bordered)
+                .keyboardShortcut("n", modifiers: .command)
                 .accessibilityIdentifier("new-session-control")
             }
             .frame(width: 250)

@@ -32,6 +32,8 @@ struct FocusSurface: View {
                     CompanionFieldView(state: model.isHeld ? "held" : "breathing", motionStilled: reduceMotion)
                         .frame(width: 260, height: 260)
                         .accessibilityIdentifier("companion-field")
+                        .accessibilityElement()
+                        .accessibilityLabel(model.fieldAccessibilitySummary(at: Date()))
                     TimelineView(.periodic(from: .now, by: 0.5)) { context in
                         Text(timeText(at: context.date))
                             .font(.system(size: 44, weight: .light, design: .monospaced))
