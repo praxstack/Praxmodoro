@@ -23,11 +23,15 @@ final class AppModel {
     private(set) var parkedThoughts: [String] = []
 
     let store: LocalStore?
+    let capabilities: CapabilityRegistry
     private let clock: () -> Date
 
-    init(store: LocalStore?, clock: @escaping () -> Date = { Date() }) {
+    init(store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite), clock: @escaping () -> Date = { Date() }) {
         self.store = store
+        self.capabilities = capabilities
         self.clock = clock
+        // Spec: startup validation fails fast in debug; lookup self-heals in release.
+        do { try capabilities.validate() } catch { assertionFailure("capability validation failed: \(error)") }
     }
 
     func begin() throws {
