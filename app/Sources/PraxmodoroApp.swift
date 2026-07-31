@@ -19,7 +19,8 @@ struct PraxmodoroApp: App {
                 switch model.surface {
                 case .initiate: InitiateSurface(model: model)
                 case .focus: FocusSurface(model: model)
-                default: InitiateSurface(model: model) // remaining surfaces land with atoms 5.3-5.5
+                case .checkin: CheckinSurface(model: model)
+                default: InitiateSurface(model: model) // break/review land with atoms 5.4-5.5
                 }
             }
             .frame(minWidth: 720, minHeight: 520)
