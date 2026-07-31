@@ -161,6 +161,61 @@ final class AppModel {
         surface = .focus
     }
 
+    // MARK: Review (spec: a record, not a verdict)
+
+    struct TimelineEntry: Equatable {
+        let at: Date
+        let label: String
+    }
+
+    func closeSession() throws {
+        guard var current = session else { return }
+        let now = clock()
+        try current.apply(.close, at: now)
+        session = current
+        if let id = sessionID {
+            try store?.appendEvent(sessionID: id, kind: .transition, payload: "closed", at: now)
+        }
+        surface = .review
+    }
+
+    /// Descriptive timeline straight from the event log — what happened,
+    /// never how well.
+    func reviewTimeline() throws -> [TimelineEntry] {
+        guard let id = sessionID, let store else { return [] }
+        return try store.events(sessionID: id).map { event in
+            let label: String
+            switch event.kind {
+            case .transition:
+                label = switch event.payload {
+                case "running": "Focus resumed"
+                case "held": "Held — place kept"
+                case "break": "Chose an intentional break"
+                case "closed": "Closed the session"
+                default: "State: \(event.payload)"
+                }
+            case .checkinAnswer:
+                label = "Check-in: \(CheckinAnswer(rawValue: event.payload)?.label ?? event.payload)"
+            case .thoughtParked: label = "Parked a thought"
+            case .breakChoice: label = "Break: \(event.payload)"
+            case .capacityReport: label = "Reported capacity: \(event.payload)"
+            case .edit: label = "Edited a note"
+            case .clockAnomaly: label = "Clock changed — time kept honest"
+            }
+            return TimelineEntry(at: event.at, label: label)
+        }
+    }
+
+    /// Uncertainty-aware, non-diagnostic insight. Single-session data always
+    /// states its limits (spec: "Single-day observations stay tentative").
+    var reviewInsight: String {
+        let resized = (try? reviewTimeline())?.contains { $0.label.contains("smaller") } ?? false
+        let base = resized
+            ? "Making the step smaller kept things moving today."
+            : "You stayed with the loop today."
+        return base + " One session is not a pattern — the options simply stay offered."
+    }
+
     var isHeld: Bool {
         guard let session else { return false }
         let now = clock()
