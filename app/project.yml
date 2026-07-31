@@ -9,7 +9,11 @@ settings:
     SWIFT_VERSION: "6.3"
     SWIFT_TREAT_WARNINGS_AS_ERRORS: YES
     MACOSX_DEPLOYMENT_TARGET: "26.0"
-    CODE_SIGN_STYLE: Automatic
+    # Uniform ad-hoc signing until a team is configured: mixed identities
+    # give the UI-test runner a Team-ID dlopen mismatch, and fully unsigned
+    # binaries are SIGKILLed on Apple Silicon.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
     ENABLE_HARDENED_RUNTIME: YES
     GENERATE_INFOPLIST_FILE: YES
 packages:
@@ -36,12 +40,20 @@ targets:
     sources: [Tests/PraxmodoroTests]
     dependencies:
       - target: Praxmodoro
+    settings:
+      base:
+        # Test targets: hardened-runtime library validation rejects an
+        # ad-hoc runner loading an ad-hoc bundle. App target keeps it on.
+        ENABLE_HARDENED_RUNTIME: NO
   PraxmodoroUITests:
     type: bundle.ui-testing
     platform: macOS
     sources: [Tests/PraxmodoroUITests]
     dependencies:
       - target: Praxmodoro
+    settings:
+      base:
+        ENABLE_HARDENED_RUNTIME: NO
 schemes:
   Praxmodoro:
     build:
