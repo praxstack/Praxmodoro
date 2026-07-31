@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-31T13:40:00Z",
+  "updated": "2026-07-31T14:15:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -116,20 +116,20 @@
     {
       "id": "5.3",
       "title": "Check-in surface",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: CheckinAnswer missing; green: four answers pinned, judgment-lexicon lint on responses, timer holds while open, typing deferral delivers on blur"
     },
     {
       "id": "5.4",
       "title": "Break surface",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: break API missing; green: early end resumes with no penalty-shaped events and unchanged suggestion; provenance names reported capacity + editable/off; re-entry card carries next action"
     },
     {
       "id": "5.5",
       "title": "Review surface",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: review API missing; green: timeline reproduces event log descriptively (verdict-lexicon lint), single-session insight states its limits"
     },
     {
       "id": "5.6",

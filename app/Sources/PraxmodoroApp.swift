@@ -21,7 +21,7 @@ struct PraxmodoroApp: App {
                 case .focus: FocusSurface(model: model)
                 case .checkin: CheckinSurface(model: model)
                 case .onBreak: BreakSurface(model: model)
-                default: InitiateSurface(model: model) // review lands with atom 5.5
+                case .review: ReviewSurface(model: model)
                 }
             }
             .frame(minWidth: 720, minHeight: 520)
