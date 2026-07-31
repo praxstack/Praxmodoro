@@ -3,7 +3,7 @@
   "contract": "SPEC.md",
   "activeChange": "add-app-scaffold-core-loop",
   "milestone": "M1",
-  "updated": "2026-07-31T13:10:00Z",
+  "updated": "2026-07-31T13:40:00Z",
   "atoms": [
     {
       "id": "1.1",
@@ -104,14 +104,14 @@
     {
       "id": "5.1",
       "title": "Initiate surface",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "red: AppModel missing (compile); green: start path pinned to exactly [task, first-action, capacity, policy, begin]; begin() -> focus + persisted transition/capacity events at canonical timestamps"
     },
     {
       "id": "5.2",
       "title": "Focus surface",
-      "status": "pending",
-      "evidence": null
+      "status": "done",
+      "evidence": "green: thought parking keeps focus active + persists event; no scoring identifiers on the control catalog; remaining derives through engine (15:00 at T+10 of classic)"
     },
     {
       "id": "5.3",

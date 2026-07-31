@@ -2,7 +2,7 @@ import Foundation
 
 /// Session timing policies are data, never doctrine: no policy is "optimal"
 /// (research w2-breaks-adhd-falsification-001). `focus == nil` means open-ended.
-public struct TimingPolicy: Equatable, Sendable, Codable {
+public struct TimingPolicy: Hashable, Sendable, Codable {
     public let name: String
     /// Optional arrival period folded seamlessly into the block (gentle start).
     public let arrival: TimeInterval?
