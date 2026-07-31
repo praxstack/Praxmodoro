@@ -1,5 +1,5 @@
-import SwiftUI
 import PraxmodoroCore
+import SwiftUI
 
 /// The timer holds the task; the field is ambient presence. No element here
 /// scores the user (spec: focus-loop-ui "Nothing scores the user").

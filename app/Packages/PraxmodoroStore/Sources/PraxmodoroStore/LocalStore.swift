@@ -137,7 +137,8 @@ public final class LocalStore {
             let fresh = try LocalStore(url: url)
             let notice = RecoveryNotice(
                 recoveredTo: recovery,
-                message: "Your session records could not be read, so Praxmodoro started a fresh local store. Nothing was deleted — the previous file is preserved as \(recovery.lastPathComponent) in the same folder."
+                message:
+                    "Your session records could not be read, so Praxmodoro started a fresh local store. Nothing was deleted — the previous file is preserved as \(recovery.lastPathComponent) in the same folder."
             )
             return (fresh, notice)
         }
@@ -152,7 +153,9 @@ public final class LocalStore {
     public func appendEvent(sessionID: UUID, kind: StoredEventKind, payload: String, at: Date, references: UUID? = nil) throws -> UUID {
         let next = try events(sessionID: sessionID).count
         let id = UUID()
-        context.insert(SessionEventModel(id: id, sessionID: sessionID, kindRaw: kind.rawValue, payload: payload, at: at, orderIndex: next, references: references))
+        context.insert(
+            SessionEventModel(
+                id: id, sessionID: sessionID, kindRaw: kind.rawValue, payload: payload, at: at, orderIndex: next, references: references))
         try context.save()
         return id
     }
@@ -195,7 +198,9 @@ public final class LocalStore {
             sortBy: [SortDescriptor(\.orderIndex)]
         )
         return try context.fetch(descriptor).map {
-            StoredEvent(id: $0.id, kind: StoredEventKind(rawValue: $0.kindRaw) ?? .transition, payload: $0.payload, at: $0.at, references: $0.references)
+            StoredEvent(
+                id: $0.id, kind: StoredEventKind(rawValue: $0.kindRaw) ?? .transition, payload: $0.payload, at: $0.at,
+                references: $0.references)
         }
     }
 }
