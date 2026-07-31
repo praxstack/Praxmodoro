@@ -45,3 +45,7 @@
 2026-07-20T15:17:21Z | actor=/root | atom=plan | COUNCIL_FINAL_DISPATCH | Fresh independent toolchain, policy/privacy, and trace reviewers started; 0/21 implementation atoms remain complete.
 2026-07-20T15:34:29Z | actor=/root | atom=plan | COUNCIL_GO | Fresh toolchain/test, policy/privacy, and canonical-trace reviewers independently returned GO with no Critical or Major issue.
 2026-07-20T15:34:29Z | actor=/root | atom=plan | GATE | Planning gate closed with durable council evidence; implementation remains 0/21 and next atom remains 1.1.
+2026-07-20T15:37:44Z | actor=/root | atom=1.1 | PHASE_ENTER | Started reproducible native scaffold atom under the accepted exact-code plan; required first evidence is the missing-scaffold RED.
+2026-07-20T16:05:27Z | actor=/root | atom=1.1 | QUALITY_REMEDIATION | Pinned and revalidated the extracted XcodeGen executable before every invocation; guarded recursive cleanup is confined to the bootstrap-created .download.* root.
+2026-07-20T16:05:27Z | actor=/root | atom=1.1 | GATE | Poisoned-cache, path-with-spaces, clean-download, zero-residue, scaffold, package, unsigned-build, regeneration, smoke, strict-OpenSpec, diff, and 109.86 MB secret-scan proofs passed; fresh independent review PASS with no Critical, Major, or Minor findings.
+2026-07-20T16:05:27Z | actor=/root | atom=1.1 | BLOCKER | Unchanged signed UI driver passes both app-unit tests but cannot enter the XCUITest body while the Mac is locked behind a system accessibility shield; atom remains doing, uncommitted, and unchecked.

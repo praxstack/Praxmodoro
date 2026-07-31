@@ -27,11 +27,11 @@
     ]
   },
   "counts": {
-    "earsAcceptanceCriteria": 56,
+    "earsAcceptanceCriteria": 57,
     "documentedAssumptions": 12,
     "atoms": 21,
-    "todo": 21,
-    "doing": 0,
+    "todo": 20,
+    "doing": 1,
     "done": 0,
     "parked": 0
   },
@@ -40,7 +40,7 @@
     {
       "id": "1.1",
       "title": "Pin XcodeGen and scaffold the native project plus internal package",
-      "status": "todo",
+      "status": "doing",
       "dependsOn": [],
       "criteria": ["D-001", "D-004"],
       "red": "scripts/verify-scaffold.sh fails on missing project.yml, project, or targets",
@@ -72,7 +72,7 @@
       "title": "Implement entitlement evidence, policy precedence, expiry, and downgrade",
       "status": "todo",
       "dependsOn": ["2.1"],
-      "criteria": ["G-002", "G-003", "G-004", "G-005", "G-006"],
+      "criteria": ["G-002", "G-003", "G-005", "G-006"],
       "red": "EntitlementSnapshotTests fail on missing evidence and policy APIs",
       "green": "verified, expired, unverified, managed, and downgrade fixtures pass",
       "evidence": null
@@ -141,10 +141,10 @@
       "id": "5.2",
       "title": "Wire shared app container, main window, and menu bar",
       "status": "todo",
-      "dependsOn": ["4.1", "4.2", "5.1"],
-      "criteria": ["E-002", "U-006", "U-009", "D-002"],
-      "red": "AppModelTests fail on missing shared engine and scene subscriptions",
-      "green": "main/menu-bar parity and shared revision tests pass",
+      "dependsOn": ["2.2", "4.1", "4.2", "5.1"],
+      "criteria": ["E-002", "G-007", "U-006", "U-009", "D-002"],
+      "red": "AppModelTests fail on missing shared engine and independent session/capability subscriptions",
+      "green": "main/menu-bar parity, shared revision, and capability-only publication tests pass",
       "evidence": null
     },
     {
@@ -203,8 +203,8 @@
       "status": "todo",
       "dependsOn": ["4.2", "6.1"],
       "criteria": ["G-004", "P-005", "P-006", "P-010"],
-      "red": "export/delete tests fail on missing category selection and complete cleanup",
-      "green": "minimal/all exports, full local deletion, and partial-failure messaging pass",
+      "red": "export/delete tests fail on missing category selection, downgrade reads, and complete cleanup",
+      "green": "Lite-after-Pro reads, minimal/all exports, full local deletion, and partial-failure messaging pass",
       "evidence": null
     },
     {

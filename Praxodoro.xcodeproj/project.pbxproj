@@ -1,0 +1,566 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		054CA0F840C1128C1C4E1E39 /* PraxodoroApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B09CEA6DB02A3E4071F0102 /* PraxodoroApp.swift */; };
+		05F1B58BECC33AFBAF0BF480 /* PraxodoroCore in Frameworks */ = {isa = PBXBuildFile; productRef = DEC0BE1945D04551D37D57DB /* PraxodoroCore */; };
+		90025CCC5D1783A19EF9C0A5 /* PraxodoroLaunchUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E24E293516AC50A4EA8D6F8 /* PraxodoroLaunchUITests.swift */; };
+		A02F8FA1C4D267FE6D4EB7B9 /* AppPaths.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B8FF68AA8D6FCF2CECEF61E /* AppPaths.swift */; };
+		B4E9E709F2C6A956F5286B4F /* ScaffoldIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BE0A6F7CF9F4B7C259FAA9A /* ScaffoldIntegrationTests.swift */; };
+		E27A8047B8427276C23FE2EF /* InitiateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCA8563FF94528CB2C966A1 /* InitiateView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5F9AF36E136323D118C6163D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C51E2BD236E9C47BAF21D1C6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8C6A1489A1C57E6CDF9BBCD1;
+			remoteInfo = Praxodoro;
+		};
+		6EF247D2351C39B01CD5AB10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C51E2BD236E9C47BAF21D1C6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8C6A1489A1C57E6CDF9BBCD1;
+			remoteInfo = Praxodoro;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0B8FF68AA8D6FCF2CECEF61E /* AppPaths.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppPaths.swift; sourceTree = "<group>"; };
+		2CCA8563FF94528CB2C966A1 /* InitiateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitiateView.swift; sourceTree = "<group>"; };
+		3BE0A6F7CF9F4B7C259FAA9A /* ScaffoldIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScaffoldIntegrationTests.swift; sourceTree = "<group>"; };
+		3E24E293516AC50A4EA8D6F8 /* PraxodoroLaunchUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PraxodoroLaunchUITests.swift; sourceTree = "<group>"; };
+		6B09CEA6DB02A3E4071F0102 /* PraxodoroApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PraxodoroApp.swift; sourceTree = "<group>"; };
+		836DA4B6AF9496F590112DED /* PraxodoroUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PraxodoroUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		87F1AD2783469D6BFD3D32FD /* Praxodoro.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Praxodoro.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AECEC115FC1B753E10DCBE8B /* PraxodoroCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PraxodoroCore; path = Packages/PraxodoroCore; sourceTree = SOURCE_ROOT; };
+		F8603DFCA477DC4B65245D6E /* PraxodoroTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PraxodoroTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4711D9DD41084BAC6A998455 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05F1B58BECC33AFBAF0BF480 /* PraxodoroCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		587F63C1DEBE7D08C61D5EC0 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				AECEC115FC1B753E10DCBE8B /* PraxodoroCore */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		5EBD0E3AECFF45DBD0355F7A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				87F1AD2783469D6BFD3D32FD /* Praxodoro.app */,
+				F8603DFCA477DC4B65245D6E /* PraxodoroTests.xctest */,
+				836DA4B6AF9496F590112DED /* PraxodoroUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6D04EC1F99625F1218263FB8 /* PraxodoroTests */ = {
+			isa = PBXGroup;
+			children = (
+				3BE0A6F7CF9F4B7C259FAA9A /* ScaffoldIntegrationTests.swift */,
+			);
+			path = PraxodoroTests;
+			sourceTree = "<group>";
+		};
+		774A5AD39457A49F6CA241AE /* PraxodoroUITests */ = {
+			isa = PBXGroup;
+			children = (
+				3E24E293516AC50A4EA8D6F8 /* PraxodoroLaunchUITests.swift */,
+			);
+			path = PraxodoroUITests;
+			sourceTree = "<group>";
+		};
+		830B5484F82418B19ABF0C10 /* FocusLoop */ = {
+			isa = PBXGroup;
+			children = (
+				2CCA8563FF94528CB2C966A1 /* InitiateView.swift */,
+			);
+			path = FocusLoop;
+			sourceTree = "<group>";
+		};
+		B9FEEC1B1CFFF19EEC34A756 = {
+			isa = PBXGroup;
+			children = (
+				587F63C1DEBE7D08C61D5EC0 /* Packages */,
+				DA8220EF7111EA19CE7D30D6 /* PraxodoroApp */,
+				6D04EC1F99625F1218263FB8 /* PraxodoroTests */,
+				774A5AD39457A49F6CA241AE /* PraxodoroUITests */,
+				5EBD0E3AECFF45DBD0355F7A /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C5EC45AFB712CFCA1E2A46FF /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				0B8FF68AA8D6FCF2CECEF61E /* AppPaths.swift */,
+			);
+			path = Platform;
+			sourceTree = "<group>";
+		};
+		DA8220EF7111EA19CE7D30D6 /* PraxodoroApp */ = {
+			isa = PBXGroup;
+			children = (
+				6B09CEA6DB02A3E4071F0102 /* PraxodoroApp.swift */,
+				F0AA8F7C3F370D0E6620CD07 /* Features */,
+				C5EC45AFB712CFCA1E2A46FF /* Platform */,
+			);
+			path = PraxodoroApp;
+			sourceTree = "<group>";
+		};
+		F0AA8F7C3F370D0E6620CD07 /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				830B5484F82418B19ABF0C10 /* FocusLoop */,
+			);
+			path = Features;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2AB64A1C3D2213A2A5E19574 /* PraxodoroTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F9B83571D58AFA23E2D96C65 /* Build configuration list for PBXNativeTarget "PraxodoroTests" */;
+			buildPhases = (
+				0A473CEE8C16C6EE2F40D6D2 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C1900F1282DDC5FCB35FEDC6 /* PBXTargetDependency */,
+			);
+			name = PraxodoroTests;
+			packageProductDependencies = (
+			);
+			productName = PraxodoroTests;
+			productReference = F8603DFCA477DC4B65245D6E /* PraxodoroTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		72C1E472BAF9A5299050D080 /* PraxodoroUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7166231FBE21049663A12954 /* Build configuration list for PBXNativeTarget "PraxodoroUITests" */;
+			buildPhases = (
+				6363CAA3F9B4AEDA80D997D0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				57D40A856482824B90FDAA8E /* PBXTargetDependency */,
+			);
+			name = PraxodoroUITests;
+			packageProductDependencies = (
+			);
+			productName = PraxodoroUITests;
+			productReference = 836DA4B6AF9496F590112DED /* PraxodoroUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		8C6A1489A1C57E6CDF9BBCD1 /* Praxodoro */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 96312AF8008F4B0B5FB94531 /* Build configuration list for PBXNativeTarget "Praxodoro" */;
+			buildPhases = (
+				620E776ADBA88BC60ED90152 /* Sources */,
+				4711D9DD41084BAC6A998455 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Praxodoro;
+			packageProductDependencies = (
+				DEC0BE1945D04551D37D57DB /* PraxodoroCore */,
+			);
+			productName = Praxodoro;
+			productReference = 87F1AD2783469D6BFD3D32FD /* Praxodoro.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C51E2BD236E9C47BAF21D1C6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2660;
+				TargetAttributes = {
+					72C1E472BAF9A5299050D080 = {
+						TestTargetID = 8C6A1489A1C57E6CDF9BBCD1;
+					};
+				};
+			};
+			buildConfigurationList = 9E2E4EE1C0FB90AF7BA10FEE /* Build configuration list for PBXProject "Praxodoro" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = B9FEEC1B1CFFF19EEC34A756;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				2AFE65A3CE81B27413746C62 /* XCLocalSwiftPackageReference "Packages/PraxodoroCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5EBD0E3AECFF45DBD0355F7A /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8C6A1489A1C57E6CDF9BBCD1 /* Praxodoro */,
+				2AB64A1C3D2213A2A5E19574 /* PraxodoroTests */,
+				72C1E472BAF9A5299050D080 /* PraxodoroUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0A473CEE8C16C6EE2F40D6D2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B4E9E709F2C6A956F5286B4F /* ScaffoldIntegrationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		620E776ADBA88BC60ED90152 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A02F8FA1C4D267FE6D4EB7B9 /* AppPaths.swift in Sources */,
+				E27A8047B8427276C23FE2EF /* InitiateView.swift in Sources */,
+				054CA0F840C1128C1C4E1E39 /* PraxodoroApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6363CAA3F9B4AEDA80D997D0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				90025CCC5D1783A19EF9C0A5 /* PraxodoroLaunchUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		57D40A856482824B90FDAA8E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8C6A1489A1C57E6CDF9BBCD1 /* Praxodoro */;
+			targetProxy = 5F9AF36E136323D118C6163D /* PBXContainerItemProxy */;
+		};
+		C1900F1282DDC5FCB35FEDC6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8C6A1489A1C57E6CDF9BBCD1 /* Praxodoro */;
+			targetProxy = 6EF247D2351C39B01CD5AB10 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0FA6504DFBC2D279660DA5D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Praxodoro;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.praxodoro.app;
+				PRODUCT_NAME = Praxodoro;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		118A4C4EBA4D5D365B9E878E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.praxodoro.PraxodoroTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Praxodoro.app/Contents/MacOS/Praxodoro";
+			};
+			name = Debug;
+		};
+		34C5C2803EDF78DF815D10EA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.praxodoro.PraxodoroUITests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Praxodoro;
+			};
+			name = Debug;
+		};
+		4241B9FF397D7ECAAFD8A577 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.praxodoro.PraxodoroUITests;
+				SDKROOT = macosx;
+				TEST_TARGET_NAME = Praxodoro;
+			};
+			name = Release;
+		};
+		5BD72A1C3C1CCF00ED271D76 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Praxodoro;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.praxodoro.app;
+				PRODUCT_NAME = Praxodoro;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		6CA76DE4036471346DEB8A7C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.praxodoro.PraxodoroTests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Praxodoro.app/Contents/MacOS/Praxodoro";
+			};
+			name = Release;
+		};
+		9060846D26AF120D2D5994DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F6CFAF9DA93F6DA66B140F04 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		7166231FBE21049663A12954 /* Build configuration list for PBXNativeTarget "PraxodoroUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				34C5C2803EDF78DF815D10EA /* Debug */,
+				4241B9FF397D7ECAAFD8A577 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		96312AF8008F4B0B5FB94531 /* Build configuration list for PBXNativeTarget "Praxodoro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0FA6504DFBC2D279660DA5D8 /* Debug */,
+				5BD72A1C3C1CCF00ED271D76 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9E2E4EE1C0FB90AF7BA10FEE /* Build configuration list for PBXProject "Praxodoro" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9060846D26AF120D2D5994DD /* Debug */,
+				F6CFAF9DA93F6DA66B140F04 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F9B83571D58AFA23E2D96C65 /* Build configuration list for PBXNativeTarget "PraxodoroTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				118A4C4EBA4D5D365B9E878E /* Debug */,
+				6CA76DE4036471346DEB8A7C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		2AFE65A3CE81B27413746C62 /* XCLocalSwiftPackageReference "Packages/PraxodoroCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/PraxodoroCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DEC0BE1945D04551D37D57DB /* PraxodoroCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = PraxodoroCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = C51E2BD236E9C47BAF21D1C6 /* Project object */;
+}

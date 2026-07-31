@@ -9,7 +9,7 @@ This expands `SPEC.md` and the active OpenSpec change into implementation bounda
 | S-* workflow | `macos-app-delivery` | 1, 8 |
 | E-* session engine | `focus-session-engine` | 3, 4, 5 |
 | C-* coach | `adhd-aware-coach` | 3, 5, 6 |
-| G-* editions | `edition-capabilities` | 2 |
+| G-* editions | `edition-capabilities` | 2, 5, 6 |
 | U-* UI/accessibility | `liquid-instrument-experience` | 5, 7 |
 | P-* privacy/data | `local-data-control` | 4, 6, 7 |
 | D-* delivery | `macos-app-delivery` | 1, 7, 8 |
@@ -25,10 +25,12 @@ flowchart TB
     Engine --> Reducer["Pure SessionReducer"]
     Reducer --> Commit["Repository atomic commit"]
     Commit --> SwiftData["SwiftData V1"]
-    Commit --> Stream["Committed snapshot stream"]
-    Stream --> Model
+    Commit --> SessionStream["Committed session stream"]
+    SessionStream -->|independent session updates| Model
     Commit --> Effects["Best-effort notifications and sound"]
-    Capabilities["EntitlementSnapshot + ProductRules"] --> Engine
+    Capabilities["EntitlementSnapshot + ProductRules"] --> CapabilitySource["CapabilitySnapshotSource"]
+    CapabilitySource -->|current capability snapshot| Engine
+    CapabilitySource -->|independent capability updates| Model
     Render["RenderPolicy"] --> Main
     Render --> Menu
     Render --> Compact
@@ -58,7 +60,8 @@ No view may own a domain timer, mutate SwiftData directly, or infer entitlement 
 ### App target
 
 - `AppContainer.swift`: composition root; creates one engine, repository, entitlements, clocks, notification adapter, render-policy sources.
-- `AppModel.swift`: main-actor snapshot projection and intent façade; contains no domain transition logic.
+- `CapabilitySnapshotSource.swift`: publishes entitlement/policy/prerequisite changes independently from session transitions.
+- `AppModel.swift`: main-actor projection that combines the latest independent session and capability snapshots plus an intent façade; contains no domain transition logic.
 - `FocusLoop/*View.swift`: semantic native screens, each a projection of `AppModel`.
 - `Scenes/*`: main, menu-bar, and compact adapters over the same model.
 - `DesignSystem/*`: tokens, surface roles, render policy, timer instrument, ambient renderer.
@@ -71,6 +74,11 @@ No view may own a domain timer, mutate SwiftData directly, or infer entitlement 
 public protocol SessionRunning: Sendable {
     func snapshots() -> AsyncStream<SessionSnapshot>
     func send(_ intent: SessionIntent) async throws -> SessionResult
+}
+
+public protocol CapabilitySnapshotProviding: Sendable {
+    func current() async -> EntitlementSnapshot
+    func snapshots() -> AsyncStream<EntitlementSnapshot>
 }
 
 public protocol SessionRepository: Sendable {
@@ -177,10 +185,10 @@ the same downstream resolver without making production evidence forgeable. Resol
 - separately granted and currently available optional capabilities
 - capability limits
 - policy provenance for each resolved value
-- missing authorization/platform/distribution/adapter prerequisites
+- missing authorization/platform/distribution/adapter/runtime prerequisites
 - next reevaluation time
 
-Fail closed to Lite on unverifiable paid evidence. Do not interrupt active work. Apply paid policy changes at a safe session boundary. The UI may explain unavailable capability outside vulnerable flow states; the engine always enforces it.
+Fail closed to Lite on unverifiable paid evidence. Do not interrupt active work. Apply paid policy changes at a safe session boundary. The capability source publishes evidence, policy, authorization, platform, distribution, implementation, and runtime-availability changes without waiting for a session transition; `AppModel` updates both native surfaces while preserving the current session ID/revision. The UI may explain unavailable capability outside vulnerable flow states; the engine always enforces it.
 
 Enterprise registry contains no tenant, user-monitoring, productivity-score, task-history, capacity, or check-in export capability.
 
@@ -250,7 +258,10 @@ Show task orientation, phase/time, pause/resume, check-in/break escape, and rout
   `8445e778451c7e44237b90281bde622d764b0084`.
 - Official `xcodegen.zip` SHA-256 is
   `4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806`;
-  bootstrap installs it under ignored `.build/tools`.
+  the extracted universal executable SHA-256 is
+  `8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db`.
+  Bootstrap installs it under ignored `.build/tools` and authenticates cached executables before
+  every invocation.
 - `project.yml` is the human-readable source; generated `Praxodoro.xcodeproj` is committed.
 - Regeneration gate snapshots the entire project directory, runs exact XcodeGen, and recursively
   compares pre/post output. A post-commit gate separately requires clean project/spec paths.

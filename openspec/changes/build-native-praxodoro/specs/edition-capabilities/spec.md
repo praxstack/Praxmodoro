@@ -122,3 +122,7 @@ The system SHALL publish capability-snapshot changes independently from session 
 #### Scenario: Capability registry completeness
 - **WHEN** a new product capability is added to the registry
 - **THEN** tests require an explicit edition, authorization, platform eligibility, distribution, downgrade, data-access, and implementation-availability decision for it
+
+#### Scenario: Capability change without session change
+- **WHEN** entitlement evidence, policy, permission, platform, distribution, implementation, or runtime availability changes without a session transition
+- **THEN** the app publishes the new capability snapshot independently while preserving the current session ID and revision

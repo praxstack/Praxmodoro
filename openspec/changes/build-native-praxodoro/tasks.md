@@ -3,7 +3,7 @@
 - [ ] 1.1 Pin XcodeGen 2.46.0 and create the generated macOS project plus internal Swift package.
   - **Files:** create `.xcodegen-version`, `scripts/bootstrap-xcodegen.sh`, `scripts/verify-scaffold.sh`, `scripts/run-app-tests.sh`, `scripts/smoke-scaffold.sh`, `project.yml`, `Packages/PraxodoroCore/Package.swift`, `Packages/PraxodoroCore/Sources/PraxodoroCore/PraxodoroCore.swift`, `Packages/PraxodoroCore/Tests/PraxodoroCoreTests/ScaffoldTests.swift`, `PraxodoroApp/PraxodoroApp.swift`, `PraxodoroApp/Platform/AppPaths.swift`, `PraxodoroApp/Features/FocusLoop/InitiateView.swift`, `PraxodoroTests/ScaffoldIntegrationTests.swift`, `PraxodoroUITests/PraxodoroLaunchUITests.swift`; generate `Praxodoro.xcodeproj/`.
   - **RED:** write `scripts/verify-scaffold.sh`, run `bash scripts/verify-scaffold.sh`, and observe failure naming the missing `project.yml`/project/targets.
-  - **Minimal implementation:** bootstrap the checksum-verified official XcodeGen 2.46.0 archive into ignored repo-local tooling, define macOS 26 app/test targets and the strict Swift package, generate the project, and render an adaptive semantic initiation placeholder with no behavior claim.
+  - **Minimal implementation:** bootstrap the archive- and executable-checksum-verified official XcodeGen 2.46.0 release into ignored repo-local tooling, revalidate cached executables before invocation, confine interrupted-download cleanup to the exact temporary directory, define macOS 26 app/test targets and the strict Swift package, generate the project, and render an adaptive semantic initiation placeholder with no behavior claim.
   - **GREEN:** run the scaffold verifier, warnings-as-errors package tests, unsigned app build, then build and execute app-unit/UI tests through the normal local test-signing path with retained `.xcresult` evidence.
   - **Smoke:** launch the exact Debug binary with unique `CFFIXED_USER_HOME`, `TMPDIR`, and app-state roots, verify liveness/fatal-log cleanliness, and use the UI test to prove the initiation heading before deterministic termination.
   - **Commit:** `chore: scaffold native macOS app`.
@@ -11,7 +11,7 @@
 - [ ] 1.2 Add project-wide formatting, strict-concurrency, dependency-provenance, and regeneration gates.
   - **Files:** create `.swift-format`, `docs/engineering/dependencies.md`, `scripts/verify-project-generation.sh`; modify `project.yml`, `README.md`.
   - **RED:** run `bash scripts/verify-project-generation.sh` before the version/provenance and no-diff checks exist; expect a missing provenance or regeneration mismatch failure.
-  - **Minimal implementation:** enable Swift 6 strict concurrency and warnings-as-errors for project code, record XcodeGen source/tag commit/artifact checksum/license/removal path, verify the actual toolchain, and compare a pre-generation project snapshot with regenerated output recursively.
+  - **Minimal implementation:** enable Swift 6 strict concurrency and warnings-as-errors for project code, record XcodeGen source/tag commit/archive and executable checksums/license/removal path, verify the actual toolchain, and compare a pre-generation project snapshot with regenerated output recursively.
   - **GREEN:** lint only the package manifest/sources/tests and app/test sources with explicit configuration, run the regeneration verifier, warnings-as-errors package tests, unsigned build, and executed app-unit/UI tests.
   - **Smoke:** open the generated scheme inventory with `xcodebuild -list -json -project Praxodoro.xcodeproj` and verify app, unit-test, and UI-test targets.
   - **Commit:** `chore: enforce native project quality gates`.
@@ -29,7 +29,7 @@
 - [ ] 2.2 Implement entitlement evidence, policy precedence, expiry, and downgrade behavior.
   - **Files:** create `Packages/PraxodoroCore/Sources/PraxodoroCore/Entitlements/EntitlementSnapshot.swift`; extend `ProductRules.swift`; create `EntitlementSnapshotTests.swift`.
   - **RED:** run `swift test --package-path Packages/PraxodoroCore --filter EntitlementSnapshotTests`; expect missing-type failures for verified evidence and policy resolution.
-  - **Minimal implementation:** separate public untrusted claims from privately constructed interval-valid grants; keep production paid resolution Lite-only until a verifier exists; record all concurrent availability failures, evidence/issue/expiry/limits, reevaluation, one exhaustive consent-safe managed-policy schema with no personal cadence, and opaque session-ID/revision/full-snapshot-bound leases whose transition requires the expired resolution of the same grant plus matching complete contexts, rejecting claim loss/logout/verifier failure without StoreKit/network code.
+  - **Minimal implementation:** separate public untrusted claims from privately constructed interval-valid grants; keep production paid resolution Lite-only until a verifier exists; record implementation and runtime availability independently alongside every other concurrent failure, evidence/issue/expiry/limits, meaningful reevaluation boundaries, one exhaustive consent-safe managed-policy schema with no personal cadence, and opaque session-ID/revision/commit-time/full-snapshot-bound leases whose transition requires the expired resolution of the same grant plus matching complete contexts, rejecting claim loss/logout/verifier failure without StoreKit/network code. This atom proves fail-closed access and active-session policy only; downgrade readability/exportability remains owned by 6.3.
   - **GREEN:** run focused and full package tests.
   - **Smoke:** cover Lite, verified Pro, expired Pro, unverified Enterprise, and managed diagnostics-disabled fixtures in the edition matrix.
   - **Commit:** `feat: resolve validated product access`.
@@ -89,11 +89,11 @@
   - **Commit:** `feat: add Liquid Instrument design system`.
 
 - [ ] 5.2 Wire one app container, main window, and menu-bar surface to the same engine.
-  - **Files:** create `PraxodoroApp/App/AppContainer.swift`, `AppModel.swift`, `PraxodoroApp/Scenes/MainWindowScene.swift`, `MenuBarScene.swift`; modify `PraxodoroApp/PraxodoroApp.swift`; create `PraxodoroTests/App/AppModelTests.swift`.
-  - **RED:** run `AppModelTests`; expect missing shared-container/snapshot subscription and scene-command APIs.
-  - **Minimal implementation:** instantiate one engine/repository/capability source, publish one observable app snapshot, and bind both native scenes to it.
-  - **GREEN:** run focused/app/package tests and build.
-  - **Smoke:** start/pause from the menu bar and verify the main window reports the same session ID/revision; close/reopen the window without restarting the timer.
+  - **Files:** create `PraxodoroApp/App/AppContainer.swift`, `AppModel.swift`, `CapabilitySnapshotSource.swift`, `PraxodoroApp/Scenes/MainWindowScene.swift`, `MenuBarScene.swift`; modify `PraxodoroApp/PraxodoroApp.swift`; create `PraxodoroTests/App/AppModelTests.swift`.
+  - **RED:** run `AppModelTests`; expect missing shared-container, independent session/capability subscriptions, and scene-command APIs.
+  - **Minimal implementation:** instantiate one engine/repository/capability source, subscribe independently to session and capability changes, combine them into one observable app snapshot without coupling their emission cadence, and bind both native scenes to it.
+  - **GREEN:** run focused/app/package tests and build, including a capability-only publication fixture that leaves the session ID/revision unchanged.
+  - **Smoke:** start/pause from the menu bar and verify the main window reports the same session ID/revision; then change a capability prerequisite without a session transition and verify both scenes update while the session ID/revision remain unchanged; close/reopen the window without restarting the timer.
   - **Commit:** `feat: share session state across Mac surfaces`.
 
 - [ ] 5.3 Build the accessible Initiate and Focus vertical slice.
@@ -140,10 +140,10 @@
 
 - [ ] 6.3 Implement local export and honest Delete All behavior.
   - **Files:** create `PraxodoroApp/Persistence/DataExportService.swift`, `DataDeletionService.swift`, `PraxodoroApp/Features/Settings/DataControlView.swift`; create export/deletion tests.
-  - **RED:** run focused tests; expect missing category selection, schema manifest, exact-field export, notification cancellation, full local deletion, and partial-failure status.
-  - **Minimal implementation:** export exactly selected V1 categories, delete every local category and queued notification, preserve retry status, and explain exported-file/device-backup limits.
+  - **RED:** run focused tests; expect missing category selection, schema manifest, exact-field export, downgrade readability, notification cancellation, full local deletion, and partial-failure status.
+  - **Minimal implementation:** keep local data reads and export independent of paid capability gates, export exactly selected V1 categories, delete every local category and queued notification, preserve retry status, and explain exported-file/device-backup limits.
   - **GREEN:** run focused/full tests, build, gitleaks, and content-field snapshot tests.
-  - **Smoke:** seed every category, export minimal/all sets, delete all, and verify zero local queries plus honest remaining-copy messaging.
+  - **Smoke:** seed every category under a Pro snapshot, downgrade to Lite/offline evidence, verify exact reads and export still succeed, then export minimal/all sets, delete all, and verify zero local queries plus honest remaining-copy messaging.
   - **Commit:** `feat: add local export and deletion controls`.
 
 ## 7. Accessibility, privacy, and performance QA

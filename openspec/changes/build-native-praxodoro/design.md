@@ -193,13 +193,16 @@ Both `InMemorySessionRepository` and `SwiftDataSessionRepository` run the same c
 
 ### 7. Editions resolve to capabilities, permissions, and distribution prerequisites
 
-Keep three independent dimensions:
+Keep six independent dimensions:
 
 1. Product capability granted by verified evidence.
 2. OS permission or user consent.
-3. Distribution capability such as a signed system extension.
+3. Platform eligibility such as an iCloud account or supported on-device model.
+4. Distribution capability such as a signed system extension.
+5. Adapter implementation availability.
+6. Current runtime service or model availability.
 
-Views ask `capabilities.contains(.historySync)`; engines independently reject unavailable intents. They never rely on hidden UI as enforcement.
+Views ask `capabilities.contains(.iCloudSync)`; engines independently reject unavailable intents. They never rely on hidden UI as enforcement.
 
 The complete `RequiredLiteFeature` inventory is unconditional and is never fed through a paid
 gate. Optional `ProductCapability` descriptors record edition eligibility, authorization,
@@ -224,9 +227,25 @@ apply immediately. Data remains readable/exportable after downgrade.
 
 Managed-policy precedence is OS safety → enforced managed privacy policy → user choice → recommended managed default → app default. Every managed input belongs to one exhaustive typed schema; diagnostics and sync defaults are structurally fixed off, and recommendations cannot provide consent. Enterprise adds no task/behavior reporting schema.
 
-### 8. One snapshot, multiple native surfaces
+### 8. One app projection, independent session and capability streams
 
-`AppContainer` owns one `SessionEngine` and one `AppModel`. `WindowGroup`, `MenuBarExtra`, and later `NSPanel` compact adapter subscribe to the same `AsyncStream` and send intents back to the same actor.
+`AppContainer` owns one `SessionEngine`, one `CapabilitySnapshotSource`, and one `AppModel`.
+`AppModel` subscribes independently to the committed `SessionSnapshot` stream and the
+`EntitlementSnapshot` stream, then publishes one combined app projection. A capability-only
+change updates product entry points and engine enforcement without fabricating a session event or
+changing the current session ID/revision. `WindowGroup`, `MenuBarExtra`, and the later `NSPanel`
+compact adapter observe that same app projection and send session intents back to the same actor.
+
+```mermaid
+flowchart LR
+    Session["SessionEngine"] -->|SessionSnapshot stream| Model["AppModel"]
+    Capability["CapabilitySnapshotSource"] -->|EntitlementSnapshot stream| Model
+    Model --> Main["WindowGroup"]
+    Model --> Menu["MenuBarExtra"]
+    Model --> Compact["NSPanel"]
+    Model -->|SessionIntent| Session
+    Capability -->|current available capabilities| Session
+```
 
 First integration order:
 
@@ -284,7 +303,7 @@ Delete All enumerates every local category and any future sync tombstone state. 
 
 Use XcodeGen 2.46.0 from `https://github.com/yonaskolb/XcodeGen` (MIT) to generate `Praxodoro.xcodeproj` from `project.yml`. It is development-only and not linked into the app. The generated project is committed for easy local/CI builds; regeneration must produce no diff.
 
-The repository bootstraps the exact official release archive into ignored repo-local tooling and verifies its SHA-256 before extraction; Homebrew and ambient PATH installations are not accepted by the generator gate. If XcodeGen becomes unavailable, the committed project remains buildable while a replacement generator decision is made.
+The repository bootstraps the exact official release archive into ignored repo-local tooling, verifies the archive SHA-256 before extraction, and verifies the pinned extracted-executable SHA-256 before every invocation, including cached use. Interrupted-download cleanup is confined to the exact repo-local `.download.*` directory created by the bootstrap. Homebrew and ambient PATH installations are not accepted by the generator gate. If XcodeGen becomes unavailable, the committed project remains buildable while a replacement generator decision is made.
 
 ### 12. Verification is layered and spec-traceable
 

@@ -598,9 +598,10 @@ struct EntitlementSnapshotTests {
     #expect(snapshot.requiredLiteFeatures == Set(RequiredLiteFeature.allCases))
     #expect(snapshot.grantedCapabilities.isEmpty)
     #expect(snapshot.availableCapabilities.isEmpty)
+    #expect(snapshot.nextReevaluationAt == nil)
   }
 
-  @Test(arguments: [EntitlementEvidenceSource.storeKit, .signedEnterpriseLicense, .staticDevelopment])
+  @Test(arguments: EntitlementEvidenceSource.allCases)
   func publicClaimsCannotSelfVerifyPaidAccess(source: EntitlementEvidenceSource) {
     let claim = UntrustedEntitlementClaim(
       requestedTier: source == .storeKit ? .pro : .enterprise,
@@ -614,6 +615,7 @@ struct EntitlementSnapshotTests {
     #expect(snapshot.status == .fallback(.verifierUnavailable))
     #expect(snapshot.grantedCapabilities.isEmpty)
     #expect(snapshot.availableCapabilities.isEmpty)
+    #expect(snapshot.nextReevaluationAt == nil)
   }
 
   @Test
@@ -662,7 +664,8 @@ struct EntitlementSnapshotTests {
       authorizations: [],
       platformEligibility: [],
       distribution: [.mainApplication],
-      implementedCapabilities: [.advancedRecipes, .calendarIntegration]
+      implementedCapabilities: [.advancedRecipes, .calendarIntegration],
+      runtimeAvailableCapabilities: [.advancedRecipes, .calendarIntegration]
     )
 
     let snapshot = ProductRules.resolveValidatedForTesting(
@@ -682,11 +685,80 @@ struct EntitlementSnapshotTests {
       snapshot.unavailableCapabilities[.iCloudSync]
         == [
           .notImplemented,
+          .runtimeUnavailable,
           .missingPlatformEligibility(.iCloudAccount),
           .disabledByPolicy(.outboundSyncAllowed),
         ]
     )
     #expect(snapshot.nextReevaluationAt == expiresAt)
+  }
+
+  @Test
+  func unavailableCapabilitiesRetainEverySimultaneousReason() throws {
+    let grant = try #require(
+      VerifiedGrant.validatedForTesting(
+        tier: .pro,
+        source: .storeKit,
+        issuedAt: issuedAt,
+        expiresAt: expiresAt,
+        verifiedAt: now
+      )
+    )
+
+    let snapshot = ProductRules.resolveValidatedForTesting(
+      grant: grant,
+      environment: .unavailable,
+      now: now
+    )
+
+    #expect(
+      snapshot.unavailableCapabilities[.calendarIntegration]
+        == [
+          .notImplemented,
+          .runtimeUnavailable,
+          .missingAuthorization(.calendar),
+          .missingDistribution(.mainApplication),
+        ]
+    )
+    #expect(
+      snapshot.unavailableCapabilities[.iCloudSync]
+        == [
+          .notImplemented,
+          .runtimeUnavailable,
+          .missingPlatformEligibility(.iCloudAccount),
+          .missingDistribution(.mainApplication),
+          .disabledByPolicy(.outboundSyncAllowed),
+        ]
+    )
+  }
+
+  @Test
+  func implementedCapabilityStillRequiresIndependentRuntimeAvailability() throws {
+    let grant = try #require(
+      VerifiedGrant.validatedForTesting(
+        tier: .pro,
+        source: .storeKit,
+        issuedAt: issuedAt,
+        expiresAt: expiresAt,
+        verifiedAt: now
+      )
+    )
+    let environment = CapabilityEnvironment(
+      authorizations: [],
+      platformEligibility: [],
+      distribution: [.mainApplication],
+      implementedCapabilities: [.advancedRecipes],
+      runtimeAvailableCapabilities: []
+    )
+
+    let snapshot = ProductRules.resolveValidatedForTesting(
+      grant: grant,
+      environment: environment,
+      now: now
+    )
+
+    #expect(snapshot.availableCapabilities.isEmpty)
+    #expect(snapshot.unavailableCapabilities[.advancedRecipes] == [.runtimeUnavailable])
   }
 
   @Test
@@ -706,6 +778,7 @@ struct EntitlementSnapshotTests {
     #expect(snapshot.status == .fallback(.expired))
     #expect(snapshot.requiredLiteFeatures == Set(RequiredLiteFeature.allCases))
     #expect(snapshot.grantedCapabilities.isEmpty)
+    #expect(snapshot.nextReevaluationAt == nil)
   }
 
   @Test
@@ -727,6 +800,7 @@ struct EntitlementSnapshotTests {
 
     #expect(snapshot.status == .fallback(.invalidEvidence))
     #expect(snapshot.grantedCapabilities.isEmpty)
+    #expect(snapshot.nextReevaluationAt == now)
   }
 
   @Test
@@ -773,6 +847,14 @@ struct EntitlementSnapshotTests {
     )
     #expect(explicitUser.diagnosticsEnabled == ResolvedPolicyValue(value: true, source: .user))
 
+    let recommendationCanOptOut = ProductRules.resolvePolicy(
+      managed: ManagedConfiguration(recommendedDiagnosticsEnabled: false)
+    )
+    #expect(
+      recommendationCanOptOut.diagnosticsEnabled
+        == ResolvedPolicyValue(value: false, source: .recommendedManaged)
+    )
+
     let recommendationCannotOptIn = ProductRules.resolvePolicy(
       managed: ManagedConfiguration(recommendedDiagnosticsEnabled: true)
     )
@@ -786,6 +868,10 @@ struct EntitlementSnapshotTests {
     )
     #expect(defaultsAreStructurallyConsentSafe.diagnosticsEnabled.value == false)
     #expect(defaultsAreStructurallyConsentSafe.outboundSyncEnabled.value == false)
+    #expect(
+      Set(Mirror(reflecting: ProductPolicyDefaults()).children.compactMap(\.label))
+        == ["coachCadenceMinutes"]
+    )
   }
 
   @Test
@@ -823,6 +909,10 @@ struct EntitlementSnapshotTests {
     #expect(Set(ManagedConfigurationField.allCases) == expectedFields)
     #expect(completeFixture.populatedFields == expectedFields)
     #expect(
+      Set(Mirror(reflecting: completeFixture).children.compactMap(\.label))
+        == Set(expectedFields.map(\.rawValue))
+    )
+    #expect(
       Set(ConfigurationAuditField.allCases) == [
         .configurationKey,
         .resolvedSource,
@@ -847,7 +937,8 @@ struct EntitlementSnapshotTests {
       authorizations: [],
       platformEligibility: [.iCloudAccount],
       distribution: [.mainApplication],
-      implementedCapabilities: [.advancedRecipes, .iCloudSync]
+      implementedCapabilities: [.advancedRecipes, .iCloudSync],
+      runtimeAvailableCapabilities: [.advancedRecipes, .iCloudSync]
     )
     let previous = ProductRules.resolveValidatedForTesting(
       grant: grant,
@@ -914,6 +1005,38 @@ struct EntitlementSnapshotTests {
     )
     #expect(mismatchedSession.activeSessionCapabilities.isEmpty)
 
+    let changedRevisionCommit = try #require(
+      SessionStartCommitReceipt.validatedForTesting(
+        sessionID: sessionID,
+        startRevision: 2,
+        committedAt: now
+      )
+    )
+    let changedRevision = ProductRules.transition(
+      from: previous,
+      to: next,
+      now: expiresAt,
+      activeCommit: changedRevisionCommit,
+      activeLease: lease
+    )
+    #expect(changedRevision.activeSessionCapabilities.isEmpty)
+
+    let changedCommitTimeCommit = try #require(
+      SessionStartCommitReceipt.validatedForTesting(
+        sessionID: sessionID,
+        startRevision: 1,
+        committedAt: now.addingTimeInterval(1)
+      )
+    )
+    let changedCommitTime = ProductRules.transition(
+      from: previous,
+      to: next,
+      now: expiresAt,
+      activeCommit: changedCommitTimeCommit,
+      activeLease: lease
+    )
+    #expect(changedCommitTime.activeSessionCapabilities.isEmpty)
+
     let differentPrevious = ProductRules.resolveValidatedForTesting(
       grant: grant,
       environment: environment,
@@ -935,23 +1058,58 @@ struct EntitlementSnapshotTests {
     )
     #expect(mismatchedSnapshot.activeSessionCapabilities.isEmpty)
 
+    let differentLimitsGrant = try #require(
+      VerifiedGrant.validatedForTesting(
+        tier: .pro,
+        source: .storeKit,
+        issuedAt: issuedAt,
+        expiresAt: expiresAt,
+        verifiedAt: now,
+        limits: EntitlementLimits(maximumCounts: [.advancedRecipes: 1])
+      )
+    )
+    let differentLimitsNext = ProductRules.resolveValidatedForTesting(
+      grant: differentLimitsGrant,
+      environment: environment,
+      user: UserProductPreferences(outboundSyncEnabled: true),
+      now: expiresAt
+    )
+    let mismatchedLimits = ProductRules.transition(
+      from: previous,
+      to: differentLimitsNext,
+      now: expiresAt,
+      activeCommit: commit,
+      activeLease: lease
+    )
+    #expect(mismatchedLimits.activeSessionCapabilities.isEmpty)
+
     let authorizationChanged = CapabilityEnvironment(
       authorizations: [.calendar],
       platformEligibility: [.iCloudAccount],
       distribution: [.mainApplication],
-      implementedCapabilities: [.advancedRecipes, .iCloudSync]
+      implementedCapabilities: [.advancedRecipes, .iCloudSync],
+      runtimeAvailableCapabilities: [.advancedRecipes, .iCloudSync]
     )
     let platformChanged = CapabilityEnvironment(
       authorizations: [],
       platformEligibility: [],
       distribution: [.mainApplication],
-      implementedCapabilities: [.advancedRecipes, .iCloudSync]
+      implementedCapabilities: [.advancedRecipes, .iCloudSync],
+      runtimeAvailableCapabilities: [.advancedRecipes, .iCloudSync]
     )
     let distributionChanged = CapabilityEnvironment(
       authorizations: [],
       platformEligibility: [.iCloudAccount],
       distribution: [],
-      implementedCapabilities: [.advancedRecipes, .iCloudSync]
+      implementedCapabilities: [.advancedRecipes, .iCloudSync],
+      runtimeAvailableCapabilities: [.advancedRecipes, .iCloudSync]
+    )
+    let runtimeChanged = CapabilityEnvironment(
+      authorizations: [],
+      platformEligibility: [.iCloudAccount],
+      distribution: [.mainApplication],
+      implementedCapabilities: [.advancedRecipes, .iCloudSync],
+      runtimeAvailableCapabilities: [.iCloudSync]
     )
     let immediateSnapshots = [
       ProductRules.resolveValidatedForTesting(
@@ -969,6 +1127,12 @@ struct EntitlementSnapshotTests {
       ProductRules.resolveValidatedForTesting(
         grant: grant,
         environment: distributionChanged,
+        user: UserProductPreferences(outboundSyncEnabled: true),
+        now: expiresAt
+      ),
+      ProductRules.resolveValidatedForTesting(
+        grant: grant,
+        environment: runtimeChanged,
         user: UserProductPreferences(outboundSyncEnabled: true),
         now: expiresAt
       ),
@@ -1030,6 +1194,64 @@ struct EntitlementSnapshotTests {
         from: previous,
         to: nonExpirySnapshot,
         now: expiresAt,
+        activeCommit: commit,
+        activeLease: lease
+      )
+      #expect(transition.activeSessionCapabilities.isEmpty)
+    }
+
+    let otherEvidenceGrant = try #require(
+      VerifiedGrant.validatedForTesting(
+        tier: .pro,
+        source: .staticDevelopment,
+        issuedAt: issuedAt,
+        expiresAt: expiresAt,
+        verifiedAt: now
+      )
+    )
+    let otherIssuedAtGrant = try #require(
+      VerifiedGrant.validatedForTesting(
+        tier: .pro,
+        source: .storeKit,
+        issuedAt: issuedAt.addingTimeInterval(1),
+        expiresAt: expiresAt,
+        verifiedAt: now
+      )
+    )
+    let otherExpiryGrant = try #require(
+      VerifiedGrant.validatedForTesting(
+        tier: .pro,
+        source: .storeKit,
+        issuedAt: issuedAt,
+        expiresAt: expiresAt.addingTimeInterval(1),
+        verifiedAt: now
+      )
+    )
+    let mismatchedEvidenceSnapshots = [
+      ProductRules.resolveValidatedForTesting(
+        grant: otherEvidenceGrant,
+        environment: environment,
+        user: UserProductPreferences(outboundSyncEnabled: true),
+        now: expiresAt
+      ),
+      ProductRules.resolveValidatedForTesting(
+        grant: otherIssuedAtGrant,
+        environment: environment,
+        user: UserProductPreferences(outboundSyncEnabled: true),
+        now: expiresAt
+      ),
+      ProductRules.resolveValidatedForTesting(
+        grant: otherExpiryGrant,
+        environment: environment,
+        user: UserProductPreferences(outboundSyncEnabled: true),
+        now: expiresAt.addingTimeInterval(1)
+      ),
+    ]
+    for mismatchedEvidenceSnapshot in mismatchedEvidenceSnapshots {
+      let transition = ProductRules.transition(
+        from: previous,
+        to: mismatchedEvidenceSnapshot,
+        now: expiresAt.addingTimeInterval(1),
         activeCommit: commit,
         activeLease: lease
       )
@@ -1103,24 +1325,25 @@ struct VerifiedGrant: Equatable, Sendable {
 
   #if DEBUG
     static func validatedForTesting(
-    tier: ProductTier,
-    source: EntitlementEvidenceSource,
-    issuedAt: Date,
-    expiresAt: Date,
-    verifiedAt: Date,
-    limits: EntitlementLimits = .none
+      tier: ProductTier,
+      source: EntitlementEvidenceSource,
+      issuedAt: Date,
+      expiresAt: Date,
+      verifiedAt: Date,
+      limits: EntitlementLimits = .none
     ) -> VerifiedGrant? {
       guard issuedAt <= verifiedAt, verifiedAt < expiresAt else { return nil }
 
-      let sourceMatchesTier = switch (source, tier) {
-      case (.storeKit, .pro), (.signedEnterpriseLicense, .enterprise):
-        true
-      case (.staticDevelopment, .pro), (.staticDevelopment, .enterprise):
-        true
-      case (.none, _), (.storeKit, _), (.signedEnterpriseLicense, _),
-        (.staticDevelopment, .lite):
-        false
-      }
+      let sourceMatchesTier =
+        switch (source, tier) {
+        case (.storeKit, .pro), (.signedEnterpriseLicense, .enterprise):
+          true
+        case (.staticDevelopment, .pro), (.staticDevelopment, .enterprise):
+          true
+        case (.none, _), (.storeKit, _), (.signedEnterpriseLicense, _),
+          (.staticDevelopment, .lite):
+          false
+        }
 
       guard sourceMatchesTier else { return nil }
       return VerifiedGrant(
@@ -1160,6 +1383,7 @@ public struct EntitlementLimits: Equatable, Sendable {
 
 public enum UnavailableCapabilityReason: Hashable, Sendable {
   case notImplemented
+  case runtimeUnavailable
   case missingAuthorization(AuthorizationPrerequisite)
   case missingPlatformEligibility(PlatformEligibilityPrerequisite)
   case missingDistribution(DistributionPrerequisite)
@@ -1171,24 +1395,28 @@ public struct CapabilityEnvironment: Equatable, Sendable {
   public let platformEligibility: Set<PlatformEligibilityPrerequisite>
   public let distribution: Set<DistributionPrerequisite>
   public let implementedCapabilities: Set<ProductCapability>
+  public let runtimeAvailableCapabilities: Set<ProductCapability>
 
   public init(
     authorizations: Set<AuthorizationPrerequisite>,
     platformEligibility: Set<PlatformEligibilityPrerequisite>,
     distribution: Set<DistributionPrerequisite>,
-    implementedCapabilities: Set<ProductCapability>
+    implementedCapabilities: Set<ProductCapability>,
+    runtimeAvailableCapabilities: Set<ProductCapability>
   ) {
     self.authorizations = authorizations
     self.platformEligibility = platformEligibility
     self.distribution = distribution
     self.implementedCapabilities = implementedCapabilities
+    self.runtimeAvailableCapabilities = runtimeAvailableCapabilities
   }
 
   public static let unavailable = CapabilityEnvironment(
     authorizations: [],
     platformEligibility: [],
     distribution: [],
-    implementedCapabilities: []
+    implementedCapabilities: [],
+    runtimeAvailableCapabilities: []
   )
 }
 
@@ -1510,7 +1738,8 @@ extension ProductRules {
         expiresAt: grant.expiresAt,
         limits: grant.limits,
         policy: resolvedPolicy,
-        resolutionContext: resolutionContext
+        resolutionContext: resolutionContext,
+        nextReevaluationAt: grant.issuedAt
       )
     }
     guard now < grant.expiresAt else {
@@ -1538,6 +1767,9 @@ extension ProductRules {
       var reasons: Set<UnavailableCapabilityReason> = []
       if !environment.implementedCapabilities.contains(capability) {
         reasons.insert(.notImplemented)
+      }
+      if !environment.runtimeAvailableCapabilities.contains(capability) {
+        reasons.insert(.runtimeUnavailable)
       }
       for missing in descriptor.authorizations.subtracting(environment.authorizations) {
         reasons.insert(.missingAuthorization(missing))
@@ -1654,7 +1886,8 @@ extension ProductRules {
     expiresAt: Date? = nil,
     limits: EntitlementLimits = .none,
     policy: ResolvedProductPolicy,
-    resolutionContext: CapabilityResolutionContext
+    resolutionContext: CapabilityResolutionContext,
+    nextReevaluationAt: Date? = nil
   ) -> EntitlementSnapshot {
     EntitlementSnapshot(
       grantedCapabilities: [],
@@ -1667,7 +1900,7 @@ extension ProductRules {
       limits: limits,
       policy: policy,
       resolutionContext: resolutionContext,
-      nextReevaluationAt: expiresAt
+      nextReevaluationAt: nextReevaluationAt
     )
   }
 

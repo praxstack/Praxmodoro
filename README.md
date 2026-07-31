@@ -30,4 +30,19 @@ npm run spec:list
 npm run spec:validate
 ```
 
-OpenSpec is pinned to 1.6.0. Native build and test commands will be added with the first app scaffold.
+OpenSpec is pinned to 1.6.0. The native foundation commands below exercise generator,
+verification, test, build, and smoke paths.
+
+## Native foundation commands
+
+```bash
+bash scripts/bootstrap-xcodegen.sh
+bash scripts/verify-scaffold.sh
+bash scripts/verify-project-generation.sh
+swift test --package-path Packages/PraxodoroCore
+xcodebuild -project Praxodoro.xcodeproj -scheme Praxodoro \
+  -destination 'platform=macOS' -derivedDataPath .build/DerivedData \
+  build CODE_SIGNING_ALLOWED=NO
+bash scripts/run-app-tests.sh
+bash scripts/smoke-scaffold.sh
+```

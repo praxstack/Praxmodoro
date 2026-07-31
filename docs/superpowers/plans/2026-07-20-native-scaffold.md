@@ -7,7 +7,8 @@
 and deterministic generation/format/toolchain gates.
 
 **Architecture:** XcodeGen 2.46.0 is checksum-bootstrapped from the official release into ignored
-repo-local `.build/tools`. One generated app target links one local `PraxodoroCore` package.
+repo-local `.build/tools`; both the archive and installed executable are pinned, and every cached
+executable is authenticated before invocation. One generated app target links one local `PraxodoroCore` package.
 Unsigned compilation and the normal local test-signing path are proved separately.
 
 **Toolchain:** Xcode 26.6, Swift 6.3.3, SwiftUI, Swift Testing, XCTest UI testing, XcodeGen 2.46.0,
@@ -54,12 +55,20 @@ cd "$bootstrap_root"
 
 expected_version="$(tr -d '[:space:]' < .xcodegen-version)"
 expected_sha256="4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806"
+expected_binary_sha256="8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db"
 archive_url="https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip"
 tool_parent="$bootstrap_root/.build/tools/xcodegen"
 tool_root="$tool_parent/$expected_version"
 binary="$tool_root/xcodegen/bin/xcodegen"
 
 verify_binary() {
+  local actual_binary_sha256
+  actual_binary_sha256="$(/usr/bin/shasum -a 256 "$binary" | /usr/bin/awk '{print $1}')"
+  if [[ "$actual_binary_sha256" != "$expected_binary_sha256" ]]; then
+    echo "ERROR: XcodeGen executable checksum mismatch" >&2
+    exit 1
+  fi
+
   local version_output
   version_output="$("$binary" --version)"
   if [[ "$version_output" != "Version: $expected_version" ]]; then
@@ -85,8 +94,10 @@ archive="$download_root/xcodegen.zip"
 unpacked="$download_root/unpacked"
 
 cleanup_download() {
-  /bin/rm -f -- "$archive"
-  /bin/rmdir "$download_root" 2>/dev/null || true
+  case "$download_root" in
+    "$tool_parent"/.download.*) /bin/rm -rf -- "$download_root" ;;
+    *) echo "ERROR: refusing unexpected XcodeGen cleanup path: $download_root" >&2 ;;
+  esac
 }
 trap cleanup_download EXIT
 
@@ -185,7 +196,8 @@ xcodegen_binary="$(bash scripts/bootstrap-xcodegen.sh)"
 "$xcodegen_binary" --version
 ```
 
-Expected: exactly `Version: 2.46.0`. The archive checksum is checked before extraction. No
+Expected: exactly `Version: 2.46.0`. The archive checksum is checked before extraction, and the
+installed executable checksum is checked before every invocation, including cached use. No
 Homebrew/global install is used.
 
 ### Step 3: Create the strict core package
@@ -717,7 +729,10 @@ Create `docs/engineering/dependencies.md`:
 - Release: 2.46.0, 2026-07-16.
 - Tag commit: `8445e778451c7e44237b90281bde622d764b0084`.
 - Artifact: `https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip`.
-- SHA-256: `4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806`.
+- Archive SHA-256: `4d9e34b62172d645eed6457cac13fc222569974098ef4ee9c3368bedf0196806`.
+- Extracted universal executable SHA-256:
+  `8774da746668bc18fe74e54cbaf10f2631a1fb05947cd374179aa912f14f99db`; the
+  cached executable is revalidated before each invocation.
 - License: MIT; the archive carries `xcodegen/LICENSE`.
 - Scope: ignored repo-local development/CI tooling only; not linked or bundled in Praxodoro.
 - Upgrade: separate dependency-review atom with new source, checksum, regeneration, build, and tests.
@@ -752,6 +767,13 @@ Generate once to intentionally update the committed project candidate:
 xcodegen_binary="$(bash scripts/bootstrap-xcodegen.sh)"
 "$xcodegen_binary" generate --spec project.yml
 git diff --check -- project.yml Praxodoro.xcodeproj
+```
+
+Replace the stale pre-scaffold sentence in `README.md`:
+
+```markdown
+OpenSpec is pinned to 1.6.0. The native foundation commands below exercise generator,
+verification, test, build, and smoke paths.
 ```
 
 Append to `README.md` using a four-backtick outer fence so the inner shell block remains valid:
@@ -811,7 +833,8 @@ Expected post-commit status: empty for both generator source and output.
 ## Plan Verification Checklist
 
 - [ ] No Homebrew/global XcodeGen mutation.
-- [ ] Exact tag commit and archive checksum match official release evidence.
+- [ ] Exact tag commit, archive checksum, and extracted executable checksum match official release evidence.
+- [ ] Cached executable tampering fails closed before the executable is invoked; interrupted-download cleanup is confined to the exact `.download.*` temporary directory.
 - [ ] No `jq` dependency.
 - [ ] Package warnings are errors from Task 1; app warnings become errors in Task 2.
 - [ ] App unit and UI tests both execute, not only compile.
