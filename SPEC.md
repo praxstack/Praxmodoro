@@ -8,9 +8,9 @@ Praxmodoro: native macOS focus timer and non-clinical ADHD-aware focus coach. ma
 
 Visual direction: **Living Companion** (approved 2026-07-30; binding reference `design-mocks/living-companion/`, physics contract `companion-physics.js`). Evidence roots: `research/pomodoro-landscape-20260720/` for product claims, the mocks for visual decisions.
 
-## Milestone M1 — app scaffold + core loop (active)
+## Milestone M1 — app scaffold + core loop (COMPLETE 2026-07-31)
 
-Governed by OpenSpec change `add-app-scaffold-core-loop`. M1 is complete when, and only when:
+Governed by OpenSpec change `add-app-scaffold-core-loop` (archived `2026-07-31-add-app-scaffold-core-loop`). Independent fresh-context validation confirmed all seven gates PASS at `d56949d`. M1 was complete when, and only when:
 
 1. Every EARS scenario in `openspec/changes/add-app-scaffold-core-loop/specs/{app-scaffold,timer-engine,focus-loop-ui,session-persistence}/spec.md` is covered by an automated test that passes.
 2. Every task in that change's `tasks.md` is checked, each with its red-then-green evidence recorded in `prd.json` and `progress.txt`.
@@ -22,7 +22,7 @@ Governed by OpenSpec change `add-app-scaffold-core-loop`. M1 is complete when, a
 
 ## Later milestones (not yet specified)
 
-M2 companion surfaces (menu-bar popover, floating capsule, return overlay) · M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 edition content (Pro insights/automations, Enterprise policy boundaries — cloud/team services are separate deliverables). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.
+M2 companion surfaces (menu-bar popover, floating capsule, return overlay — **next**; handoff: `docs/handoff/2026-07-31-pi-m2.md`) · M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 edition content (Pro insights/automations, Enterprise policy boundaries — cloud/team services are separate deliverables). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.
 
 ## Global invariants (hold at every milestone)
 
