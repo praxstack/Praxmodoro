@@ -1,5 +1,7 @@
 import Foundation
+import CoreGraphics
 import PraxmodoroCore
+import SwiftUI
 import Testing
 
 @testable import Praxmodoro
@@ -130,10 +132,54 @@ import PraxmodoroStore
         let readout: RemainingReadout
 
         init(_ frozen: CompanionDisplay) {
-            popover = MenuBarPopover(display: frozen, actions: .inert)
-            capsule = FocusCapsule(display: frozen, actions: .inert)
-            overlay = ReturnOverlay(display: frozen, onAcknowledge: {})
+            popover = MenuBarPopover(display: frozen, actions: .inert, motionStilledOverride: true)
+            capsule = FocusCapsule(display: frozen, actions: .inert, motionStilledOverride: true)
+            overlay = ReturnOverlay(display: frozen, onAcknowledge: {}, motionStilledOverride: true)
             readout = RemainingReadout(display: frozen)
+        }
+
+        /// What each surface actually *renders*, rasterized from the held
+        /// instances.
+        ///
+        /// Reading named properties is not enough: the fifth defeat put the
+        /// clock read inside `body`, where no property-reading test could see
+        /// it. Rasterizing covers everything the user can see. Reduce Motion is
+        /// forced on so the companion field's legitimate animation cannot make
+        /// the comparison flap — with the physics stood down, any pixel change
+        /// is drift.
+        func bitmaps() throws -> [String: Data] {
+            [
+                "popover": try Self.rasterize(popover),
+                "capsule": try Self.rasterize(capsule),
+                "overlay": try Self.rasterize(overlay),
+                "readout": try Self.rasterize(readout),
+            ]
+        }
+
+        private static func rasterize(_ view: some View, width: CGFloat = 300, height: CGFloat = 200) throws -> Data {
+            let renderer = ImageRenderer(
+                // Composited over an opaque backdrop: on a transparent one
+                // the premultiplied text pixels are too faint for a
+                // per-pixel threshold to see.
+                content: ZStack {
+                    Color.white
+                    view
+                }
+                .frame(width: width, height: height))
+            renderer.scale = 1
+            let image = try #require(renderer.cgImage, "ImageRenderer produced no bitmap")
+
+            let pixelWidth = Int(width)
+            let pixelHeight = Int(height)
+            var buffer = [UInt8](repeating: 0, count: pixelWidth * pixelHeight * 4)
+            let space = try #require(CGColorSpace(name: CGColorSpace.sRGB))
+            let context = try #require(
+                CGContext(
+                    data: &buffer, width: pixelWidth, height: pixelHeight, bitsPerComponent: 8,
+                    bytesPerRow: pixelWidth * 4, space: space,
+                    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue | CGBitmapInfo.byteOrder32Big.rawValue))
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+            return Data(buffer)
         }
 
         /// Every user-visible string, read fresh from the held instances.
@@ -171,18 +217,98 @@ import PraxmodoroStore
     @Test func testPureSurfacesDoNotDriftFromTheirInput() async throws {
         let frozen = try snapshot(at: 8 * 60).display
         let surfaces = PureSurfaces(frozen)
-        let before = surfaces.strings
-        #expect(before["popover.timeText"] == "17:00")
-        #expect(before["capsule.timeText"] == "17:00")
+        let beforeStrings = surfaces.strings
+        let beforePixels = try surfaces.bitmaps()
+        #expect(beforeStrings["popover.timeText"] == "17:00")
+        #expect(beforeStrings["capsule.timeText"] == "17:00")
 
-        try await Task.sleep(nanoseconds: 1_200_000_000)
+        // Long enough to catch a per-second beat with margin. A beat slower
+        // than this window would evade it; no finite wait can rule that out,
+        // and pretending otherwise is how the previous four claims went wrong.
+        try await Task.sleep(nanoseconds: 2_500_000_000)
 
         // Same instances, read again. Nothing about the input changed.
-        let after = surfaces.strings
-        for (name, value) in before {
-            #expect(after[name] == value,
-                    "\(name) drifted from a frozen input: “\(value)” became “\(after[name] ?? "nil")”")
+        let afterStrings = surfaces.strings
+        for (name, value) in beforeStrings {
+            #expect(afterStrings[name] == value,
+                    "\(name) drifted from a frozen input: “\(value)” became “\(afterStrings[name] ?? "nil")”")
         }
+
+        // And what actually renders — `body` included — must not change.
+        //
+        // Compared by mean absolute pixel difference rather than byte
+        // equality: rasterizing blurred gradients is not bit-reproducible, so
+        // an exact match would flap. A clock read inside `body` changes glyphs,
+        // which moves this by orders of magnitude more than renderer noise.
+        // `testDriftPixelComparisonCanFail` pins the threshold's sensitivity.
+        let afterPixels = try surfaces.bitmaps()
+        for (name, pixels) in beforePixels {
+            let difference = Self.changedPixelFraction(pixels, try #require(afterPixels[name]))
+            #expect(difference <= Self.renderNoiseTolerance,
+                    "\(name) rendered differently from a frozen input (\(difference) of pixels changed); something inside its body reads a clock")
+        }
+    }
+
+    /// Fraction of pixels allowed to change materially between two renders of
+    /// identical content.
+    ///
+    /// A mean-difference metric put one changed glyph at 0.056 against a 0.05
+    /// budget — far too thin to trust. Counting materially-changed pixels
+    /// separates them properly: measured noise is exactly zero on all four
+    /// surfaces, one changed digit moves 0.0075, and the smallest real exploit
+    /// seen (a two-character beat in the capsule) moves 0.00085 — well clear of
+    /// this threshold. `testDriftPixelComparisonCanFail` re-measures the noise
+    /// floor on every run, so if rasterization ever stops being deterministic
+    /// it fails with that reason instead of flaking.
+    static let renderNoiseTolerance = 0.0001
+
+    /// Fraction of pixels whose colour moved by more than a just-noticeable
+    /// amount in any channel.
+    static func changedPixelFraction(_ lhs: Data, _ rhs: Data) -> Double {
+        guard lhs.count == rhs.count, lhs.count >= 4 else { return .infinity }
+        let threshold = 8
+        var changed = 0
+        var index = 0
+        while index + 3 < lhs.count {
+            if abs(Int(lhs[index]) - Int(rhs[index])) > threshold
+                || abs(Int(lhs[index + 1]) - Int(rhs[index + 1])) > threshold
+                || abs(Int(lhs[index + 2]) - Int(rhs[index + 2])) > threshold
+            {
+                changed += 1
+            }
+            index += 4
+        }
+        return Double(changed) / Double(lhs.count / 4)
+    }
+
+    /// The pixel comparison must be able to fail, and must be far more
+    /// sensitive than the noise it tolerates.
+    @Test func testDriftPixelComparisonCanFail() throws {
+        let frozen = try snapshot(at: 8 * 60).display
+        let seventeen = PureSurfaces(frozen)
+        let sixteen = PureSurfaces(
+            CompanionDisplay(
+                phase: frozen.phase, taskLine: frozen.taskLine, nextAction: frozen.nextAction,
+                timeText: "16:00", statusLine: frozen.statusLine, fieldSummary: frozen.fieldSummary))
+
+        // Measure the noise floor for every surface, so nondeterministic
+        // rasterization shows up as a clear failure rather than a flake.
+        let first = try seventeen.bitmaps()
+        let second = try seventeen.bitmaps()
+        var noise = 0.0
+        for (name, pixels) in first {
+            let delta = Self.changedPixelFraction(pixels, try #require(second[name]))
+            #expect(delta <= Self.renderNoiseTolerance,
+                    "\(name) does not rasterize deterministically (noise \(delta)); the drift threshold cannot be trusted")
+            noise = max(noise, delta)
+        }
+        let oneGlyph = Self.changedPixelFraction(try #require(first["readout"]), try #require(sixteen.bitmaps()["readout"]))
+
+        #expect(oneGlyph > Self.renderNoiseTolerance,
+                "a single changed digit (17:00 -> 16:00) moved only \(oneGlyph) of pixels, inside the tolerance; the probe is blind")
+        #expect(oneGlyph > Self.renderNoiseTolerance * 10,
+                "one changed digit must dwarf the tolerance, not skim it: \(oneGlyph) vs \(Self.renderNoiseTolerance)")
+        #expect(noise == 0 || oneGlyph > noise * 10, "one changed digit must dwarf renderer noise: \(oneGlyph) vs \(noise)")
     }
 
     /// A drift test that misses a surface is how the fourth defeat happened:

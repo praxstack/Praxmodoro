@@ -23,6 +23,16 @@ struct ReturnOverlay: View {
 
     var accessibilityLabel: String { "Welcome back. Pick it up here: \(wayBack)" }
 
+    /// Forces the motion standdown regardless of the environment.
+    ///
+    /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
+    /// offscreen render cannot be made deterministic from the outside. This
+    /// seam lets the drift test rasterize a still frame. It selects an
+    /// alternate the product genuinely has; production never sets it.
+    var motionStilledOverride: Bool?
+
+    private var motionStilled: Bool { motionStilledOverride ?? reduceMotion }
+
     /// Exposed so the Reduce Motion standdown is assertable at runtime.
     func companionField(motionStilled: Bool) -> CompanionFieldView {
         CompanionFieldView(state: "gathering", motionStilled: motionStilled)
@@ -30,7 +40,7 @@ struct ReturnOverlay: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            companionField(motionStilled: reduceMotion)
+            companionField(motionStilled: motionStilled)
                 .frame(width: 88, height: 88)
 
             Text("Welcome back.")

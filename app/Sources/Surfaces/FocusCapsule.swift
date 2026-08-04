@@ -22,6 +22,16 @@ struct FocusCapsule: View {
         return "Focus capsule: \(display.taskLine), \(timeText) left, \(display.statusLine)"
     }
 
+    /// Forces the motion standdown regardless of the environment.
+    ///
+    /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
+    /// offscreen render cannot be made deterministic from the outside. This
+    /// seam lets the drift test rasterize a still frame. It selects an
+    /// alternate the product genuinely has; production never sets it.
+    var motionStilledOverride: Bool?
+
+    private var motionStilled: Bool { motionStilledOverride ?? reduceMotion }
+
     /// Exposed so the Reduce Motion standdown is assertable at runtime.
     func companionField(motionStilled: Bool) -> CompanionFieldView {
         CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled)
@@ -29,7 +39,7 @@ struct FocusCapsule: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            companionField(motionStilled: reduceMotion)
+            companionField(motionStilled: motionStilled)
                 .frame(width: 22, height: 22)
 
             VStack(alignment: .leading, spacing: 1) {

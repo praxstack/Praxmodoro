@@ -59,6 +59,16 @@ struct MenuBarPopover: View {
         }
     }
 
+    /// Forces the motion standdown regardless of the environment.
+    ///
+    /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
+    /// offscreen render cannot be made deterministic from the outside. This
+    /// seam lets the drift test rasterize a still frame. It selects an
+    /// alternate the product genuinely has; production never sets it.
+    var motionStilledOverride: Bool?
+
+    private var motionStilled: Bool { motionStilledOverride ?? reduceMotion }
+
     /// The field this surface shows, exposed so the Reduce Motion standdown
     /// is assertable at runtime rather than inferred from source (spec:
     /// companion-surfaces "Reduce Motion standdown on the new surfaces").
@@ -78,7 +88,7 @@ struct MenuBarPopover: View {
                     Text(timeText)
                         .font(.system(size: 30, weight: .light, design: .monospaced))
                         .accessibilityIdentifier("popover-time")
-                    companionField(motionStilled: reduceMotion)
+                    companionField(motionStilled: motionStilled)
                         .frame(width: 28, height: 28)
                 }
                 if !display.taskLine.isEmpty {
