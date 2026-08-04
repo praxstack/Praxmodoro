@@ -1,6 +1,6 @@
 # Praxmodoro
 
-Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. It combines low-friction task initiation, gentle check-ins, adaptive breaks, and local-first review with the advanced “Liquid Instrument” visual language documented in the Hallmark mock dossier.
+Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. It combines low-friction task initiation, gentle check-ins, adaptive breaks, and local-first review with the “Living Companion” visual language approved on 2026-07-30 (`design-mocks/living-companion/`).
 
 ## Current state
 
@@ -62,4 +62,14 @@ xcodebuild -project app/Praxmodoro.xcodeproj -scheme Praxmodoro -destination 'pl
 ./scripts/run.sh
 ```
 
-`verify-project.sh` is the scaffold gate: it fails if the generated project is missing or stale, then runs the package tests and a full build.
+```bash
+./scripts/focused.sh
+```
+
+```bash
+./scripts/smoke.sh
+```
+
+`verify-project.sh` is the scaffold gate: it fails if the generated project is missing or stale, then runs the package tests, the strict format lint, a full build, and the complete signed test suite including UI tests.
+
+`focused.sh` is the fast inner loop — the app unit suite only — used per implementation atom. `smoke.sh` is the changed-surface check: it builds, verifies the signature, launches the app against an in-memory store, and confirms it registers with the window server and stays alive. It proves the artifact launches, not that any surface renders; the UI tests inside `verify-project.sh` cover that.

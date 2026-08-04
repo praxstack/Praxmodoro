@@ -1,177 +1,241 @@
 {
   "product": "Praxmodoro",
   "contract": "SPEC.md",
-  "activeChange": "add-app-scaffold-core-loop",
-  "milestone": "M1",
-  "updated": "2026-07-31T15:40:00Z",
+  "activeChange": "add-companion-surfaces",
+  "milestone": "M2",
+  "updated": "2026-08-04T00:00:00Z",
   "atoms": [
     {
-      "id": "1.1",
-      "title": "XcodeGen project + generate script",
+      "id": "g1-verification-commands",
+      "title": "scripts/focused.sh + scripts/smoke.sh + README commands",
       "status": "done",
-      "evidence": "red: verify-project.sh FAIL (project missing, exit 1); green: xcodegen generate + BUILD SUCCEEDED; smoke: Praxmodoro.app launched to window"
+      "evidence": "red: ./scripts/focused.sh and ./scripts/smoke.sh both exit 127 (absent); green: focused.sh ** TEST SUCCEEDED ** exit 0, smoke.sh launched+signed+registered+alive exit 0; README documents both verbatim"
     },
     {
-      "id": "1.2",
-      "title": "Core and Store SwiftPM packages",
-      "status": "done",
-      "evidence": "swift test PraxmodoroCore + PraxmodoroStore: 1 test each, passed headless"
+      "id": "g2-canonical-state",
+      "title": "SessionSnapshot as the single source of rendered session state",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "1.3",
-      "title": "Verify script + documented commands",
-      "status": "done",
-      "evidence": "verify-project.sh OK end-to-end; README commands run verbatim"
+      "id": "g3-render-accessibility",
+      "title": "SurfacePalette + render-level transparency and contrast probes",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "2.1",
-      "title": "Session state machine",
-      "status": "done",
-      "evidence": "red: cannot find Session (compile); green: 3 tests pass incl. typed invalid-transition error"
+      "id": "g4-menu-bar-popover",
+      "title": "Menu-bar popover: live phase, no scoring, never paywalled",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "2.2",
-      "title": "Canonical timestamp arithmetic",
-      "status": "done",
-      "evidence": "red: 9 compile errors; green: remaining derived from timestamps, backwards clock logs anomaly + clamps"
+      "id": "g5-focus-capsule",
+      "title": "Floating launch-suppressed focus capsule with a keyboard command",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "2.3",
-      "title": "Hold/resume place-keeping",
-      "status": "done",
-      "evidence": "regression guard (behavior emerged from 2.2 interval construction); testHoldFreezesRemainingExactly green"
+      "id": "g6-return-overlay",
+      "title": "Return overlay carrying the exact next action after a break",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "2.4",
-      "title": "Sleep/wake/relaunch reconstruction",
-      "status": "done",
-      "evidence": "red: reconciled missing; green: sleep/wake true remaining, relaunch restores held, expiry backdated to canonical instant"
+      "id": "g7-motion-voiceover",
+      "title": "Reduce Motion standdown and VoiceOver labels on every companion surface",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "2.5",
-      "title": "Timing policies as data",
-      "status": "done",
-      "evidence": "red: promotion event missing; green: gentle promotes seamlessly + recorded, flow never auto-transitions"
+      "id": "g8-hardening",
+      "title": "cmd-K check-in, live-container schema parity, keyboard UI loop, first-run assertion",
+      "status": "pending",
+      "evidence": ""
     },
     {
-      "id": "2.6",
-      "title": "Core module purity gate",
-      "status": "done",
-      "evidence": "structural scan green: PraxmodoroCore imports Foundation only"
-    },
+      "id": "g9-closeout",
+      "title": "Full gauntlet, evidence bookkeeping, archive and independent validation",
+      "status": "pending",
+      "evidence": ""
+    }
+  ],
+  "archivedMilestones": [
     {
-      "id": "3.1",
-      "title": "SwiftData models + SessionStoring",
-      "status": "done",
-      "evidence": "red: LocalStore missing (25 errors); green: SwiftData round-trip preserves ordered events + canonical timestamps"
-    },
-    {
-      "id": "3.2",
-      "title": "Append-only event log",
-      "status": "done",
-      "evidence": "red: editEvent missing; green: edit is a new event referencing the original, both retained"
-    },
-    {
-      "id": "3.3",
-      "title": "No-network/no-passive structural tests",
-      "status": "done",
-      "evidence": "structural audits green: no network symbols in sources; schema attribute scan finds no passive-observation fields"
-    },
-    {
-      "id": "3.4",
-      "title": "Corrupt-store recovery",
-      "status": "done",
-      "evidence": "red: open(at:) missing; green: garbage store file -> fresh store + preserved recovery file + plain-language notice (verified against real SwiftData open failure)"
-    },
-    {
-      "id": "4.1",
-      "title": "FieldPhysics port with golden tests",
-      "status": "done",
-      "evidence": "red: FieldBreath/FieldSpring/FieldPhysics missing (compile); green: golden parity 1e-9 vs JS-exported vectors (17 breath samples, 6 drift, 4 spring traces incl. pulse omega7/zeta0.34, states, layers); browser mock verified unaffected by export seam"
-    },
-    {
-      "id": "4.2",
-      "title": "Canvas field renderer",
-      "status": "done",
-      "evidence": "FieldModel mirrors JS Field.step 1:1 over golden-verified primitives; determinism + hold-glide tests green; ImageRenderer smoke stills (breathing/held/expanded) visually verified against mock"
-    },
-    {
-      "id": "4.3",
-      "title": "Total reduced-motion standdown",
-      "status": "done",
-      "evidence": "CompanionFieldView: model nil exactly when motionStilled; static alternate renders same composition at rest; testReduceMotionNeverInstantiatesPhysics green"
-    },
-    {
-      "id": "5.1",
-      "title": "Initiate surface",
-      "status": "done",
-      "evidence": "red: AppModel missing (compile); green: start path pinned to exactly [task, first-action, capacity, policy, begin]; begin() -> focus + persisted transition/capacity events at canonical timestamps"
-    },
-    {
-      "id": "5.2",
-      "title": "Focus surface",
-      "status": "done",
-      "evidence": "green: thought parking keeps focus active + persists event; no scoring identifiers on the control catalog; remaining derives through engine (15:00 at T+10 of classic)"
-    },
-    {
-      "id": "5.3",
-      "title": "Check-in surface",
-      "status": "done",
-      "evidence": "red: CheckinAnswer missing; green: four answers pinned, judgment-lexicon lint on responses, timer holds while open, typing deferral delivers on blur"
-    },
-    {
-      "id": "5.4",
-      "title": "Break surface",
-      "status": "done",
-      "evidence": "red: break API missing; green: early end resumes with no penalty-shaped events and unchanged suggestion; provenance names reported capacity + editable/off; re-entry card carries next action"
-    },
-    {
-      "id": "5.5",
-      "title": "Review surface",
-      "status": "done",
-      "evidence": "red: review API missing; green: timeline reproduces event log descriptively (verdict-lexicon lint), single-session insight states its limits"
-    },
-    {
-      "id": "5.6",
-      "title": "Lifecycle restore",
-      "status": "done",
-      "evidence": "red: restore missing; green: relaunch over same container lands on focus with title/action restored and remaining 15:00 at T+10; fresh state -> initiate; closed sessions stay closed"
-    },
-    {
-      "id": "6.1",
-      "title": "Capability registry + never-paywalled validation",
-      "status": "done",
-      "evidence": "red: CapabilityRegistry missing; green: Lite grant total; paywall attempt on checkins fails validation AND self-heals to available; wired into AppModel startup"
-    },
-    {
-      "id": "6.2",
-      "title": "Copy-tone lint",
-      "status": "done",
-      "evidence": "red then refined: lint caught approved negation copy ('never a streak'), lexicon made negation-aware; all source string literals pass banned-claims scan"
-    },
-    {
-      "id": "6.3",
-      "title": "Accessibility scenario suite",
-      "status": "done",
-      "evidence": "VoiceOver summary strings pinned; keyboard map covers full loop; structural transparency/contrast gates; runtime standdown pinned in 4.3"
-    },
-    {
-      "id": "6.4",
-      "title": "Network-silence harness",
-      "status": "done",
-      "evidence": "URLProtocol canary over a real full loop observed zero requests; whole-app source scan clean of network symbols"
-    },
-    {
-      "id": "6.5",
-      "title": "Provenance About surface",
-      "status": "done",
-      "evidence": "generate.sh stamps version/SHA/edition into BuildProvenance; About window shows all three; test rejects 'unknown' SHA"
-    },
-    {
-      "id": "6.6",
-      "title": "Full gauntlet + validator pass",
-      "status": "done",
-      "evidence": "Full gauntlet green: 33 unit + 1 UI test, verify gate (lint+build+full suite), spec:validate strict. Independent validator (fresh context) found 4 EARS gaps + unwired pulse + bookkeeping + missing run command - ALL fixed and re-tested: pulse wired model->surfaces, drift/first-run/schema-parity tests added, scripts/run.sh documented."
+      "milestone": "M1",
+      "change": "add-app-scaffold-core-loop",
+      "archivedAs": "2026-07-31-add-app-scaffold-core-loop",
+      "completed": "2026-07-31",
+      "atoms": [
+        {
+          "id": "1.1",
+          "title": "XcodeGen project + generate script",
+          "status": "done",
+          "evidence": "red: verify-project.sh FAIL (project missing, exit 1); green: xcodegen generate + BUILD SUCCEEDED; smoke: Praxmodoro.app launched to window"
+        },
+        {
+          "id": "1.2",
+          "title": "Core and Store SwiftPM packages",
+          "status": "done",
+          "evidence": "swift test PraxmodoroCore + PraxmodoroStore: 1 test each, passed headless"
+        },
+        {
+          "id": "1.3",
+          "title": "Verify script + documented commands",
+          "status": "done",
+          "evidence": "verify-project.sh OK end-to-end; README commands run verbatim"
+        },
+        {
+          "id": "2.1",
+          "title": "Session state machine",
+          "status": "done",
+          "evidence": "red: cannot find Session (compile); green: 3 tests pass incl. typed invalid-transition error"
+        },
+        {
+          "id": "2.2",
+          "title": "Canonical timestamp arithmetic",
+          "status": "done",
+          "evidence": "red: 9 compile errors; green: remaining derived from timestamps, backwards clock logs anomaly + clamps"
+        },
+        {
+          "id": "2.3",
+          "title": "Hold/resume place-keeping",
+          "status": "done",
+          "evidence": "regression guard (behavior emerged from 2.2 interval construction); testHoldFreezesRemainingExactly green"
+        },
+        {
+          "id": "2.4",
+          "title": "Sleep/wake/relaunch reconstruction",
+          "status": "done",
+          "evidence": "red: reconciled missing; green: sleep/wake true remaining, relaunch restores held, expiry backdated to canonical instant"
+        },
+        {
+          "id": "2.5",
+          "title": "Timing policies as data",
+          "status": "done",
+          "evidence": "red: promotion event missing; green: gentle promotes seamlessly + recorded, flow never auto-transitions"
+        },
+        {
+          "id": "2.6",
+          "title": "Core module purity gate",
+          "status": "done",
+          "evidence": "structural scan green: PraxmodoroCore imports Foundation only"
+        },
+        {
+          "id": "3.1",
+          "title": "SwiftData models + SessionStoring",
+          "status": "done",
+          "evidence": "red: LocalStore missing (25 errors); green: SwiftData round-trip preserves ordered events + canonical timestamps"
+        },
+        {
+          "id": "3.2",
+          "title": "Append-only event log",
+          "status": "done",
+          "evidence": "red: editEvent missing; green: edit is a new event referencing the original, both retained"
+        },
+        {
+          "id": "3.3",
+          "title": "No-network/no-passive structural tests",
+          "status": "done",
+          "evidence": "structural audits green: no network symbols in sources; schema attribute scan finds no passive-observation fields"
+        },
+        {
+          "id": "3.4",
+          "title": "Corrupt-store recovery",
+          "status": "done",
+          "evidence": "red: open(at:) missing; green: garbage store file -> fresh store + preserved recovery file + plain-language notice (verified against real SwiftData open failure)"
+        },
+        {
+          "id": "4.1",
+          "title": "FieldPhysics port with golden tests",
+          "status": "done",
+          "evidence": "red: FieldBreath/FieldSpring/FieldPhysics missing (compile); green: golden parity 1e-9 vs JS-exported vectors (17 breath samples, 6 drift, 4 spring traces incl. pulse omega7/zeta0.34, states, layers); browser mock verified unaffected by export seam"
+        },
+        {
+          "id": "4.2",
+          "title": "Canvas field renderer",
+          "status": "done",
+          "evidence": "FieldModel mirrors JS Field.step 1:1 over golden-verified primitives; determinism + hold-glide tests green; ImageRenderer smoke stills (breathing/held/expanded) visually verified against mock"
+        },
+        {
+          "id": "4.3",
+          "title": "Total reduced-motion standdown",
+          "status": "done",
+          "evidence": "CompanionFieldView: model nil exactly when motionStilled; static alternate renders same composition at rest; testReduceMotionNeverInstantiatesPhysics green"
+        },
+        {
+          "id": "5.1",
+          "title": "Initiate surface",
+          "status": "done",
+          "evidence": "red: AppModel missing (compile); green: start path pinned to exactly [task, first-action, capacity, policy, begin]; begin() -> focus + persisted transition/capacity events at canonical timestamps"
+        },
+        {
+          "id": "5.2",
+          "title": "Focus surface",
+          "status": "done",
+          "evidence": "green: thought parking keeps focus active + persists event; no scoring identifiers on the control catalog; remaining derives through engine (15:00 at T+10 of classic)"
+        },
+        {
+          "id": "5.3",
+          "title": "Check-in surface",
+          "status": "done",
+          "evidence": "red: CheckinAnswer missing; green: four answers pinned, judgment-lexicon lint on responses, timer holds while open, typing deferral delivers on blur"
+        },
+        {
+          "id": "5.4",
+          "title": "Break surface",
+          "status": "done",
+          "evidence": "red: break API missing; green: early end resumes with no penalty-shaped events and unchanged suggestion; provenance names reported capacity + editable/off; re-entry card carries next action"
+        },
+        {
+          "id": "5.5",
+          "title": "Review surface",
+          "status": "done",
+          "evidence": "red: review API missing; green: timeline reproduces event log descriptively (verdict-lexicon lint), single-session insight states its limits"
+        },
+        {
+          "id": "5.6",
+          "title": "Lifecycle restore",
+          "status": "done",
+          "evidence": "red: restore missing; green: relaunch over same container lands on focus with title/action restored and remaining 15:00 at T+10; fresh state -> initiate; closed sessions stay closed"
+        },
+        {
+          "id": "6.1",
+          "title": "Capability registry + never-paywalled validation",
+          "status": "done",
+          "evidence": "red: CapabilityRegistry missing; green: Lite grant total; paywall attempt on checkins fails validation AND self-heals to available; wired into AppModel startup"
+        },
+        {
+          "id": "6.2",
+          "title": "Copy-tone lint",
+          "status": "done",
+          "evidence": "red then refined: lint caught approved negation copy ('never a streak'), lexicon made negation-aware; all source string literals pass banned-claims scan"
+        },
+        {
+          "id": "6.3",
+          "title": "Accessibility scenario suite",
+          "status": "done",
+          "evidence": "VoiceOver summary strings pinned; keyboard map covers full loop; structural transparency/contrast gates; runtime standdown pinned in 4.3"
+        },
+        {
+          "id": "6.4",
+          "title": "Network-silence harness",
+          "status": "done",
+          "evidence": "URLProtocol canary over a real full loop observed zero requests; whole-app source scan clean of network symbols"
+        },
+        {
+          "id": "6.5",
+          "title": "Provenance About surface",
+          "status": "done",
+          "evidence": "generate.sh stamps version/SHA/edition into BuildProvenance; About window shows all three; test rejects 'unknown' SHA"
+        },
+        {
+          "id": "6.6",
+          "title": "Full gauntlet + validator pass",
+          "status": "done",
+          "evidence": "Full gauntlet green: 33 unit + 1 UI test, verify gate (lint+build+full suite), spec:validate strict. Independent validator (fresh context) found 4 EARS gaps + unwired pulse + bookkeeping + missing run command - ALL fixed and re-tested: pulse wired model->surfaces, drift/first-run/schema-parity tests added, scripts/run.sh documented."
+        }
+      ]
     }
   ]
 }
