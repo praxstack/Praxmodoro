@@ -97,28 +97,55 @@ import PraxmodoroStore
         #expect(throws: CapabilityRegistry.ValidationError.self) { try hostile.validate() }
     }
 
-    /// Three independent barriers against a second clock in a companion
-    /// surface. Each is checked separately, because the first version of this
-    /// guard was a single substring blocklist and an independent validator
-    /// defeated it: `@State driftSeconds` aged by
-    /// `.task { try? await Task.sleep(…) }`, formatted by string
-    /// interpolation, needed none of the banned tokens.
+    /// **The behavioral net.** Three static guards have now been defeated in
+    /// a row — a captured baseline aged with `timeIntervalSince`; `@State`
+    /// aged by `.task { Task.sleep }`; and a beat parked in a *different file*
+    /// and consumed through statics, which no file-scoped scan can see.
     ///
-    /// 1. **No raw interval.** The surface receives a `CompanionDisplay`,
-    ///    whose `timeText` is already a string. There is no `TimeInterval` to
-    ///    do arithmetic on.
-    /// 2. **No mutable state.** No `@State`/`@StateObject`, so there is
-    ///    nowhere to keep a drifting value.
-    /// 3. **No beat.** No lifecycle or async hook — `.task`, `onAppear`,
-    ///    `onReceive`, `Task.sleep`, `asyncAfter`, `RunLoop`, `Timer` — so
-    ///    nothing can run on a schedule.
+    /// Static checks cannot settle this: a drifting value can be sourced from
+    /// anywhere in the module. What can settle it is behavior. Freeze the
+    /// input, let real wall-clock time pass, and read the surface again. A
+    /// pure function of a frozen input cannot change. Any second clock —
+    /// wherever its beat lives — makes this fail.
     ///
-    /// Honest limit: this is defense in depth, not a proof. An author who
-    /// parsed `timeText` back into numbers and found some other beat could
-    /// still misbehave. What these barriers remove is the demonstrated
-    /// failure mode, not every conceivable one.
+    /// What it proves: the pure surfaces do not drift from their input.
+    /// What it does not prove: that `FocusSurface`, which legitimately reads
+    /// the clock, asks for the right instant — that is why its time rendering
+    /// is delegated to `RemainingReadout`, which this test covers.
+    @Test func testPureSurfacesDoNotDriftFromTheirInput() async throws {
+        let frozen = try snapshot(at: 8 * 60).display
+        let popover = MenuBarPopover(display: frozen, actions: .inert)
+        let readout = RemainingReadout(display: frozen)
+
+        let popoverBefore = popover.timeText
+        let readoutBefore = readout.text
+        let labelBefore = popover.accessibilityLabel
+        #expect(popoverBefore == "17:00")
+
+        try await Task.sleep(nanoseconds: 1_200_000_000)
+
+        #expect(popover.timeText == popoverBefore,
+                "the popover drifted from a frozen input: \(String(describing: popoverBefore)) became \(String(describing: popover.timeText))")
+        #expect(readout.text == readoutBefore,
+                "the readout drifted from a frozen input: \(readoutBefore) became \(readout.text)")
+        #expect(popover.accessibilityLabel == labelBefore,
+                "the popover's VoiceOver label drifted from a frozen input")
+    }
+
+    /// Static barriers, kept as defense in depth behind the drift test above.
+    /// They catch the in-file spellings cheaply; they are lints, not proof,
+    /// and the third defeat proved exactly that.
+    ///
+    /// 1. **No raw interval** — the surface receives a `CompanionDisplay`,
+    ///    whose `timeText` is already a string, so there is no `TimeInterval`
+    ///    to do arithmetic on. (Enforced textually here; making it
+    ///    compiler-enforced needs a separate module, deferred with reasons in
+    ///    the change's design.md.)
+    /// 2. **No mutable state** — no `@State`/`@StateObject`.
+    /// 3. **No in-file beat** — no `.task`, `onAppear`, `onReceive`,
+    ///    `Task.sleep`, `asyncAfter`, `RunLoop`, `Timer`, clock types.
     @Test func testCompanionSurfacesCannotHostASecondClock() throws {
-        let surfaces = ["MenuBarPopover.swift", "FocusCapsule.swift", "ReturnOverlay.swift"]
+        let surfaces = ["MenuBarPopover.swift", "FocusCapsule.swift", "ReturnOverlay.swift", "RemainingReadout.swift"]
         let surfacesDir = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("Sources").appendingPathComponent("Surfaces")

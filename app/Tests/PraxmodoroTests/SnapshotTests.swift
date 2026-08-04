@@ -100,34 +100,54 @@ import PraxmodoroStore
         #expect(snapshot.remaining == model.remaining(at: afterFourHours))
     }
 
-    // Structural: no surface may construct a timer, schedule a decrement, or
-    // keep an elapsed counter, and no surface may format remaining time
-    // itself — `snapshot(at:)` is the only source of the rendered value.
-    @Test func testNoSurfaceCountsTime() throws {
+    /// Module-wide: nothing in the app sources may run code on a schedule.
+    ///
+    /// A validator defeated the surface-scoped guard by parking the beat in a
+    /// *different* file (`SurfacePalette.swift`) and consuming it from the
+    /// popover through statics. A per-file scan of three filenames cannot see
+    /// that, so this scan covers every source file in the target. The app has
+    /// no legitimate use for a scheduled beat: the only periodic rendering is
+    /// `TimelineView`, which re-derives from the engine instead of counting.
+    ///
+    /// Comments are stripped first — this file's own documentation names the
+    /// constructs it bans.
+    @Test func testNothingInTheAppRunsOnASchedule() throws {
         let sourcesDir = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("Sources")
         let enumerator = try #require(FileManager.default.enumerator(at: sourcesDir, includingPropertiesForKeys: nil))
 
-        let bannedClockConstructions = ["Timer(", "Timer.publish", "scheduledTimer", "DispatchSourceTimer"]
+        let beats = [
+            "Timer(", "Timer.publish", "scheduledTimer", "DispatchSourceTimer",
+            "Task.sleep", "asyncAfter", "Task.detached", "RunLoop.", "CFAbsoluteTime",
+            "ContinuousClock", "SuspendingClock", "AsyncTimerSequence",
+        ]
         var sawSnapshotUse = false
+        var scanned = 0
 
         for case let file as URL in enumerator where file.pathExtension == "swift" {
-            let source = try String(contentsOf: file, encoding: .utf8)
-            for construction in bannedClockConstructions {
-                #expect(!source.contains(construction),
-                        "\(file.lastPathComponent) constructs its own clock (\(construction)); render snapshot(at:) instead")
+            scanned += 1
+            let raw = try String(contentsOf: file, encoding: .utf8)
+            let code = raw.split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line -> String in
+                    guard let comment = line.range(of: "//") else { return String(line) }
+                    return String(line[..<comment.lowerBound])
+                }
+                .joined(separator: "\n")
+
+            for beat in beats {
+                #expect(!code.contains(beat),
+                        "\(file.lastPathComponent) can run code on a schedule via “\(beat)”; the engine is the only clock")
             }
             // Only the snapshot may turn an interval into a clock face.
             if file.lastPathComponent != "SessionSnapshot.swift" {
-                #expect(!source.contains("%02d:%02d"),
+                #expect(!code.contains("%02d:%02d"),
                         "\(file.lastPathComponent) formats remaining time locally; SessionSnapshot owns that")
             }
-            if source.contains("snapshot(at:") || source.contains("snapshot(at: ") {
-                sawSnapshotUse = true
-            }
+            if code.contains("snapshot(at:") { sawSnapshotUse = true }
         }
 
-        #expect(sawSnapshotUse, "no surface reads snapshot(at:); the canonical projection is unused")
+        #expect(scanned > 10, "the scan must actually cover the app sources; only \(scanned) files seen")
+        #expect(sawSnapshotUse, "nothing reads snapshot(at:); the canonical projection is unused")
     }
 }

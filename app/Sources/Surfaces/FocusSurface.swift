@@ -42,11 +42,11 @@ struct FocusSurface: View {
                     .accessibilityLabel(snapshot.accessibilitySummary)
                     // The timeline re-asks the model; it never advances a count
                     // of its own (spec: companion-surfaces "No surface counts
-                    // time"). Each tick is a fresh snapshot at that instant.
+                    // time"). Each tick is a fresh snapshot at that instant,
+                    // and the rendering is delegated to a pure readout so this
+                    // surface holds no formatting logic of its own.
                     TimelineView(.periodic(from: .now, by: 0.5)) { context in
-                        Text(model.snapshot(at: context.date).remainingText ?? "open")
-                            .font(.system(size: 44, weight: .light, design: .monospaced))
-                            .accessibilityIdentifier("time-remaining")
+                        RemainingReadout(display: model.snapshot(at: context.date).display)
                     }
                 }
 
