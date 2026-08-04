@@ -11,6 +11,9 @@ enum FeatureKey: String, CaseIterable, Sendable {
     case thoughtParking
     case localReview
     case sessionPersistence
+    case menuBarSurface
+    case focusCapsule
+    case returnOverlay
 }
 
 /// Edition seam. Lite grants everything in this change; core ADHD/
@@ -27,7 +30,16 @@ struct CapabilityRegistry: Sendable {
     /// Initiation help, check-ins, adaptive breaks, and accessibility are
     /// never paywalled (AGENTS.md product boundary; research
     /// w2-product-scope-adjudication-005).
-    static let neverPaywalled: Set<FeatureKey> = [.initiation, .checkins, .adaptiveBreaks, .accessibilityModes]
+    ///
+    /// The companion surfaces join the set because each one *carries* that
+    /// behavior: the popover holds initiation and check-in entry, the capsule
+    /// holds hold/resume, and the return overlay is the re-entry path out of a
+    /// break. Gating any of them would gate the boundary behavior itself
+    /// (spec: companion-surfaces "Companion surfaces are never paywalled").
+    static let neverPaywalled: Set<FeatureKey> = [
+        .initiation, .checkins, .adaptiveBreaks, .accessibilityModes,
+        .menuBarSurface, .focusCapsule, .returnOverlay,
+    ]
 
     /// This change ships everything in Lite; Pro/Enterprise inherit it all.
     static let defaultGrants: [Edition: Set<FeatureKey>] = {

@@ -26,8 +26,8 @@
     {
       "id": "g4-menu-bar-popover",
       "title": "Menu-bar popover: live phase, no scoring, never paywalled",
-      "status": "pending",
-      "evidence": ""
+      "status": "done",
+      "evidence": "red: 9 compile errors (MenuBarPopover not in scope, CompanionActions.inert unknown); green: 50 tests in 19 suites (was 42) incl. held/running/no-session phases, no-scoring catalog, never-paywalled keys with a hostile registry, and the clockless + environment-wiring guards; swift format lint --strict clean"
     },
     {
       "id": "g5-focus-capsule",

@@ -1,3 +1,4 @@
+import AppKit
 import PraxmodoroStore
 import SwiftUI
 
@@ -37,5 +38,26 @@ struct PraxmodoroApp: App {
             AboutView()
         }
         .windowResizability(.contentSize)
+
+        // The loop, reachable without fronting the app. The popover is a pure
+        // function of a snapshot taken here, at the instant it renders
+        // (spec: companion-surfaces "Menu-bar popover operates the loop").
+        MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                MenuBarPopover(snapshot: model.snapshot(at: context.date), actions: companionActions)
+            }
+        }
+        .menuBarExtraStyle(.window)
+    }
+
+    /// One wiring point for every companion surface: they report intent, the
+    /// model decides. Surfaces never hold the model themselves.
+    private var companionActions: CompanionActions {
+        CompanionActions(
+            begin: { try? model.begin() },
+            toggleHold: { try? model.toggleHold() },
+            checkIn: { try? model.openCheckin() },
+            openMainWindow: { NSApp.activate(ignoringOtherApps: true) }
+        )
     }
 }
