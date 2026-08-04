@@ -31,7 +31,10 @@ then
 else
   status=$?
   echo "FAIL: focused suite failed (xcodebuild exit ${status}). Diagnostics:"
-  grep -E 'error:|✘|Testing failed|failed after' "$log" | sort -u | head -40
+  # Match compiler diagnostics, Swift Testing failures, and xcodebuild's own
+  # errors. Deliberately anchored: the simulator host logs lines containing
+  # "error:" (linkd/XPC chatter) that would otherwise bury the real cause.
+  grep -E '✘|\.swift:[0-9]+:[0-9]+: (error|warning):|^xcodebuild: error:|Testing failed' "$log" | sort -u | head -40
   echo "--- full log: rerun with the same command to reproduce ---"
   exit "$status"
 fi
