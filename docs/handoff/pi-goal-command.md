@@ -1,5 +1,14 @@
 # /goal command for Pi
 
+> **Superseded 2026-08-04.** The plan changed: M2 was not handed to Pi. It was
+> executed in this repository directly, as OpenSpec change
+> `add-companion-surfaces` on branch `feat/m2-companion-surfaces`. This document
+> is kept as the record of the state M2 started from — its §2 facts were accurate
+> at `79914e1`. For current status see `SPEC.md` and `progress.txt`.
+>
+> Note also that the local folder has since been renamed from
+> `~/Developer/Praxodoro` to `~/Developer/Praxomodoro`; the paths below are stale.
+
 Paste the block below as a single message in a Pi session opened at `/Users/prax/Developer/Praxodoro`. It is authored from [2026-07-31-pi-m2.md](./2026-07-31-pi-m2.md) — read that handoff first; re-verify its §2 facts before trusting them.
 
 ---
@@ -21,3 +30,4 @@ Constraints (not authorized): no force-pushes; no pushes to the `legacy` remote;
 ---
 
 Notes for Pi: no `.agent-stack/project.yaml` exists yet — per the goal protocol, anchor the ledger to the git working tree and bind verification scopes to the repository's real commands (`./scripts/verify-project.sh`, `npm run spec:validate`, `swift test --package-path app/Packages/PraxmodoroCore`, same for PraxmodoroStore); recommending `agent-stack init` is fine, skipping it must not stop the goal.
+

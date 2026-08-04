@@ -20,9 +20,22 @@ Governed by OpenSpec change `add-app-scaffold-core-loop` (archived `2026-07-31-a
 6. The copy-tone lint (no medical/diagnostic/judgment claims), no-network harness, and never-paywalled-set validation all pass.
 7. `npm run spec:validate` passes strict, and an independent validator session confirms 1–6 from a fresh context using only this file, the change artifacts, and the repo.
 
+## Milestone M2 — companion surfaces (in progress, one gate blocked 2026-08-04)
+
+Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and only when:
+
+1. Every EARS scenario in `openspec/changes/add-companion-surfaces/specs/{companion-surfaces,focus-loop-ui,session-persistence,app-scaffold}/spec.md` is covered by an automated test that passes.
+2. The menu-bar popover, floating focus capsule, and return overlay all render one canonical engine-derived session state; no surface counts time, proven behaviorally (a frozen input must produce an unchanged rendering after real time passes), not only by source scanning.
+3. The four M1 hardening follow-ups are closed: render-level Reduce-Transparency/Increase-Contrast verification; two-configuration schema parity against live containers; keyboard UI coverage for ⌘K, check-in 1–4, `R`, ⌘N and the capsule toggle as real key events; a launch-time first-run assertion.
+4. Complete accessibility alternates ship in the same change: Reduce Motion standdown proven on every companion surface in both directions, VoiceOver labels, full keyboard paths.
+5. `./scripts/verify-project.sh` exits 0 and `./scripts/smoke.sh` exits 0.
+6. `npm run spec:validate` passes strict, and an independent validator session confirms 1–5 from a fresh context.
+
+**Status 2026-08-04:** gates 1, 2, 4 and 6 are met for everything that can execute; gate 3 is met for its two unit-level follow-ups. Gates 3 (UI half) and 5 are **blocked by the host, not by the code**: XCUITest cannot initialize while the Mac's screen is locked (`LocalAuthentication -4`, `CGSSessionScreenIsLocked = true`). `KeyboardLoopUITests` compiles clean and every other stage of the verify gate passes. **Unblock: unlock the Mac and run `./scripts/verify-project.sh`.**
+
 ## Later milestones (not yet specified)
 
-M2 companion surfaces (menu-bar popover, floating capsule, return overlay — **next**; handoff: `docs/handoff/2026-07-31-pi-m2.md`) · M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 edition content (Pro insights/automations, Enterprise policy boundaries — cloud/team services are separate deliverables). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.
+M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 edition content (Pro insights/automations, Enterprise policy boundaries — cloud/team services are separate deliverables). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.
 
 ## Global invariants (hold at every milestone)
 
