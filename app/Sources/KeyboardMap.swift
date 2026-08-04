@@ -12,5 +12,8 @@ enum KeyboardMap {
         "checkin-4": "4",
         "break-ready": "R",
         "new-session": "⌘N",
+        "checkin-now": "⌘K",
+        "toggle-capsule": "⌘⇧F",
+        "return-continue": "↩",
     ]
 }

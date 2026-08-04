@@ -189,6 +189,19 @@ final class AppModel {
         }
     }
 
+    /// True from the moment a break ends until the user acknowledges the
+    /// return overlay. Presentation only: deliberately not persisted and
+    /// deliberately not an event, because acknowledging a card is not
+    /// something that happened to the session (design decision 3).
+    private(set) var returnPending = false
+
+    /// Dismiss the return overlay. Changes nothing about the session.
+    func acknowledgeReturn() {
+        guard returnPending else { return }
+        returnPending = false
+        fieldPulse += 1
+    }
+
     /// Ending a break — at any moment — is ordinary: resume and return to
     /// focus with no notice, penalty, or record beyond the transition itself.
     func endBreak() throws {
@@ -200,6 +213,7 @@ final class AppModel {
             try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
         }
         surface = .focus
+        returnPending = true
     }
 
     // MARK: Review (spec: a record, not a verdict)

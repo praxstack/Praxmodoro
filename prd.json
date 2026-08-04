@@ -27,19 +27,19 @@
       "id": "g4-menu-bar-popover",
       "title": "Menu-bar popover: live phase, no scoring, never paywalled",
       "status": "done",
-      "evidence": "red: 9 compile errors (MenuBarPopover not in scope, CompanionActions.inert unknown); green: 50 tests in 19 suites (was 42) incl. held/running/no-session phases, no-scoring catalog, never-paywalled keys with a hostile registry, and the clockless + environment-wiring guards; swift format lint --strict clean"
+      "evidence": "validator FAILED the first claim (Task.sleep exploit) and the second (cross-file beat); repaired behaviorally. green: popover held/running/no-session phases, no-scoring catalog, hostile-registry never-paywalled test, drift test, module-wide beat scan"
     },
     {
       "id": "g5-focus-capsule",
       "title": "Floating launch-suppressed focus capsule with a keyboard command",
-      "status": "pending",
-      "evidence": ""
+      "status": "done",
+      "evidence": "red: 8 compile errors (FocusCapsule not in scope); green: capsule shows task/time/hold, three-surface agreement at one instant (13:30 across focus snapshot, popover, capsule), keyboard path cmd-shift-F, scene declares windowLevel(.floating) + defaultLaunchBehavior(.suppressed)"
     },
     {
       "id": "g6-return-overlay",
       "title": "Return overlay carrying the exact next action after a break",
-      "status": "pending",
-      "evidence": ""
+      "status": "done",
+      "evidence": "red: 12 compile errors (returnPending/acknowledgeReturn/ReturnOverlay absent); green: endBreak raises the overlay, acknowledgement leaves phase and remaining unchanged and pulses the field once, next-action shown with task fallback, no break verdict, and no event appended"
     },
     {
       "id": "g7-motion-voiceover",
