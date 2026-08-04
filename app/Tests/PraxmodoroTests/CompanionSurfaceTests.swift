@@ -9,13 +9,17 @@ import PraxmodoroStore
 /// "Companion surfaces are never paywalled", and the hard half of
 /// "One canonical session state for every surface".
 ///
-/// The M1-era structural scan was defeated by an independent validator, which
-/// added a real second clock to a surface (baseline captured once, aged
-/// locally, formatted with two `String(format:)` calls) and watched the whole
-/// suite stay green. The answer is not a longer banned-substring list: it is
-/// that a companion surface must be a pure function of a snapshot with no
-/// clock and no model to reach for. That is what `testCompanionSurfacesAreClockless`
-/// pins, and it is why these views take a `SessionSnapshot` value.
+/// Two independent validators have now defeated a substring-based guard here.
+/// The first aged a captured baseline and formatted it with two
+/// `String(format:)` calls; the second used `@State` plus
+/// `.task { Task.sleep }` and string interpolation, needing no banned token at
+/// all. Both times the whole suite stayed green.
+///
+/// The lesson taken: a longer blocklist is not the answer. Companion surfaces
+/// now receive a `CompanionDisplay` — already-rendered strings, no
+/// `TimeInterval` — hold no mutable state, and take no lifecycle or async
+/// hook. `testCompanionSurfacesCannotHostASecondClock` checks all three, and
+/// says plainly what it does and does not prove.
 @MainActor
 @Suite struct CompanionSurfaceTests {
     private let t0 = Date(timeIntervalSinceReferenceDate: 800_000_000)
@@ -35,9 +39,9 @@ import PraxmodoroStore
     // A held session offers resume, and says so — the popover reads the phase
     // rather than tracking a toggle of its own.
     @Test func testPopoverShowsHeldStateAndOffersResume() throws {
-        let popover = MenuBarPopover(snapshot: try snapshot(at: 5 * 60, hold: true), actions: .inert)
+        let popover = MenuBarPopover(display: try snapshot(at: 5 * 60, hold: true).display, actions: .inert)
 
-        #expect(popover.snapshot.phase == .held)
+        #expect(popover.display.phase == .held)
         #expect(popover.statusText == "Held — your place is kept")
         #expect(popover.primaryControlLabel == "Resume")
         #expect(popover.timeText == "20:00")
@@ -46,7 +50,7 @@ import PraxmodoroStore
 
     // Running sessions offer hold.
     @Test func testPopoverWhileRunningOffersHold() throws {
-        let popover = MenuBarPopover(snapshot: try snapshot(at: 8 * 60), actions: .inert)
+        let popover = MenuBarPopover(display: try snapshot(at: 8 * 60).display, actions: .inert)
 
         #expect(popover.primaryControlLabel == "Hold")
         #expect(popover.statusText == "Focusing")
@@ -57,7 +61,7 @@ import PraxmodoroStore
     // beginning and renders no clock at all.
     @Test func testPopoverWithoutSessionOffersBeginAndNoTime() throws {
         let model = AppModel(store: try LocalStore(inMemory: true), clock: { self.t0 })
-        let popover = MenuBarPopover(snapshot: model.snapshot(at: t0), actions: .inert)
+        let popover = MenuBarPopover(display: model.snapshot(at: t0).display, actions: .inert)
 
         #expect(popover.primaryControlLabel == "Begin")
         #expect(popover.timeText == nil)
@@ -68,7 +72,7 @@ import PraxmodoroStore
     @Test func testPopoverCarriesNoScoringOrUpsell() throws {
         let banned = ["streak", "score", "grade", "percent", "rank", "upgrade", "pro", "unlock", "trial"]
         for phase in [try snapshot(at: 60), try snapshot(at: 60, hold: true)] {
-            let popover = MenuBarPopover(snapshot: phase, actions: .inert)
+            let popover = MenuBarPopover(display: phase.display, actions: .inert)
             let rendered = (popover.controls + [popover.statusText, popover.primaryControlLabel, popover.accessibilityLabel])
                 .joined(separator: " ")
                 .lowercased()
@@ -93,29 +97,60 @@ import PraxmodoroStore
         #expect(throws: CapabilityRegistry.ValidationError.self) { try hostile.validate() }
     }
 
-    // The structural guard that replaces the one an independent validator
-    // defeated. A companion surface has no clock and no model to reach for,
-    // so it cannot age a value locally — the exploit is impossible, not merely
-    // undetected. (Spec: companion-surfaces "No surface counts time".)
-    @Test func testCompanionSurfacesAreClockless() throws {
+    /// Three independent barriers against a second clock in a companion
+    /// surface. Each is checked separately, because the first version of this
+    /// guard was a single substring blocklist and an independent validator
+    /// defeated it: `@State driftSeconds` aged by
+    /// `.task { try? await Task.sleep(…) }`, formatted by string
+    /// interpolation, needed none of the banned tokens.
+    ///
+    /// 1. **No raw interval.** The surface receives a `CompanionDisplay`,
+    ///    whose `timeText` is already a string. There is no `TimeInterval` to
+    ///    do arithmetic on.
+    /// 2. **No mutable state.** No `@State`/`@StateObject`, so there is
+    ///    nowhere to keep a drifting value.
+    /// 3. **No beat.** No lifecycle or async hook — `.task`, `onAppear`,
+    ///    `onReceive`, `Task.sleep`, `asyncAfter`, `RunLoop`, `Timer` — so
+    ///    nothing can run on a schedule.
+    ///
+    /// Honest limit: this is defense in depth, not a proof. An author who
+    /// parsed `timeText` back into numbers and found some other beat could
+    /// still misbehave. What these barriers remove is the demonstrated
+    /// failure mode, not every conceivable one.
+    @Test func testCompanionSurfacesCannotHostASecondClock() throws {
         let surfaces = ["MenuBarPopover.swift", "FocusCapsule.swift", "ReturnOverlay.swift"]
         let surfacesDir = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .appendingPathComponent("Sources").appendingPathComponent("Surfaces")
 
-        // Anything that could produce or advance a time value.
-        let forbidden = ["Date(", ".now", "timeIntervalSince", "TimelineView", "AppModel", "String(format:", "Timer"]
+        // Barrier 3: every way found so far to make code run over time.
+        let beats = [
+            "Task.sleep", "asyncAfter", "RunLoop", "CFAbsoluteTime", "DispatchTime", "DispatchSourceTimer",
+            "Timer", "TimelineView", ".task {", "onAppear", "onReceive", "AsyncStream", "Task.detached",
+            "Task {", "ContinuousClock", "SuspendingClock",
+        ]
+        // Reading the wall clock or the model at all.
+        let clockAccess = ["Date(", ".now", "timeIntervalSince", "AppModel"]
+        // Barrier 2: nowhere to keep a drifting value.
+        let mutableState = ["@State", "@StateObject", "@ObservedObject", "var body: some View {\n        var "]
 
         for name in surfaces {
             let url = surfacesDir.appendingPathComponent(name)
             guard FileManager.default.fileExists(atPath: url.path) else { continue }
             let source = try String(contentsOf: url, encoding: .utf8)
-            for token in forbidden {
+
+            // Barrier 1: the input carries no interval to age.
+            #expect(source.contains("CompanionDisplay"),
+                    "\(name) must take a CompanionDisplay, whose time is already a string")
+            #expect(!source.contains("SessionSnapshot"),
+                    "\(name) takes a SessionSnapshot, which exposes a raw TimeInterval it could age")
+            #expect(!source.contains("String(format:"),
+                    "\(name) formats a number into time; CompanionDisplay hands it a finished string")
+
+            for token in beats + clockAccess + mutableState {
                 #expect(!source.contains(token),
-                        "\(name) can reach a clock via “\(token)”; companion surfaces must be pure functions of a snapshot")
+                        "\(name) can host a second clock via “\(token)”")
             }
-            #expect(source.contains("SessionSnapshot") || source.contains("snapshot:"),
-                    "\(name) does not take a snapshot; it cannot be rendering canonical state")
         }
     }
 

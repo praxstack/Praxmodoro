@@ -41,4 +41,42 @@ struct SessionSnapshot: Equatable, Sendable {
         let total = Int(remaining.rounded())
         return String(format: "%02d:%02d", total / 60, total % 60)
     }
+
+    /// What the ambient surfaces are handed. Deliberately carries no
+    /// `TimeInterval`: see `CompanionDisplay`.
+    var display: CompanionDisplay {
+        CompanionDisplay(
+            phase: phase,
+            taskLine: taskLine,
+            nextAction: nextAction,
+            timeText: remainingText,
+            statusLine: statusLine,
+            fieldSummary: accessibilitySummary
+        )
+    }
+}
+
+/// The companion surfaces' entire input: already-rendered strings and a phase.
+///
+/// There is no `TimeInterval` here, and that absence is the point. During
+/// atom g4's review an independent validator defeated the substring guard by
+/// aging `snapshot.remaining` with a `@State` counter driven by `Task.sleep` —
+/// no banned token required. Handing the surfaces a value with no interval in
+/// it removes the raw material for that arithmetic entirely.
+///
+/// This is one of three independent barriers (the others: companion surfaces
+/// hold no mutable state, and take no lifecycle or async hook). Together they
+/// remove the demonstrated failure mode. They are defense in depth, not a
+/// proof — an author determined to parse `timeText` back into numbers could
+/// still misbehave, and no unit-level check can rule that out.
+struct CompanionDisplay: Equatable, Sendable {
+    let phase: SessionSnapshot.Phase
+    let taskLine: String
+    let nextAction: String
+    /// nil when there is no session — surfaces then render no clock at all.
+    let timeText: String?
+    let statusLine: String
+    let fieldSummary: String
+
+    var hasSession: Bool { phase != .idle && phase != .closed }
 }

@@ -44,7 +44,7 @@ struct PraxmodoroApp: App {
         // (spec: companion-surfaces "Menu-bar popover operates the loop").
         MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                MenuBarPopover(snapshot: model.snapshot(at: context.date), actions: companionActions)
+                MenuBarPopover(display: model.snapshot(at: context.date).display, actions: companionActions)
             }
         }
         .menuBarExtraStyle(.window)

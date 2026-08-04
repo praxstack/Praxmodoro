@@ -19,6 +19,20 @@ This document is the change's architecture record. Within the goal ledger tracki
 1. **One `SessionSnapshot` value, one accessor, every surface reads it.** `AppModel.snapshot(at: Date) -> SessionSnapshot` projects the engine into everything a surface can legitimately render: phase, task line, next action, remaining interval, remaining *text*, status line, VoiceOver summary. The text formatting lives in the snapshot, not in each view, so "the three surfaces agree" is a property of one function rather than a coincidence of three copies. `FocusSurface` is migrated onto it in the same atom that introduces it, so there is never a moment where two formatting paths exist.
    *Alternatives:* let each surface call `model.remaining(at:)` and format locally — rejected: it is exactly the duplication the criterion forbids, and it makes the agreement test a tautology over three separate implementations. A `@Published` snapshot recomputed on a timer — rejected: that *is* a second clock, and it would drift across sleep.
 
+   **Amended twice, by two independent reviews that both defeated the guard.**
+
+   The first version relied on a structural test to forbid a second clock. g2's reviewer defeated it by adding a genuine drifting clock to `FocusSurface`: capture a baseline snapshot once, age it with `now.timeIntervalSince(base.now)` per tick, format with two separate `String(format: "%02d", …)` calls joined by a colon. No banned substring, suite green.
+
+   The response — hand the surfaces a `SessionSnapshot` value and closures instead of the model — was then claimed to make the exploit *structurally unwritable*. g4's reviewer falsified that claim too: `@State private var driftSeconds` aged by `.task { try? await Task.sleep(…) }`, formatted by string interpolation, needs no `Date`, `.now`, `Timer`, `TimelineView`, `AppModel` or `String(format:` at all. `Task.sleep` alone is a beat.
+
+   The rule that actually holds is narrower and is stated as three checked barriers rather than one claim:
+
+   1. **No raw interval.** Companion surfaces take a `CompanionDisplay` — already-rendered strings and a phase, with no `TimeInterval` anywhere. This one is structural: there is no number to age.
+   2. **No mutable state.** No `@State`/`@StateObject` in those files, so there is nowhere to keep a drifting value.
+   3. **No beat.** No `.task`, `onAppear`, `onReceive`, `Task.sleep`, `asyncAfter`, `RunLoop`, `Timer`, `TimelineView` or clock type, so nothing can run on a schedule.
+
+   Barriers 2 and 3 are lints and are described as lints. Together the three remove the two demonstrated failure modes; they are not a proof that no further one exists, and the test says so in as many words. `FocusSurface` remains the single surface that reads the clock, and only to ask the model for a fresh snapshot per tick.
+
 2. **`MenuBarExtra` + a `Window` scene with `windowLevel(.floating)`, not AppKit.** Both surfaces are SwiftUI scenes in the existing `App` body. The capsule uses `.windowLevel(.floating)`, `.windowStyle(.hiddenTitleBar)`, `.windowResizability(.contentSize)` and `.defaultLaunchBehavior(.suppressed)` so it never opens itself. Opening and closing go through `@Environment(\.openWindow)` / `dismissWindow` driven by a `CommandGroup` entry, which is what gives the capsule its keyboard path.
    *Alternatives:* an `NSPanel` with `.floating` level via `NSViewRepresentable` — rejected: it reintroduces AppKit window lifecycle the SwiftUI scene graph already owns, and it is harder to drive from a UI test. `NSStatusItem` built by hand instead of `MenuBarExtra` — rejected: `MenuBarExtra` with `.menuBarExtraStyle(.window)` gives the same popover with scene-managed lifetime and no manual retain of the status item. The trade-off accepted here is that `MenuBarExtra` content is awkward to drive from XCUITest; that is why the popover's guarantees are pinned by unit tests over the view's control catalog and snapshot, and the capsule — which *is* a real window — carries the interface-level test.
 
@@ -30,6 +44,8 @@ This document is the change's architecture record. Within the goal ledger tracki
 
 5. **Accessibility alternates are proven by rasterization, not by reading source.** A `SurfacePalette` owns the two branches (`background(reduceTransparency:)`, `primaryText(increasedContrast:)`) and the new surfaces use nothing else for their background and primary text. Tests use `ImageRenderer` to rasterize a probe built from those same tokens over a known backdrop and sample pixels: opacity is asserted by the backdrop being absent, contrast by computing the WCAG ratio from rendered luminances. The M1 source-scanning tests stay — they catch a *new* surface that bypasses the palette, which pixel probes cannot see.
    *Alternative:* full-surface snapshot images compared against committed reference PNGs — rejected: brittle against font and OS rendering changes, and it answers "did anything change" rather than "is it opaque / is it legible".
+
+   **Amended after g3's independent review.** A verified colour recipe that nothing calls is not an accessibility alternate. Every companion surface must read `accessibilityReduceTransparency`, `accessibilityReduceMotion` and `colorSchemeContrast` and draw its background and primary text from `SurfacePalette`; `testCompanionSurfacesReadTheAccessibilityEnvironment` pins that wiring so the render-level proof cannot drift away from the real UI.
 
 6. **Schema parity is measured between two live `ModelContainer`s.** `LocalStore` exposes `containerSchema`; the test opens one in-memory store and one on-disk store in a temporary directory and compares entity names, attribute names, and attribute value types. The M1 test compared a static declaration to itself and could not fail; this one can.
 
