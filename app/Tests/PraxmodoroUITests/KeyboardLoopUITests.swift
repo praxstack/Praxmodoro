@@ -84,6 +84,38 @@ final class KeyboardLoopUITests: XCTestCase {
         app.typeKey(.return, modifierFlags: [])
         XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5), "⏎ did not dismiss the return overlay")
         XCTAssertFalse(app.staticTexts["return-heading"].exists)
+
+        // Answer 3 (drifted) also returns to focus rather than ending
+        // anything — drift is information, not a failure.
+        app.typeKey("k", modifierFlags: .command)
+        XCTAssertTrue(app.staticTexts["checkin-question"].waitForExistence(timeout: 5))
+        app.typeKey("3", modifierFlags: [])
+        XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5))
+
+        // ⌘N's leg is covered by testNewSessionShortcutIsARealKeyEvent, which
+        // needs a closed session to reach the review surface.
+    }
+
+    /// Spec: focus-loop-ui "Keyboard loop as real key events" — the ⌘N leg.
+    /// The review surface is the only place a new session is offered, so this
+    /// drives the loop to review and then presses ⌘N.
+    @MainActor
+    func testNewSessionShortcutIsARealKeyEvent() {
+        let app = launchFresh()
+
+        let taskField = app.textFields["task-input"]
+        XCTAssertTrue(taskField.waitForExistence(timeout: 10))
+        taskField.click()
+        taskField.typeText("Edit the outline")
+        app.typeKey(.return, modifierFlags: .command)
+        XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5))
+
+        // Reach review by keyboard — ⌘⇧W closes the session.
+        app.typeKey("w", modifierFlags: [.command, .shift])
+        XCTAssertTrue(app.staticTexts["insight-card"].waitForExistence(timeout: 5), "⌘⇧W did not close the session into review")
+
+        app.typeKey("n", modifierFlags: .command)
+        XCTAssertTrue(app.textFields["task-input"].waitForExistence(timeout: 5), "⌘N did not begin a new session")
     }
 
     /// Spec: companion-surfaces "Capsule toggles from the keyboard" and

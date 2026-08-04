@@ -81,7 +81,7 @@ import PraxmodoroStore
     @Test func testCompanionSurfacesAreKeyboardReachable() {
         let map = KeyboardMap.all
         for action in ["begin", "hold-toggle", "checkin-now", "checkin-1", "checkin-2", "checkin-3", "checkin-4",
-                       "break-ready", "new-session", "toggle-capsule", "return-continue"] {
+                       "break-ready", "new-session", "toggle-capsule", "return-continue", "close-session"] {
             #expect(map[action] != nil, "no keyboard path for \(action)")
         }
     }

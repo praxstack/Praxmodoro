@@ -56,8 +56,8 @@
     {
       "id": "g9-closeout",
       "title": "Full gauntlet, evidence bookkeeping, archive and independent validation",
-      "status": "pending",
-      "evidence": ""
+      "status": "blocked",
+      "evidence": "whole-goal validator INCOMPLETE: C1/C4 pass, C3/C5 host-blocked (locked screen), C2 failed on a fourth defeat (ProcessInfo.systemUptime) now closed and re-verified three ways. Remaining: the UI suite has never executed. 72 tests in 23 suites green; UI target ** TEST BUILD SUCCEEDED **"
     }
   ],
   "archivedMilestones": [

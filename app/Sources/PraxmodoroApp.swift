@@ -55,6 +55,10 @@ struct PraxmodoroApp: App {
                     .keyboardShortcut("k", modifiers: .command)
                 Button("Focus Capsule") { toggleCapsule() }
                     .keyboardShortcut("f", modifiers: [.command, .shift])
+                // Review was previously reachable only by pointer, which left
+                // ⌘N (new session) with no keyboard route to it.
+                Button("Close Session") { try? model.closeSession() }
+                    .keyboardShortcut("w", modifiers: [.command, .shift])
             }
         }
 

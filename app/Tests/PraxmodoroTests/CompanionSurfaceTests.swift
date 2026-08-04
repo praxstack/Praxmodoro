@@ -82,6 +82,24 @@ import PraxmodoroStore
         }
     }
 
+    // Spec: "Lite grants every companion surface" — "no surface SHALL render
+    // an upsell". The popover has its own test above; the capsule and the
+    // overlay were previously covered only by inspection.
+    @Test func testNoCompanionSurfaceRendersScoringOrUpsell() throws {
+        let banned = ["streak", "score", "grade", "percent", "rank", "upgrade", "unlock", "trial", "premium", "subscribe"]
+        for frozen in [try snapshot(at: 60).display, try snapshot(at: 60, hold: true).display] {
+            let rendered = (Array(PureSurfaces(frozen).strings.values)
+                + MenuBarPopover(display: frozen, actions: .inert).controls
+                + FocusCapsule.controls
+                + ReturnOverlay.controls)
+                .joined(separator: " ")
+                .lowercased()
+            for term in banned {
+                #expect(!rendered.contains(term), "a companion surface renders “\(term)”")
+            }
+        }
+    }
+
     // Spec: "Companion surface keys cannot be gated off Lite".
     @Test func testCompanionSurfaceKeysAreNeverPaywalled() {
         let companionKeys: Set<FeatureKey> = [.menuBarSurface, .focusCapsule, .returnOverlay]
@@ -97,39 +115,102 @@ import PraxmodoroStore
         #expect(throws: CapabilityRegistry.ValidationError.self) { try hostile.validate() }
     }
 
-    /// **The behavioral net.** Three static guards have now been defeated in
-    /// a row — a captured baseline aged with `timeIntervalSince`; `@State`
-    /// aged by `.task { Task.sleep }`; and a beat parked in a *different file*
-    /// and consumed through statics, which no file-scoped scan can see.
+    /// The four pure surfaces, built once and held.
     ///
-    /// Static checks cannot settle this: a drifting value can be sourced from
-    /// anywhere in the module. What can settle it is behavior. Freeze the
-    /// input, let real wall-clock time pass, and read the surface again. A
-    /// pure function of a frozen input cannot change. Any second clock —
-    /// wherever its beat lives — makes this fail.
+    /// Holding the instances matters: a clock captured at construction (the
+    /// fourth defeat used `ProcessInfo.systemUptime` in a `private let`) is
+    /// invisible if the surfaces are rebuilt after the wait, because
+    /// construction resets it. The surfaces must be the same objects before
+    /// and after.
+    @MainActor
+    private struct PureSurfaces {
+        let popover: MenuBarPopover
+        let capsule: FocusCapsule
+        let overlay: ReturnOverlay
+        let readout: RemainingReadout
+
+        init(_ frozen: CompanionDisplay) {
+            popover = MenuBarPopover(display: frozen, actions: .inert)
+            capsule = FocusCapsule(display: frozen, actions: .inert)
+            overlay = ReturnOverlay(display: frozen, onAcknowledge: {})
+            readout = RemainingReadout(display: frozen)
+        }
+
+        /// Every user-visible string, read fresh from the held instances.
+        var strings: [String: String] {
+            [
+                "popover.timeText": popover.timeText ?? "nil",
+                "popover.statusText": popover.statusText,
+                "popover.primaryControlLabel": popover.primaryControlLabel,
+                "popover.accessibilityLabel": popover.accessibilityLabel,
+                "capsule.timeText": capsule.timeText ?? "nil",
+                "capsule.taskText": capsule.taskText,
+                "capsule.accessibilityLabel": capsule.accessibilityLabel,
+                "overlay.wayBack": overlay.wayBack,
+                "overlay.accessibilityLabel": overlay.accessibilityLabel,
+                "readout.text": readout.text,
+            ]
+        }
+    }
+
+    /// **The behavioral net.** Four static guards have now been defeated —
+    /// a baseline aged with `timeIntervalSince`; `@State` aged by
+    /// `.task { Task.sleep }`; a beat parked in a *different file* and read
+    /// through statics; and `ProcessInfo.systemUptime`, which is a clock that
+    /// never says "Date" or "Timer". Each defeat came from a real, compiling,
+    /// genuinely drifting counterexample.
     ///
-    /// What it proves: the pure surfaces do not drift from their input.
-    /// What it does not prove: that `FocusSurface`, which legitimately reads
-    /// the clock, asks for the right instant — that is why its time rendering
-    /// is delegated to `RemainingReadout`, which this test covers.
+    /// Static checks cannot settle this. Behavior can: freeze the input, let
+    /// real wall-clock time pass, and read every rendered string again. A pure
+    /// function of a frozen input cannot change, so a second clock fails this
+    /// wherever its beat lives and whatever it is spelled.
+    ///
+    /// The fourth defeat exploited *coverage*, not the method — the previous
+    /// version instantiated only two of the four pure surfaces.
+    /// `testDriftCoverageIncludesEveryPureSurface` closes that class.
     @Test func testPureSurfacesDoNotDriftFromTheirInput() async throws {
         let frozen = try snapshot(at: 8 * 60).display
-        let popover = MenuBarPopover(display: frozen, actions: .inert)
-        let readout = RemainingReadout(display: frozen)
-
-        let popoverBefore = popover.timeText
-        let readoutBefore = readout.text
-        let labelBefore = popover.accessibilityLabel
-        #expect(popoverBefore == "17:00")
+        let surfaces = PureSurfaces(frozen)
+        let before = surfaces.strings
+        #expect(before["popover.timeText"] == "17:00")
+        #expect(before["capsule.timeText"] == "17:00")
 
         try await Task.sleep(nanoseconds: 1_200_000_000)
 
-        #expect(popover.timeText == popoverBefore,
-                "the popover drifted from a frozen input: \(String(describing: popoverBefore)) became \(String(describing: popover.timeText))")
-        #expect(readout.text == readoutBefore,
-                "the readout drifted from a frozen input: \(readoutBefore) became \(readout.text)")
-        #expect(popover.accessibilityLabel == labelBefore,
-                "the popover's VoiceOver label drifted from a frozen input")
+        // Same instances, read again. Nothing about the input changed.
+        let after = surfaces.strings
+        for (name, value) in before {
+            #expect(after[name] == value,
+                    "\(name) drifted from a frozen input: “\(value)” became “\(after[name] ?? "nil")”")
+        }
+    }
+
+    /// A drift test that misses a surface is how the fourth defeat happened:
+    /// the previous version instantiated only the popover and the readout, so
+    /// a clock added to `FocusCapsule` sailed through. Adding a pure surface
+    /// without adding it to `renderedStrings` now fails here.
+    @Test func testDriftCoverageIncludesEveryPureSurface() throws {
+        let surfacesDir = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources").appendingPathComponent("Surfaces")
+        let enumerator = try #require(FileManager.default.enumerator(at: surfacesDir, includingPropertiesForKeys: nil))
+
+        var pureSurfaces: Set<String> = []
+        for case let file as URL in enumerator where file.pathExtension == "swift" {
+            let source = try String(contentsOf: file, encoding: .utf8)
+            if source.contains("let display: CompanionDisplay") {
+                pureSurfaces.insert(file.deletingPathExtension().lastPathComponent)
+            }
+        }
+
+        let probe = CompanionDisplay(
+            phase: .running, taskLine: "t", nextAction: "n", timeText: "01:00", statusLine: "s", fieldSummary: "f")
+        let covered = Set(PureSurfaces(probe).strings.keys.map { String($0.split(separator: ".")[0]) })
+
+        #expect(covered == ["popover", "capsule", "overlay", "readout"],
+                "drift coverage changed unexpectedly: \(covered.sorted())")
+        #expect(pureSurfaces == ["MenuBarPopover", "FocusCapsule", "ReturnOverlay", "RemainingReadout"],
+                "a pure surface exists that the drift test does not exercise: \(pureSurfaces.sorted())")
     }
 
     /// Static barriers, kept as defense in depth behind the drift test above.
@@ -155,6 +236,8 @@ import PraxmodoroStore
             "Task.sleep", "asyncAfter", "RunLoop", "CFAbsoluteTime", "DispatchTime", "DispatchSourceTimer",
             "Timer", "TimelineView", ".task {", "onAppear", "onReceive", "AsyncStream", "Task.detached",
             "Task {", "ContinuousClock", "SuspendingClock",
+            "ProcessInfo", "systemUptime", "mach_absolute_time", "clock_gettime",
+            "DispatchWallTime", "uptimeNanoseconds", "monotonic",
         ]
         // Reading the wall clock or the model at all.
         let clockAccess = ["Date(", ".now", "timeIntervalSince", "AppModel"]

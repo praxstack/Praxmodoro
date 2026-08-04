@@ -121,6 +121,10 @@ import PraxmodoroStore
             "Timer(", "Timer.publish", "scheduledTimer", "DispatchSourceTimer",
             "Task.sleep", "asyncAfter", "Task.detached", "RunLoop.", "CFAbsoluteTime",
             "ContinuousClock", "SuspendingClock", "AsyncTimerSequence",
+            // A validator's fourth defeat used ProcessInfo.systemUptime, which
+            // is a clock even though it never says "Date" or "Timer".
+            "ProcessInfo", "systemUptime", "mach_absolute_time", "clock_gettime",
+            "DispatchWallTime", "uptimeNanoseconds", "monotonic",
         ]
         var sawSnapshotUse = false
         var scanned = 0
