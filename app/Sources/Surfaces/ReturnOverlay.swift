@@ -23,9 +23,14 @@ struct ReturnOverlay: View {
 
     var accessibilityLabel: String { "Welcome back. Pick it up here: \(wayBack)" }
 
+    /// Exposed so the Reduce Motion standdown is assertable at runtime.
+    func companionField(motionStilled: Bool) -> CompanionFieldView {
+        CompanionFieldView(state: "gathering", motionStilled: motionStilled)
+    }
+
     var body: some View {
         VStack(spacing: 18) {
-            CompanionFieldView(state: "gathering", motionStilled: reduceMotion)
+            companionField(motionStilled: reduceMotion)
                 .frame(width: 88, height: 88)
 
             Text("Welcome back.")

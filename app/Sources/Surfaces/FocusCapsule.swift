@@ -22,9 +22,14 @@ struct FocusCapsule: View {
         return "Focus capsule: \(display.taskLine), \(timeText) left, \(display.statusLine)"
     }
 
+    /// Exposed so the Reduce Motion standdown is assertable at runtime.
+    func companionField(motionStilled: Bool) -> CompanionFieldView {
+        CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
-            CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: reduceMotion)
+            companionField(motionStilled: reduceMotion)
                 .frame(width: 22, height: 22)
 
             VStack(alignment: .leading, spacing: 1) {

@@ -99,6 +99,15 @@ public final class LocalStore {
         Schema([SessionRecordModel.self, SessionEventModel.self, TaskRecordModel.self, CapacityReportModel.self])
     }
 
+    /// The schema this store's *live* container actually resolved.
+    ///
+    /// The M1 parity test compared the static declaration above to itself,
+    /// which could not fail. Exposing the container's own schema lets a test
+    /// compare two real configurations — in-memory against on-disk — which
+    /// can (spec: session-persistence "Two-configuration parity against live
+    /// containers").
+    public var containerSchema: Schema { container.schema }
+
     public init(inMemory: Bool = false) throws {
         let config = ModelConfiguration(isStoredInMemoryOnly: inMemory)
         self.container = try ModelContainer(for: Self.schema, configurations: [config])

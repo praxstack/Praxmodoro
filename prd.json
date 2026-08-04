@@ -44,14 +44,14 @@
     {
       "id": "g7-motion-voiceover",
       "title": "Reduce Motion standdown and VoiceOver labels on every companion surface",
-      "status": "pending",
-      "evidence": ""
+      "status": "done",
+      "evidence": "red: 6 compile errors (companionField absent on all three surfaces); green: physics model is nil on popover, capsule and overlay under motionStilled and non-nil when motion is allowed (both directions asserted, so the standdown is a real branch); exact VoiceOver labels pinned; all three surfaces exist; 11 keyboard actions mapped"
     },
     {
       "id": "g8-hardening",
       "title": "cmd-K check-in, live-container schema parity, keyboard UI loop, first-run assertion",
-      "status": "pending",
-      "evidence": ""
+      "status": "blocked",
+      "evidence": "unit half done - red: 4 compile errors (LocalStore.containerSchema absent); green: cmd-K check-in path with held-place invariant, two live containers (in-memory vs on-disk) compared attribute-by-attribute with a can-fail control. UI half BLOCKED: XCUITest cannot initialize while the host screen is locked (CGSSessionScreenIsLocked=true, LocalAuthentication -4). KeyboardLoopUITests compiles (** TEST BUILD SUCCEEDED **) but cannot execute."
     },
     {
       "id": "g9-closeout",

@@ -59,6 +59,13 @@ struct MenuBarPopover: View {
         }
     }
 
+    /// The field this surface shows, exposed so the Reduce Motion standdown
+    /// is assertable at runtime rather than inferred from source (spec:
+    /// companion-surfaces "Reduce Motion standdown on the new surfaces").
+    func companionField(motionStilled: Bool) -> CompanionFieldView {
+        CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled)
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(statusText)
@@ -71,7 +78,7 @@ struct MenuBarPopover: View {
                     Text(timeText)
                         .font(.system(size: 30, weight: .light, design: .monospaced))
                         .accessibilityIdentifier("popover-time")
-                    CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: reduceMotion)
+                    companionField(motionStilled: reduceMotion)
                         .frame(width: 28, height: 28)
                 }
                 if !display.taskLine.isEmpty {
