@@ -28,11 +28,15 @@ pid=$!
 cleanup() { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
 trap cleanup EXIT
 
+# lsappinfo prints the application's serial number when it finds a registered
+# GUI app and nothing at all when it does not, so non-empty output is the
+# check. Matching a specific token inside that output would bind us to an
+# undocumented format.
 registered=""
 for _ in $(seq 1 40); do
   sleep 0.25
   kill -0 "$pid" 2>/dev/null || { echo "FAIL: app exited during launch (pid ${pid})"; exit 1; }
-  if lsappinfo find "pid=${pid}" 2>/dev/null | grep -q 'ASN'; then
+  if [ -n "$(lsappinfo find "pid=${pid}" 2>/dev/null)" ]; then
     registered="yes"
     break
   fi
