@@ -31,7 +31,11 @@ Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and o
 5. `./scripts/verify-project.sh` exits 0 and `./scripts/smoke.sh` exits 0.
 6. `npm run spec:validate` passes strict, and an independent validator session confirms 1–5 from a fresh context.
 
-**Status 2026-08-04:** gates 1, 2, 4 and 6 are met for everything that can execute; gate 3 is met for its two unit-level follow-ups. Gates 3 (UI half) and 5 are **blocked by the host, not by the code**: XCUITest cannot initialize while the Mac's screen is locked (`LocalAuthentication -4`, `CGSSessionScreenIsLocked = true`). `KeyboardLoopUITests` compiles clean and every other stage of the verify gate passes. **Unblock: unlock the Mac and run `./scripts/verify-project.sh`.**
+**Status 2026-08-04.** Gates 1 and 4 are met. Gate 3 is met for its two unit-level follow-ups. Gate 2 is met by the current defense but has a history worth knowing: five independent validators each defeated the no-second-clock guard with a real, compiling, drifting counterexample, and each defeat was closed. The current defense — rasterizing held surfaces and comparing renders, so `body` is in scope — has **not yet itself faced an independent attack**, and the test states its own residual limit (a beat slower than the 2.5s window evades it).
+
+Gates 3 (UI half), 5 and 6 are **blocked by the host, not the code**: XCUITest cannot initialize while the Mac's screen is locked (`LocalAuthentication -4`, `CGSSessionScreenIsLocked = true`), so `KeyboardLoopUITests` has never executed and `verify-project.sh` stops at its final stage. Everything upstream passes: staleness gate, PraxmodoroCore 12/12, PraxmodoroStore 7/7, strict format lint, build, 73 app unit tests in 23 suites, `spec:validate` 5/5, `smoke.sh`, and `** TEST BUILD SUCCEEDED **` for the UI target.
+
+**Unblock: unlock the Mac and run `./scripts/verify-project.sh`.** M2 is not complete until that exits 0 and an independent validator confirms gates 1–5 against the result.
 
 ## Later milestones (not yet specified)
 
