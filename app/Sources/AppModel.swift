@@ -259,15 +259,59 @@ final class AppModel {
         return base + " One session is not a pattern — the options simply stay offered."
     }
 
+    // MARK: The canonical projection every surface renders
+
+    /// Project the engine into everything a surface may legitimately show, at
+    /// one instant. Surfaces call this and render the result; they never hold,
+    /// count, or format time themselves (spec: companion-surfaces "One
+    /// canonical session state for every surface").
+    func snapshot(at now: Date) -> SessionSnapshot {
+        guard let session else {
+            return SessionSnapshot(
+                phase: .idle,
+                taskLine: taskTitle,
+                nextAction: firstAction,
+                remaining: nil,
+                remainingText: nil,
+                statusLine: Self.statusLine(for: .idle),
+                accessibilitySummary: "Companion: resting"
+            )
+        }
+        let reconciled = session.reconciled(at: now)
+        let phase = SessionSnapshot.Phase(reconciled.state(at: now))
+        let remaining = reconciled.remaining(at: now)
+        return SessionSnapshot(
+            phase: phase,
+            taskLine: taskTitle,
+            nextAction: firstAction,
+            remaining: remaining,
+            remainingText: remaining.map(SessionSnapshot.clockFace) ?? "open",
+            statusLine: Self.statusLine(for: phase),
+            accessibilitySummary: Self.fieldSummary(phase: phase, remaining: remaining)
+        )
+    }
+
+    private static func statusLine(for phase: SessionSnapshot.Phase) -> String {
+        switch phase {
+        case .idle: "Ready when you are"
+        case .running: "Focusing"
+        case .held: "Held — your place is kept"
+        case .onBreak: "Resting, place kept"
+        case .closed: "Session closed"
+        }
+    }
+
+    private static func fieldSummary(phase: SessionSnapshot.Phase, remaining: TimeInterval?) -> String {
+        if phase == .held { return "Companion: holding your place" }
+        guard let remaining else { return "Companion: breathing, open-ended block" }
+        let minutes = Int((remaining / 60).rounded())
+        return "Companion: breathing, \(minutes) minute\(minutes == 1 ? "" : "s") remaining"
+    }
+
     // MARK: Accessibility (spec: VoiceOver reads a concise field summary)
 
     func fieldAccessibilitySummary(at now: Date) -> String {
-        guard let session else { return "Companion: resting" }
-        let state = session.reconciled(at: now).state(at: now)
-        if state == .held { return "Companion: holding your place" }
-        guard let remaining = remaining(at: now) else { return "Companion: breathing, open-ended block" }
-        let minutes = Int((remaining / 60).rounded())
-        return "Companion: breathing, \(minutes) minute\(minutes == 1 ? "" : "s") remaining"
+        snapshot(at: now).accessibilitySummary
     }
 
     var isHeld: Bool {

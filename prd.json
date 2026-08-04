@@ -14,8 +14,8 @@
     {
       "id": "g2-canonical-state",
       "title": "SessionSnapshot as the single source of rendered session state",
-      "status": "pending",
-      "evidence": ""
+      "status": "done",
+      "evidence": "red: 11 compile errors (AppModel has no member snapshot; SessionSnapshot not in scope) then 4 value failures; green: 39 app tests pass in 17 suites (was 33) incl. testSnapshotDerivesRemainingFromTransitions, testSnapshotHoldFreezesRemaining, testSnapshotAfterSleepHasNoDrift, testNoSurfaceCountsTime; swift format lint --strict exit 0"
     },
     {
       "id": "g3-render-accessibility",

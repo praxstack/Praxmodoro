@@ -14,15 +14,18 @@ struct FocusSurface: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var thoughtDraft = ""
 
+    /// Everything this surface renders comes from one snapshot instant.
+    private var snapshot: SessionSnapshot { model.snapshot(at: Date()) }
+
     var body: some View {
         HStack(alignment: .top, spacing: 28) {
             VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Now focusing").font(.caption.smallCaps()).foregroundStyle(.secondary)
-                    Text(model.taskTitle).font(.title2.weight(.semibold))
+                    Text(snapshot.taskLine).font(.title2.weight(.semibold))
                         .accessibilityIdentifier("task-line")
-                    if !model.firstAction.isEmpty {
-                        Text("Next: \(model.firstAction)").foregroundStyle(.secondary)
+                    if !snapshot.nextAction.isEmpty {
+                        Text("Next: \(snapshot.nextAction)").foregroundStyle(.secondary)
                             .accessibilityIdentifier("next-action-line")
                     }
                 }
@@ -30,14 +33,18 @@ struct FocusSurface: View {
 
                 ZStack {
                     CompanionFieldView(
-                        state: model.isHeld ? "held" : "breathing", motionStilled: reduceMotion, pulseSignal: model.fieldPulse
+                        state: snapshot.phase == .held ? "held" : "breathing", motionStilled: reduceMotion,
+                        pulseSignal: model.fieldPulse
                     )
                     .frame(width: 260, height: 260)
                     .accessibilityIdentifier("companion-field")
                     .accessibilityElement()
-                    .accessibilityLabel(model.fieldAccessibilitySummary(at: Date()))
+                    .accessibilityLabel(snapshot.accessibilitySummary)
+                    // The timeline re-asks the model; it never advances a count
+                    // of its own (spec: companion-surfaces "No surface counts
+                    // time"). Each tick is a fresh snapshot at that instant.
                     TimelineView(.periodic(from: .now, by: 0.5)) { context in
-                        Text(timeText(at: context.date))
+                        Text(model.snapshot(at: context.date).remainingText ?? "open")
                             .font(.system(size: 44, weight: .light, design: .monospaced))
                             .accessibilityIdentifier("time-remaining")
                     }
@@ -46,13 +53,13 @@ struct FocusSurface: View {
                 Button {
                     try? model.toggleHold()
                 } label: {
-                    Image(systemName: model.isHeld ? "play.fill" : "pause.fill")
+                    Image(systemName: snapshot.phase == .held ? "play.fill" : "pause.fill")
                         .frame(width: 44, height: 44)
                 }
                 .buttonStyle(.bordered)
                 .clipShape(Circle())
                 .keyboardShortcut(.space, modifiers: [])
-                .accessibilityLabel(model.isHeld ? "Resume timer" : "Hold timer")
+                .accessibilityLabel(snapshot.phase == .held ? "Resume timer" : "Hold timer")
                 .accessibilityIdentifier("hold-toggle")
             }
 
@@ -74,11 +81,5 @@ struct FocusSurface: View {
             .frame(width: 240)
         }
         .padding(32)
-    }
-
-    private func timeText(at now: Date) -> String {
-        guard let remaining = model.remaining(at: now) else { return "open" }
-        let total = Int(remaining.rounded())
-        return String(format: "%02d:%02d", total / 60, total % 60)
     }
 }
