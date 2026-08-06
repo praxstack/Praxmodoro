@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praxodoro Adhd-Aware Macos Focus Coach, Premium Pomodoro Landscape, Liquid-Glass Skeuomorphic Ux, And Implementation Feasibility · executive-memo · Praxmodoro docs</title>
+<style>/* Praxmodoro documentation — shared shell.
+ *
+ * Deliberately NOT a pastiche of the product's own Living Companion palette.
+ * Documentation that cosplays the product it documents makes the two harder to
+ * tell apart, and this project's visual direction is currently under question.
+ * So: an engineering-dossier voice — warm paper, cool ink, one restrained
+ * blue-teal accent, serif for long-form reading, mono for anything that is a
+ * path, a count, or a command. */
+
+:root {
+  --ground:   oklch(97.2% 0.006 92);
+  --surface:  oklch(94.6% 0.008 90);
+  --surface-2:oklch(91.5% 0.009 88);
+  --ink:      oklch(24% 0.014 258);
+  --ink-2:    oklch(36% 0.014 258);
+  --muted:    oklch(52% 0.014 260);
+  --rule:     oklch(87.5% 0.008 90);
+  --accent:   oklch(47% 0.125 232);
+  --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok:       oklch(48% 0.095 158);
+  --ok-2:     oklch(48% 0.095 158 / 0.13);
+  --warn:     oklch(56% 0.11 68);
+  --warn-2:   oklch(56% 0.11 68 / 0.15);
+  --danger:   oklch(51% 0.16 25);
+  --shadow:   oklch(30% 0.02 260 / 0.09);
+
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: ui-serif, "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 70ch;
+  --bar: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+    --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+    --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+    --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+    --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+  --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+  --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+  --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+  --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+  --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+}
+:root[data-theme="light"] {
+  --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90); --surface-2: oklch(91.5% 0.009 88);
+  --ink: oklch(24% 0.014 258); --ink-2: oklch(36% 0.014 258); --muted: oklch(52% 0.014 260);
+  --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok: oklch(48% 0.095 158); --ok-2: oklch(48% 0.095 158 / 0.13);
+  --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+  --danger: oklch(51% 0.16 25); --shadow: oklch(30% 0.02 260 / 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 1rem); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr, .skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 60; background: var(--accent);
+  color: var(--ground); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .25rem; }
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--bar);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1.25rem; background: color-mix(in oklab, var(--ground) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem; font-weight: 620;
+  font-size: .95rem; color: var(--ink); text-decoration: none; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.brand-mark {
+  width: .7rem; height: .7rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), color-mix(in oklab, var(--accent) 40%, transparent));
+  box-shadow: 0 0 0 3px var(--accent-2);
+}
+.topnav { display: flex; gap: .15rem; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: var(--muted); text-decoration: none; font-size: .82rem; white-space: nowrap;
+  padding: .3rem .55rem; border-radius: .4rem;
+}
+.topnav a:hover { color: var(--ink); background: var(--surface); }
+.theme {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--muted);
+  border-radius: .45rem; width: 2rem; height: 2rem; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+.wrap { max-width: 78rem; margin: 0 auto; padding: 2.75rem 1.5rem 6rem; }
+body:not(.is-index) .wrap { max-width: 56rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .7rem;
+}
+h1 {
+  font-family: var(--sans); font-size: clamp(1.9rem, 4.2vw, 2.85rem); line-height: 1.1;
+  letter-spacing: -.025em; font-weight: 660; margin: 0 0 .7rem; text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--serif); font-size: 1.16rem; line-height: 1.55; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 1rem;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; font-family: var(--mono);
+  font-size: .74rem; color: var(--muted); padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────────── */
+.prose { font-family: var(--serif); font-size: 1.045rem; line-height: 1.72; }
+.prose > * { max-width: var(--measure); }
+.prose > .scroller, .prose > pre { max-width: 100%; }
+.prose h2 {
+  font-family: var(--sans); font-size: 1.45rem; font-weight: 640; letter-spacing: -.015em;
+  margin: 2.9rem 0 .6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-wrap: balance;
+}
+.prose h3 { font-family: var(--sans); font-size: 1.12rem; font-weight: 620; margin: 2rem 0 .4rem; }
+.prose h4 {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 1.6rem 0 .3rem; font-weight: 500;
+}
+.prose p { margin: 0 0 1.05rem; }
+.prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: .35rem; }
+.prose li::marker { color: var(--muted); }
+.prose a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.prose strong { font-weight: 660; color: var(--ink); }
+.prose hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+.prose blockquote {
+  margin: 1.4rem 0; padding: .85rem 1.15rem; border-left: 3px solid var(--warn);
+  background: var(--warn-2); border-radius: 0 .5rem .5rem 0; color: var(--ink-2);
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd {
+  font-family: var(--mono); font-size: .855em;
+  background: var(--surface-2); padding: .1em .36em; border-radius: .3rem;
+  border: 1px solid color-mix(in oklab, var(--rule) 70%, transparent);
+}
+pre {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: .6rem;
+  padding: 1rem 1.15rem; overflow-x: auto; margin: 0 0 1.2rem;
+  font-size: .86rem; line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; font-size: 1em; }
+
+/* Tables — the specs are full of them. */
+.scroller {
+  overflow-x: auto; border: 1px solid var(--rule); border-radius: .6rem;
+  background: var(--surface); margin: 0 0 1.4rem;
+}
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .875rem; }
+th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; white-space: nowrap;
+  background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+}
+tbody tr:last-child td { border-bottom: none; }
+td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
+
+/* Task lists in the OpenSpec task files. */
+.prose input[type="checkbox"] { accent-color: var(--ok); margin-right: .35rem; }
+.prose li:has(> input[type="checkbox"]:checked) { color: var(--muted); }
+.prose ul:has(input[type="checkbox"]) { list-style: none; padding-left: .2rem; }
+
+/* ── Document footer ───────────────────────────────────────────────────── */
+.docfoot {
+  margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srcbtn {
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 550;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--accent);
+  padding: .45rem .85rem; border-radius: .45rem; background: var(--accent-2);
+}
+.srcbtn:hover { background: var(--accent); color: var(--ground); }
+.srcpath { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+/* ── Index ─────────────────────────────────────────────────────────────── */
+.hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 20ch; }
+.hero .standfirst { max-width: 62ch; font-size: 1.2rem; }
+.stats {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.8rem; margin: 1.5rem 0 1.75rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--muted);
+}
+.stats b { color: var(--ink); font-size: 1.15rem; font-weight: 600; margin-right: .3rem; font-variant-numeric: tabular-nums; }
+.search input {
+  width: 100%; max-width: 32rem; font: inherit; font-size: .95rem;
+  padding: .6rem .9rem; border-radius: .55rem; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+
+.block { margin-top: 3.25rem; scroll-margin-top: calc(var(--bar) + 1rem); }
+.block[hidden] { display: none; }
+.block-head { margin-bottom: 1.1rem; }
+.block-head h2 {
+  font-size: 1.35rem; font-weight: 640; letter-spacing: -.015em; margin: 0 0 .25rem;
+}
+.block-head p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 68ch; }
+
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.doc {
+  display: flex; align-items: stretch; gap: .5rem;
+  border: 1px solid var(--rule); border-radius: .6rem; background: var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+.doc[hidden] { display: none; }
+.doc:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--rule)); box-shadow: 0 2px 10px -4px var(--shadow); }
+.doc-main {
+  flex: 1; display: flex; flex-direction: column; gap: .2rem;
+  padding: .85rem 1rem; text-decoration: none; color: inherit; min-width: 0;
+}
+.doc-title { font-weight: 590; font-size: .98rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.doc-sum { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.doc-path { font-family: var(--mono); font-size: .71rem; color: var(--muted); overflow-wrap: anywhere; }
+.doc-path code { background: none; border: none; padding: 0; font-size: 1em; }
+.doc-md {
+  display: flex; align-items: center; padding: 0 .9rem; text-decoration: none;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; color: var(--muted);
+  border-left: 1px solid var(--rule); border-radius: 0 .6rem .6rem 0;
+}
+.doc-md:hover { background: var(--accent-2); color: var(--accent); }
+
+.chip {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .14em .45em; border-radius: .3rem; font-weight: 500; white-space: nowrap;
+}
+.chip.ok { background: var(--ok-2); color: var(--ok); }
+.chip.accent { background: var(--accent-2); color: var(--accent); }
+.chip.muted { background: var(--surface-2); color: var(--muted); }
+
+/* Mockups get more room — they are the thing people actually want to look at. */
+.mocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .75rem; }
+.mock {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.2rem 1rem;
+  border: 1px solid var(--rule); border-radius: .7rem; text-decoration: none; color: inherit;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-2), transparent 62%),
+    var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.mock:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--rule)); box-shadow: 0 4px 18px -8px var(--shadow); }
+.mock-top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-weight: 620; font-size: 1rem; }
+.mock-note { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.mock-go { font-size: .82rem; font-weight: 550; color: var(--accent); margin-top: auto; padding-top: .3rem; }
+
+.rebuild {
+  margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .topnav { display: none; }
+  .wrap { padding: 2rem 1.1rem 4rem; }
+  .doc { flex-direction: column; }
+  .doc-md { border-left: none; border-top: 1px solid var(--rule); padding: .5rem 1rem; border-radius: 0 0 .6rem .6rem; }
+}
+
+/* ── Audit components ──────────────────────────────────────────────────
+ * Used by the design-parity page. Kept here rather than inline so the
+ * audit cannot drift away from the rest of the documentation. */
+
+.verdict {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: .65rem; overflow: hidden; margin: 0 0 1.5rem; max-width: 100%;
+}
+.vcell { background: var(--surface); padding: .95rem 1.05rem; display: flex; flex-direction: column; gap: .15rem; }
+.vnum {
+  font-family: var(--mono); font-size: 1.6rem; line-height: 1.1; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.vlabel { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+
+.meters { display: flex; flex-direction: column; gap: .6rem; margin: 0 0 .75rem; max-width: 100%; }
+.meter { display: grid; grid-template-columns: minmax(7.5rem, 13rem) 1fr 3.5rem; gap: .85rem; align-items: center; }
+.meter-name { font-size: .88rem; }
+.track { height: .45rem; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; }
+.meter-val { font-family: var(--mono); font-size: .78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.defect {
+  border: 1px solid var(--rule); border-left: 3px solid var(--danger);
+  background: var(--surface); border-radius: 0 .6rem .6rem 0;
+  padding: 1rem 1.2rem; margin: 0 0 .85rem; max-width: 100%;
+}
+.defect .tag {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--danger); display: block; margin-bottom: .3rem;
+}
+.defect h3 { margin: 0 0 .4rem; font-family: var(--sans); font-size: 1.02rem; font-weight: 620; }
+.defect p { margin: 0; font-family: var(--serif); font-size: .95rem; color: var(--ink-2); }
+
+.pull {
+  border-left: 3px solid var(--accent); padding: .35rem 0 .35rem 1.25rem;
+  font-family: var(--sans); font-size: 1.16rem; line-height: 1.45; font-weight: 500;
+  color: var(--ink); margin: 1.6rem 0; max-width: 54ch;
+}
+
+.chip.warn { background: var(--warn-2); color: var(--warn); }
+.chip.danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.footnote { font-size: .85rem; color: var(--muted); font-family: var(--sans); max-width: var(--measure); }
+
+/* The meta bar already draws a rule; the first section heading must not add a
+   second one immediately below it. */
+.prose > h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+</style>
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
+</nav>
+<main id="main" class="wrap">
+<div class="eyebrow">Product research</div>
+<h1>Praxodoro Adhd-Aware Macos Focus Coach, Premium Pomodoro Landscape, Liquid-Glass Skeuomorphic Ux, And Implementation Feasibility · executive-memo</h1>
+<p class="standfirst">No overview yet.</p>
+<div class="meta"><span>6,305 words</span><span><code>research/pomodoro-landscape-20260720/outputs/executive-memo.md</code></span></div>
+<article class="prose"><blockquote>
+<p>Generated 2026-07-20T11:29:26.898269+00:00 for <code>Praxodoro ADHD-aware macOS focus coach, premium Pomodoro landscape, liquid-glass skeuomorphic UX, and implementation feasibility</code></p>
+</blockquote>
+<h2>Executive Summary</h2>
+<ul>
+<li>First-party sources establish a high competitive baseline: timer flexibility, task context, blocking, analytics, automation, integrations, and synchronization. The clearest white-space hypothesis is an adaptive execution-and-recovery loop rather than another feature-count race.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w1-competitor-official-001] The mature competitive baseline is no longer a timer alone: leading products combine flexible timing, task context, distraction blocking, history or analytics, automation, and cross-device behavior. (<code>supported</code>; sources: session-official-features, focusmo-official-pricing, focused-work-official-v5, be-focused-app-store)</li>
+<li>[w1-competitor-official-002] RoundPie differentiates through breadth of inbound task integrations, outbound automation, time logs, interruption notes, and scripting rather than through a narrow Pomodoro experience. (<code>supported</code>; sources: roundpie-official-plans)</li>
+<li>[w1-competitor-official-003] The strongest ADHD-specific competitor proposition is an execution loop: keep one task visible, interrupt time blindness with periodic check-ins, block detours, and reconstruct the day automatically in a timeline. (<code>supported</code>; sources: focusmo-official-home, focusmo-official-pricing)</li>
+<li>[w1-competitor-official-004] Flexible session structures are a proven market pattern: fixed Pomodoro, open-ended Flowmodoro, preparation stages, user-defined multi-stage sessions, and reflection can coexist without forcing one timing doctrine. (<code>supported</code>; sources: focused-work-official-v5, focused-work-app-store)</li>
+<li>[w1-competitor-official-005] Praxodoro should treat planning, focusing, recovering, and reviewing as one session lifecycle, while keeping each stage skippable and progressively disclosed. (<code>supported</code>; sources: session-official-features, focused-work-official-v5, focusmo-official-home)</li>
+</ul>
+<h2>Wave 1: w1-user-friction</h2>
+<ul>
+<li>User-friction evidence points to a central UX requirement: reduce activation energy. Reminders, complex planning, and configuration can themselves become work; advanced capabilities should remain available without obstructing a one-task immediate-start path.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w1-user-friction-001] Reminder delivery is not equivalent to task initiation: users describe receiving prompts from planning apps while remaining unable to begin, especially when the task is not already reduced to a concrete first action. (<code>supported</code>; sources: reddit-task-initiation-reminders, reddit-task-initiation-major)</li>
+<li>[w1-user-friction-002] High-maintenance productivity systems create an abandonment risk for people who already struggle with planning consistency, input burden, and switching between tools. (<code>supported</code>; sources: aalborg-adhd-task-assistant, chalmers-adhd-productivity-study)</li>
+<li>[w1-user-friction-003] Subscription pricing creates visible resentment in the Mac productivity market, especially when users perceive the core function as replaceable by a desk timer or paper. (<code>supported</code>; sources: focusmo-reddit-year, focusmo-reddit-pricing)</li>
+<li>[w1-user-friction-004] The product should default to an immediate one-task start path, then reveal planning, analytics, blocking, and customization only when they are relevant or explicitly requested. (<code>supported</code>; sources: aalborg-adhd-task-assistant, chalmers-adhd-productivity-study, reddit-task-initiation-reminders)</li>
+</ul>
+<h2>Wave 1: w1-adhd-research</h2>
+<ul>
+<li>Evidence supports practical external scaffolds around organization, planning, time awareness, distractibility, and reflection, but not medicalized timer claims. Break evidence is genuinely mixed, favoring user-steerable modes and cautious adaptation rather than a supposedly optimal universal schedule.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w1-adhd-research-001] For adults with ADHD, structured skills work around organization, planning, time management, distractibility, and adaptive thinking has stronger evidence than generic computerized attention training. (<code>supported</code>; sources: solanto-mct-rct, internet-cbt-rct, computer-cognitive-training-rct)</li>
+<li>[w1-adhd-research-002] Digital self-guided interventions can improve adult ADHD-related outcomes in trials, but product claims must disclose that evidence concerns structured therapeutic programs, not ordinary focus timers, and some studies involve developer conflicts of interest. (<code>supported</code>; sources: attexis-rct, internet-cbt-rct, adhd-digital-health-consensus)</li>
+<li>[w1-adhd-research-003] Micro-breaks show a reliable small-to-moderate well-being benefit across studies, especially for vigor and fatigue, while aggregate performance benefits are less consistent and depend on task and break duration. (<code>supported</code>; sources: microbreak-meta-analysis)</li>
+<li>[w1-adhd-research-004] There is no single universally superior break schedule: a 2023 study favored systematic short breaks over self-regulated breaks, while later comparisons found self-regulated breaks could preserve mood or motivation better than rigid Pomodoro schedules. (<code>disputed</code>; sources: biwer-pomodoro-study, smits-break-comparison, systematic-v-selfregulated-2026)</li>
+<li>[w1-adhd-research-005] Praxodoro should make break guidance adaptive and user-steerable: offer fixed, flow-preserving, and recovery-first modes; learn from self-reported energy and return difficulty; never claim an objectively optimal cadence. (<code>supported</code>; sources: microbreak-meta-analysis, biwer-pomodoro-study, smits-break-comparison, systematic-v-selfregulated-2026)</li>
+<li>[w1-adhd-research-006] An ADHD-aware coach should externalize the next action and progress state, use brief agenda/check-in loops, and avoid punitive streak loss or moralized productivity language. (<code>supported</code>; sources: solanto-mct-rct, current-cbt-review, dysregulated-not-deficit)</li>
+</ul>
+<h2>Wave 1: w1-macos-visual-tech</h2>
+<ul>
+<li>The strongest feasible direction is native-first hybrid skeuomorphism: selective Liquid Glass for functional layers, dimensional standard-material content surfaces, and carefully bounded Metal or particle effects. Accessibility alternate paths and Mac platform conventions are architectural requirements, not finishing polish.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w1-macos-visual-tech-001] Apple positions Liquid Glass as a functional layer for controls and navigation above content, explicitly warning against using it throughout the content layer or on every custom surface. (<code>supported</code>; sources: apple-hig-materials, apple-liquid-glass-custom)</li>
+<li>[w1-macos-visual-tech-002] A high-end native Mac implementation can combine system Liquid Glass, standard materials and vibrancy, responsive spring or morphing transitions, MeshGradient, and SwiftUI-accessible Metal shader effects without replacing the platform window or control model. (<code>supported</code>; sources: apple-hig-materials, apple-swiftui-glass-effect, apple-wwdc26-graphics, apple-mesh-gradient, apple-designing-macos)</li>
+<li>[w1-macos-visual-tech-003] Accessibility requires complete alternate render paths: Reduce Transparency should replace translucent surfaces with solid semantic backgrounds, Reduce Motion should suppress depth/parallax and continuous effects, and increased contrast, keyboard access, and VoiceOver must remain first-class. (<code>supported</code>; sources: apple-hig-accessibility, apple-reduced-motion, ehmo-macos-guidelines)</li>
+<li>[w1-macos-visual-tech-004] Third-party effect packages are best treated as optional, bounded tools: Pow offers transitions and value-change effects, Vortex offers cross-platform particles, Inferno provides inspectable SwiftUI Metal shader examples, and Glur specializes in progressive Metal blur. (<code>supported</code>; sources: pow-repo, vortex-repo, inferno-repo, glur-repo)</li>
+<li>[w1-macos-visual-tech-005] The recommended visual architecture is advanced hybrid skeuomorphism: a living ambient content field, solid or standard-material instrument panels, refractive glass controls and navigation, tactile inset and raised surfaces, and rare particle or shader celebrations tied to meaningful state changes. (<code>supported</code>; sources: apple-hig-materials, apple-hig-motion, apple-wwdc26-graphics, ehmo-macos-guidelines)</li>
+</ul>
+<h2>Wave 2: w2-breaks-adhd-falsification</h2>
+<ul>
+<li>Verification narrows the claim set: adaptive timing is justified as user-steerable personalization, not automatic optimization; body doubling is an experimental interaction metaphor, not a proven treatment; low-friction, nonjudgmental, context-sensitive scaffolding remains well supported as a design direction.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w2-breaks-adhd-falsification-001] Current evidence does not validate an algorithm that autonomously prescribes the optimal break cadence for an individual with ADHD. (<code>supported</code>; sources: microbreak-meta-analysis, biwer-pomodoro-study, smits-break-comparison, systematic-v-selfregulated-2026)</li>
+<li>[w2-breaks-adhd-falsification-002] Body doubling and socially aware AI are promising design directions for task initiation, but their effectiveness evidence remains early, context-specific, and insufficient for outcome claims. (<code>supported</code>; sources: adhd-social-scaffolds-2026, body-doubling-roadmap-2026, vr-body-doubling-study)</li>
+<li>[w2-breaks-adhd-falsification-003] Recent ADHD-centered HCI evidence supports a low-friction, nonjudgmental coach that offers task breakdown, proactive help at the right moment, multimodal cues, plan negotiation, and capacity-sensitive options rather than rigid enforcement. (<code>supported</code>; sources: adhd-social-scaffolds-2026, chalmers-adhd-productivity-study, aalborg-adhd-task-assistant)</li>
+<li>[w2-breaks-adhd-falsification-004] The safe product language is &#39;ADHD-aware focus coach&#39; or &#39;designed with ADHD-related executive-function challenges in mind,&#39; paired with explicit non-medical positioning and user control. (<code>supported</code>; sources: adhd-digital-health-consensus, adhd-social-scaffolds-2026, attexis-rct)</li>
+</ul>
+<h2>Wave 2: w2-platform-feasibility</h2>
+<ul>
+<li>Platform verification supports a local-first native architecture but forces staging: CloudKit is history/state sync rather than live tick transport; robust blocking is privileged; EventKit and App Intents are viable opt-in integrations; on-device Foundation Models can enhance task breakdown only behind a deterministic fallback.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w2-platform-feasibility-001] SwiftData with CloudKit is suitable for local-first tasks, settings, session history, and summary state, but its managed sync is not a real-time countdown transport and commonly propagates changes on a roughly minute-scale natural cadence. (<code>supported</code>; sources: apple-swiftdata-cloudkit-sync, apple-coredata-cloudkit-sync)</li>
+<li>[w2-platform-feasibility-002] Reliable system-wide network blocking on macOS requires Network Extension capabilities and, for broad direct distribution, a privileged system-extension deployment path; it materially increases signing, installation, support, and failure risk. (<code>supported</code>; sources: apple-network-extension-entitlement, apple-ne-deployment, apple-system-extensions)</li>
+<li>[w2-platform-feasibility-003] EventKit can integrate Apple Calendar and Reminders on macOS, but the app must request only the access needed, explain it clearly, and treat denial as a fully supported state. (<code>supported</code>; sources: apple-eventkit-access)</li>
+<li>[w2-platform-feasibility-004] On macOS, App Intents are available to the Shortcuts app even though predeclared App Shortcuts are not; Praxodoro can expose Start Focus, Pause, Complete, Log Distraction, and Open Check-in actions for user-built automations. (<code>supported</code>; sources: apple-app-shortcuts-macos, apple-app-intents)</li>
+<li>[w2-platform-feasibility-005] Apple&#39;s Foundation Models framework can privately generate structured task-breakdown suggestions on-device, but eligibility, Apple Intelligence settings, model readiness, and model-version drift require a deterministic fallback and evaluation suite. (<code>supported</code>; sources: apple-foundation-models, apple-foundation-models-availability, apple-foundation-models-updates)</li>
+</ul>
+<h2>Wave 2: w2-effects-dependency-audit</h2>
+<ul>
+<li>The audited libraries are legitimate and current enough to prototype, but none should define the core visual architecture. Native APIs minimize supply-chain and accessibility risk; Vortex or a small attributed Inferno shader are the strongest bounded candidates after measurement.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w2-effects-dependency-audit-001] Pow, Vortex, Inferno, and Glur are all MIT-licensed and declare macOS 12 or newer, but their maintenance and dependency profiles differ materially. (<code>supported</code>; sources: pow-repo, vortex-repo, inferno-repo, glur-repo)</li>
+<li>[w2-effects-dependency-audit-002] Vortex, Inferno, and Glur declare no package dependencies, while Pow declares an exact SnapshotPreviews-iOS dependency even though its preview integration is disabled by default. (<code>supported</code>; sources: pow-repo, vortex-repo, inferno-repo, glur-repo)</li>
+<li>[w2-effects-dependency-audit-003] None of the four audited repositories contains an integrated Reduce Motion or Reduce Transparency policy; Praxodoro must gate third-party effects at its own design-system boundary. (<code>supported</code>; sources: pow-repo, vortex-repo, inferno-repo, glur-repo)</li>
+<li>[w2-effects-dependency-audit-004] The core UI should have zero mandatory visual-effect dependencies; prototype native SwiftUI and Metal first, then consider Vortex for rare particles or selectively port a small audited Inferno shader with attribution. (<code>supported</code>; sources: apple-wwdc26-graphics, pow-repo, vortex-repo, inferno-repo, glur-repo)</li>
+</ul>
+<h2>Wave 2: w2-product-scope-adjudication</h2>
+<ul>
+<li>The product survives aggressive scope reduction because its differentiated core is a complete execution-and-recovery loop. Permissions, privileged blocking, AI, live cross-device control, and passive tracking remain optional layers; punitive or diagnosis-like mechanics are rejected.</li>
+</ul>
+<h3>Claims</h3>
+<ul>
+<li>[w2-product-scope-adjudication-001] The smallest differentiated product is not a smaller feature list; it is a complete low-friction loop: choose or capture one task, create a tiny first action, start, stay visibly oriented, check in gently, recover deliberately, and record what happened. (<code>supported</code>; sources: adhd-social-scaffolds-2026, focusmo-official-home, session-official-features, focused-work-official-v5)</li>
+<li>[w2-product-scope-adjudication-002] Ship-first capabilities should be native timer modes, one-task initiation, flexible check-ins, intentional breaks, scratchpad/distraction capture, reflection, local analytics, menu-bar and floating views, keyboard commands, accessibility variants, and local-first persistence. (<code>supported</code>; sources: adhd-social-scaffolds-2026, microbreak-meta-analysis, focused-work-official-v5, apple-designing-macos, apple-hig-accessibility)</li>
+<li>[w2-product-scope-adjudication-003] Stage Calendar and Reminders import, CloudKit history sync, App Intents, richer analytics, deterministic workspace automations, and optional on-device task breakdown after the core loop proves usable. (<code>supported</code>; sources: apple-eventkit-access, apple-swiftdata-cloudkit-sync, apple-app-intents, apple-foundation-models-availability)</li>
+<li>[w2-product-scope-adjudication-004] Keep system-wide blocking, live cross-device timer control, passive app or website surveillance, social body doubling, and physiological fatigue inference experimental until separate privacy, distribution, reliability, and efficacy gates are met. (<code>supported</code>; sources: apple-ne-deployment, apple-coredata-cloudkit-sync, body-doubling-roadmap-2026, adhd-digital-health-consensus)</li>
+<li>[w2-product-scope-adjudication-005] Reject punitive streak loss, forced breaks, mandatory account creation, configuration-heavy onboarding, manipulative urgency, diagnostic scoring, and productivity judgments based on app activity. (<code>supported</code>; sources: adhd-social-scaffolds-2026, chalmers-adhd-productivity-study, adhd-digital-health-consensus, dysregulated-not-deficit)</li>
+</ul>
+<h2>What Matters Most</h2>
+<ul>
+<li>Research mode: <code>exhaustive</code></li>
+<li>Evidence base: 53 sources</li>
+<li>Claim base: 38 supported of 38 recorded claims</li>
+<li>Contradiction clusters: 3</li>
+<li>Overall coverage score: 8.81/10</li>
+</ul>
+<h2>Scope and Provenance</h2>
+<ul>
+<li>Mode: <code>exhaustive</code></li>
+<li>Domain: <code>technical-products consumer-productivity academic</code></li>
+<li>Risk tier: <code>medium</code></li>
+<li>As of: <code>2026-07-20</code></li>
+<li>Audience: General reader</li>
+<li>Decision supported: Inform understanding</li>
+<li>Jurisdiction: not specified</li>
+<li>Agent/model: <code>unknown</code> / <code>unknown</code></li>
+<li>Capabilities recorded available: none explicitly recorded</li>
+<li>Capabilities still unknown: browser, code, connectors, files, page-fetch, pdf, search, subagents, vision</li>
+</ul>
+<h2>Key Takeaways</h2>
+<p>No overview yet.</p>
+<h2>Strong Evidence</h2>
+<ul>
+<li>None yet</li>
+</ul>
+<h2>Weak Evidence Or Gaps</h2>
+<ul>
+<li>None yet</li>
+</ul>
+<h2>Contradictions</h2>
+<ul>
+<li>None yet</li>
+</ul>
+<h2>Next-Step Guidance</h2>
+<ul>
+<li>Populate after the first merged wave</li>
+</ul>
+<h2>Decision-Relevant Risks</h2>
+<p>No open questions section yet.</p>
+<h2>Strong Evidence</h2>
+<ul>
+<li>None yet</li>
+</ul>
+<h2>Weak Evidence Or Gaps</h2>
+<ul>
+<li>None yet</li>
+</ul>
+<h2>Contradictions</h2>
+<ul>
+<li>None yet</li>
+</ul>
+<h2>Next-Step Guidance</h2>
+<ul>
+<li>Populate after the first merged wave</li>
+</ul>
+<h2>Wave 1: w1-competitor-official</h2>
+<ul>
+<li>Which marketed competitor features fail in real use because of sync, blocking, notification, or input friction?</li>
+<li>How often do users prefer a lightweight one-time purchase over a subscription bundle?</li>
+<li>Which session lifecycle stages improve initiation and recovery for adults with ADHD?</li>
+</ul>
+<h2>Wave 1: w1-user-friction</h2>
+<ul>
+<li>Inspect full methods and participant findings in the Aalborg and Chalmers studies.</li>
+<li>Collect bounded App Store review samples for blocking reliability, sync, and notification complaints.</li>
+<li>Test whether a zero-setup mode can coexist with a highly configurable expert mode.</li>
+</ul>
+<h2>Wave 1: w1-adhd-research</h2>
+<ul>
+<li>Inspect the 2025 and 2026 break studies for sample, preregistration, effect sizes, attrition, and task differences.</li>
+<li>Find stronger evidence on implementation intentions and task initiation specifically in adults with ADHD.</li>
+<li>Define non-clinical safety language and privacy requirements for adaptive coaching.</li>
+</ul>
+<h2>Wave 1: w1-macos-visual-tech</h2>
+<ul>
+<li>Benchmark native glass plus one ambient Metal shader at 60 and 120 Hz on representative Apple Silicon Macs.</li>
+<li>Audit Pow, Vortex, Inferno, and Glur licenses, transitive dependencies, release recency, and reduced-motion behavior.</li>
+<li>Generate three distinct visual direction mocks using the same product flow and test hierarchy under Reduce Transparency.</li>
+</ul>
+<h2>Wave 2: w2-breaks-adhd-falsification</h2>
+<ul>
+<li>User-test whether coach check-ins feel supportive or intrusive at different cadences.</li>
+<li>Evaluate the deterministic coach loop separately from optional AI-generated task breakdown.</li>
+<li>Define opt-in privacy boundaries for mood, energy, and activity data.</li>
+</ul>
+<h2>Wave 2: w2-platform-feasibility</h2>
+<ul>
+<li>Prototype timer persistence across sleep, restart, and clock changes using canonical timestamps plus local monotonic rendering.</li>
+<li>Choose an explicit distribution strategy before implementing Network Extension blocking.</li>
+<li>Build an evaluation set for on-device task breakdown and test deterministic fallback parity.</li>
+</ul>
+<h2>Wave 2: w2-effects-dependency-audit</h2>
+<ul>
+<li>Run a visual prototype with native MeshGradient plus one custom Metal background before adding packages.</li>
+<li>Benchmark Vortex and a copied Inferno shader under Reduce Motion and low-power mode.</li>
+<li>Review source attribution requirements for any copied shader before release.</li>
+</ul>
+<h2>Wave 2: w2-product-scope-adjudication</h2>
+<ul>
+<li>Convert the adjudicated loop into two or three product/visual approaches for user selection.</li>
+<li>Create wireframes for the initiation, focus, check-in, break, recovery, and review states.</li>
+<li>Define measurable usability and performance acceptance criteria before implementation.</li>
+</ul>
+<h2>Source Digest</h2>
+<h3>community</h3>
+<ul>
+<li>[focusmo-reddit-pricing] <a href="https://www.reddit.com/r/macapps/comments/1opa5r4/focusmo_adhd_productivity_day_planning_in_menubar/">Focusmo ADHD productivity and day planning in menu bar</a> — authority=2, access=accessed</li>
+<li>[focusmo-reddit-year] <a href="https://www.reddit.com/r/macapps/comments/1px48gw/my_app_completed_1_year_in_development_lifetime/">Focusmo completed one year in development</a> — authority=2, access=accessed</li>
+<li>[reddit-task-initiation-major] <a href="https://www.reddit.com/r/ADHD/comments/1sxuap2/task_initiation_is_currently_disrupting_a_major/">Task initiation is currently disrupting a major part of my life</a> — authority=2, access=accessed</li>
+<li>[reddit-task-initiation-reminders] <a href="https://www.reddit.com/r/ADHD/comments/1su5xtm/task_initiation_problem_even_after_notifications/">Task initiation problem even after notifications from apps like Tiimo or Structured</a> — authority=2, access=accessed</li>
+</ul>
+<h3>interview</h3>
+<ul>
+<li>[user-product-brief] <a href="local://conversation/praxodoro-product-brief">Praxodoro product direction supplied by the user</a> — authority=5, access=accessed</li>
+</ul>
+<h3>official-docs</h3>
+<ul>
+<li>[apple-eventkit-access] <a href="https://developer.apple.com/documentation/eventkit/accessing-the-event-store">Accessing the event store</a> — authority=5, access=accessed</li>
+<li>[apple-app-intents] <a href="https://developer.apple.com/documentation/appintents/app-intents">App intents</a> — authority=5, access=accessed</li>
+<li>[apple-app-shortcuts-macos] <a href="https://developer.apple.com/design/human-interface-guidelines/app-shortcuts">Apple HIG - App Shortcuts</a> — authority=5, access=accessed</li>
+<li>[apple-hig-accessibility] <a href="https://developer.apple.com/design/human-interface-guidelines/accessibility/">Apple Human Interface Guidelines - Accessibility</a> — authority=5, access=accessed</li>
+<li>[apple-hig-materials] <a href="https://developer.apple.com/design/human-interface-guidelines/materials">Apple Human Interface Guidelines - Materials</a> — authority=5, access=accessed</li>
+<li>[apple-hig-motion] <a href="https://developer.apple.com/design/human-interface-guidelines/motion">Apple Human Interface Guidelines - Motion</a> — authority=5, access=accessed</li>
+<li>[apple-liquid-glass-custom] <a href="https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views">Applying Liquid Glass to custom views</a> — authority=5, access=accessed</li>
+<li>[be-focused-app-store] <a href="https://apps.apple.com/us/app/be-focused-pro-focus-timer/id961632517">Be Focused Pro - Focus Timer</a> — authority=5, access=accessed</li>
+<li>[apple-designing-macos] <a href="https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/">Designing for macOS</a> — authority=5, access=accessed</li>
+<li>[focused-work-app-store] <a href="https://apps.apple.com/us/app/focused-work-focus-timer/id1523968394">Flowmodoro - Focused Work</a> — authority=5, access=accessed</li>
+<li>[focused-work-official-v5] <a href="https://focusedwork.app/focused-work-5">Focused Work 5 - A redesigned experience for focus</a> — authority=5, access=accessed</li>
+<li>[focusmo-official-home] <a href="https://focusmo.app/">Focusmo - Focus App for ADHD and Time Blindness on Mac</a> — authority=5, access=accessed</li>
+<li>[focusmo-official-pricing] <a href="https://focusmo.app/pricing">Focusmo Pricing - Free Forever Plan or Pro</a> — authority=5, access=accessed</li>
+<li>[apple-foundation-models] <a href="https://developer.apple.com/documentation/FoundationModels">Foundation Models</a> — authority=5, access=accessed</li>
+<li>[apple-foundation-models-updates] <a href="https://developer.apple.com/documentation/Updates/FoundationModels">Foundation Models updates</a> — authority=5, access=accessed</li>
+<li>[apple-foundation-models-availability] <a href="https://developer.apple.com/documentation/FoundationModels/generating-content-and-performing-tasks-with-foundation-models">Generating content and performing tasks with Foundation Models</a> — authority=5, access=accessed</li>
+<li>[apple-mesh-gradient] <a href="https://developer.apple.com/documentation/swiftui/meshgradient">MeshGradient</a> — authority=5, access=accessed</li>
+<li>[apple-network-extension-entitlement] <a href="https://developer.apple.com/documentation/BundleResources/Entitlements/com.apple.developer.networking.networkextension">Network Extensions Entitlement</a> — authority=5, access=accessed</li>
+<li>[apple-reduced-motion] <a href="https://developer.apple.com/help/app-store-connect/manage-app-accessibility/reduced-motion-evaluation-criteria/">Reduced Motion evaluation criteria</a> — authority=5, access=accessed</li>
+<li>[roundpie-official-plans] <a href="https://docs.rpie.me/free-or-premium">RoundPie Docs - Free or Premium?</a> — authority=5, access=accessed</li>
+<li>[session-official-features] <a href="https://stayinsession.com/">Session - Pomodoro focus timer with analytics</a> — authority=5, access=accessed</li>
+<li>[apple-coredata-cloudkit-sync] <a href="https://developer.apple.com/documentation/coredata/syncing-a-core-data-store-with-cloudkit">Syncing a Core Data Store with CloudKit</a> — authority=5, access=accessed</li>
+<li>[apple-swiftdata-cloudkit-sync] <a href="https://developer.apple.com/documentation/swiftdata/syncing-model-data-across-a-persons-devices">Syncing model data across a person&#39;s devices</a> — authority=5, access=accessed</li>
+<li>[apple-system-extensions] <a href="https://developer.apple.com/documentation/systemextensions">System Extensions</a> — authority=5, access=accessed</li>
+<li>[apple-ne-deployment] <a href="https://developer.apple.com/documentation/technotes/tn3134-network-extension-provider-deployment">TN3134: Network Extension provider deployment</a> — authority=5, access=accessed</li>
+<li>[apple-swiftui-glass-effect] <a href="https://developer.apple.com/documentation/swiftui/view/glasseffect%28_%3Ain%3A%29">glassEffect(_:in:)</a> — authority=5, access=accessed</li>
+</ul>
+<h3>paper</h3>
+<ul>
+<li>[body-doubling-roadmap-2026] <a href="https://arxiv.org/abs/2605.07851">A Roadmap of Mixed Reality Body Doubling for Adults with ADHD</a> — authority=4, access=accessed</li>
+<li>[adhd-digital-health-consensus] <a href="https://www.jmir.org/2026/1/e85638">Consensus Statement on Digital Health and ADHD by the European Network for ADHD</a> — authority=5, access=accessed</li>
+<li>[current-cbt-review] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2909688/">Current Status of Cognitive Behavioral Therapy for Adult ADHD</a> — authority=5, access=accessed</li>
+<li>[chalmers-adhd-productivity-study] <a href="https://odr.chalmers.se/items/602f3701-7897-44fe-9b82-1abb6a336824">Designing Digital Productivity Support for Adults with ADHD</a> — authority=3, access=accessed</li>
+<li>[aalborg-adhd-task-assistant] <a href="https://projekter.aau.dk/designing-a-digital-task-management-assistant-for-adults-with-adhd-a-user-centred-exploration-of-sch-bc52b1bf.html">Designing a Digital Task-Management Assistant for Adults with ADHD</a> — authority=3, access=accessed</li>
+<li>[dysregulated-not-deficit] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10569543/">Dysregulated not deficit: A qualitative study on symptomatology of ADHD in young adults</a> — authority=4, access=accessed</li>
+<li>[attexis-rct] <a href="https://pubmed.ncbi.nlm.nih.gov/41810578/">Effectiveness of attexis, a digital intervention based on cognitive behavioral therapy for adults with ADHD</a> — authority=5, access=accessed</li>
+<li>[solanto-mct-rct] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3633586/">Efficacy of Meta-Cognitive Therapy for Adult ADHD</a> — authority=5, access=accessed</li>
+<li>[microbreak-meta-analysis] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/">Give me a break! A systematic review and meta-analysis on the efficacy of micro-breaks</a> — authority=5, access=accessed</li>
+<li>[internet-cbt-rct] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10359875/">Internet delivered cognitive behavioral therapy for adults with ADHD - A randomized controlled trial</a> — authority=5, access=accessed</li>
+<li>[smits-break-comparison] <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12292963/">Investigating the Effectiveness of Self-Regulated, Pomodoro, and Flowtime Break-Taking Techniques Among Students</a> — authority=5, access=accessed</li>
+<li>[adhd-social-scaffolds-2026] <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a> — authority=4, access=accessed</li>
+<li>[computer-cognitive-training-rct] <a href="https://pubmed.ncbi.nlm.nih.gov/24756172/">The Efficacy of Computerized Cognitive Training in Adults With ADHD: A Randomized Controlled Trial</a> — authority=5, access=accessed</li>
+<li>[biwer-pomodoro-study] <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjep.12593">Understanding effort regulation: Comparing Pomodoro breaks and self-regulated breaks</a> — authority=5, access=accessed</li>
+<li>[systematic-v-selfregulated-2026] <a href="https://www.mdpi.com/2076-328X/16/7/1158">When to Take a Break: Comparing Effects of Systematic Short and Self-Regulated Breaks</a> — authority=5, access=accessed</li>
+<li>[vr-body-doubling-study] <a href="https://arxiv.org/abs/2509.12153">You Are Not Alone: Designing Body Doubling for ADHD in Virtual Reality</a> — authority=4, access=accessed</li>
+</ul>
+<h3>repo</h3>
+<ul>
+<li>[pow-repo] <a href="https://github.com/EmergeTools/Pow">EmergeTools Pow - Delightful SwiftUI effects</a> — authority=4, access=accessed</li>
+<li>[glur-repo] <a href="https://github.com/joogps/Glur">Glur - Progressive blurs in SwiftUI</a> — authority=4, access=accessed</li>
+<li>[inferno-repo] <a href="https://github.com/twostraws/Inferno">Inferno - Metal shaders for SwiftUI</a> — authority=4, access=accessed</li>
+<li>[ehmo-macos-guidelines] <a href="https://github.com/ehmo/platform-design-skills/tree/main/skills/macos">Platform Design Skills - macOS Human Interface Guidelines</a> — authority=4, access=accessed</li>
+<li>[vortex-repo] <a href="https://github.com/twostraws/Vortex">Vortex - High-performance particle effects for SwiftUI</a> — authority=4, access=accessed</li>
+</ul>
+<h3>video</h3>
+<ul>
+<li>[apple-wwdc26-graphics] <a href="https://developer.apple.com/videos/play/wwdc2026/322/">Compose advanced graphics effects with SwiftUI - WWDC26</a> — authority=5, access=accessed</li>
+</ul>
+<h2>Evidence Register</h2>
+<ul>
+<li><strong>[w1-competitor-official-001]</strong> The mature competitive baseline is no longer a timer alone: leading products combine flexible timing, task context, distraction blocking, history or analytics, automation, and cross-device behavior. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://stayinsession.com/">Session - Pomodoro focus timer with analytics</a>, Homepage sections State your focus, block apps and websites, review progress, Syncs Everywhere; <a href="https://focusmo.app/pricing">Focusmo Pricing - Free Forever Plan or Pro</a>, Compare Plans and Pro feature lists; <a href="https://focusedwork.app/focused-work-5">Focused Work 5 - A redesigned experience for focus</a>, Sections Flow with Flowmodoro, Flexible Sessions, Plan &amp; Review; <a href="https://apps.apple.com/us/app/be-focused-pro-focus-timer/id961632517">Be Focused Pro - Focus Timer</a>, App description sections Task &amp; Interval Management, Productivity Tracking, Automation, Focus.</li>
+<li><strong>[w1-competitor-official-002]</strong> RoundPie differentiates through breadth of inbound task integrations, outbound automation, time logs, interruption notes, and scripting rather than through a narrow Pomodoro experience. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://docs.rpie.me/free-or-premium">RoundPie Docs - Free or Premium?</a>, Integrations, Log access, Custom app features, Outbound integrations, Ultimate plan.</li>
+<li><strong>[w1-competitor-official-003]</strong> The strongest ADHD-specific competitor proposition is an execution loop: keep one task visible, interrupt time blindness with periodic check-ins, block detours, and reconstruct the day automatically in a timeline. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://focusmo.app/">Focusmo - Focus App for ADHD and Time Blindness on Mac</a>, Steps Keep your goal visible and See exactly where your day really went; Accountability Check-ins feature; <a href="https://focusmo.app/pricing">Focusmo Pricing - Free Forever Plan or Pro</a>, Compare Plans: floating timer, task management, workspace blocking, timeline and analytics.</li>
+<li><strong>[w1-competitor-official-004]</strong> Flexible session structures are a proven market pattern: fixed Pomodoro, open-ended Flowmodoro, preparation stages, user-defined multi-stage sessions, and reflection can coexist without forcing one timing doctrine. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://focusedwork.app/focused-work-5">Focused Work 5 - A redesigned experience for focus</a>, Flow with Flowmodoro; Flexible Sessions; Plan &amp; Review; <a href="https://apps.apple.com/us/app/focused-work-focus-timer/id1523968394">Flowmodoro - Focused Work</a>, Core Features and curated session templates.</li>
+<li><strong>[w1-competitor-official-005]</strong> Praxodoro should treat planning, focusing, recovering, and reviewing as one session lifecycle, while keeping each stage skippable and progressively disclosed. — <code>recommendation</code>, <code>supported</code>, confidence <code>medium</code>. Evidence: <a href="https://stayinsession.com/">Session - Pomodoro focus timer with analytics</a>, State your focus and Review your progress; <a href="https://focusedwork.app/focused-work-5">Focused Work 5 - A redesigned experience for focus</a>, Flexible Sessions and Plan &amp; Review; <a href="https://focusmo.app/">Focusmo - Focus App for ADHD and Time Blindness on Mac</a>, Task visibility, check-ins, activity timeline.</li>
+<li><strong>[w1-user-friction-001]</strong> Reminder delivery is not equivalent to task initiation: users describe receiving prompts from planning apps while remaining unable to begin, especially when the task is not already reduced to a concrete first action. — <code>fact</code>, <code>supported</code>, confidence <code>medium</code>. Evidence: <a href="https://www.reddit.com/r/ADHD/comments/1su5xtm/task_initiation_problem_even_after_notifications/">Task initiation problem even after notifications from apps like Tiimo or Structured</a>, Post and top discussion on reminders from Tiimo or Structured not producing initiation; <a href="https://www.reddit.com/r/ADHD/comments/1sxuap2/task_initiation_is_currently_disrupting_a_major/">Task initiation is currently disrupting a major part of my life</a>, Post describes advice itself becoming another task to initiate.</li>
+<li><strong>[w1-user-friction-002]</strong> High-maintenance productivity systems create an abandonment risk for people who already struggle with planning consistency, input burden, and switching between tools. — <code>fact</code>, <code>supported</code>, confidence <code>medium</code>. Evidence: <a href="https://projekter.aau.dk/designing-a-digital-task-management-assistant-for-adults-with-adhd-a-user-centred-exploration-of-sch-bc52b1bf.html">Designing a Digital Task-Management Assistant for Adults with ADHD</a>, Abstract: heavy manual input, high maintenance, and switching between apps; <a href="https://odr.chalmers.se/items/602f3701-7897-44fe-9b82-1abb6a336824">Designing Digital Productivity Support for Adults with ADHD</a>, Abstract: existing tools assume stable planning ability, consistent routines, low setup effort, and positive responses to reminders.</li>
+<li><strong>[w1-user-friction-003]</strong> Subscription pricing creates visible resentment in the Mac productivity market, especially when users perceive the core function as replaceable by a desk timer or paper. — <code>fact</code>, <code>supported</code>, confidence <code>low</code>. Evidence: <a href="https://www.reddit.com/r/macapps/comments/1px48gw/my_app_completed_1_year_in_development_lifetime/">Focusmo completed one year in development</a>, Comment discussion includes direct criticism of price; <a href="https://www.reddit.com/r/macapps/comments/1opa5r4/focusmo_adhd_productivity_day_planning_in_menubar/">Focusmo ADHD productivity and day planning in menu bar</a>, Comment discussion contrasts paid app with a desk timer and pad of paper.</li>
+<li><strong>[w1-user-friction-004]</strong> The product should default to an immediate one-task start path, then reveal planning, analytics, blocking, and customization only when they are relevant or explicitly requested. — <code>recommendation</code>, <code>supported</code>, confidence <code>medium</code>. Evidence: <a href="https://projekter.aau.dk/designing-a-digital-task-management-assistant-for-adults-with-adhd-a-user-centred-exploration-of-sch-bc52b1bf.html">Designing a Digital Task-Management Assistant for Adults with ADHD</a>, Abstract: abandonment from manual input and maintenance; <a href="https://odr.chalmers.se/items/602f3701-7897-44fe-9b82-1abb6a336824">Designing Digital Productivity Support for Adults with ADHD</a>, Abstract: difficult assumptions in existing productivity tools; <a href="https://www.reddit.com/r/ADHD/comments/1su5xtm/task_initiation_problem_even_after_notifications/">Task initiation problem even after notifications from apps like Tiimo or Structured</a>, Discussion emphasizes smallest actionable chunk over reminders alone.</li>
+<li><strong>[w1-adhd-research-001]</strong> For adults with ADHD, structured skills work around organization, planning, time management, distractibility, and adaptive thinking has stronger evidence than generic computerized attention training. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3633586/">Efficacy of Meta-Cognitive Therapy for Adult ADHD</a>, Abstract: randomized 88 adults; MCT targets time-management, organization, and planning; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10359875/">Internet delivered cognitive behavioral therapy for adults with ADHD - A randomized controlled trial</a>, Abstract: 104 adults randomized to iCBT, applied relaxation, or treatment as usual; <a href="https://pubmed.ncbi.nlm.nih.gov/24756172/">The Efficacy of Computerized Cognitive Training in Adults With ADHD: A Randomized Controlled Trial</a>, Abstract conclusion: no benefit relative to control.</li>
+<li><strong>[w1-adhd-research-002]</strong> Digital self-guided interventions can improve adult ADHD-related outcomes in trials, but product claims must disclose that evidence concerns structured therapeutic programs, not ordinary focus timers, and some studies involve developer conflicts of interest. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://pubmed.ncbi.nlm.nih.gov/41810578/">Effectiveness of attexis, a digital intervention based on cognitive behavioral therapy for adults with ADHD</a>, Abstract and conflict-of-interest statement: 337 adults; developer employees among authors; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10359875/">Internet delivered cognitive behavioral therapy for adults with ADHD - A randomized controlled trial</a>, Abstract: active-control randomized comparison and sustained outcomes; <a href="https://www.jmir.org/2026/1/e85638">Consensus Statement on Digital Health and ADHD by the European Network for ADHD</a>, Consensus requirements: user-centered holistic design, evidence base, privacy, equity, and clinical integration.</li>
+<li><strong>[w1-adhd-research-003]</strong> Micro-breaks show a reliable small-to-moderate well-being benefit across studies, especially for vigor and fatigue, while aggregate performance benefits are less consistent and depend on task and break duration. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/">Give me a break! A systematic review and meta-analysis on the efficacy of micro-breaks</a>, Abstract and Results/Discussion: 22 studies, 2,335 participants; significant well-being effect, non-significant overall performance effect.</li>
+<li><strong>[w1-adhd-research-004]</strong> There is no single universally superior break schedule: a 2023 study favored systematic short breaks over self-regulated breaks, while later comparisons found self-regulated breaks could preserve mood or motivation better than rigid Pomodoro schedules. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjep.12593">Understanding effort regulation: Comparing Pomodoro breaks and self-regulated breaks</a>, Abstract and conclusion: systematic conditions versus self-regulated breaks over 120 minutes; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12292963/">Investigating the Effectiveness of Self-Regulated, Pomodoro, and Flowtime Break-Taking Techniques Among Students</a>, Results: structured Pomodoro associated with faster fatigue increase and motivation decline; no productivity or flow difference; <a href="https://www.mdpi.com/2076-328X/16/7/1158">When to Take a Break: Comparing Effects of Systematic Short and Self-Regulated Breaks</a>, Results: self-regulated breaks associated with more positive energy, concentration, motivation, and distraction ratings.</li>
+<li><strong>[w1-adhd-research-005]</strong> Praxodoro should make break guidance adaptive and user-steerable: offer fixed, flow-preserving, and recovery-first modes; learn from self-reported energy and return difficulty; never claim an objectively optimal cadence. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/">Give me a break! A systematic review and meta-analysis on the efficacy of micro-breaks</a>, Moderator analysis and discussion of duration/task differences; <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjep.12593">Understanding effort regulation: Comparing Pomodoro breaks and self-regulated breaks</a>, Conclusion favors structured breaks in its context; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12292963/">Investigating the Effectiveness of Self-Regulated, Pomodoro, and Flowtime Break-Taking Techniques Among Students</a>, Comparison finds costs for rigid timing in its context; <a href="https://www.mdpi.com/2076-328X/16/7/1158">When to Take a Break: Comparing Effects of Systematic Short and Self-Regulated Breaks</a>, Discussion highlights different subjective outcomes by break approach.</li>
+<li><strong>[w1-adhd-research-006]</strong> An ADHD-aware coach should externalize the next action and progress state, use brief agenda/check-in loops, and avoid punitive streak loss or moralized productivity language. — <code>recommendation</code>, <code>supported</code>, confidence <code>medium</code>. Evidence: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC3633586/">Efficacy of Meta-Cognitive Therapy for Adult ADHD</a>, Intervention targets organization, planning, and time management; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2909688/">Current Status of Cognitive Behavioral Therapy for Adult ADHD</a>, CBT modules and session structure: agenda, review, organization/planning, distractibility, adaptive thinking; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10569543/">Dysregulated not deficit: A qualitative study on symptomatology of ADHD in young adults</a>, Qualitative findings: difficulty maintaining and completing tasks; attentional dysregulation framing.</li>
+<li><strong>[w1-macos-visual-tech-001]</strong> Apple positions Liquid Glass as a functional layer for controls and navigation above content, explicitly warning against using it throughout the content layer or on every custom surface. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/design/human-interface-guidelines/materials">Apple Human Interface Guidelines - Materials</a>, Liquid Glass section: functional layer, do not use in content layer, use sparingly; <a href="https://developer.apple.com/documentation/SwiftUI/Applying-Liquid-Glass-to-custom-views">Applying Liquid Glass to custom views</a>, Overview: custom glass and GlassEffectContainer rendering guidance.</li>
+<li><strong>[w1-macos-visual-tech-002]</strong> A high-end native Mac implementation can combine system Liquid Glass, standard materials and vibrancy, responsive spring or morphing transitions, MeshGradient, and SwiftUI-accessible Metal shader effects without replacing the platform window or control model. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/design/human-interface-guidelines/materials">Apple Human Interface Guidelines - Materials</a>, Liquid Glass and standard materials; macOS blending modes; <a href="https://developer.apple.com/documentation/swiftui/view/glasseffect%28_%3Ain%3A%29">glassEffect(_:in:)</a>, glassEffect discussion and GlassEffectContainer use; <a href="https://developer.apple.com/videos/play/wwdc2026/322/">Compose advanced graphics effects with SwiftUI - WWDC26</a>, Transcript lines 205-256: colorEffect, distortionEffect, layerEffect, domain warping, TimelineView; <a href="https://developer.apple.com/documentation/swiftui/meshgradient">MeshGradient</a>, MeshGradient overview: tessellated Bezier patches and interpolated vertex colors; <a href="https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/">Designing for macOS</a>, Best practices: resizable windows, menu bar, keyboard, personalization.</li>
+<li><strong>[w1-macos-visual-tech-003]</strong> Accessibility requires complete alternate render paths: Reduce Transparency should replace translucent surfaces with solid semantic backgrounds, Reduce Motion should suppress depth/parallax and continuous effects, and increased contrast, keyboard access, and VoiceOver must remain first-class. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/design/human-interface-guidelines/accessibility/">Apple Human Interface Guidelines - Accessibility</a>, Accessibility principles and support for system accessibility features; <a href="https://developer.apple.com/help/app-store-connect/manage-app-accessibility/reduced-motion-evaluation-criteria/">Reduced Motion evaluation criteria</a>, Indicating support: disable or change parallax, animated blur, and depth-of-field effects; <a href="https://github.com/ehmo/platform-design-skills/tree/main/skills/macos">Platform Design Skills - macOS Human Interface Guidelines</a>, Sections 9 and 11: materials, Reduce Transparency, VoiceOver, Full Keyboard Access, Reduce Motion, Bold Text, Increase Contrast.</li>
+<li><strong>[w1-macos-visual-tech-004]</strong> Third-party effect packages are best treated as optional, bounded tools: Pow offers transitions and value-change effects, Vortex offers cross-platform particles, Inferno provides inspectable SwiftUI Metal shader examples, and Glur specializes in progressive Metal blur. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://github.com/EmergeTools/Pow">EmergeTools Pow - Delightful SwiftUI effects</a>, README Overview, Change Effects, and Transitions; <a href="https://github.com/twostraws/Vortex">Vortex - High-performance particle effects for SwiftUI</a>, README: high-performance particle effects and supported platforms; <a href="https://github.com/twostraws/Inferno">Inferno - Metal shaders for SwiftUI</a>, README: Metal shaders for SwiftUI and macOS example project; <a href="https://github.com/joogps/Glur">Glur - Progressive blurs in SwiftUI</a>, README: progressive blur using SwiftUI shader API on macOS 14+.</li>
+<li><strong>[w1-macos-visual-tech-005]</strong> The recommended visual architecture is advanced hybrid skeuomorphism: a living ambient content field, solid or standard-material instrument panels, refractive glass controls and navigation, tactile inset and raised surfaces, and rare particle or shader celebrations tied to meaningful state changes. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/design/human-interface-guidelines/materials">Apple Human Interface Guidelines - Materials</a>, Hierarchy between Liquid Glass functional layer and standard-material content layer; <a href="https://developer.apple.com/design/human-interface-guidelines/motion">Apple Human Interface Guidelines - Motion</a>, Best practices: purposeful and optional motion; <a href="https://developer.apple.com/videos/play/wwdc2026/322/">Compose advanced graphics effects with SwiftUI - WWDC26</a>, Domain-warping and time-driven shader example; <a href="https://github.com/ehmo/platform-design-skills/tree/main/skills/macos">Platform Design Skills - macOS Human Interface Guidelines</a>, Visual Design and platform anti-patterns.</li>
+<li><strong>[w2-breaks-adhd-falsification-001]</strong> Current evidence does not validate an algorithm that autonomously prescribes the optimal break cadence for an individual with ADHD. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/">Give me a break! A systematic review and meta-analysis on the efficacy of micro-breaks</a>, Participants are healthy employees or students; moderators and performance results are heterogeneous; <a href="https://bpspsychub.onlinelibrary.wiley.com/doi/10.1111/bjep.12593">Understanding effort regulation: Comparing Pomodoro breaks and self-regulated breaks</a>, Student experiment with predefined break conditions; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC12292963/">Investigating the Effectiveness of Self-Regulated, Pomodoro, and Flowtime Break-Taking Techniques Among Students</a>, Student comparison with conflicting fatigue and motivation trajectories; <a href="https://www.mdpi.com/2076-328X/16/7/1158">When to Take a Break: Comparing Effects of Systematic Short and Self-Regulated Breaks</a>, Student self-study experiment; outcomes differ from earlier systematic-break findings.</li>
+<li><strong>[w2-breaks-adhd-falsification-002]</strong> Body doubling and socially aware AI are promising design directions for task initiation, but their effectiveness evidence remains early, context-specific, and insufficient for outcome claims. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a>, Methods: 22 interviews plus speed-dating study with 20 people and 13 speculative concepts; <a href="https://arxiv.org/abs/2605.07851">A Roadmap of Mixed Reality Body Doubling for Adults with ADHD</a>, Abstract explicitly identifies limited prototypes and need for empirical studies; <a href="https://arxiv.org/abs/2509.12153">You Are Not Alone: Designing Body Doubling for ADHD in Virtual Reality</a>, Abstract: 12 participants in a VR construction task; authors note prior evidence was inconclusive.</li>
+<li><strong>[w2-breaks-adhd-falsification-003]</strong> Recent ADHD-centered HCI evidence supports a low-friction, nonjudgmental coach that offers task breakdown, proactive help at the right moment, multimodal cues, plan negotiation, and capacity-sensitive options rather than rigid enforcement. — <code>fact</code>, <code>supported</code>, confidence <code>medium</code>. Evidence: <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a>, Design implications: low-friction proactive interaction, multimodal and emotion-aware interaction, plan negotiation and context sensitivity; <a href="https://odr.chalmers.se/items/602f3701-7897-44fe-9b82-1abb6a336824">Designing Digital Productivity Support for Adults with ADHD</a>, Abstract: existing tools assume stable planning, routines, and low setup effort; <a href="https://projekter.aau.dk/designing-a-digital-task-management-assistant-for-adults-with-adhd-a-user-centred-exploration-of-sch-bc52b1bf.html">Designing a Digital Task-Management Assistant for Adults with ADHD</a>, Abstract: heavy input, maintenance, and app switching contribute to abandonment.</li>
+<li><strong>[w2-breaks-adhd-falsification-004]</strong> The safe product language is &#39;ADHD-aware focus coach&#39; or &#39;designed with ADHD-related executive-function challenges in mind,&#39; paired with explicit non-medical positioning and user control. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://www.jmir.org/2026/1/e85638">Consensus Statement on Digital Health and ADHD by the European Network for ADHD</a>, Consensus: strong evidence, privacy, equity, user-centered design, clinical integration; <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a>, Neurodiversity-oriented, nonjudgmental, context-sensitive design implications; <a href="https://pubmed.ncbi.nlm.nih.gov/41810578/">Effectiveness of attexis, a digital intervention based on cognitive behavioral therapy for adults with ADHD</a>, Trial concerns a structured CBT intervention, illustrating why evidence cannot be transferred to a timer.</li>
+<li><strong>[w2-platform-feasibility-001]</strong> SwiftData with CloudKit is suitable for local-first tasks, settings, session history, and summary state, but its managed sync is not a real-time countdown transport and commonly propagates changes on a roughly minute-scale natural cadence. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/documentation/swiftdata/syncing-model-data-across-a-persons-devices">Syncing model data across a person&#39;s devices</a>, Overview and schema limitations: concurrent, opportune, non-immediate synchronization; <a href="https://developer.apple.com/documentation/coredata/syncing-a-core-data-store-with-cloudkit">Syncing a Core Data Store with CloudKit</a>, Overview: natural rhythm within system event loop; generally about a minute for a local change.</li>
+<li><strong>[w2-platform-feasibility-002]</strong> Reliable system-wide network blocking on macOS requires Network Extension capabilities and, for broad direct distribution, a privileged system-extension deployment path; it materially increases signing, installation, support, and failure risk. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/documentation/BundleResources/Entitlements/com.apple.developer.networking.networkextension">Network Extensions Entitlement</a>, Entitlement values and Developer ID provisioning instructions; <a href="https://developer.apple.com/documentation/technotes/tn3134-network-extension-provider-deployment">TN3134: Network Extension provider deployment</a>, Content filter provider deployment table: macOS system extension; <a href="https://developer.apple.com/documentation/systemextensions">System Extensions</a>, Overview: packaging, signing, notarization, installation and persistent privileged extension.</li>
+<li><strong>[w2-platform-feasibility-003]</strong> EventKit can integrate Apple Calendar and Reminders on macOS, but the app must request only the access needed, explain it clearly, and treat denial as a fully supported state. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/documentation/eventkit/accessing-the-event-store">Accessing the event store</a>, Overview: write-only events versus full events/reminders access and macOS calendar entitlement.</li>
+<li><strong>[w2-platform-feasibility-004]</strong> On macOS, App Intents are available to the Shortcuts app even though predeclared App Shortcuts are not; Praxodoro can expose Start Focus, Pause, Complete, Log Distraction, and Open Check-in actions for user-built automations. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/design/human-interface-guidelines/app-shortcuts">Apple HIG - App Shortcuts</a>, macOS platform note: App Shortcuts unsupported, App Intent actions supported in Shortcuts; <a href="https://developer.apple.com/documentation/appintents/app-intents">App intents</a>, Overview: expose app actions and content to Shortcuts, Siri, and system experiences.</li>
+<li><strong>[w2-platform-feasibility-005]</strong> Apple&#39;s Foundation Models framework can privately generate structured task-breakdown suggestions on-device, but eligibility, Apple Intelligence settings, model readiness, and model-version drift require a deterministic fallback and evaluation suite. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/documentation/FoundationModels">Foundation Models</a>, Overview: on-device model, structured output with Generable, tool calling; <a href="https://developer.apple.com/documentation/FoundationModels/generating-content-and-performing-tasks-with-foundation-models">Generating content and performing tasks with Foundation Models</a>, Availability states and fallback requirement; <a href="https://developer.apple.com/documentation/Updates/FoundationModels">Foundation Models updates</a>, Model-version updates and instruction to retest prompts.</li>
+<li><strong>[w2-effects-dependency-audit-001]</strong> Pow, Vortex, Inferno, and Glur are all MIT-licensed and declare macOS 12 or newer, but their maintenance and dependency profiles differ materially. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://github.com/EmergeTools/Pow">EmergeTools Pow - Delightful SwiftUI effects</a>, Local audit: LICENSE; Package.swift; commit 1b4b1dda dated 2026-02-20; <a href="https://github.com/twostraws/Vortex">Vortex - High-performance particle effects for SwiftUI</a>, Local audit: LICENSE; Package.swift; commit c9efc55b dated 2026-04-03; <a href="https://github.com/twostraws/Inferno">Inferno - Metal shaders for SwiftUI</a>, Local audit: LICENSE; Package.swift; commit a40c7a0b dated 2026-05-17; <a href="https://github.com/joogps/Glur">Glur - Progressive blurs in SwiftUI</a>, Local audit: LICENSE; Package.swift; commit 35ae7c26 dated 2025-10-09.</li>
+<li><strong>[w2-effects-dependency-audit-002]</strong> Vortex, Inferno, and Glur declare no package dependencies, while Pow declares an exact SnapshotPreviews-iOS dependency even though its preview integration is disabled by default. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://github.com/EmergeTools/Pow">EmergeTools Pow - Delightful SwiftUI effects</a>, Package.swift dependencies and enablePreviews = false; <a href="https://github.com/twostraws/Vortex">Vortex - High-performance particle effects for SwiftUI</a>, Package.swift contains targets but no dependencies array; <a href="https://github.com/twostraws/Inferno">Inferno - Metal shaders for SwiftUI</a>, Package.swift contains targets but no dependencies array; <a href="https://github.com/joogps/Glur">Glur - Progressive blurs in SwiftUI</a>, Package.swift contains targets but no dependencies array.</li>
+<li><strong>[w2-effects-dependency-audit-003]</strong> None of the four audited repositories contains an integrated Reduce Motion or Reduce Transparency policy; Praxodoro must gate third-party effects at its own design-system boundary. — <code>fact</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://github.com/EmergeTools/Pow">EmergeTools Pow - Delightful SwiftUI effects</a>, Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches; <a href="https://github.com/twostraws/Vortex">Vortex - High-performance particle effects for SwiftUI</a>, Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches; <a href="https://github.com/twostraws/Inferno">Inferno - Metal shaders for SwiftUI</a>, Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches; <a href="https://github.com/joogps/Glur">Glur - Progressive blurs in SwiftUI</a>, Repository search for accessibilityReduceMotion, accessibilityReduceTransparency, and Reduce Motion returned no matches.</li>
+<li><strong>[w2-effects-dependency-audit-004]</strong> The core UI should have zero mandatory visual-effect dependencies; prototype native SwiftUI and Metal first, then consider Vortex for rare particles or selectively port a small audited Inferno shader with attribution. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/videos/play/wwdc2026/322/">Compose advanced graphics effects with SwiftUI - WWDC26</a>, Official native shader APIs and domain-warping example; <a href="https://github.com/EmergeTools/Pow">EmergeTools Pow - Delightful SwiftUI effects</a>, Broad effect surface and declared exact package dependency; <a href="https://github.com/twostraws/Vortex">Vortex - High-performance particle effects for SwiftUI</a>, Focused particle scope, no package dependencies; <a href="https://github.com/twostraws/Inferno">Inferno - Metal shaders for SwiftUI</a>, Focused shader examples, no package dependencies, detailed upstream attribution; <a href="https://github.com/joogps/Glur">Glur - Progressive blurs in SwiftUI</a>, Narrow progressive-blur scope that overlaps native material strategy.</li>
+<li><strong>[w2-product-scope-adjudication-001]</strong> The smallest differentiated product is not a smaller feature list; it is a complete low-friction loop: choose or capture one task, create a tiny first action, start, stay visibly oriented, check in gently, recover deliberately, and record what happened. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a>, Low-friction interaction, task breakdown, proactive help, plan negotiation; <a href="https://focusmo.app/">Focusmo - Focus App for ADHD and Time Blindness on Mac</a>, Visible task, check-ins, automatic timeline; <a href="https://stayinsession.com/">Session - Pomodoro focus timer with analytics</a>, State focus and reflect after session; <a href="https://focusedwork.app/focused-work-5">Focused Work 5 - A redesigned experience for focus</a>, Flexible sessions and plan/review.</li>
+<li><strong>[w2-product-scope-adjudication-002]</strong> Ship-first capabilities should be native timer modes, one-task initiation, flexible check-ins, intentional breaks, scratchpad/distraction capture, reflection, local analytics, menu-bar and floating views, keyboard commands, accessibility variants, and local-first persistence. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a>, Design implications for low-friction scaffolding; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC9432722/">Give me a break! A systematic review and meta-analysis on the efficacy of micro-breaks</a>, Well-being evidence for short breaks; <a href="https://focusedwork.app/focused-work-5">Focused Work 5 - A redesigned experience for focus</a>, Plan, flexible sessions, and review market precedent; <a href="https://developer.apple.com/design/human-interface-guidelines/designing-for-macos/">Designing for macOS</a>, Menu bar, windows, keyboard, personalization; <a href="https://developer.apple.com/design/human-interface-guidelines/accessibility/">Apple Human Interface Guidelines - Accessibility</a>, Intuitive, perceivable, adaptable interface requirements.</li>
+<li><strong>[w2-product-scope-adjudication-003]</strong> Stage Calendar and Reminders import, CloudKit history sync, App Intents, richer analytics, deterministic workspace automations, and optional on-device task breakdown after the core loop proves usable. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/documentation/eventkit/accessing-the-event-store">Accessing the event store</a>, Permission and access requirements; <a href="https://developer.apple.com/documentation/swiftdata/syncing-model-data-across-a-persons-devices">Syncing model data across a person&#39;s devices</a>, Capability and schema constraints; <a href="https://developer.apple.com/documentation/appintents/app-intents">App intents</a>, System action integration; <a href="https://developer.apple.com/documentation/FoundationModels/generating-content-and-performing-tasks-with-foundation-models">Generating content and performing tasks with Foundation Models</a>, Eligibility and fallback constraints.</li>
+<li><strong>[w2-product-scope-adjudication-004]</strong> Keep system-wide blocking, live cross-device timer control, passive app or website surveillance, social body doubling, and physiological fatigue inference experimental until separate privacy, distribution, reliability, and efficacy gates are met. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://developer.apple.com/documentation/technotes/tn3134-network-extension-provider-deployment">TN3134: Network Extension provider deployment</a>, Privileged content-filter deployment requirements; <a href="https://developer.apple.com/documentation/coredata/syncing-a-core-data-store-with-cloudkit">Syncing a Core Data Store with CloudKit</a>, Minute-scale managed sync cadence; <a href="https://arxiv.org/abs/2605.07851">A Roadmap of Mixed Reality Body Doubling for Adults with ADHD</a>, Explicit research gaps; <a href="https://www.jmir.org/2026/1/e85638">Consensus Statement on Digital Health and ADHD by the European Network for ADHD</a>, Privacy, evidence, equity, and user-centered requirements.</li>
+<li><strong>[w2-product-scope-adjudication-005]</strong> Reject punitive streak loss, forced breaks, mandatory account creation, configuration-heavy onboarding, manipulative urgency, diagnostic scoring, and productivity judgments based on app activity. — <code>recommendation</code>, <code>supported</code>, confidence <code>high</code>. Evidence: <a href="https://arxiv.org/abs/2603.17258">Not Just Me and My To-Do List: Understanding Challenges of Task Management for Adults with ADHD</a>, Nonjudgmental tone, options rather than enforcement, low setup burden; <a href="https://odr.chalmers.se/items/602f3701-7897-44fe-9b82-1abb6a336824">Designing Digital Productivity Support for Adults with ADHD</a>, Existing-tool assumptions and barriers; <a href="https://www.jmir.org/2026/1/e85638">Consensus Statement on Digital Health and ADHD by the European Network for ADHD</a>, Ethical and user-centered requirements; <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10569543/">Dysregulated not deficit: A qualitative study on symptomatology of ADHD in young adults</a>, Attentional dysregulation framing.</li>
+</ul>
+</article>
+<footer class="docfoot">
+  <a class="srcbtn" href="../../research/pomodoro-landscape-20260720/outputs/executive-memo.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>research/pomodoro-landscape-20260720/outputs/executive-memo.md</code></span>
+</footer>
+</main>
+<script>
+(() => {
+  const root = document.documentElement;
+  const stored = localStorage.getItem("praxdocs-theme");
+  if (stored) root.setAttribute("data-theme", stored);
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme")
+      ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("praxdocs-theme", next);
+  });
+})();
+</script>
+</body>
+</html>

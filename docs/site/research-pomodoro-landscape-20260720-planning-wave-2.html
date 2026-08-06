@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praxmodoro — stages, scopes, phases, and the design-parity gap · Praxmodoro docs</title>
+<title>Wave 2 Plan · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -350,140 +350,34 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Design parity audit · local deep research</div>
-<h1>The engine was specified. The feeling was not.</h1>
-<p class="standfirst">Praxmodoro's behaviour is faithful, tested, and in places exact to one part in a billion. The approved visual language is between zero and a quarter delivered — because nothing ever made it testable.</p>
-<div class="meta"><span>2026-08-04</span><span>branch feat/m2-companion-surfaces</span><span>4 evidence shards</span><span>sources: local only</span></div>
-<section>
-    <h2>Where it stands</h2>
-    <div class="verdict">
-      <div class="vcell"><span class="vnum">37→8</span><span class="vlabel">colour tokens surviving into the app</span></div>
-      <div class="vcell"><span class="vnum">0</span><span class="vlabel">custom typefaces of three specified</span></div>
-      <div class="vcell"><span class="vnum">0</span><span class="vlabel">animation, transition or shadow calls in Swift</span></div>
-      <div class="vcell"><span class="vnum">1e-9</span><span class="vlabel">physics parity against the JS contract</span></div>
-      <div class="vcell"><span class="vnum">73</span><span class="vlabel">unit tests passing</span></div>
-      <div class="vcell"><span class="vnum">0</span><span class="vlabel">UI tests ever executed</span></div>
-    </div>
-
-    <div class="meters">
-      <div class="meter"><span class="meter-name">Physics &amp; state maths</span><div class="track"><div class="fill" style="width:100%;background:var(--calm)"></div></div><span class="meter-val">~100%</span></div>
-      <div class="meter"><span class="meter-name">Behaviour &amp; accessibility</span><div class="track"><div class="fill" style="width:85%;background:var(--calm)"></div></div><span class="meter-val">~85%</span></div>
-      <div class="meter"><span class="meter-name">Screen structure</span><div class="track"><div class="fill" style="width:55%;background:var(--amber)"></div></div><span class="meter-val">~55%</span></div>
-      <div class="meter"><span class="meter-name">Colour system</span><div class="track"><div class="fill" style="width:22%;background:var(--amber)"></div></div><span class="meter-val">~22%</span></div>
-      <div class="meter"><span class="meter-name">Interaction feel</span><div class="track"><div class="fill" style="width:8%;background:var(--danger)"></div></div><span class="meter-val">~8%</span></div>
-      <div class="meter"><span class="meter-name">Motion &amp; effects</span><div class="track"><div class="fill" style="width:5%;background:var(--danger)"></div></div><span class="meter-val">~5%</span></div>
-      <div class="meter"><span class="meter-name">Typography</span><div class="track"><div class="fill" style="width:0%;background:var(--danger)"></div></div><span class="meter-val">0%</span></div>
-    </div>
-    <p class="footnote">Meters are the audit's judgement, derived from the counted evidence in the tables below — not a metric the repository emits.</p>
-  </section>
-
-  <section>
-    <h2>Three defects, not polish</h2>
-    <p>These are gaps against the written specification, in a milestone recorded as complete.</p>
-
-    <div class="defect">
-      <span class="tag">D1 · requirement with no implementation</span>
-      <h3>The in-app “Motion: still” toggle does not exist</h3>
-      <p><code>SPEC.md:19</code> lists it in M1 gate 5. <code>openspec/specs/focus-loop-ui/spec.md:72</code> makes it an EARS scenario: “<em>WHEN system Reduce Motion is on <strong>or the user selects “Motion: still”</strong></em>”. No such control exists anywhere in <code>app/Sources</code> — only the OS-level <code>accessibilityReduceMotion</code> is read. M1 gate 5 was recorded PASS.</p>
-    </div>
-
-    <div class="defect">
-      <span class="tag">D2 · fixed at the model, dropped at the surface</span>
-      <h3>Choosing a check-in answer does not bloom the field</h3>
-      <p>The EARS scenario “Choice acknowledgement” requires one damped pulse when an answer is selected. <code>AppModel</code> increments <code>fieldPulse</code> correctly — but of seven <code>CompanionFieldView(</code> call sites, only <code>FocusSurface</code> and <code>BreakSurface</code> forward <code>pulseSignal</code>. <code>CheckinSurface.swift:21</code> does not. The M1 validator caught exactly this class of bug and <code>progress.txt</code> records it fixed; the fix reached the model layer only. A test asserting <code>fieldPulse == before + 1</code> passes whether or not any surface is listening.</p>
-    </div>
-
-    <div class="defect">
-      <span class="tag">D3 · dead code standing in for a behaviour</span>
-      <h3><code>lastCheckinResponse</code> is written and never read</h3>
-      <p>Declared at <code>AppModel.swift:114</code>, assigned at <code>:144</code>, read by nothing — no surface, no test. The mock renders a live per-answer response message; the app shows a static line instead.</p>
-    </div>
-  </section>
-
-  <section>
-    <h2>Stages and phases</h2>
-    <div class="scroller">
-      <table>
-        <thead><tr><th>Milestone</th><th>Scope</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td><strong>M1</strong></td><td>App scaffold + complete core loop</td><td><span class="chip ok">complete</span> 7/7 gates at <code>d56949d</code> — see D1, D2</td></tr>
-          <tr><td><strong>M2</strong></td><td>Companion surfaces + M1 hardening follow-ups</td><td><span class="chip warn">implemented</span> 3 of 6 gates <span class="chip accent">blocked</span></td></tr>
-          <tr><td><strong>M3</strong></td><td>EventKit, App Intents, richer local analytics</td><td>not specified</td></tr>
-          <tr><td><strong>M4</strong></td><td>Optional sync — CloudKit history, never live ticks</td><td>not specified</td></tr>
-          <tr><td><strong>M5</strong></td><td>Edition content — Pro insights, Enterprise policy</td><td>not specified</td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <h3>M2 atoms</h3>
-    <div class="scroller">
-      <table>
-        <thead><tr><th>Atom</th><th>Scope</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>g1</td><td><code>focused.sh</code>, <code>smoke.sh</code>, README</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g2</td><td><code>SessionSnapshot</code> — one canonical session state</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g3</td><td><code>SurfacePalette</code> + render-level a11y probes</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g4</td><td>Menu-bar popover</td><td><span class="chip ok">done</span> after 1 validator FAIL + 2 repairs</td></tr>
-          <tr><td>g5</td><td>Floating focus capsule</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g6</td><td>Return overlay</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g7</td><td>Motion standdown + VoiceOver on companion surfaces</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g8</td><td>⌘K, live schema parity, keyboard UI, first-run</td><td><span class="chip accent">blocked</span> UI half</td></tr>
-          <tr><td>g9</td><td>Full gauntlet, archive, whole-goal validation</td><td><span class="chip accent">blocked</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="footnote">Specs: M1 contributed 27 requirements / 43 scenarios to <code>openspec/specs/</code>. M2 adds 9 requirements / 31 scenarios across one ADDED and three MODIFIED capabilities. Blocked gates are environmental: XCUITest cannot initialize against a locked screen (<code>CGSSessionScreenIsLocked = true</code>), so the six UI tests compile but have never run.</p>
-  </section>
-
-  <section>
-    <h2>Parity by dimension</h2>
-    <div class="scroller">
-      <table>
-        <thead><tr><th>Element</th><th>Mock</th><th>App</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>Spring integrator, asymmetric breath, drift</td><td><code>companion-physics.js</code></td><td>golden-tested to 1e-9</td><td><span class="chip ok">ported</span></td></tr>
-          <tr><td>6 field states · 5 layers</td><td>STATES / LAYERS tables</td><td>all present, none dead</td><td><span class="chip ok">ported</span></td></tr>
-          <tr><td>Pointer lean springs</td><td><code>companion-physics.js:97-98</code></td><td>zero references</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Per-instance breath phase / seed</td><td>randomised per field</td><td>every field starts identical</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Ripple expanding rings</td><td><code>mockups.css:538-572</code></td><td>none — check-in looks like breathing</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Screen-enter transition</td><td><code>mockups.css:342-351</code></td><td>bare <code>switch</code>, no transition</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Duration &amp; easing tokens</td><td>6 durations, 3 curves</td><td>no Swift equivalent exists</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Hover · press · focus feedback</td><td>13 transition rules</td><td>stock SwiftUI defaults only</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Colour tokens</td><td>37 oklch</td><td>8 eyeballed sRGB literals</td><td><span class="chip warn">approx</span></td></tr>
-          <tr><td>Typefaces + type scale</td><td>Gabarito · Hanken Grotesk · Sono</td><td>system SF; no font files, no resource entry</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Room gradient · grain · veil blur · shadows</td><td>present throughout</td><td>none of the four</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Spacing &amp; radius scales</td><td>9-step · 6-step + organic radii</td><td>inline literals, 3 corner values</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Rewind / forward ±1 min</td><td>buttons + <code>+</code>/<code>-</code> keys</td><td>nothing, and unrecorded anywhere</td><td><span class="chip danger">absent</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="footnote">Counted across all of <code>app/Sources</code>: <code>withAnimation</code> 0 · <code>.animation(</code> 0 · <code>.transition(</code> 0 · <code>matchedGeometryEffect</code> 0 · <code>onHover</code> 0 · <code>.shadow(</code> 0.</p>
-  </section>
-
-  <section>
-    <h2>Why</h2>
-    <p>There <em>is</em> a recorded deferral. It lives in two code comments — <code>CompanionFieldView.swift:3-5</code> and <code>SurfacePalette.swift:9-10</code> — both promising that the “exact color pipeline lands with the design-system pass in <strong>group 6</strong>”.</p>
-    <p>M1's actual group 6 is capability registry, copy lint, accessibility suite, network silence, provenance, and the final gauntlet. There is no colour or design-system task in it. M2's nine groups contain none either. The pointer names a phase that arrived twice and never carried the work, and it survived two milestones and nine independent-validator passes unflagged.</p>
-    <p>The deeper cause is structural. The only visual-adjacent EARS requirement, “Companion field physics”, specifies breath asymmetry, spring damping, drift and pulse count — all behavioural, all golden-testable, all golden-tested. It never mentions colour, blur, shadow or typeface. <code>SPEC.md</code> calls the mocks a “binding reference”, but that is prose in a preamble; M1's seven gates and M2's six gates contain zero visual-fidelity criteria.</p>
-    <p class="pull">A red→green→validator loop builds exactly what can be written as a failing assertion. Physics constants express beautifully. “Does this feel like the warm room in the mock?” does not — so it was never written, never failed, and never got built.</p>
-    <p>Five successive validators attacked the no-second-clock invariant with real, compiling counterexamples. None examined colour, motion or feel, because no criterion pointed them there. The interaction gaps — rewind/forward, hover, press, quick capture — were never even <em>named</em> as deferred; they appear in no spec, so test-first development had nothing to assert and produced nothing.</p>
-  </section>
-
-  <section>
-    <h2>Remedy</h2>
-    <ol>
-      <li><strong>Fix D1–D3 first.</strong> They are spec violations, not polish.</li>
-      <li><strong>Make fidelity testable before building it.</strong> A design-system milestone that is only prose will fail the same way. Candidates: a <code>DesignTokens</code> layer <em>derived</em> from <code>tokens.css</code> by a checked-in converter with a parity test; per-surface snapshot images against committed references; an assertion that no view uses a literal colour, spacing or radius outside the token layer.</li>
-      <li><strong>Decide the typeface question.</strong> Bundle the three faces, or record “system fonts” as an accepted amendment. Right now it is neither.</li>
-      <li><strong>Retire the stale pointer.</strong> Replace both “group 6” comments with a linked atom, or delete the claim.</li>
-      <li><strong>Answer two product questions.</strong> Is the mock single-theme by design — <code>tokens.css</code> defines no dark variant, so the app's missing dark mode may be parity rather than a gap. And is rewind/forward wanted at all? A canonical-timestamp engine makes manual time-travel awkward to keep honest; that may be a good reason to drop it, but it should be recorded as one.</li>
-    </ol>
-    <p class="footnote">This page is set in the mock's own oklch tokens, with its <code>--color-calm</code> and <code>--color-danger</code> encoding parity states. Its typefaces are system stacks rather than Gabarito, Hanken Grotesk and Sono — the sandbox blocks font CDNs, which is a smaller version of the same decision the app never made.</p>
-  </section>
-
+<div class="eyebrow">Product research</div>
+<h1>Wave 2 Plan</h1>
+<p class="standfirst">Adversarially verify wave 1 by trying to disprove the adaptive-coach thesis, bound claims that are not directly supported, and turn platform or dependency risk into staged…</p>
+<div class="meta"><span>227 words</span><span><code>research/pomodoro-landscape-20260720/planning/wave-2.md</code></span></div>
+<article class="prose"><h2>Objective</h2>
+<p>Adversarially verify wave 1 by trying to disprove the adaptive-coach thesis, bound claims that are not directly supported, and turn platform or dependency risk into staged product decisions.</p>
+<h2>Verification Shards</h2>
+<ol>
+<li><code>w2-breaks-adhd-falsification</code>: compare contradictory break studies, separate ADHD-specific evidence from general productivity evidence, and bound body-doubling or AI-coach claims.</li>
+<li><code>w2-platform-feasibility</code>: verify CloudKit timing semantics, app and website blocking requirements, EventKit permissions, App Intents support, and on-device Foundation Models availability.</li>
+<li><code>w2-effects-dependency-audit</code>: inspect candidate repositories locally for licensing, release recency, transitive dependencies, platform targets, tests, and accessibility behavior.</li>
+<li><code>w2-product-scope-adjudication</code>: challenge the proposed feature set against activation cost, privacy, platform risk, and differentiation; classify ship-first, staged, experimental, and rejected capabilities.</li>
+</ol>
+<h2>Falsification Questions</h2>
+<ul>
+<li>Does evidence justify automatic adaptive break prescriptions, or only user-steerable options?</li>
+<li>Is a digital accountability or body-double feature proven enough for efficacy claims?</li>
+<li>Can automatic CloudKit mirroring provide a live synchronized countdown?</li>
+<li>Can reliable website blocking ship as an ordinary sandboxed feature without privileged components?</li>
+<li>Do third-party effects materially improve the core visual system enough to justify their maintenance and accessibility burden?</li>
+<li>Does the feature-rich thesis collapse under the low-cognitive-load requirement?</li>
+</ul>
+<h2>Success Condition</h2>
+<p>Downgrade unsupported claims, preserve explicit uncertainty, and produce a defensible product/technical scope whose core value survives removal of AI, blocking, cross-device real-time control, and third-party visual dependencies.</p>
+</article>
 <footer class="docfoot">
-  <a class="srcbtn" href="2026-08-04-design-parity.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>docs/analysis/2026-08-04-design-parity.md</code></span>
+  <a class="srcbtn" href="../../research/pomodoro-landscape-20260720/planning/wave-2.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>research/pomodoro-landscape-20260720/planning/wave-2.md</code></span>
 </footer>
 </main>
 <script>

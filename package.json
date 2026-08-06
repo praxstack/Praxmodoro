@@ -5,10 +5,12 @@
   "description": "Pinned specification tooling for the native Praxmodoro macOS app.",
   "scripts": {
     "spec:validate": "openspec validate --all --strict --no-interactive",
-    "spec:list": "openspec list"
+    "spec:list": "openspec list",
+    "docs:build": "node scripts/build-docs.mjs"
   },
   "devDependencies": {
-    "@fission-ai/openspec": "1.6.0"
+    "@fission-ai/openspec": "1.6.0",
+    "marked": "^15.0.12"
   },
   "engines": {
     "node": ">=20.19.0"

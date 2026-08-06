@@ -1,7 +1,7 @@
 # timer-engine Specification
 
 ## Purpose
-TBD - created by archiving change add-app-scaffold-core-loop. Update Purpose after archive.
+The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transitions and the current instant, never a counted tick. Covers the transition table, timestamp arithmetic, sleep/wake and relaunch recovery, hold semantics, user-steerable timing policies, and the engine's freedom from UI and edition concerns.
 ## Requirements
 ### Requirement: Session state machine
 The engine SHALL model a session as the states `idle`, `running`, `held`, `break`, and `closed`, with transitions only via explicit user intents (begin, hold, resume, startBreak, endBreak, close) or policy expiry, and SHALL reject invalid transitions with a typed error.

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Praxmodoro — stages, scopes, phases, and the design-parity gap · Praxmodoro docs</title>
+<title>SKILL · openspec-explore · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -350,140 +350,301 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Design parity audit · local deep research</div>
-<h1>The engine was specified. The feeling was not.</h1>
-<p class="standfirst">Praxmodoro's behaviour is faithful, tested, and in places exact to one part in a billion. The approved visual language is between zero and a quarter delivered — because nothing ever made it testable.</p>
-<div class="meta"><span>2026-08-04</span><span>branch feat/m2-companion-surfaces</span><span>4 evidence shards</span><span>sources: local only</span></div>
-<section>
-    <h2>Where it stands</h2>
-    <div class="verdict">
-      <div class="vcell"><span class="vnum">37→8</span><span class="vlabel">colour tokens surviving into the app</span></div>
-      <div class="vcell"><span class="vnum">0</span><span class="vlabel">custom typefaces of three specified</span></div>
-      <div class="vcell"><span class="vnum">0</span><span class="vlabel">animation, transition or shadow calls in Swift</span></div>
-      <div class="vcell"><span class="vnum">1e-9</span><span class="vlabel">physics parity against the JS contract</span></div>
-      <div class="vcell"><span class="vnum">73</span><span class="vlabel">unit tests passing</span></div>
-      <div class="vcell"><span class="vnum">0</span><span class="vlabel">UI tests ever executed</span></div>
-    </div>
+<div class="eyebrow">Generated tooling prompts</div>
+<h1>SKILL · openspec-explore</h1>
+<p class="standfirst">Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.</p>
+<div class="meta"><span>1,316 words</span><span><code>.codex/skills/openspec-explore/SKILL.md</code></span></div>
+<article class="prose"><hr>
+<h2>name: openspec-explore
+description: Enter explore mode - a thinking partner for exploring ideas, investigating problems, and clarifying requirements. Use when the user wants to think through something before or during a change.
+allowed-tools: Bash(openspec:*)
+license: MIT
+compatibility: Requires openspec CLI.
+metadata:
+  author: openspec
+  version: &quot;1.0&quot;
+  generatedBy: &quot;1.6.0&quot;</h2>
+<p>Enter explore mode. Think deeply. Visualize freely. Follow the conversation wherever it goes.</p>
+<p><strong>IMPORTANT: Explore mode is for thinking, not implementing.</strong> You may read files, search code, and investigate the codebase, but you must NEVER write code or implement features. If the user asks you to implement something, remind them to exit explore mode first and create a change proposal. You MAY create OpenSpec artifacts (proposals, designs, specs) if the user asks—that&#39;s capturing thinking, not implementing.</p>
+<p><strong>This is a stance, not a workflow.</strong> There are no fixed steps, no required sequence, no mandatory outputs. You&#39;re a thinking partner helping the user explore.</p>
+<p><strong>Store selection:</strong> If the user names a store (a store is a standalone OpenSpec repo registered on this machine) or the work lives in one, run <code>openspec store list --json</code> to discover registered store ids, then pass <code>--store &lt;id&gt;</code> on the commands that read or write specs and changes (<code>new change</code>, <code>status</code>, <code>instructions</code>, <code>list</code>, <code>show</code>, <code>validate</code>, <code>archive</code>, <code>doctor</code>, <code>context</code>). Other commands do not take the flag. Hints printed by commands already carry the flag; keep it on follow-ups. Without a store, commands act on the nearest local <code>openspec/</code> root.</p>
+<hr>
+<h2>The Stance</h2>
+<ul>
+<li><strong>Curious, not prescriptive</strong> - Ask questions that emerge naturally, don&#39;t follow a script</li>
+<li><strong>Open threads, not interrogations</strong> - Surface multiple interesting directions and let the user follow what resonates. Don&#39;t funnel them through a single path of questions.</li>
+<li><strong>Visual</strong> - Use ASCII diagrams liberally when they&#39;d help clarify thinking</li>
+<li><strong>Adaptive</strong> - Follow interesting threads, pivot when new information emerges</li>
+<li><strong>Patient</strong> - Don&#39;t rush to conclusions, let the shape of the problem emerge</li>
+<li><strong>Grounded</strong> - Explore the actual codebase when relevant, don&#39;t just theorize</li>
+</ul>
+<hr>
+<h2>What You Might Do</h2>
+<p>Depending on what the user brings, you might:</p>
+<p><strong>Explore the problem space</strong></p>
+<ul>
+<li>Ask clarifying questions that emerge from what they said</li>
+<li>Challenge assumptions</li>
+<li>Reframe the problem</li>
+<li>Find analogies</li>
+</ul>
+<p><strong>Investigate the codebase</strong></p>
+<ul>
+<li>Map existing architecture relevant to the discussion</li>
+<li>Find integration points</li>
+<li>Identify patterns already in use</li>
+<li>Surface hidden complexity</li>
+</ul>
+<p><strong>Compare options</strong></p>
+<ul>
+<li>Brainstorm multiple approaches</li>
+<li>Build comparison tables</li>
+<li>Sketch tradeoffs</li>
+<li>Recommend a path (if asked)</li>
+</ul>
+<p><strong>Visualize</strong></p>
+<pre><code>┌─────────────────────────────────────────┐
+│     Use ASCII diagrams liberally        │
+├─────────────────────────────────────────┤
+│                                         │
+│      ┌────────┐         ┌────────┐      │
+│      │ State  │────────▶│ State  │      │
+│      │   A    │         │   B    │      │
+│      └────────┘         └────────┘      │
+│                                         │
+│   System diagrams, state machines,      │
+│   data flows, architecture sketches,    │
+│   dependency graphs, comparison tables  │
+│                                         │
+└─────────────────────────────────────────┘
+</code></pre>
+<p><strong>Surface risks and unknowns</strong></p>
+<ul>
+<li>Identify what could go wrong</li>
+<li>Find gaps in understanding</li>
+<li>Suggest spikes or investigations</li>
+</ul>
+<hr>
+<h2>OpenSpec Awareness</h2>
+<p>You have full context of the OpenSpec system. Use it naturally, don&#39;t force it.</p>
+<h3>Check for context</h3>
+<p>At the start, quickly check what exists:</p>
+<pre><code class="language-bash">openspec list --json
+</code></pre>
+<p>This tells you:</p>
+<ul>
+<li>If there are active changes</li>
+<li>Their names, schemas, and status</li>
+<li>What the user might be working on</li>
+</ul>
+<h3>When no change exists</h3>
+<p>Think freely. When insights crystallize, you might offer:</p>
+<ul>
+<li>&quot;This feels solid enough to start a change. Want me to create a proposal?&quot;</li>
+<li>Or keep exploring - no pressure to formalize</li>
+</ul>
+<h3>When a change exists</h3>
+<p>If the user mentions a change or you detect one is relevant:</p>
+<ol>
+<li><p><strong>Resolve and read existing artifacts for context</strong></p>
+<ul>
+<li>Run <code>openspec status --change &quot;&lt;name&gt;&quot; --json</code>.</li>
+<li>Use <code>changeRoot</code>, <code>artifactPaths</code>, and <code>actionContext</code> from the status JSON.</li>
+<li>Read existing files from <code>artifactPaths.&lt;artifact&gt;.existingOutputPaths</code>.</li>
+</ul>
+</li>
+<li><p><strong>Reference them naturally in conversation</strong></p>
+<ul>
+<li>&quot;Your design mentions using Redis, but we just realized SQLite fits better...&quot;</li>
+<li>&quot;The proposal scopes this to premium users, but we&#39;re now thinking everyone...&quot;</li>
+</ul>
+</li>
+<li><p><strong>Offer to capture when decisions are made</strong></p>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>Insight Type</th>
+<th>Where to Capture</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>New requirement discovered</td>
+<td><code>specs/&lt;capability&gt;/spec.md</code></td>
+</tr>
+<tr>
+<td>Requirement changed</td>
+<td><code>specs/&lt;capability&gt;/spec.md</code></td>
+</tr>
+<tr>
+<td>Design decision made</td>
+<td><code>design.md</code></td>
+</tr>
+<tr>
+<td>Scope changed</td>
+<td><code>proposal.md</code></td>
+</tr>
+<tr>
+<td>New work identified</td>
+<td><code>tasks.md</code></td>
+</tr>
+<tr>
+<td>Assumption invalidated</td>
+<td>Relevant artifact</td>
+</tr>
+</tbody></table></div>
+<p>Example offers:</p>
+<ul>
+<li>&quot;That&#39;s a design decision. Capture it in design.md?&quot;</li>
+<li>&quot;This is a new requirement. Add it to specs?&quot;</li>
+<li>&quot;This changes scope. Update the proposal?&quot;</li>
+</ul>
+</li>
+<li><p><strong>The user decides</strong> - Offer and move on. Don&#39;t pressure. Don&#39;t auto-capture.</p>
+</li>
+</ol>
+<hr>
+<h2>What You Don&#39;t Have To Do</h2>
+<ul>
+<li>Follow a script</li>
+<li>Ask the same questions every time</li>
+<li>Produce a specific artifact</li>
+<li>Reach a conclusion</li>
+<li>Stay on topic if a tangent is valuable</li>
+<li>Be brief (this is thinking time)</li>
+</ul>
+<hr>
+<h2>Handling Different Entry Points</h2>
+<p><strong>User brings a vague idea:</strong></p>
+<pre><code>User: I&#39;m thinking about adding real-time collaboration
 
-    <div class="meters">
-      <div class="meter"><span class="meter-name">Physics &amp; state maths</span><div class="track"><div class="fill" style="width:100%;background:var(--calm)"></div></div><span class="meter-val">~100%</span></div>
-      <div class="meter"><span class="meter-name">Behaviour &amp; accessibility</span><div class="track"><div class="fill" style="width:85%;background:var(--calm)"></div></div><span class="meter-val">~85%</span></div>
-      <div class="meter"><span class="meter-name">Screen structure</span><div class="track"><div class="fill" style="width:55%;background:var(--amber)"></div></div><span class="meter-val">~55%</span></div>
-      <div class="meter"><span class="meter-name">Colour system</span><div class="track"><div class="fill" style="width:22%;background:var(--amber)"></div></div><span class="meter-val">~22%</span></div>
-      <div class="meter"><span class="meter-name">Interaction feel</span><div class="track"><div class="fill" style="width:8%;background:var(--danger)"></div></div><span class="meter-val">~8%</span></div>
-      <div class="meter"><span class="meter-name">Motion &amp; effects</span><div class="track"><div class="fill" style="width:5%;background:var(--danger)"></div></div><span class="meter-val">~5%</span></div>
-      <div class="meter"><span class="meter-name">Typography</span><div class="track"><div class="fill" style="width:0%;background:var(--danger)"></div></div><span class="meter-val">0%</span></div>
-    </div>
-    <p class="footnote">Meters are the audit's judgement, derived from the counted evidence in the tables below — not a metric the repository emits.</p>
-  </section>
+You: Real-time collab is a big space. Let me think about this...
 
-  <section>
-    <h2>Three defects, not polish</h2>
-    <p>These are gaps against the written specification, in a milestone recorded as complete.</p>
+      COLLABORATION SPECTRUM
+      ════════════════════════════════════════════
 
-    <div class="defect">
-      <span class="tag">D1 · requirement with no implementation</span>
-      <h3>The in-app “Motion: still” toggle does not exist</h3>
-      <p><code>SPEC.md:19</code> lists it in M1 gate 5. <code>openspec/specs/focus-loop-ui/spec.md:72</code> makes it an EARS scenario: “<em>WHEN system Reduce Motion is on <strong>or the user selects “Motion: still”</strong></em>”. No such control exists anywhere in <code>app/Sources</code> — only the OS-level <code>accessibilityReduceMotion</code> is read. M1 gate 5 was recorded PASS.</p>
-    </div>
+      Awareness          Coordination         Sync
+          │                   │                 │
+          ▼                   ▼                 ▼
+      ┌────────┐         ┌────────┐        ┌────────┐
+      │Presence│         │Cursors │        │  CRDT  │
+      │  &quot;3    │         │ Multi  │        │Conflict│
+      │online&quot; │         │ select │        │  free  │
+      └────────┘         └────────┘        └────────┘
+          │                   │                 │
+       trivial            moderate           complex
 
-    <div class="defect">
-      <span class="tag">D2 · fixed at the model, dropped at the surface</span>
-      <h3>Choosing a check-in answer does not bloom the field</h3>
-      <p>The EARS scenario “Choice acknowledgement” requires one damped pulse when an answer is selected. <code>AppModel</code> increments <code>fieldPulse</code> correctly — but of seven <code>CompanionFieldView(</code> call sites, only <code>FocusSurface</code> and <code>BreakSurface</code> forward <code>pulseSignal</code>. <code>CheckinSurface.swift:21</code> does not. The M1 validator caught exactly this class of bug and <code>progress.txt</code> records it fixed; the fix reached the model layer only. A test asserting <code>fieldPulse == before + 1</code> passes whether or not any surface is listening.</p>
-    </div>
+      Where&#39;s your head at?
+</code></pre>
+<p><strong>User brings a specific problem:</strong></p>
+<pre><code>User: The auth system is a mess
 
-    <div class="defect">
-      <span class="tag">D3 · dead code standing in for a behaviour</span>
-      <h3><code>lastCheckinResponse</code> is written and never read</h3>
-      <p>Declared at <code>AppModel.swift:114</code>, assigned at <code>:144</code>, read by nothing — no surface, no test. The mock renders a live per-answer response message; the app shows a static line instead.</p>
-    </div>
-  </section>
+You: [reads codebase]
 
-  <section>
-    <h2>Stages and phases</h2>
-    <div class="scroller">
-      <table>
-        <thead><tr><th>Milestone</th><th>Scope</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td><strong>M1</strong></td><td>App scaffold + complete core loop</td><td><span class="chip ok">complete</span> 7/7 gates at <code>d56949d</code> — see D1, D2</td></tr>
-          <tr><td><strong>M2</strong></td><td>Companion surfaces + M1 hardening follow-ups</td><td><span class="chip warn">implemented</span> 3 of 6 gates <span class="chip accent">blocked</span></td></tr>
-          <tr><td><strong>M3</strong></td><td>EventKit, App Intents, richer local analytics</td><td>not specified</td></tr>
-          <tr><td><strong>M4</strong></td><td>Optional sync — CloudKit history, never live ticks</td><td>not specified</td></tr>
-          <tr><td><strong>M5</strong></td><td>Edition content — Pro insights, Enterprise policy</td><td>not specified</td></tr>
-        </tbody>
-      </table>
-    </div>
+     ┌─────────────────────────────────────────────┐
+     │              CURRENT AUTH FLOW              │
+     └─────────────────────────────────────────────┘
+                        │
+          ┌─────────────┼─────────────┐
+          ▼             ▼             ▼
+     ┌─────────┐  ┌─────────┐  ┌─────────┐
+     │ Google  │  │  GitHub │  │  Email  │
+     │  OAuth  │  │  OAuth  │  │  Magic  │
+     └────┬────┘  └────┬────┘  └────┬────┘
+          │             │             │
+          └─────────────┼─────────────┘
+                        ▼
+                  ┌───────────┐
+                  │  Session  │
+                  └─────┬─────┘
+                        │
+                        ▼
+                  ┌───────────┐
+                  │   Perms   │
+                  └───────────┘
 
-    <h3>M2 atoms</h3>
-    <div class="scroller">
-      <table>
-        <thead><tr><th>Atom</th><th>Scope</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>g1</td><td><code>focused.sh</code>, <code>smoke.sh</code>, README</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g2</td><td><code>SessionSnapshot</code> — one canonical session state</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g3</td><td><code>SurfacePalette</code> + render-level a11y probes</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g4</td><td>Menu-bar popover</td><td><span class="chip ok">done</span> after 1 validator FAIL + 2 repairs</td></tr>
-          <tr><td>g5</td><td>Floating focus capsule</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g6</td><td>Return overlay</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g7</td><td>Motion standdown + VoiceOver on companion surfaces</td><td><span class="chip ok">done</span></td></tr>
-          <tr><td>g8</td><td>⌘K, live schema parity, keyboard UI, first-run</td><td><span class="chip accent">blocked</span> UI half</td></tr>
-          <tr><td>g9</td><td>Full gauntlet, archive, whole-goal validation</td><td><span class="chip accent">blocked</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="footnote">Specs: M1 contributed 27 requirements / 43 scenarios to <code>openspec/specs/</code>. M2 adds 9 requirements / 31 scenarios across one ADDED and three MODIFIED capabilities. Blocked gates are environmental: XCUITest cannot initialize against a locked screen (<code>CGSSessionScreenIsLocked = true</code>), so the six UI tests compile but have never run.</p>
-  </section>
+     I see three tangles. Which one&#39;s burning?
+</code></pre>
+<p><strong>User is stuck mid-implementation:</strong></p>
+<pre><code>User: /opsx:explore add-auth-system
+      The OAuth integration is more complex than expected
 
-  <section>
-    <h2>Parity by dimension</h2>
-    <div class="scroller">
-      <table>
-        <thead><tr><th>Element</th><th>Mock</th><th>App</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>Spring integrator, asymmetric breath, drift</td><td><code>companion-physics.js</code></td><td>golden-tested to 1e-9</td><td><span class="chip ok">ported</span></td></tr>
-          <tr><td>6 field states · 5 layers</td><td>STATES / LAYERS tables</td><td>all present, none dead</td><td><span class="chip ok">ported</span></td></tr>
-          <tr><td>Pointer lean springs</td><td><code>companion-physics.js:97-98</code></td><td>zero references</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Per-instance breath phase / seed</td><td>randomised per field</td><td>every field starts identical</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Ripple expanding rings</td><td><code>mockups.css:538-572</code></td><td>none — check-in looks like breathing</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Screen-enter transition</td><td><code>mockups.css:342-351</code></td><td>bare <code>switch</code>, no transition</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Duration &amp; easing tokens</td><td>6 durations, 3 curves</td><td>no Swift equivalent exists</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Hover · press · focus feedback</td><td>13 transition rules</td><td>stock SwiftUI defaults only</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Colour tokens</td><td>37 oklch</td><td>8 eyeballed sRGB literals</td><td><span class="chip warn">approx</span></td></tr>
-          <tr><td>Typefaces + type scale</td><td>Gabarito · Hanken Grotesk · Sono</td><td>system SF; no font files, no resource entry</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Room gradient · grain · veil blur · shadows</td><td>present throughout</td><td>none of the four</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Spacing &amp; radius scales</td><td>9-step · 6-step + organic radii</td><td>inline literals, 3 corner values</td><td><span class="chip danger">absent</span></td></tr>
-          <tr><td>Rewind / forward ±1 min</td><td>buttons + <code>+</code>/<code>-</code> keys</td><td>nothing, and unrecorded anywhere</td><td><span class="chip danger">absent</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="footnote">Counted across all of <code>app/Sources</code>: <code>withAnimation</code> 0 · <code>.animation(</code> 0 · <code>.transition(</code> 0 · <code>matchedGeometryEffect</code> 0 · <code>onHover</code> 0 · <code>.shadow(</code> 0.</p>
-  </section>
+You: [reads change artifacts]
 
-  <section>
-    <h2>Why</h2>
-    <p>There <em>is</em> a recorded deferral. It lives in two code comments — <code>CompanionFieldView.swift:3-5</code> and <code>SurfacePalette.swift:9-10</code> — both promising that the “exact color pipeline lands with the design-system pass in <strong>group 6</strong>”.</p>
-    <p>M1's actual group 6 is capability registry, copy lint, accessibility suite, network silence, provenance, and the final gauntlet. There is no colour or design-system task in it. M2's nine groups contain none either. The pointer names a phase that arrived twice and never carried the work, and it survived two milestones and nine independent-validator passes unflagged.</p>
-    <p>The deeper cause is structural. The only visual-adjacent EARS requirement, “Companion field physics”, specifies breath asymmetry, spring damping, drift and pulse count — all behavioural, all golden-testable, all golden-tested. It never mentions colour, blur, shadow or typeface. <code>SPEC.md</code> calls the mocks a “binding reference”, but that is prose in a preamble; M1's seven gates and M2's six gates contain zero visual-fidelity criteria.</p>
-    <p class="pull">A red→green→validator loop builds exactly what can be written as a failing assertion. Physics constants express beautifully. “Does this feel like the warm room in the mock?” does not — so it was never written, never failed, and never got built.</p>
-    <p>Five successive validators attacked the no-second-clock invariant with real, compiling counterexamples. None examined colour, motion or feel, because no criterion pointed them there. The interaction gaps — rewind/forward, hover, press, quick capture — were never even <em>named</em> as deferred; they appear in no spec, so test-first development had nothing to assert and produced nothing.</p>
-  </section>
+     You&#39;re on task 4: &quot;Implement OAuth flow&quot;
 
-  <section>
-    <h2>Remedy</h2>
-    <ol>
-      <li><strong>Fix D1–D3 first.</strong> They are spec violations, not polish.</li>
-      <li><strong>Make fidelity testable before building it.</strong> A design-system milestone that is only prose will fail the same way. Candidates: a <code>DesignTokens</code> layer <em>derived</em> from <code>tokens.css</code> by a checked-in converter with a parity test; per-surface snapshot images against committed references; an assertion that no view uses a literal colour, spacing or radius outside the token layer.</li>
-      <li><strong>Decide the typeface question.</strong> Bundle the three faces, or record “system fonts” as an accepted amendment. Right now it is neither.</li>
-      <li><strong>Retire the stale pointer.</strong> Replace both “group 6” comments with a linked atom, or delete the claim.</li>
-      <li><strong>Answer two product questions.</strong> Is the mock single-theme by design — <code>tokens.css</code> defines no dark variant, so the app's missing dark mode may be parity rather than a gap. And is rewind/forward wanted at all? A canonical-timestamp engine makes manual time-travel awkward to keep honest; that may be a good reason to drop it, but it should be recorded as one.</li>
-    </ol>
-    <p class="footnote">This page is set in the mock's own oklch tokens, with its <code>--color-calm</code> and <code>--color-danger</code> encoding parity states. Its typefaces are system stacks rather than Gabarito, Hanken Grotesk and Sono — the sandbox blocks font CDNs, which is a smaller version of the same decision the app never made.</p>
-  </section>
+     Let me trace what&#39;s involved...
 
+     [draws diagram, explores options, suggests paths]
+
+     Want to update the design to reflect this?
+     Or add a spike task to investigate?
+</code></pre>
+<p><strong>User wants to compare options:</strong></p>
+<pre><code>User: Should we use Postgres or SQLite?
+
+You: Generic answer is boring. What&#39;s the context?
+
+User: A CLI tool that tracks local dev environments
+
+You: That changes everything.
+
+     ┌─────────────────────────────────────────────────┐
+     │          CLI TOOL DATA STORAGE                  │
+     └─────────────────────────────────────────────────┘
+
+     Key constraints:
+     • No daemon running
+     • Must work offline
+     • Single user
+
+                  SQLite          Postgres
+     Deployment   embedded ✓      needs server ✗
+     Offline      yes ✓           no ✗
+     Single file  yes ✓           no ✗
+
+     SQLite. Not even close.
+
+     Unless... is there a sync component?
+</code></pre>
+<hr>
+<h2>Ending Discovery</h2>
+<p>There&#39;s no required ending. Discovery might:</p>
+<ul>
+<li><strong>Flow into a proposal</strong>: &quot;Ready to start? I can create a change proposal.&quot;</li>
+<li><strong>Result in artifact updates</strong>: &quot;Updated design.md with these decisions&quot;</li>
+<li><strong>Just provide clarity</strong>: User has what they need, moves on</li>
+<li><strong>Continue later</strong>: &quot;We can pick this up anytime&quot;</li>
+</ul>
+<p>When it feels like things are crystallizing, you might summarize:</p>
+<pre><code>## What We Figured Out
+
+**The problem**: [crystallized understanding]
+
+**The approach**: [if one emerged]
+
+**Open questions**: [if any remain]
+
+**Next steps** (if ready):
+- Create a change proposal
+- Keep exploring: just keep talking
+</code></pre>
+<p>But this summary is optional. Sometimes the thinking IS the value.</p>
+<hr>
+<h2>Guardrails</h2>
+<ul>
+<li><strong>Don&#39;t implement</strong> - Never write code or implement features. Creating OpenSpec artifacts is fine, writing application code is not.</li>
+<li><strong>Don&#39;t fake understanding</strong> - If something is unclear, dig deeper</li>
+<li><strong>Don&#39;t rush</strong> - Discovery is thinking time, not task time</li>
+<li><strong>Don&#39;t force structure</strong> - Let patterns emerge naturally</li>
+<li><strong>Don&#39;t auto-capture</strong> - Offer to save insights, don&#39;t just do it</li>
+<li><strong>Do visualize</strong> - A good diagram is worth many paragraphs</li>
+<li><strong>Do explore the codebase</strong> - Ground discussions in reality</li>
+<li><strong>Do question assumptions</strong> - Including the user&#39;s and your own</li>
+</ul>
+</article>
 <footer class="docfoot">
-  <a class="srcbtn" href="2026-08-04-design-parity.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>docs/analysis/2026-08-04-design-parity.md</code></span>
+  <a class="srcbtn" href="../../.codex/skills/openspec-explore/SKILL.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>.codex/skills/openspec-explore/SKILL.md</code></span>
 </footer>
 </main>
 <script>

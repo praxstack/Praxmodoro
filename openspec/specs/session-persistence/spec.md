@@ -1,7 +1,7 @@
 # session-persistence Specification
 
 ## Purpose
-TBD - created by archiving change add-app-scaffold-core-loop. Update Purpose after archive.
+What is stored, and what is deliberately not. Local SwiftData models with an append-only event log, no network and no account, data minimisation, graceful degradation when the store cannot be opened, and storage whose shape is identical across editions and store configurations.
 ## Requirements
 ### Requirement: Local SwiftData models
 The persistence layer SHALL store tasks, sessions, session events (transitions, check-in answers, parked thoughts, breaks, clock anomalies), and self-reported capacity as SwiftData models in the app's local container.

@@ -1,7 +1,7 @@
 # app-scaffold Specification
 
 ## Purpose
-TBD - created by archiving change add-app-scaffold-core-loop. Update Purpose after archive.
+How the macOS application is generated, launched, and bounded. Covers reproducible project generation from `app/project.yml`, the documented build and test commands, lifecycle restore from persistence, the edition capability registry that makes core ADHD support impossible to paywall, the no-hidden-cloud guarantee, and build provenance.
 ## Requirements
 ### Requirement: Reproducible project generation
 The repository SHALL contain an XcodeGen `project.yml` under `app/` that deterministically generates the Xcode project with an app target, a unit-test target, and a UI-test target for macOS 26+, Swift 6.3.

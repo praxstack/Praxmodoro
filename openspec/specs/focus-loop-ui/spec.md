@@ -1,7 +1,7 @@
 # focus-loop-ui Specification
 
 ## Purpose
-TBD - created by archiving change add-app-scaffold-core-loop. Update Purpose after archive.
+The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in with no failure state, a break that keeps your place, and a review that records rather than judges. Also carries the companion field's physics contract, the complete accessibility alternates, the non-medical copy rule, and the edition-gating seam.
 ## Requirements
 ### Requirement: One-task initiation
 The initiate surface SHALL ask for exactly one task, one tiny first action, a self-reported capacity (foggy/steady/restless/charged), and a timing policy, and SHALL show no other configuration on the start path (research w1-user-friction-004).
