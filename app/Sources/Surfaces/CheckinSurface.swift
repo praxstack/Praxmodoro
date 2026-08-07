@@ -18,7 +18,7 @@ struct CheckinSurface: View {
                         .accessibilityIdentifier("checkin-question")
                 }
                 Spacer()
-                CompanionFieldView(state: "ripple", motionStilled: reduceMotion)
+                CompanionFieldView(state: "ripple", motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion))
                     .frame(width: 96, height: 96)
                     .accessibilityIdentifier("companion-field")
             }

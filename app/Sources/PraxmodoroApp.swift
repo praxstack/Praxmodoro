@@ -43,9 +43,10 @@ struct PraxmodoroApp: App {
             // next action").
             .overlay {
                 if model.returnPending {
-                    ReturnOverlay(display: model.snapshot(at: Date()).display) {
-                        model.acknowledgeReturn()
-                    }
+                    ReturnOverlay(
+                        display: model.snapshot(at: Date()).display,
+                        onAcknowledge: { model.acknowledgeReturn() },
+                        motionStilledOverride: model.motionStilled ? true : nil)
                 }
             }
         }
@@ -59,13 +60,20 @@ struct PraxmodoroApp: App {
                 // ⌘N (new session) with no keyboard route to it.
                 Button("Close Session") { try? model.closeSession() }
                     .keyboardShortcut("w", modifiers: [.command, .shift])
+                // The in-app half of the motion standdown (spec: focus-loop-ui
+                // "…or the user selects 'Motion: still'"). The system setting
+                // remains the floor; this only ever adds stillness.
+                Button(model.motionToggleLabel) { model.setMotionStilled(!model.motionStilled) }
+                    .keyboardShortcut("m", modifiers: [.command, .shift])
             }
         }
 
         // Always above ordinary windows, never opened for you.
         Window("Focus capsule", id: Self.capsuleWindowID) {
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                FocusCapsule(display: model.snapshot(at: context.date).display, actions: companionActions)
+                FocusCapsule(
+                    display: model.snapshot(at: context.date).display, actions: companionActions,
+                    motionStilledOverride: model.motionStilled ? true : nil)
             }
         }
         .windowLevel(.floating)
@@ -84,7 +92,9 @@ struct PraxmodoroApp: App {
         // (spec: companion-surfaces "Menu-bar popover operates the loop").
         MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                MenuBarPopover(display: model.snapshot(at: context.date).display, actions: companionActions)
+                MenuBarPopover(
+                    display: model.snapshot(at: context.date).display, actions: companionActions,
+                    motionStilledOverride: model.motionStilled ? true : nil)
             }
         }
         .menuBarExtraStyle(.window)

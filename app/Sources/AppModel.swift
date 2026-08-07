@@ -21,6 +21,31 @@ final class AppModel {
     /// Increments once per acknowledged user choice; the field blooms on change.
     private(set) var fieldPulse = 0
 
+    // MARK: Motion preference (spec: focus-loop-ui "Reduce Motion or the user
+    // selects 'Motion: still' SHALL stop the physics engine")
+
+    private static let motionStilledKey = "praxmodoro.motion-stilled"
+
+    /// The in-app half of the standdown pair. Persisted, because a comfort
+    /// choice that resets on relaunch is a nag, not a choice.
+    private(set) var motionStilled = false
+
+    func setMotionStilled(_ stilled: Bool) {
+        motionStilled = stilled
+        defaults.set(stilled, forKey: Self.motionStilledKey)
+    }
+
+    /// What the surfaces consume. The system setting is the floor: this app
+    /// can add stillness on top of it, never take stillness away from it.
+    func fieldIsStilled(systemReduceMotion: Bool) -> Bool {
+        systemReduceMotion || motionStilled
+    }
+
+    /// The menu item names the state it moves you to, not the one you are in.
+    var motionToggleLabel: String {
+        motionStilled ? "Motion: gentle" : "Motion: still"
+    }
+
     private(set) var session: Session?
     private(set) var sessionID: UUID?
     private(set) var parkedThoughts: [String] = []
@@ -28,13 +53,17 @@ final class AppModel {
     let store: LocalStore?
     let capabilities: CapabilityRegistry
     private let clock: () -> Date
+    private let defaults: UserDefaults
 
     init(
-        store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite), clock: @escaping () -> Date = { Date() }
+        store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite),
+        clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard
     ) {
         self.store = store
         self.capabilities = capabilities
         self.clock = clock
+        self.defaults = defaults
+        self.motionStilled = defaults.bool(forKey: Self.motionStilledKey)
         // Spec: startup validation fails fast in debug; lookup self-heals in release.
         do { try capabilities.validate() } catch { assertionFailure("capability validation failed: \(error)") }
     }

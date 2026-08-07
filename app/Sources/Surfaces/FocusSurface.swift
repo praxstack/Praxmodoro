@@ -33,7 +33,8 @@ struct FocusSurface: View {
 
                 ZStack {
                     CompanionFieldView(
-                        state: snapshot.phase == .held ? "held" : "breathing", motionStilled: reduceMotion,
+                        state: snapshot.phase == .held ? "held" : "breathing",
+                        motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion),
                         pulseSignal: model.fieldPulse
                     )
                     .frame(width: 260, height: 260)

@@ -58,6 +58,12 @@
       "title": "Full gauntlet, evidence bookkeeping, archive and independent validation",
       "status": "blocked",
       "evidence": "five independent validator defeats of the no-second-clock guard, all closed; the current rasterized defense has not itself been independently attacked. 73 tests in 23 suites, packages 12/12 and 7/7, strict lint, build, spec:validate 5/5, smoke.sh all green. BLOCKED: the UI suite has never executed (locked screen), so verify-project.sh cannot exit 0 and M2 cannot be called complete."
+    },
+    {
+      "id": "gh-1",
+      "title": "In-app Motion: still control (GitHub #1)",
+      "status": "done",
+      "evidence": "red: 7 compile errors (AppModel has no motionStilled/setMotionStilled/fieldIsStilled, no defaults param); green: 80 tests in 24 suites incl. default-moving, stillness stops field, system-RM-always-wins composition, relaunch persistence, keyboard path, action-named label, both-directions standdown"
     }
   ],
   "archivedMilestones": [
