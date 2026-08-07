@@ -69,6 +69,7 @@ final class AppModel {
     }
 
     func begin() throws {
+        fieldPulse += 1
         let now = clock()
         var newSession = Session(policy: policy, startedAt: now)
         try newSession.apply(.begin, at: now)
@@ -124,7 +125,17 @@ final class AppModel {
         // Surface intentionally untouched — focus stays active.
     }
 
+    /// The user's hold/resume. Pulses, because pressing it is a choice.
     func toggleHold() throws {
+        fieldPulse += 1
+        try applyHoldToggle()
+    }
+
+    /// The mechanics, shared with internal transitions that hold or resume as
+    /// a side effect (opening a check-in, returning from an answer). Those are
+    /// not user choices and must not pulse — the M1 pulse test pins exactly
+    /// one bloom per answered check-in.
+    private func applyHoldToggle() throws {
         guard var current = session else { return }
         let now = clock()
         let state = current.reconciled(at: now).state(at: now)
@@ -144,7 +155,7 @@ final class AppModel {
 
     /// Open the check-in: the timer holds while the question is open.
     func openCheckin() throws {
-        if !isHeld { try toggleHold() }
+        if !isHeld { try applyHoldToggle() }
         surface = .checkin
     }
 
@@ -177,7 +188,7 @@ final class AppModel {
         }
         switch answer {
         case .stillFits, .smallerStep, .drifted:
-            if isHeld { try toggleHold() }
+            if isHeld { try applyHoldToggle() }
             surface = .focus
         case .needBreak:
             guard var current = session else { return }

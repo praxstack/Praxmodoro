@@ -31,9 +31,12 @@ struct ReviewSurface: View {
             .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(alignment: .leading, spacing: 14) {
-                CompanionFieldView(state: "settled", motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion))
-                    .frame(width: 110, height: 110)
-                    .accessibilityIdentifier("companion-field")
+                CompanionFieldView(
+                    state: "settled", motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion),
+                    pulseSignal: model.fieldPulse
+                )
+                .frame(width: 110, height: 110)
+                .accessibilityIdentifier("companion-field")
                 Text("Observed, not concluded").font(.caption.smallCaps()).foregroundStyle(.secondary)
                 Text(model.reviewInsight)
                     .font(.callout)

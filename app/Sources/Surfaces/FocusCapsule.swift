@@ -22,6 +22,11 @@ struct FocusCapsule: View {
         return "Focus capsule: \(display.taskLine), \(timeText) left, \(display.statusLine)"
     }
 
+    /// The acknowledgement signal, passed as a value at construction like
+    /// everything else these surfaces receive (spec: focus-loop-ui "Choice
+    /// acknowledgement").
+    var pulseSignal: Int = 0
+
     /// Forces the motion standdown regardless of the environment.
     ///
     /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
@@ -34,7 +39,7 @@ struct FocusCapsule: View {
 
     /// Exposed so the Reduce Motion standdown is assertable at runtime.
     func companionField(motionStilled: Bool) -> CompanionFieldView {
-        CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled)
+        CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled, pulseSignal: pulseSignal)
     }
 
     var body: some View {

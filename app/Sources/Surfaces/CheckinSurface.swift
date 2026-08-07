@@ -18,9 +18,12 @@ struct CheckinSurface: View {
                         .accessibilityIdentifier("checkin-question")
                 }
                 Spacer()
-                CompanionFieldView(state: "ripple", motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion))
-                    .frame(width: 96, height: 96)
-                    .accessibilityIdentifier("companion-field")
+                CompanionFieldView(
+                    state: "ripple", motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion),
+                    pulseSignal: model.fieldPulse
+                )
+                .frame(width: 96, height: 96)
+                .accessibilityIdentifier("companion-field")
             }
 
             Text("Pick the closest one. Your answer adjusts the next step or the break — never a score, never a streak.")

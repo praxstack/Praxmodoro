@@ -59,6 +59,11 @@ struct MenuBarPopover: View {
         }
     }
 
+    /// The acknowledgement signal, passed as a value at construction like
+    /// everything else these surfaces receive (spec: focus-loop-ui "Choice
+    /// acknowledgement").
+    var pulseSignal: Int = 0
+
     /// Forces the motion standdown regardless of the environment.
     ///
     /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
@@ -73,7 +78,7 @@ struct MenuBarPopover: View {
     /// is assertable at runtime rather than inferred from source (spec:
     /// companion-surfaces "Reduce Motion standdown on the new surfaces").
     func companionField(motionStilled: Bool) -> CompanionFieldView {
-        CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled)
+        CompanionFieldView(state: display.phase == .held ? "held" : "breathing", motionStilled: motionStilled, pulseSignal: pulseSignal)
     }
 
     var body: some View {

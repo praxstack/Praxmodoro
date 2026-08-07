@@ -64,6 +64,12 @@
       "title": "In-app Motion: still control (GitHub #1)",
       "status": "done",
       "evidence": "red: 7 compile errors (AppModel has no motionStilled/setMotionStilled/fieldIsStilled, no defaults param); green: 80 tests in 24 suites incl. default-moving, stillness stops field, system-RM-always-wins composition, relaunch persistence, keyboard path, action-named label, both-directions standdown"
+    },
+    {
+      "id": "gh-2",
+      "title": "Acknowledgement pulse reaches every surface (GitHub #2)",
+      "status": "done",
+      "evidence": "red: 3 compile errors (no pulseSignal on companion surfaces), then the call-site lint correctly flagged CheckinSurface and ReviewSurface as unwired - the exact D2 defect; green: 84 tests in 25 suites; begin and user hold/resume now kick the pulse while internal holds (check-in mechanics) deliberately do not, preserving the one-bloom-per-answer M1 pin"
     }
   ],
   "archivedMilestones": [
