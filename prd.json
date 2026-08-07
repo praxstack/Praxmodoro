@@ -76,6 +76,12 @@
       "title": "Check-in shows its answer (GitHub #3)",
       "status": "done",
       "evidence": "red: 5 compile errors (checkinResponseText absent on FocusSurface/BreakSurface); green: 89 tests in 26 suites - each returning answer renders its own response on focus, needBreak renders on break, response joins both surface catalogs, clears on the next begin, concise enough to speak. lastCheckinResponse is no longer written-but-unread; closes D3."
+    },
+    {
+      "id": "gh-4",
+      "title": "Sixth adversarial pass + seventh guard (GitHub #4)",
+      "status": "done",
+      "evidence": "validator DEFEATED the rasterised defense: bare Date() diff in SurfacePalette.swift (outside Sources/Surfaces), 1-hour period - beat scan matches no scheduling primitive, drift window cannot see an hour. Mechanism proven live first (1s period fired the drift test: 17:00 -> 17:00 2, 3.4% pixels). Fix: raw clock reads banned module-wide at line level with a 3-entry allowlist; replaying the compiling exploit now fails testNothingInTheAppRunsOnASchedule at both clock lines. Claim scoped down in design.md: no finite window proves absence of an arbitrarily slow clock."
     }
   ],
   "archivedMilestones": [

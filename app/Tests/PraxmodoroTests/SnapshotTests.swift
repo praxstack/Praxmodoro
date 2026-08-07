@@ -100,17 +100,26 @@ import PraxmodoroStore
         #expect(snapshot.remaining == model.remaining(at: afterFourHours))
     }
 
-    /// Module-wide: nothing in the app sources may run code on a schedule.
+    /// Module-wide: nothing in the app sources may run code on a schedule,
+    /// and nothing may read the wall clock except to feed `snapshot(at:)` or
+    /// through one of three named, audited seams.
     ///
-    /// A validator defeated the surface-scoped guard by parking the beat in a
-    /// *different* file (`SurfacePalette.swift`) and consuming it from the
-    /// popover through statics. A per-file scan of three filenames cannot see
-    /// that, so this scan covers every source file in the target. The app has
-    /// no legitimate use for a scheduled beat: the only periodic rendering is
-    /// `TimelineView`, which re-derives from the engine instead of counting.
+    /// History, because the shape of this test is the residue of six defeats:
+    /// a validator parked a beat in a *different* file and read it through
+    /// statics (third defeat), so this scan went module-wide; another used
+    /// `ProcessInfo.systemUptime` (fourth), so the beat list grew clock
+    /// sources; the sixth parked a bare `Date()` **diff** — no scheduling
+    /// primitive at all — in `SurfacePalette.swift` with a one-hour period,
+    /// which evaded every surface-scoped scan and outlasted the drift test's
+    /// finite window. So raw clock reads are now banned module-wide at line
+    /// level, with an explicit allowlist of the three legitimate reads.
     ///
-    /// Comments are stripped first — this file's own documentation names the
-    /// constructs it bans.
+    /// Honest limits, stated plainly: this is a lint over text, and the drift
+    /// test's window is finite — **no finite-window behavioural test can
+    /// prove the absence of an arbitrarily slow clock.** The durable close is
+    /// a compiler-enforced module boundary for the pure surfaces, recorded as
+    /// deferred in the change's design.md. Until then this allowlist is the
+    /// narrowest gate we can hold.
     @Test func testNothingInTheAppRunsOnASchedule() throws {
         let sourcesDir = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
@@ -121,28 +130,54 @@ import PraxmodoroStore
             "Timer(", "Timer.publish", "scheduledTimer", "DispatchSourceTimer",
             "Task.sleep", "asyncAfter", "Task.detached", "RunLoop.", "CFAbsoluteTime",
             "ContinuousClock", "SuspendingClock", "AsyncTimerSequence",
-            // A validator's fourth defeat used ProcessInfo.systemUptime, which
-            // is a clock even though it never says "Date" or "Timer".
             "ProcessInfo", "systemUptime", "mach_absolute_time", "clock_gettime",
             "DispatchWallTime", "uptimeNanoseconds", "monotonic",
         ]
+        // Reading the wall clock at all. `Date.init` catches the spelling that
+        // dodges the literal `Date(`.
+        let clockReads = ["Date(", "Date.init", ".timeIntervalSince"]
+        // Every legitimate raw read, one by one. Adding a line here is a
+        // reviewable act, which is the point.
+        let allowedReads: [(file: String, line: String)] = [
+            // The injected-clock seam's default. Tests replace it; production
+            // time enters the app here and nowhere else.
+            ("AppModel.swift", "clock: @escaping () -> Date = { Date() }"),
+            // Startup timestamp for naming a corrupt-store recovery file.
+            ("PraxmodoroApp.swift", "LocalStore.open("),
+            // Frame delta between TimelineView ticks — presentation dt for the
+            // physics integrator, never session time.
+            ("CompanionFieldView.swift", "lastTick.map { now.timeIntervalSince($0) }"),
+        ]
+
         var sawSnapshotUse = false
         var scanned = 0
 
         for case let file as URL in enumerator where file.pathExtension == "swift" {
             scanned += 1
             let raw = try String(contentsOf: file, encoding: .utf8)
-            let code = raw.split(separator: "\n", omittingEmptySubsequences: false)
+            let codeLines = raw.split(separator: "\n", omittingEmptySubsequences: false)
                 .map { line -> String in
                     guard let comment = line.range(of: "//") else { return String(line) }
                     return String(line[..<comment.lowerBound])
                 }
-                .joined(separator: "\n")
+            let code = codeLines.joined(separator: "\n")
 
             for beat in beats {
                 #expect(!code.contains(beat),
                         "\(file.lastPathComponent) can run code on a schedule via “\(beat)”; the engine is the only clock")
             }
+
+            for line in codeLines where clockReads.contains(where: line.contains) {
+                // A read that exists only to ask the model for a fresh
+                // snapshot at that instant is the sanctioned pattern.
+                if line.contains("snapshot(at:") { continue }
+                let allowed = allowedReads.contains {
+                    $0.file == file.lastPathComponent && line.contains($0.line)
+                }
+                #expect(allowed,
+                        "\(file.lastPathComponent) reads the wall clock outside the allowlist: \(line.trimmingCharacters(in: .whitespaces))")
+            }
+
             // Only the snapshot may turn an interval into a clock face.
             if file.lastPathComponent != "SessionSnapshot.swift" {
                 #expect(!code.contains("%02d:%02d"),
