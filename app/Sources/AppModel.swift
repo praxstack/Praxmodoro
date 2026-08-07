@@ -70,6 +70,7 @@ final class AppModel {
 
     func begin() throws {
         fieldPulse += 1
+        lastCheckinResponse = nil
         let now = clock()
         var newSession = Session(policy: policy, startedAt: now)
         try newSession.apply(.begin, at: now)

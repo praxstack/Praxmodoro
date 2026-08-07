@@ -3,7 +3,10 @@ import SwiftUI
 /// Rest that keeps your place. Suggestions come from what you told the
 /// companion — never from a claim about what is optimal (spec: focus-loop-ui).
 struct BreakSurface: View {
-    static let controls = ["companion-field", "break-suggestion", "break-choices", "why-disclosure", "reentry-card", "ready-control"]
+    static let controls = [
+        "companion-field", "break-suggestion", "break-choices", "why-disclosure", "reentry-card",
+        "ready-control", "checkin-response",
+    ]
 
     @Bindable var model: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -11,12 +14,24 @@ struct BreakSurface: View {
 
     private let choices = ["Water", "Stretch", "Step away", "Quiet"]
 
+    /// The response to the answer that brought us here (GitHub #3).
+    var checkinResponseText: String? { model.lastCheckinResponse }
+
     var body: some View {
         HStack(alignment: .top, spacing: 28) {
             VStack(spacing: 20) {
                 Text("Rest that keeps your place.")
                     .font(.system(size: 26, weight: .bold, design: .rounded))
                     .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let response = checkinResponseText {
+                    Text(response)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityIdentifier("checkin-response")
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
 
                 CompanionFieldView(
                     state: "expanded", motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion),

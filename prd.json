@@ -70,6 +70,12 @@
       "title": "Acknowledgement pulse reaches every surface (GitHub #2)",
       "status": "done",
       "evidence": "red: 3 compile errors (no pulseSignal on companion surfaces), then the call-site lint correctly flagged CheckinSurface and ReviewSurface as unwired - the exact D2 defect; green: 84 tests in 25 suites; begin and user hold/resume now kick the pulse while internal holds (check-in mechanics) deliberately do not, preserving the one-bloom-per-answer M1 pin"
+    },
+    {
+      "id": "gh-3",
+      "title": "Check-in shows its answer (GitHub #3)",
+      "status": "done",
+      "evidence": "red: 5 compile errors (checkinResponseText absent on FocusSurface/BreakSurface); green: 89 tests in 26 suites - each returning answer renders its own response on focus, needBreak renders on break, response joins both surface catalogs, clears on the next begin, concise enough to speak. lastCheckinResponse is no longer written-but-unread; closes D3."
     }
   ],
   "archivedMilestones": [

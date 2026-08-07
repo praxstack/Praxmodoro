@@ -8,6 +8,7 @@ struct FocusSurface: View {
     static let controls = [
         "task-line", "next-action-line", "companion-field", "time-remaining",
         "hold-toggle", "thought-parking-input", "parked-thoughts-list",
+        "checkin-response",
     ]
 
     @Bindable var model: AppModel
@@ -16,6 +17,11 @@ struct FocusSurface: View {
 
     /// Everything this surface renders comes from one snapshot instant.
     private var snapshot: SessionSnapshot { model.snapshot(at: Date()) }
+
+    /// The response to the check-in just answered, if any — the product
+    /// answering back in its own words (GitHub #3; spec: check-in responses
+    /// never grade).
+    var checkinResponseText: String? { model.lastCheckinResponse }
 
     var body: some View {
         HStack(alignment: .top, spacing: 28) {
@@ -30,6 +36,15 @@ struct FocusSurface: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
+
+                if let response = checkinResponseText {
+                    Text(response)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityIdentifier("checkin-response")
+                        .accessibilityAddTraits(.updatesFrequently)
+                }
 
                 ZStack {
                     CompanionFieldView(
