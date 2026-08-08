@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praxmodoro — direction gate 2 · three candidates</title>
+<style>
+  :root {
+    --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90);
+    --ink: oklch(24% 0.014 258); --ink-2: oklch(38% 0.014 258); --muted: oklch(52% 0.014 260);
+    --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+    --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+    --sans: system-ui, -apple-system, sans-serif;
+    --serif: ui-serif, "Iowan Old Style", Charter, Georgia, serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258);
+      --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+      --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+      --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--sans); line-height: 1.6; }
+  .wrap { max-width: 90rem; margin: 0 auto; padding: 3rem 1.5rem 6rem; }
+  .eyebrow { font-family: var(--mono); font-size: .72rem; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-size: clamp(2rem, 4.5vw, 3rem); line-height: 1.08; letter-spacing: -.025em; margin: .6rem 0; max-width: 22ch; text-wrap: balance; }
+  .standfirst { font-family: var(--serif); font-size: 1.15rem; color: var(--ink-2); max-width: 60ch; }
+  .notice {
+    margin: 1.75rem 0 2.5rem; padding: .9rem 1.15rem; border-left: 3px solid var(--warn);
+    background: var(--warn-2); border-radius: 0 .5rem .5rem 0; max-width: 68ch; font-size: .95rem;
+  }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr)); gap: 1.5rem; }
+  .card { border: 1px solid var(--rule); border-radius: .8rem; overflow: hidden; background: var(--surface); display: flex; flex-direction: column; }
+  .card header { padding: 1.1rem 1.25rem .9rem; display: flex; flex-direction: column; gap: .45rem; }
+  .card h2 { margin: 0; font-size: 1.25rem; letter-spacing: -.015em; }
+  .who { font-family: var(--serif); font-size: .96rem; color: var(--ink-2); }
+  .traits { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .trait { font-family: var(--mono); font-size: .66rem; letter-spacing: .05em; text-transform: uppercase; padding: .15em .5em; border-radius: .3rem; background: var(--accent-2); color: var(--accent); }
+  .frame { border: none; border-top: 1px solid var(--rule); width: 100%; height: 30rem; background: #fff; }
+  @media (prefers-color-scheme: dark) { .frame { background: #111; } }
+  .card footer { padding: .8rem 1.25rem; border-top: 1px solid var(--rule); }
+  .card footer a { color: var(--accent); font-size: .9rem; font-weight: 550; text-decoration: none; }
+  .card footer a:hover { text-decoration: underline; }
+  .prior { margin-top: 3rem; padding-top: 1.75rem; border-top: 1px solid var(--rule); }
+  .prior h2 { font-size: 1.15rem; margin: 0 0 .4rem; }
+  .prior p { color: var(--muted); max-width: 68ch; margin: 0 0 .8rem; font-size: .95rem; }
+  .prior a { color: var(--accent); margin-right: 1.25rem; font-size: .9rem; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Direction gate 2 · candidates</div>
+  <h1>Three convictions, not three moods.</h1>
+  <p class="standfirst">The first gate offered three directions that shared a temperament — all of them calm, soft and gentle — and the choice did not survive contact. These three disagree with each other about what a focus tool should feel like.</p>
+
+  <div class="notice">
+    <strong>Nothing here is approved.</strong> These are candidates for issue&nbsp;#5. The previously approved direction (Living&nbsp;Companion) is linked at the bottom for comparison and remains the binding reference until a decision is recorded. Each candidate re-voices the product's five headlines in its own temperament — the copy is part of the direction, not a placeholder.
+  </div>
+
+  <div class="grid">
+    <section class="card">
+      <header>
+        <h2>D · Flight Instrument</h2>
+        <div class="traits"><span class="trait">precision</span><span class="trait">dark ground</span><span class="trait">tabular</span><span class="trait">sub-200ms</span></div>
+        <p class="who">For the person who wants the tool to take their work as seriously as they do. Time reads like an altimeter: dense numerals, hairline rules, nothing decorative. Motion is mechanical and exact — the instrument responds, it does not emote.</p>
+      </header>
+      <iframe class="frame" src="direction-d-instrument/app-mocks.html" title="Direction D — Flight Instrument" loading="lazy"></iframe>
+      <footer><a href="direction-d-instrument/app-mocks.html">Open D full screen →</a></footer>
+    </section>
+
+    <section class="card">
+      <header>
+        <h2>E · Quiet Terminal</h2>
+        <div class="traits"><span class="trait">monospace</span><span class="trait">near-monochrome</span><span class="trait">text-as-interface</span><span class="trait">almost no motion</span></div>
+        <p class="who">For the person who experiences decoration as noise. Everything is text; the check-in is a prompt line. One hot accent does all the signalling. State changes are typographic rather than animated — the screen simply says something different.</p>
+      </header>
+      <iframe class="frame" src="direction-e-terminal/app-mocks.html" title="Direction E — Quiet Terminal" loading="lazy"></iframe>
+      <footer><a href="direction-e-terminal/app-mocks.html">Open E full screen →</a></footer>
+    </section>
+
+    <section class="card">
+      <header>
+        <h2>F · Broadsheet</h2>
+        <div class="traits"><span class="trait">serif display</span><span class="trait">hard grid</span><span class="trait">ink on paper</span><span class="trait">page-like</span></div>
+        <p class="who">For the person who wants beauty with spine rather than softness. Huge serif display type, a hard grid, generous white — the timer <em>is</em> the typography. Motion behaves like turning a page: deliberate, weighty, never fussy.</p>
+      </header>
+      <iframe class="frame" src="direction-f-editorial/app-mocks.html" title="Direction F — Broadsheet" loading="lazy"></iframe>
+      <footer><a href="direction-f-editorial/app-mocks.html">Open F full screen →</a></footer>
+    </section>
+  </div>
+
+  <div class="prior">
+    <h2>For comparison — the first gate</h2>
+    <p>The direction approved on 2026-07-30 and the two it was chosen over. All three share the gentle temperament these candidates deliberately break from.</p>
+    <a href="../living-companion/app-mocks.html">Living Companion (currently approved)</a>
+    <a href="../hallmark/app-mocks.html">Hallmark · Liquid Instrument</a>
+    <a href="../focus-observatory/app-mocks.html">Focus Observatory</a>
+    <a href="../direction-gate/compare.html">Original side-by-side</a>
+  </div>
+</div>
+</body>
+</html>

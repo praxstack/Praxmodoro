@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Praxmodoro · Direction D — Flight Instrument</title>
+<style>
+/* ============================================================
+   DIRECTION D · "FLIGHT INSTRUMENT"
+   Precision, spine, confidence. A tool that takes the work
+   seriously. Dense numerals, tabular time, hairline rules,
+   mechanical sub-200ms motion.
+
+   SINGLE-THEME BY INTENT: an instrument panel is luminance-
+   calibrated for one ground; a light variant would be a
+   different instrument, not a theme of this one.
+   ============================================================ */
+:root {
+  /* -- colour ------------------------------------------------ */
+  --color-ground:      oklch(16% 0.012 250);
+  --color-ground-2:    oklch(19% 0.014 250);
+  --color-panel:       oklch(21.5% 0.015 250);
+  --color-panel-2:     oklch(24% 0.016 250);
+  --color-well:        oklch(13% 0.01 250);
+  --color-ink:         oklch(93% 0.006 240);
+  --color-ink-2:       oklch(78% 0.01 245);
+  --color-dim:         oklch(62% 0.014 248);
+  --color-faint:       oklch(46% 0.014 248);
+  --color-rule:        oklch(32% 0.014 250);
+  --color-rule-strong: oklch(42% 0.016 250);
+  --color-accent:      oklch(78% 0.14 75);   /* instrument amber */
+  --color-accent-ink:  oklch(18% 0.03 75);
+  --color-nominal:     oklch(76% 0.11 160);  /* nominal green */
+  --color-standby:     oklch(70% 0.09 240);  /* standby blue */
+  --color-focus-ring:  oklch(78% 0.14 75 / 0.55);
+
+  /* -- type scale (major-second-ish, numerals dominate) ------ */
+  --font-panel: system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --font-data:  ui-monospace, "SF Mono", Menlo, monospace;
+  --type-2xs: 0.6875rem;   /* 11px labels        */
+  --type-xs:  0.75rem;     /* 12px meta          */
+  --type-sm:  0.875rem;    /* 14px body          */
+  --type-md:  1rem;        /* 16px emphasized    */
+  --type-lg:  1.375rem;    /* 22px section       */
+  --type-xl:  2rem;        /* 32px screen title  */
+  --type-2xl: 3.25rem;     /* 52px sub-display   */
+  --type-timer: clamp(4.5rem, 11vw, 8.5rem);
+  --track-label: 0.14em;
+  --track-tight: -0.01em;
+
+  /* -- spacing (4px base, mechanical) ------------------------ */
+  --space-1: 4px;  --space-2: 8px;  --space-3: 12px; --space-4: 16px;
+  --space-5: 24px; --space-6: 32px; --space-7: 48px; --space-8: 64px;
+
+  /* -- radii (instruments are square; corners barely break) -- */
+  --radius-0: 0px;
+  --radius-1: 2px;
+  --radius-2: 4px;
+
+  /* -- motion (mechanical, exact, never florid) --------------- */
+  --dur-instant: 80ms;
+  --dur-step:    120ms;
+  --dur-move:    180ms;
+  --ease-mech:   cubic-bezier(0.3, 0, 0.7, 1);
+  --ease-snap:   steps(2, end);
+}
+
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body {
+  background: var(--color-ground);
+  color: var(--color-ink);
+  font-family: var(--font-panel);
+  font-size: var(--type-sm);
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+button:focus-visible, input:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 1px;
+}
+input {
+  font: inherit; color: var(--color-ink);
+  background: var(--color-well);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-1);
+  padding: var(--space-2) var(--space-3);
+  width: 100%;
+}
+.num { font-variant-numeric: tabular-nums lining-nums; font-feature-settings: "tnum" 1; }
+
+/* ---- frame ------------------------------------------------- */
+.deck {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+  max-width: 1180px;
+  margin: 0 auto;
+  border-left: 1px solid var(--color-rule);
+  border-right: 1px solid var(--color-rule);
+  background: var(--color-ground-2);
+}
+
+.masthead {
+  display: flex; align-items: stretch;
+  border-bottom: 1px solid var(--color-rule-strong);
+  background: var(--color-ground);
+}
+.masthead > * { padding: var(--space-3) var(--space-4); border-right: 1px solid var(--color-rule); }
+.mast-brand {
+  font-size: var(--type-xs); font-weight: 700; letter-spacing: var(--track-label);
+  text-transform: uppercase; display: flex; align-items: center; gap: var(--space-2);
+}
+.mast-brand::before { content: ""; width: 8px; height: 8px; background: var(--color-accent); }
+.mast-readout {
+  flex: 1; display: flex; gap: var(--space-5); align-items: center;
+  font-family: var(--font-data); font-size: var(--type-xs); color: var(--color-dim);
+}
+.mast-readout b { color: var(--color-ink-2); font-weight: 500; }
+.mast-motion {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--type-2xs); letter-spacing: var(--track-label); text-transform: uppercase;
+  color: var(--color-dim); border-right: none;
+}
+.mast-motion[aria-pressed="true"] { color: var(--color-standby); }
+.mast-motion .lamp { width: 7px; height: 7px; border-radius: 50%; background: var(--color-nominal); }
+.mast-motion[aria-pressed="true"] .lamp { background: var(--color-standby); }
+
+/* ---- page selector rail ------------------------------------ */
+.cockpit { display: grid; grid-template-columns: 132px 1fr; min-height: 0; }
+.pagerail {
+  border-right: 1px solid var(--color-rule);
+  display: flex; flex-direction: column;
+  background: var(--color-ground);
+}
+.page-btn {
+  display: grid; grid-template-columns: 28px 1fr; align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--color-rule);
+  text-align: left;
+  color: var(--color-dim);
+  font-size: var(--type-2xs); font-weight: 600;
+  letter-spacing: var(--track-label); text-transform: uppercase;
+  transition: color var(--dur-step) var(--ease-mech), background var(--dur-step) var(--ease-mech);
+}
+.page-btn .key {
+  font-family: var(--font-data); font-size: var(--type-xs);
+  border: 1px solid var(--color-rule-strong); border-radius: var(--radius-1);
+  width: 22px; height: 22px; display: grid; place-items: center; color: var(--color-faint);
+}
+.page-btn[aria-selected="true"] {
+  color: var(--color-ink);
+  background: var(--color-panel);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
+.page-btn[aria-selected="true"] .key { color: var(--color-accent); border-color: var(--color-accent); }
+.page-btn:hover { color: var(--color-ink-2); }
+.rail-foot {
+  margin-top: auto; padding: var(--space-3);
+  font-family: var(--font-data); font-size: 10px; color: var(--color-faint);
+  border-top: 1px solid var(--color-rule);
+}
+
+/* ---- screens ----------------------------------------------- */
+.stage { position: relative; overflow: hidden; }
+.screen {
+  display: none;
+  padding: var(--space-6) var(--space-7);
+  animation: page-in var(--dur-move) var(--ease-mech);
+}
+.screen.is-current { display: block; }
+@keyframes page-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+.screen-title {
+  font-size: var(--type-xl); font-weight: 650; letter-spacing: var(--track-tight);
+  line-height: 1.1;
+}
+.screen-sub { color: var(--color-dim); max-width: 58ch; margin-top: var(--space-2); }
+.rulebar {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 1px solid var(--color-rule-strong);
+  padding-bottom: var(--space-4); margin-bottom: var(--space-5);
+}
+.kicker {
+  font-size: var(--type-2xs); font-weight: 700; letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--color-accent);
+}
+
+.label {
+  display: block;
+  font-size: var(--type-2xs); font-weight: 600; letter-spacing: var(--track-label);
+  text-transform: uppercase; color: var(--color-dim);
+  margin-bottom: var(--space-2);
+}
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-rule);
+  border-radius: var(--radius-2);
+  padding: var(--space-5);
+}
+.hairline-list > * + * { border-top: 1px solid var(--color-rule); }
+
+/* segmented selectors */
+.seg { display: flex; border: 1px solid var(--color-rule-strong); border-radius: var(--radius-1); overflow: hidden; }
+.seg button {
+  flex: 1; padding: var(--space-2) var(--space-3);
+  font-size: var(--type-xs); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--color-dim); border-right: 1px solid var(--color-rule);
+  transition: background var(--dur-step) var(--ease-mech), color var(--dur-step) var(--ease-mech);
+}
+.seg button:last-child { border-right: none; }
+.seg button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-accent-ink); }
+.seg button:not([aria-pressed="true"]):hover { color: var(--color-ink-2); background: var(--color-panel-2); }
+
+/* engage bar */
+.engage {
+  display: flex; align-items: center; gap: var(--space-4);
+  width: 100%; text-align: left;
+  background: var(--color-accent); color: var(--color-accent-ink);
+  border-radius: var(--radius-1);
+  padding: var(--space-4) var(--space-5);
+  transition: transform var(--dur-instant) var(--ease-mech), filter var(--dur-instant) var(--ease-mech);
+}
+.engage:hover { filter: brightness(1.06); }
+.engage:active { transform: translateY(1px); }
+.engage .glyph { font-size: var(--type-lg); }
+.engage strong { display: block; font-size: var(--type-md); letter-spacing: 0.02em; text-transform: uppercase; font-weight: 750; }
+.engage small { font-size: var(--type-xs); font-weight: 500; opacity: 0.8; }
+.engage kbd {
+  margin-left: auto; font-family: var(--font-data); font-size: var(--type-xs);
+  border: 1px solid oklch(18% 0.03 75 / 0.4); border-radius: var(--radius-1);
+  padding: 2px 8px;
+}
+
+/* ---- initiate ---------------------------------------------- */
+.init-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--space-5); }
+.field-block + .field-block { margin-top: var(--space-5); }
+.step-line {
+  display: grid; grid-template-columns: 30px 1fr; gap: var(--space-3);
+  border: 1px solid var(--color-rule); border-radius: var(--radius-1);
+  padding: var(--space-3) var(--space-4); background: var(--color-well);
+}
+.step-line .idx {
+  font-family: var(--font-data); color: var(--color-accent); font-size: var(--type-md);
+  display: grid; place-items: center;
+}
+.step-line strong { font-weight: 600; }
+.step-line span { display: block; color: var(--color-dim); font-size: var(--type-xs); margin-top: 2px; }
+.holds { font-size: var(--type-sm); color: var(--color-ink-2); }
+.holds li { list-style: none; padding: var(--space-3) 0; display: grid; grid-template-columns: 90px 1fr; gap: var(--space-3); }
+.holds .what { font-family: var(--font-data); font-size: var(--type-xs); color: var(--color-accent); text-transform: uppercase; letter-spacing: 0.08em; padding-top: 2px; }
+.privacy {
+  margin-top: var(--space-5); padding-top: var(--space-4);
+  border-top: 1px solid var(--color-rule);
+  font-size: var(--type-xs); color: var(--color-faint); line-height: 1.6;
+}
+
+/* ---- focus: the altimeter --------------------------------- */
+.focus-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: var(--space-5); align-items: start; }
+.instrument {
+  background: var(--color-well);
+  border: 1px solid var(--color-rule-strong);
+  border-radius: var(--radius-2);
+  padding: var(--space-6) var(--space-6) var(--space-5);
+  text-align: center;
+}
+.inst-head {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-data); font-size: var(--type-xs); color: var(--color-dim);
+  margin-bottom: var(--space-5);
+}
+.inst-head .nominal { color: var(--color-nominal); }
+.timer {
+  font-size: var(--type-timer); font-weight: 640; letter-spacing: 0.01em;
+  line-height: 1; color: var(--color-ink);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1;
+}
+.timer .unit { font-size: 0.22em; font-weight: 600; color: var(--color-faint); letter-spacing: var(--track-label); vertical-align: 0.5em; }
+.timer[data-held="true"] { color: var(--color-standby); }
+.tape {
+  margin: var(--space-5) auto var(--space-2); height: 20px; max-width: 520px;
+  position: relative;
+  background:
+    repeating-linear-gradient(90deg, var(--color-rule-strong) 0 1px, transparent 1px 10%) 0 0 / 100% 100%,
+    repeating-linear-gradient(90deg, var(--color-rule) 0 1px, transparent 1px 2%) 0 6px / 100% 14px;
+  background-repeat: no-repeat;
+}
+.tape .bug {
+  position: absolute; top: -7px; width: 0; height: 0;
+  border-left: 6px solid transparent; border-right: 6px solid transparent;
+  border-top: 8px solid var(--color-accent);
+  transform: translateX(-50%);
+  transition: left 1s linear;
+}
+.tape-caption { font-family: var(--font-data); font-size: 10px; color: var(--color-faint); letter-spacing: 0.1em; text-transform: uppercase; }
+.subreadouts {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-top: 1px solid var(--color-rule); margin-top: var(--space-5);
+}
+.subreadouts > div { padding: var(--space-3) var(--space-2); border-right: 1px solid var(--color-rule); }
+.subreadouts > div:last-child { border-right: none; }
+.subreadouts .label { margin-bottom: 2px; }
+.subreadouts .val { font-family: var(--font-data); font-size: var(--type-md); color: var(--color-ink-2); }
+.timer-controls { display: flex; justify-content: center; gap: var(--space-3); margin-top: var(--space-5); }
+.mech-btn {
+  min-width: 84px; padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-rule-strong); border-radius: var(--radius-1);
+  background: var(--color-panel);
+  font-family: var(--font-data); font-size: var(--type-xs); letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--color-ink-2);
+  transition: background var(--dur-instant) var(--ease-mech), transform var(--dur-instant) var(--ease-mech);
+}
+.mech-btn:hover { background: var(--color-panel-2); }
+.mech-btn:active { transform: translateY(1px); }
+.mech-btn[data-primary] { border-color: var(--color-accent); color: var(--color-accent); }
+.side-stack > * + * { margin-top: var(--space-5); }
+.scratch-row {
+  display: grid; grid-template-columns: 52px 1fr auto; gap: var(--space-3);
+  padding: var(--space-3) 0; font-size: var(--type-sm);
+}
+.scratch-row time { font-family: var(--font-data); font-size: var(--type-xs); color: var(--color-faint); }
+.scratch-row .tag { font-family: var(--font-data); font-size: 10px; color: var(--color-standby); text-transform: uppercase; letter-spacing: 0.08em; }
+.scratch-entry { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+.scratch-entry button {
+  border: 1px solid var(--color-rule-strong); border-radius: var(--radius-1);
+  padding: 0 var(--space-4); color: var(--color-accent); font-size: var(--type-lg); line-height: 1;
+}
+
+/* ---- check-in ---------------------------------------------- */
+.check-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--space-5); align-items: start; }
+.question { font-size: var(--type-2xl); font-weight: 650; letter-spacing: var(--track-tight); line-height: 1.05; margin: var(--space-3) 0 var(--space-5); }
+.option-row {
+  display: grid; grid-template-columns: 34px 1fr auto; gap: var(--space-4); align-items: center;
+  width: 100%; text-align: left;
+  padding: var(--space-4) var(--space-4);
+  border: 1px solid var(--color-rule);
+  border-radius: 0;
+  transition: background var(--dur-step) var(--ease-mech), border-color var(--dur-step) var(--ease-mech);
+}
+.option-row + .option-row { border-top: none; }
+.option-row .key {
+  font-family: var(--font-data); font-size: var(--type-sm); color: var(--color-faint);
+  border: 1px solid var(--color-rule-strong); border-radius: var(--radius-1);
+  width: 26px; height: 26px; display: grid; place-items: center;
+}
+.option-row strong { display: block; font-weight: 620; }
+.option-row small { color: var(--color-dim); font-size: var(--type-xs); }
+.option-row .arrow { color: var(--color-faint); font-family: var(--font-data); }
+.option-row:hover { background: var(--color-panel-2); border-color: var(--color-rule-strong); }
+.option-row[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-panel-2); }
+.option-row[aria-pressed="true"] .key { color: var(--color-accent); border-color: var(--color-accent); }
+.response-line {
+  margin-top: var(--space-4); min-height: 1.6em;
+  font-family: var(--font-data); font-size: var(--type-sm); color: var(--color-nominal);
+}
+.log { list-style: none; }
+.log li { display: grid; grid-template-columns: 56px 1fr; gap: var(--space-3); padding: var(--space-3) 0; font-size: var(--type-sm); color: var(--color-ink-2); }
+.log time { font-family: var(--font-data); font-size: var(--type-xs); color: var(--color-faint); padding-top: 2px; }
+
+/* ---- break -------------------------------------------------- */
+.break-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: var(--space-5); align-items: start; }
+.break-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-3); margin-top: var(--space-5); }
+.break-opt {
+  border: 1px solid var(--color-rule); border-radius: var(--radius-1);
+  padding: var(--space-4); text-align: left;
+  transition: background var(--dur-step) var(--ease-mech), border-color var(--dur-step) var(--ease-mech);
+}
+.break-opt strong { display: block; font-size: var(--type-sm); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 650; }
+.break-opt span { color: var(--color-dim); font-size: var(--type-xs); display: block; margin-top: var(--space-1); }
+.break-opt:hover { background: var(--color-panel-2); }
+.break-opt[aria-pressed="true"] { border-color: var(--color-nominal); }
+.break-opt[aria-pressed="true"] strong { color: var(--color-nominal); }
+.vector {
+  border: 1px solid var(--color-accent); border-radius: var(--radius-1);
+  padding: var(--space-4); margin-top: var(--space-4);
+  background: var(--color-well);
+}
+.vector strong { display: block; font-weight: 640; }
+.vector span { color: var(--color-dim); font-size: var(--type-xs); display: block; margin-top: var(--space-1); }
+.why {
+  margin-top: var(--space-4); font-size: var(--type-xs); color: var(--color-faint); line-height: 1.6;
+}
+.why b { color: var(--color-dim); font-weight: 600; }
+
+/* ---- review / log ------------------------------------------ */
+.review-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: var(--space-5); align-items: start; }
+.logtable { width: 100%; border-collapse: collapse; font-size: var(--type-sm); }
+.logtable th {
+  text-align: left; font-size: var(--type-2xs); letter-spacing: var(--track-label); text-transform: uppercase;
+  color: var(--color-faint); font-weight: 600; padding: 0 var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--color-rule-strong);
+}
+.logtable td { padding: var(--space-3) var(--space-3) var(--space-3) 0; border-bottom: 1px solid var(--color-rule); vertical-align: top; }
+.logtable .t { font-family: var(--font-data); font-size: var(--type-xs); color: var(--color-faint); white-space: nowrap; }
+.logtable .k { font-family: var(--font-data); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-standby); white-space: nowrap; }
+.logtable .ev strong { font-weight: 620; display: block; }
+.logtable .ev span { color: var(--color-dim); font-size: var(--type-xs); }
+.facts { display: grid; grid-template-columns: 1fr 1fr; }
+.facts > div { padding: var(--space-3); border: 1px solid var(--color-rule); margin: -0.5px; }
+.facts .label { margin-bottom: 2px; }
+.facts .val { font-family: var(--font-data); font-size: var(--type-lg); color: var(--color-ink); }
+.observed { font-size: var(--type-sm); color: var(--color-ink-2); line-height: 1.6; }
+.observed em { color: var(--color-dim); font-style: normal; font-size: var(--type-xs); display: block; margin-top: var(--space-2); }
+
+.deckfoot {
+  border-top: 1px solid var(--color-rule-strong);
+  padding: var(--space-3) var(--space-4);
+  display: flex; justify-content: space-between;
+  font-family: var(--font-data); font-size: var(--type-2xs); color: var(--color-faint);
+}
+
+@media (max-width: 900px) {
+  .init-grid, .focus-grid, .check-grid, .break-grid, .review-grid { grid-template-columns: 1fr; }
+  .cockpit { grid-template-columns: 1fr; }
+  .pagerail { flex-direction: row; border-right: none; border-bottom: 1px solid var(--color-rule); }
+  .rail-foot { display: none; }
+  .screen { padding: var(--space-5); }
+}
+
+/* Reduced motion, or the in-app Motion: still control:
+   every transition and keyframe stops. States change by value, not by movement. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+[data-motion="still"] *, [data-motion="still"] *::before, [data-motion="still"] *::after {
+  animation: none !important; transition: none !important;
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck" data-motion="mechanical">
+
+  <header class="masthead">
+    <div class="mast-brand">Praxmodoro</div>
+    <div class="mast-readout num" aria-live="off">
+      <span>SESSION <b>OPEN</b></span>
+      <span>TASK <b>TALK OUTLINE</b></span>
+      <span id="mastState">BLOCK <b>1</b> · PHASE <b>FOCUS</b></span>
+    </div>
+    <button class="mast-motion" type="button" id="motionToggle" aria-pressed="false">
+      <span class="lamp" aria-hidden="true"></span>
+      <span id="motionLabel">Motion: mechanical</span>
+    </button>
+  </header>
+
+  <div class="cockpit">
+    <nav class="pagerail" aria-label="Screens, keys 1 to 5">
+      <button class="page-btn" data-screen-target="initiate" aria-selected="true"><span class="key">1</span>Initiate</button>
+      <button class="page-btn" data-screen-target="focus" aria-selected="false"><span class="key">2</span>Focus</button>
+      <button class="page-btn" data-screen-target="checkin" aria-selected="false"><span class="key">3</span>Check-in</button>
+      <button class="page-btn" data-screen-target="break" aria-selected="false"><span class="key">4</span>Break</button>
+      <button class="page-btn" data-screen-target="review" aria-selected="false"><span class="key">5</span>Log</button>
+      <div class="rail-foot">LOCAL ONLY<br>NO ACCOUNT<br>NO WATCHING</div>
+    </nav>
+
+    <main class="stage">
+
+      <!-- 1 · INITIATE -->
+      <section class="screen is-current" id="screen-initiate" data-screen="initiate" aria-labelledby="t-init">
+        <div class="rulebar">
+          <div>
+            <div class="kicker">Initiate</div>
+            <h1 class="screen-title" id="t-init">One task on the board. Cleared when you are.</h1>
+            <p class="screen-sub">Declare the task, the first step, and what you have right now. The instruments hold everything else — you only fly the step.</p>
+          </div>
+        </div>
+        <div class="init-grid">
+          <div class="panel">
+            <div class="field-block">
+              <label class="label" for="taskInput">Task — one only</label>
+              <input id="taskInput" value="Edit the conference talk outline" autocomplete="off">
+            </div>
+            <div class="field-block">
+              <span class="label">First step — small enough to need no decisions</span>
+              <div class="step-line">
+                <span class="idx num">01</span>
+                <div>
+                  <strong>Open the outline and mark the one section that already feels done.</strong>
+                  <span>Concrete, reversible, about two minutes. Rewrite it if it reads too large.</span>
+                </div>
+              </div>
+            </div>
+            <div class="field-block">
+              <span class="label">Capacity right now — a reading, not a rating</span>
+              <div class="seg" role="group" aria-label="Current capacity">
+                <button type="button" aria-pressed="false">Foggy</button>
+                <button type="button" aria-pressed="true">Steady</button>
+                <button type="button" aria-pressed="false">Restless</button>
+                <button type="button" aria-pressed="false">Charged</button>
+              </div>
+            </div>
+            <div class="field-block">
+              <span class="label">Timing policy</span>
+              <div class="seg" role="group" aria-label="Session timing policy">
+                <button type="button" aria-pressed="true">Gentle 5+20</button>
+                <button type="button" aria-pressed="false">Classic 25+5</button>
+                <button type="button" aria-pressed="false">Flow · open</button>
+                <button type="button" aria-pressed="false">Recovery first</button>
+              </div>
+            </div>
+            <div class="field-block">
+              <button class="engage" type="button" data-screen-jump="focus">
+                <span class="glyph" aria-hidden="true">▶</span>
+                <span>
+                  <strong>Engage · gentle start</strong>
+                  <small>Five minutes on the clock. Nothing owed beyond them.</small>
+                </span>
+                <kbd>⌘↩</kbd>
+              </button>
+            </div>
+          </div>
+          <aside class="panel" aria-label="What the instruments hold">
+            <span class="label">What the panel holds for you</span>
+            <ul class="holds hairline-list">
+              <li><span class="what">Plan</span><span>The task and the current step, exactly as you declared them.</span></li>
+              <li><span class="what">Clock</span><span>One clock, canonical, held across pauses and sleep. It never runs behind your back.</span></li>
+              <li><span class="what">Place</span><span>Your position in the session, so stepping away costs nothing.</span></li>
+            </ul>
+            <p class="privacy">All readings stay on this Mac. No account, no telemetry, no other apps observed. Optional sync would carry history only — never the live clock.</p>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 2 · FOCUS -->
+      <section class="screen" id="screen-focus" data-screen="focus" aria-labelledby="t-focus">
+        <div class="rulebar">
+          <div>
+            <div class="kicker">Focus · Block 1</div>
+            <h2 class="screen-title" id="t-focus">On the clock. Everything else is off it.</h2>
+            <p class="screen-sub">One clock, read like an altimeter. It measures time, not you.</p>
+          </div>
+        </div>
+        <div class="focus-grid">
+          <div class="instrument" role="timer" aria-label="Time remaining in this block">
+            <div class="inst-head num">
+              <span>T-REMAINING</span>
+              <span class="nominal" id="instState">RUNNING</span>
+              <span>BLOCK 1 · FOCUS</span>
+            </div>
+            <div class="timer num" id="timerTime" data-held="false">17:26</div>
+            <div class="tape" aria-hidden="true"><span class="bug" id="tapeBug" style="left: 28%;"></span></div>
+            <div class="tape-caption">Block elapsed · marker moves left to right</div>
+            <div class="subreadouts">
+              <div><span class="label">Next check-in</span><span class="val num" id="nextCheck">06:00</span></div>
+              <div><span class="label">Step</span><span class="val" style="font-family: var(--font-panel); font-size: var(--type-sm);">Mark the done section</span></div>
+              <div><span class="label">Hold</span><span class="val num">SPACE</span></div>
+            </div>
+            <div class="timer-controls" aria-label="Timer controls">
+              <button class="mech-btn num" type="button" id="minusBtn" aria-label="Subtract one minute">−1 min</button>
+              <button class="mech-btn num" type="button" id="holdBtn" data-primary aria-label="Hold the clock">Hold</button>
+              <button class="mech-btn num" type="button" id="plusBtn" aria-label="Add one minute">+1 min</button>
+            </div>
+          </div>
+          <aside class="side-stack">
+            <div class="panel">
+              <span class="label">Now flying</span>
+              <p style="font-weight: 620;">Edit the conference talk outline</p>
+              <p style="color: var(--color-dim); font-size: var(--type-xs); margin-top: var(--space-1);">Step: mark the one section that already feels done.</p>
+              <div class="why" style="margin-top: var(--space-3);">Drift, hold, or end early — all of these are ordinary operations, logged without comment.</div>
+            </div>
+            <div class="panel">
+              <span class="label">Parked thoughts · ⌘⇧D</span>
+              <div class="hairline-list" id="scratchList">
+                <div class="scratch-row"><time class="num">13:18</time><span>Ask Mira about the demo laptop</span><span class="tag">later</span></div>
+                <div class="scratch-row"><time class="num">13:22</time><span>Slide 9 wants a simpler chart</span><span class="tag">later</span></div>
+              </div>
+              <div class="scratch-entry">
+                <label class="label" for="scratchInput" style="position:absolute; width:1px; height:1px; overflow:hidden; clip-path: inset(50%);">Park a thought</label>
+                <input id="scratchInput" placeholder="Park a thought — stays out of the way">
+                <button type="button" id="scratchAdd" aria-label="Add thought">+</button>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 3 · CHECK-IN -->
+      <section class="screen" id="screen-checkin" data-screen="checkin" aria-labelledby="t-check">
+        <div class="rulebar">
+          <div>
+            <div class="kicker">Cross-check · 22 min in · clock held</div>
+            <h2 class="screen-title" id="t-check">A cross-check, not an exam.</h2>
+            <p class="screen-sub">Four readings. Each one only changes what happens next — none of them is a failure state.</p>
+          </div>
+        </div>
+        <div class="check-grid">
+          <div>
+            <p class="question">How does the step fit right now?</p>
+            <div role="group" aria-label="Check-in answer">
+              <button class="option-row" type="button" data-response="Held. The block resumes exactly where it stopped.">
+                <span class="key num">1</span>
+                <span><strong>Still fits — keep going</strong><small>The panel folds away and the clock resumes.</small></span>
+                <span class="arrow" aria-hidden="true">→</span>
+              </button>
+              <button class="option-row" type="button" data-response="Step reduced to a one-line move. Nothing was lost.">
+                <span class="key num">2</span>
+                <span><strong>Make the step smaller</strong><small>Shrink the next move until it needs no decisions.</small></span>
+                <span class="arrow" aria-hidden="true">→</span>
+              </button>
+              <button class="option-row" type="button" data-response="Logged as information. Choose your return freely.">
+                <span class="key num">3</span>
+                <span><strong>I drifted somewhere else</strong><small>A detour is data, not a verdict.</small></span>
+                <span class="arrow" aria-hidden="true">→</span>
+              </button>
+              <button class="option-row" type="button" data-response="Break is a valid next leg. Your position is held.">
+                <span class="key num">4</span>
+                <span><strong>I could use a break</strong><small>Rest is an instrument too.</small></span>
+                <span class="arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
+            <p class="response-line" id="checkResponse" aria-live="polite"></p>
+          </div>
+          <aside class="panel">
+            <span class="label">This session · stays on this Mac</span>
+            <ol class="log hairline-list">
+              <li><time class="num">13:04</time><span>Engaged · steady capacity declared.</span></li>
+              <li><time class="num">13:09</time><span>Gentle start carried into a full block.</span></li>
+              <li><time class="num">13:18</time><span>Thought parked; focus surface unchanged.</span></li>
+            </ol>
+            <div class="field-block" style="margin-top: var(--space-4);">
+              <button class="engage" type="button" data-screen-jump="focus" style="background: var(--color-panel-2); color: var(--color-ink); border: 1px solid var(--color-rule-strong);">
+                <span class="glyph" aria-hidden="true">↩</span>
+                <span><strong>Resume</strong><small>The clock restarts exactly where it held.</small></span>
+                <kbd style="border-color: var(--color-rule-strong); color: var(--color-dim);">⌘↩</kbd>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 4 · BREAK -->
+      <section class="screen" id="screen-break" data-screen="break" aria-labelledby="t-break">
+        <div class="rulebar">
+          <div>
+            <div class="kicker">Break · position held</div>
+            <h2 class="screen-title" id="t-break">Off the clock. Position held.</h2>
+            <p class="screen-sub">Suggestions come from what you declared — never from a claim about what is optimal. End the break whenever you say.</p>
+          </div>
+        </div>
+        <div class="break-grid">
+          <div class="instrument">
+            <div class="inst-head num">
+              <span>BREAK</span>
+              <span style="color: var(--color-standby);">HELD FOR YOU</span>
+              <span>ENDS WHEN YOU SAY</span>
+            </div>
+            <div class="timer num" style="color: var(--color-standby);">03:00</div>
+            <div class="tape-caption" style="margin-top: var(--space-3);">Ending early is a normal operation</div>
+            <div class="break-options" role="group" aria-label="Break actions">
+              <button class="break-opt" type="button" aria-pressed="false"><strong>Water</strong><span>Stand, pour, sip slowly.</span></button>
+              <button class="break-opt" type="button" aria-pressed="false"><strong>Stretch</strong><span>Unclench the jaw, drop the shoulders.</span></button>
+              <button class="break-opt" type="button" aria-pressed="false"><strong>Step away</strong><span>A doorway or a window counts.</span></button>
+              <button class="break-opt" type="button" aria-pressed="false"><strong>Quiet</strong><span>No prompt. Just the held place.</span></button>
+            </div>
+          </div>
+          <aside class="panel">
+            <span class="label">Re-entry vector</span>
+            <p style="color: var(--color-dim); font-size: var(--type-xs);">When you return, this is the only instruction on screen.</p>
+            <div class="vector">
+              <strong>Mark the one section that feels done.</strong>
+              <span>Open the outline → add a check beside it. Rough is fine.</span>
+            </div>
+            <p class="why"><b>Why movement first?</b> You declared “restless” and have been seated about forty minutes. This pattern is editable and can be switched off entirely.</p>
+            <div class="field-block" style="margin-top: var(--space-4);">
+              <button class="engage" type="button" data-screen-jump="focus">
+                <span class="glyph" aria-hidden="true">▶</span>
+                <span><strong>Resume when ready</strong><small>The vector stays on screen for the first 30 seconds.</small></span>
+                <kbd>R</kbd>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- 5 · LOG -->
+      <section class="screen" id="screen-review" data-screen="review" aria-labelledby="t-log">
+        <div class="rulebar">
+          <div>
+            <div class="kicker">Log · Wednesday 30 July</div>
+            <h2 class="screen-title" id="t-log">The log, as it happened.</h2>
+            <p class="screen-sub">A flight log records events. It does not grade the pilot. Notes stay descriptive and uncertain.</p>
+          </div>
+        </div>
+        <div class="review-grid">
+          <div class="panel">
+            <table class="logtable">
+              <thead><tr><th>Time</th><th>Event</th><th>Kind</th></tr></thead>
+              <tbody>
+                <tr><td class="t num">13:04</td><td class="ev"><strong>Engaged the outline edit</strong><span>Gentle start · steady capacity declared</span></td><td class="k">start</td></tr>
+                <tr><td class="t num">13:09</td><td class="ev"><strong>Continued past the gentle start</strong><span>First step still fit</span></td><td class="k">choice</td></tr>
+                <tr><td class="t num">13:18</td><td class="ev"><strong>Parked a thought</strong><span>Focus surface unchanged</span></td><td class="k">capture</td></tr>
+                <tr><td class="t num">13:26</td><td class="ev"><strong>Reduced the step</strong><span>One-line move chosen at cross-check</span></td><td class="k">choice</td></tr>
+                <tr><td class="t num">13:44</td><td class="ev"><strong>Movement break</strong><span>Returned after 2 min 40 s</span></td><td class="k">recovery</td></tr>
+                <tr><td class="t num">14:22</td><td class="ev"><strong>Closed the session</strong><span>One section marked done; intro still rough</span></td><td class="k">close</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <aside class="side-stack">
+            <div class="facts" aria-label="Session facts">
+              <div><span class="label">Focused time</span><span class="val num">1h 02m</span></div>
+              <div><span class="label">Thoughts parked</span><span class="val num">2</span></div>
+              <div><span class="label">Steps resized</span><span class="val num">1</span></div>
+              <div><span class="label">Breaks taken</span><span class="val num">1</span></div>
+            </div>
+            <div class="panel">
+              <span class="label">Observed, not concluded</span>
+              <p class="observed">You reduced the step once and the work continued for 38 more minutes afterward.
+                <em>One afternoon is not a pattern. The option simply stays on the panel.</em></p>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="deckfoot">
+    <span>DIRECTION D · FLIGHT INSTRUMENT · CANDIDATE, NOT APPROVED</span>
+    <span>KEYS 1–5 SWITCH SCREENS · SPACE HOLDS THE CLOCK</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var deck = document.getElementById("deck");
+  var screens = Array.prototype.slice.call(document.querySelectorAll(".screen"));
+  var pageBtns = Array.prototype.slice.call(document.querySelectorAll(".page-btn"));
+  var order = ["initiate", "focus", "checkin", "break", "review"];
+
+  function show(name) {
+    screens.forEach(function (s) { s.classList.toggle("is-current", s.dataset.screen === name); });
+    pageBtns.forEach(function (b) { b.setAttribute("aria-selected", String(b.dataset.screenTarget === name)); });
+  }
+  pageBtns.forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.screenTarget); }); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-screen-jump]"), function (b) {
+    b.addEventListener("click", function () { show(b.dataset.screenJump); });
+  });
+
+  // Segmented selectors: exclusive within their group.
+  Array.prototype.forEach.call(document.querySelectorAll(".seg"), function (seg) {
+    seg.addEventListener("click", function (e) {
+      var btn = e.target.closest("button"); if (!btn) return;
+      Array.prototype.forEach.call(seg.querySelectorAll("button"), function (b) {
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
+    });
+  });
+
+  // Check-in options
+  var responseLine = document.getElementById("checkResponse");
+  Array.prototype.forEach.call(document.querySelectorAll(".option-row"), function (opt) {
+    opt.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll(".option-row"), function (o) {
+        o.setAttribute("aria-pressed", String(o === opt));
+      });
+      responseLine.textContent = "▸ " + opt.dataset.response;
+    });
+  });
+
+  // Break options (multi-select is fine; none is fine)
+  Array.prototype.forEach.call(document.querySelectorAll(".break-opt"), function (opt) {
+    opt.addEventListener("click", function () {
+      opt.setAttribute("aria-pressed", String(opt.getAttribute("aria-pressed") !== "true"));
+    });
+  });
+
+  // Scratch entry
+  var scratchAdd = document.getElementById("scratchAdd");
+  var scratchInput = document.getElementById("scratchInput");
+  var scratchList = document.getElementById("scratchList");
+  function addScratch() {
+    var v = scratchInput.value.trim(); if (!v) return;
+    var now = new Date();
+    var row = document.createElement("div");
+    row.className = "scratch-row";
+    row.innerHTML = '<time class="num">' + String(now.getHours()).padStart(2, "0") + ":" +
+      String(now.getMinutes()).padStart(2, "0") + "</time><span></span><span class=\"tag\">later</span>";
+    row.children[1].textContent = v;
+    scratchList.appendChild(row);
+    scratchInput.value = "";
+  }
+  scratchAdd.addEventListener("click", addScratch);
+  scratchInput.addEventListener("keydown", function (e) { if (e.key === "Enter") addScratch(); });
+
+  // The clock: mechanical, exact. Ticks once per second while running.
+  var remaining = 17 * 60 + 26, held = false;
+  var blockTotal = 25 * 60;
+  var timerEl = document.getElementById("timerTime");
+  var instState = document.getElementById("instState");
+  var holdBtn = document.getElementById("holdBtn");
+  var bug = document.getElementById("tapeBug");
+  function fmt(s) {
+    s = Math.max(0, s);
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function render() {
+    timerEl.textContent = fmt(remaining);
+    timerEl.dataset.held = String(held);
+    instState.textContent = held ? "HELD" : "RUNNING";
+    instState.style.color = held ? "var(--color-standby)" : "var(--color-nominal)";
+    holdBtn.textContent = held ? "Resume" : "Hold";
+    bug.style.left = (100 * (blockTotal - remaining) / blockTotal).toFixed(2) + "%";
+  }
+  setInterval(function () { if (!held && remaining > 0) { remaining -= 1; render(); } }, 1000);
+  holdBtn.addEventListener("click", function () { held = !held; render(); });
+  document.getElementById("minusBtn").addEventListener("click", function () { remaining = Math.max(0, remaining - 60); render(); });
+  document.getElementById("plusBtn").addEventListener("click", function () { remaining += 60; render(); });
+  render();
+
+  // Motion control: the in-app "Motion: still" switch is architecture, not decoration.
+  var motionToggle = document.getElementById("motionToggle");
+  motionToggle.addEventListener("click", function () {
+    var still = deck.dataset.motion !== "still";
+    deck.dataset.motion = still ? "still" : "mechanical";
+    motionToggle.setAttribute("aria-pressed", String(still));
+    document.getElementById("motionLabel").textContent = still ? "Motion: still" : "Motion: mechanical";
+  });
+
+  // Keys 1–5 switch screens; Space holds the clock on the focus screen.
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    var idx = ["1", "2", "3", "4", "5"].indexOf(e.key);
+    if (idx !== -1) { show(order[idx]); return; }
+    if (e.key === " " && document.getElementById("screen-focus").classList.contains("is-current")) {
+      e.preventDefault(); held = !held; render();
+    }
+  });
+})();
+</script>
+</body>
+</html>

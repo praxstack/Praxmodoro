@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Praxmodoro · Direction F — Broadsheet</title>
+<style>
+/* ============================================================
+   DIRECTION F · "BROADSHEET"
+   Stark editorial. Huge serif display, hard grid, generous
+   white, ink on paper with a single accent. The timer is
+   typography. Motion is page-like and deliberate.
+   Beauty with spine, not softness.
+
+   SINGLE-THEME BY INTENT: a broadsheet is printed — one paper,
+   one ink; a dark variant would be a different publication,
+   not a theme of this one.
+   ============================================================ */
+:root {
+  /* -- colour: paper, ink, one editorial red ------------------ */
+  --color-paper:    oklch(97% 0.008 90);
+  --color-paper-2:  oklch(94.5% 0.01 88);
+  --color-ink:      oklch(18% 0.008 70);
+  --color-ink-2:    oklch(34% 0.008 70);
+  --color-gray:     oklch(52% 0.008 75);
+  --color-rule:     oklch(80% 0.01 80);
+  --color-rule-ink: oklch(18% 0.008 70);
+  --color-accent:   oklch(48% 0.17 27);     /* editorial red */
+  --color-accent-ink: oklch(97% 0.008 90);
+
+  /* -- type: serif display over sans labels ------------------- */
+  --font-serif: ui-serif, "New York", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-sans:  system-ui, -apple-system, "Helvetica Neue", sans-serif;
+  --type-label: 0.6875rem;    /* 11px small caps kickers  */
+  --type-meta:  0.75rem;      /* 12px folio lines         */
+  --type-body:  1.0625rem;    /* 17px serif body          */
+  --type-deck:  1.375rem;     /* 22px italic decks        */
+  --type-head:  clamp(2.6rem, 6vw, 4.4rem);
+  --type-timer: clamp(7rem, 22vw, 17rem);
+  --leading-tight: 0.98;
+  --track-caps: 0.16em;
+
+  /* -- spacing: an em-based editorial scale -------------------- */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 1rem; --space-4: 1.75rem;
+  --space-5: 2.75rem; --space-6: 4.5rem; --space-7: 7rem;
+
+  /* -- radii: print has none ----------------------------------- */
+  --radius-0: 0px;
+
+  /* -- motion: deliberate, page-like ---------------------------- */
+  --dur-page: 420ms;
+  --dur-ui:   200ms;
+  --ease-page: cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif);
+  font-size: var(--type-body);
+  line-height: 1.55;
+  padding: 0 var(--space-4) var(--space-6);
+}
+.sheet { max-width: 1080px; margin: 0 auto; }
+button { font: inherit; color: inherit; background: none; border: none; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; }
+input {
+  font-family: var(--font-serif); font-size: var(--type-deck); color: var(--color-ink);
+  background: none; border: none; border-bottom: 1px solid var(--color-rule-ink);
+  width: 100%; padding: var(--space-1) 0;
+}
+input:focus { outline: none; border-bottom-width: 2px; }
+
+.kicker {
+  font-family: var(--font-sans); font-size: var(--type-label); font-weight: 700;
+  letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--color-accent);
+}
+.folio {
+  font-family: var(--font-sans); font-size: var(--type-meta);
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--color-gray);
+}
+
+/* -- masthead -------------------------------------------------- */
+.masthead { text-align: center; padding: var(--space-5) 0 var(--space-3); }
+.masthead h1 {
+  font-size: clamp(2.2rem, 5vw, 3.4rem);
+  font-weight: 800; letter-spacing: 0.28em; text-transform: uppercase;
+  text-indent: 0.28em; /* optically centre the tracked caps */
+  line-height: 1;
+}
+.masthead .folio { margin-top: var(--space-2); }
+.doublerule { border: none; border-top: 3px solid var(--color-rule-ink); position: relative; margin: var(--space-3) 0 0; }
+.doublerule::after { content: ""; display: block; border-top: 1px solid var(--color-rule-ink); margin-top: 3px; }
+
+/* -- sections nav ---------------------------------------------- */
+.sections {
+  display: flex; justify-content: center; flex-wrap: wrap; gap: var(--space-2) var(--space-4);
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--color-rule-ink);
+  font-family: var(--font-sans); font-size: var(--type-meta);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.sections button { color: var(--color-gray); padding: 2px 0; transition: color var(--dur-ui) var(--ease-page); }
+.sections button sup { color: var(--color-rule); font-size: 0.8em; margin-right: 2px; }
+.sections button[aria-selected="true"] { color: var(--color-ink); font-weight: 700; box-shadow: 0 2px 0 var(--color-accent); }
+.sections button:hover { color: var(--color-ink); }
+
+/* -- pages ------------------------------------------------------ */
+.page { display: none; padding-top: var(--space-5); }
+.page.is-current { display: block; animation: page-turn var(--dur-page) var(--ease-page); }
+@keyframes page-turn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+.headline {
+  font-size: var(--type-head); font-weight: 750; line-height: var(--leading-tight);
+  letter-spacing: -0.015em; max-width: 18ch;
+  margin: var(--space-2) 0 var(--space-3);
+}
+.deck {
+  font-size: var(--type-deck); font-style: italic; color: var(--color-ink-2);
+  max-width: 46ch; line-height: 1.4;
+}
+.byline { margin-top: var(--space-3); }
+
+/* hard grid with column rules */
+.grid { display: grid; gap: 0; margin-top: var(--space-5); border-top: 1px solid var(--color-rule-ink); }
+.grid > * { padding: var(--space-4); border-left: 1px solid var(--color-rule); min-width: 0; }
+.grid > *:first-child { border-left: none; padding-left: 0; }
+.grid-2 { grid-template-columns: 1.5fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.colhead {
+  font-family: var(--font-sans); font-size: var(--type-label); font-weight: 700;
+  letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--color-ink);
+  border-bottom: 1px solid var(--color-rule-ink); padding-bottom: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+.smallnote { font-size: 0.9rem; color: var(--color-gray); line-height: 1.5; }
+
+/* editorial choice list: numbers like a front-page index */
+.indexlist { list-style: none; padding: 0; counter-reset: idx; }
+.indexlist > li { border-bottom: 1px solid var(--color-rule); }
+.indexlist > li:last-child { border-bottom: none; }
+.indexlist button {
+  display: grid; grid-template-columns: 2.4rem 1fr; gap: var(--space-3);
+  width: 100%; text-align: left; padding: var(--space-3) 0;
+  transition: color var(--dur-ui) var(--ease-page);
+}
+.indexlist button::before {
+  counter-increment: idx; content: counter(idx);
+  font-size: 1.6rem; font-weight: 750; line-height: 1;
+  color: var(--color-rule); transition: color var(--dur-ui) var(--ease-page);
+}
+.indexlist button strong { display: block; font-size: 1.15rem; font-weight: 700; }
+.indexlist button small { font-size: 0.9rem; color: var(--color-gray); font-family: var(--font-serif); }
+.indexlist button:hover::before, .indexlist button[aria-pressed="true"]::before { color: var(--color-accent); }
+.indexlist button[aria-pressed="true"] strong { text-decoration: underline; text-decoration-color: var(--color-accent); text-underline-offset: 4px; }
+
+/* pill-less selectors: underline is the state */
+.wordrow { display: flex; flex-wrap: wrap; gap: var(--space-3) var(--space-4); }
+.wordrow button {
+  font-family: var(--font-serif); font-size: var(--type-body);
+  color: var(--color-gray); padding: 2px 0;
+  transition: color var(--dur-ui) var(--ease-page);
+}
+.wordrow button[aria-pressed="true"] {
+  color: var(--color-ink); font-weight: 700;
+  box-shadow: 0 2px 0 var(--color-accent);
+}
+.wordrow button:hover { color: var(--color-ink); }
+
+/* the standfirst begin button: a black bar, like a masthead plate */
+.plate {
+  display: block; width: 100%; text-align: left;
+  background: var(--color-ink); color: var(--color-paper);
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-4);
+  transition: background var(--dur-ui) var(--ease-page);
+}
+.plate:hover { background: var(--color-accent); color: var(--color-accent-ink); }
+.plate strong { display: block; font-size: 1.3rem; font-weight: 750; }
+.plate small { font-family: var(--font-sans); font-size: var(--type-meta); letter-spacing: 0.06em; opacity: 0.85; }
+.plate kbd { float: right; font-family: var(--font-sans); font-size: var(--type-meta); opacity: 0.7; }
+
+/* -- the timer as typography ------------------------------------ */
+.timeplate { text-align: center; padding: var(--space-4) 0 var(--space-3); }
+.timeplate .bigtime {
+  font-size: var(--type-timer); font-weight: 780; line-height: 0.95;
+  letter-spacing: -0.03em; font-variant-numeric: tabular-nums lining-nums;
+  transition: color var(--dur-ui) var(--ease-page);
+}
+.timeplate .bigtime.held { color: var(--color-gray); }
+.timeplate .caption { margin-top: var(--space-2); }
+.timerule { border: none; border-top: 1px solid var(--color-rule-ink); margin: var(--space-3) auto; max-width: 30rem; }
+.timecontrols {
+  display: flex; justify-content: center; gap: var(--space-4);
+  font-family: var(--font-sans); font-size: var(--type-meta);
+  letter-spacing: 0.1em; text-transform: uppercase;
+}
+.timecontrols button { color: var(--color-gray); padding: var(--space-1) 0; transition: color var(--dur-ui) var(--ease-page); }
+.timecontrols button:hover { color: var(--color-accent); }
+.timecontrols .primary { color: var(--color-ink); font-weight: 700; }
+
+/* margin notes (parked thoughts) */
+.margins { list-style: none; padding: 0; }
+.margins li { padding: var(--space-2) 0; border-bottom: 1px solid var(--color-rule); font-size: 0.95rem; }
+.margins li:last-child { border-bottom: none; }
+.margins time { font-family: var(--font-sans); font-size: var(--type-meta); color: var(--color-gray); margin-right: var(--space-2); }
+.marginentry { margin-top: var(--space-3); }
+.marginentry input { font-size: var(--type-body); }
+
+/* pull-quote question */
+.pullq {
+  font-size: clamp(2rem, 4.6vw, 3.2rem); font-weight: 750; line-height: 1.05;
+  letter-spacing: -0.015em; max-width: 16ch;
+  padding-left: var(--space-4); border-left: 4px solid var(--color-accent);
+  margin: var(--space-4) 0;
+}
+.answerline {
+  min-height: 1.6em; font-style: italic; color: var(--color-ink-2);
+  margin-top: var(--space-3);
+}
+.answerline:not(:empty)::before { content: "— "; color: var(--color-accent); }
+
+/* timeline as news briefs */
+.briefs { list-style: none; padding: 0; }
+.briefs li { display: grid; grid-template-columns: 4.5rem 1fr; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--color-rule); }
+.briefs li:last-child { border-bottom: none; }
+.briefs time { font-family: var(--font-sans); font-size: var(--type-meta); color: var(--color-gray); padding-top: 4px; }
+.briefs strong { display: block; font-weight: 700; }
+.briefs span { font-size: 0.95rem; color: var(--color-gray); }
+.briefs .kind { font-family: var(--font-sans); font-size: 0.625rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-accent); }
+
+.factrow { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid var(--color-rule-ink); border-bottom: 1px solid var(--color-rule-ink); margin: var(--space-4) 0; }
+.factrow > div { padding: var(--space-3) var(--space-3) var(--space-3) 0; border-left: 1px solid var(--color-rule); }
+.factrow > div:first-child { border-left: none; }
+.factrow .n { font-size: 1.9rem; font-weight: 780; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.factrow .l { font-family: var(--font-sans); font-size: var(--type-label); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-gray); }
+
+.endnote { font-style: italic; color: var(--color-ink-2); max-width: 52ch; }
+.endnote::first-letter { color: var(--color-accent); }
+
+.colophon {
+  margin-top: var(--space-6); border-top: 1px solid var(--color-rule-ink); padding-top: var(--space-2);
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: var(--space-2);
+}
+
+@media (max-width: 860px) {
+  .grid-2, .grid-3, .factrow { grid-template-columns: 1fr; }
+  .grid > *, .factrow > div { border-left: none; padding-left: 0; }
+}
+
+/* Reduced motion, or the in-app Motion: still control:
+   pages appear in place; nothing slides, nothing fades. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+[data-motion="still"] *, [data-motion="still"] *::before, [data-motion="still"] *::after {
+  animation: none !important; transition: none !important;
+}
+</style>
+</head>
+<body>
+<div class="sheet" id="sheet" data-motion="page">
+
+  <header class="masthead">
+    <h1>Praxmodoro</h1>
+    <p class="folio">Wednesday, 30 July · Afternoon Edition · Printed on this Mac only — no account, no watching</p>
+    <hr class="doublerule">
+    <nav class="sections" aria-label="Sections, keys 1 to 5">
+      <button data-screen-target="initiate" aria-selected="true"><sup>1</sup>Begin</button>
+      <button data-screen-target="focus" aria-selected="false"><sup>2</sup>Focus</button>
+      <button data-screen-target="checkin" aria-selected="false"><sup>3</sup>Check-in</button>
+      <button data-screen-target="break" aria-selected="false"><sup>4</sup>Interlude</button>
+      <button data-screen-target="review" aria-selected="false"><sup>5</sup>The Day</button>
+      <button id="motionToggle" aria-pressed="false" style="margin-left:auto; color: var(--color-gray);">Motion: page</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- 1 · BEGIN -->
+    <section class="page is-current" id="screen-initiate" data-screen="initiate" aria-labelledby="t-init">
+      <p class="kicker">Front page · one commission</p>
+      <h2 class="headline" id="t-init">One small step, set in large type.</h2>
+      <p class="deck">Name the work, the first move, and what you have right now. The rest of the page stays white on purpose.</p>
+
+      <div class="grid grid-2">
+        <div>
+          <div class="colhead">The commission</div>
+          <label class="folio" for="taskInput" style="display:block; margin-bottom: var(--space-1);">Task — one only</label>
+          <input id="taskInput" value="Edit the conference talk outline" autocomplete="off">
+
+          <div style="margin-top: var(--space-4);">
+            <p class="folio" style="margin-bottom: var(--space-1);">First step — small enough to need no decisions</p>
+            <p style="font-size: var(--type-deck); font-weight: 600; line-height: 1.35;">Open the outline and mark the one section that already feels done.</p>
+            <p class="smallnote" style="margin-top: var(--space-1);">Concrete, reversible, about two minutes. Rewrite it if it reads too large.</p>
+          </div>
+
+          <div style="margin-top: var(--space-4);">
+            <p class="folio" style="margin-bottom: var(--space-2);">Capacity right now — a reading, not a rating</p>
+            <div class="wordrow" role="group" aria-label="Current capacity">
+              <button type="button" aria-pressed="false">Foggy</button>
+              <button type="button" aria-pressed="true">Steady</button>
+              <button type="button" aria-pressed="false">Restless</button>
+              <button type="button" aria-pressed="false">Charged</button>
+            </div>
+          </div>
+
+          <div style="margin-top: var(--space-4);">
+            <p class="folio" style="margin-bottom: var(--space-2);">Timing policy</p>
+            <div class="wordrow" role="group" aria-label="Session timing policy">
+              <button type="button" aria-pressed="true">Gentle start, 5 + 20</button>
+              <button type="button" aria-pressed="false">Classic, 25 + 5</button>
+              <button type="button" aria-pressed="false">Flow, open-ended</button>
+              <button type="button" aria-pressed="false">Recovery first</button>
+            </div>
+          </div>
+
+          <button class="plate" type="button" data-screen-jump="focus">
+            <kbd>⌘↩</kbd>
+            <strong>Begin the first block</strong>
+            <small>Five minutes to arrive. Nothing owed beyond them.</small>
+          </button>
+        </div>
+        <aside>
+          <div class="colhead">Standing notice</div>
+          <p class="smallnote">This page holds three things for you: the task as you wrote it, one clock, and your place in the session. Nothing on it measures you.</p>
+          <p class="smallnote" style="margin-top: var(--space-3);">Everything you type stays on this Mac. No account. Optional sync would carry history only — never the live clock.</p>
+          <p class="smallnote" style="margin-top: var(--space-3);">Check-ins arrive as questions, not report cards. Every answer is an ordinary one.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 2 · FOCUS -->
+    <section class="page" id="screen-focus" data-screen="focus" aria-labelledby="t-focus">
+      <p class="kicker">Focus · Block one</p>
+      <h2 class="headline" id="t-focus">Attention, above the fold.</h2>
+
+      <div class="timeplate">
+        <div class="bigtime" id="timerTime" role="timer" aria-label="Time remaining in this block">17:26</div>
+        <hr class="timerule">
+        <p class="deck caption" id="timerCaption">Seventeen minutes remain. The step: mark the one section that already feels done.</p>
+        <p class="folio" style="margin-top: var(--space-2);" id="timerState">Running · next check-in in six minutes</p>
+        <div class="timecontrols" style="margin-top: var(--space-3);" aria-label="Timer controls">
+          <button type="button" id="minusBtn" aria-label="Subtract one minute">− One minute</button>
+          <button type="button" id="holdBtn" class="primary" aria-label="Hold the clock">Hold · Space</button>
+          <button type="button" id="plusBtn" aria-label="Add one minute">+ One minute</button>
+        </div>
+      </div>
+
+      <div class="grid grid-2">
+        <div>
+          <div class="colhead">Now in progress</div>
+          <p style="font-size: var(--type-deck); font-weight: 600;">Edit the conference talk outline</p>
+          <p class="smallnote" style="margin-top: var(--space-2);">Drift, hold, or end early — all ordinary. The page keeps your place without comment.</p>
+        </div>
+        <aside>
+          <div class="colhead">Notes to the margin · ⌘⇧D</div>
+          <ul class="margins" id="marginList">
+            <li><time>13:18</time>Ask Mira about the demo laptop</li>
+            <li><time>13:22</time>Slide 9 wants a simpler chart</li>
+          </ul>
+          <div class="marginentry">
+            <label class="folio" for="marginInput" style="display:block; margin-bottom: var(--space-1);">Park a thought</label>
+            <input id="marginInput" placeholder="It goes to the margin, not the page">
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 3 · CHECK-IN -->
+    <section class="page" id="screen-checkin" data-screen="checkin" aria-labelledby="t-check">
+      <p class="kicker">Check-in · 22 minutes in · the clock is held</p>
+      <h2 class="headline" id="t-check">A question set in the margin.</h2>
+      <p class="deck">Four ordinary answers. Each one only changes what the next paragraph is — none is a failure state.</p>
+
+      <div class="grid grid-2">
+        <div>
+          <p class="pullq">How does the step fit right now?</p>
+          <ol class="indexlist" role="group" aria-label="Check-in answer">
+            <li><button type="button" data-response="Held. The block resumes exactly where it left off.">
+              <span><strong>Still fits — keep going</strong><small>This page folds away and the clock resumes.</small></span></button></li>
+            <li><button type="button" data-response="The step is now a one-line move. Nothing was lost.">
+              <span><strong>Make the step smaller</strong><small>Shrink the next move until it needs no decisions.</small></span></button></li>
+            <li><button type="button" data-response="Noted as information. Choose your return freely.">
+              <span><strong>I drifted somewhere else</strong><small>A detour is a fact for the record, not a verdict.</small></span></button></li>
+            <li><button type="button" data-response="Rest is a real next step. Your place is held.">
+              <span><strong>I could use a break</strong><small>The interlude page is already set for you.</small></span></button></li>
+          </ol>
+          <p class="answerline" id="checkResponse" aria-live="polite"></p>
+        </div>
+        <aside>
+          <div class="colhead">The session so far</div>
+          <ul class="briefs">
+            <li><time>13:04</time><span><strong>Began the outline edit</strong><span>Steady capacity declared</span></span></li>
+            <li><time>13:09</time><span><strong>Gentle start became a full block</strong><span>The first step still fit</span></span></li>
+            <li><time>13:18</time><span><strong>A thought went to the margin</strong><span>Focus stayed on the page</span></span></li>
+          </ul>
+          <button class="plate" type="button" data-screen-jump="focus">
+            <kbd>⌘↩</kbd>
+            <strong>Return to the page</strong>
+            <small>The clock resumes exactly where it held.</small>
+          </button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 4 · INTERLUDE -->
+    <section class="page" id="screen-break" data-screen="break" aria-labelledby="t-break">
+      <p class="kicker">Interlude · your place is kept</p>
+      <h2 class="headline" id="t-break">White space is part of the composition.</h2>
+      <p class="deck">Rest belongs on the page, not off it. Suggestions come from what you declared — never from a claim about what is optimal.</p>
+
+      <div class="timeplate">
+        <div class="bigtime" style="color: var(--color-gray);">03:00</div>
+        <hr class="timerule">
+        <p class="folio">Ending early is a normal edit</p>
+      </div>
+
+      <div class="grid grid-3">
+        <div>
+          <div class="colhead">If it would help</div>
+          <ol class="indexlist" role="group" aria-label="Break actions">
+            <li><button type="button"><span><strong>Water</strong><small>Stand, pour, sip slowly.</small></span></button></li>
+            <li><button type="button"><span><strong>Stretch</strong><small>Unclench the jaw, drop the shoulders.</small></span></button></li>
+          </ol>
+        </div>
+        <div>
+          <div class="colhead">Or</div>
+          <ol class="indexlist" role="group" aria-label="More break actions" style="counter-reset: idx 2;">
+            <li><button type="button"><span><strong>Step away</strong><small>A doorway or a window counts.</small></span></button></li>
+            <li><button type="button"><span><strong>Quiet</strong><small>No prompt. Just the kept place.</small></span></button></li>
+          </ol>
+        </div>
+        <aside>
+          <div class="colhead">When you return</div>
+          <p style="font-weight: 700; font-size: 1.15rem;">Mark the one section that feels done.</p>
+          <p class="smallnote" style="margin-top: var(--space-1);">Open the outline, add a check beside it. Rough is fine. This is the only instruction the next page will carry.</p>
+          <p class="smallnote" style="margin-top: var(--space-3);"><em>Why movement first?</em> You said “restless” and have been seated about forty minutes. This pattern is editable, and can be switched off entirely.</p>
+          <button class="plate" type="button" data-screen-jump="focus">
+            <kbd>R</kbd>
+            <strong>Ready when you are</strong>
+            <small>The note stays visible for the first thirty seconds.</small>
+          </button>
+        </aside>
+      </div>
+    </section>
+
+    <!-- 5 · THE DAY -->
+    <section class="page" id="screen-review" data-screen="review" aria-labelledby="t-day">
+      <p class="kicker">The Day · Wednesday, 30 July</p>
+      <h2 class="headline" id="t-day">Today, in this edition.</h2>
+      <p class="deck">A record of what happened, written plainly. Nothing on this page diagnoses, grades, or moralises.</p>
+
+      <div class="factrow" aria-label="Session facts">
+        <div><div class="n">1h 02m</div><div class="l">Focused time</div></div>
+        <div><div class="n">2</div><div class="l">Thoughts to the margin</div></div>
+        <div><div class="n">1</div><div class="l">Step resized</div></div>
+        <div><div class="n">1</div><div class="l">Interlude taken</div></div>
+      </div>
+
+      <div class="grid grid-2" style="border-top: none; margin-top: 0;">
+        <div>
+          <div class="colhead">The afternoon, in briefs</div>
+          <ul class="briefs">
+            <li><time>13:04</time><span><span class="kind">Start</span><strong>Began the outline edit</strong><span>Gentle start · steady capacity declared</span></span></li>
+            <li><time>13:09</time><span><span class="kind">Choice</span><strong>Continued past the gentle start</strong><span>The first step still fit</span></span></li>
+            <li><time>13:18</time><span><span class="kind">Capture</span><strong>A thought went to the margin</strong><span>Focus stayed on the page</span></span></li>
+            <li><time>13:26</time><span><span class="kind">Choice</span><strong>Made the step smaller</strong><span>A one-line move, chosen at check-in</span></span></li>
+            <li><time>13:44</time><span><span class="kind">Recovery</span><strong>A movement interlude</strong><span>Returned after 2 min 40 s</span></span></li>
+            <li><time>14:22</time><span><span class="kind">Close</span><strong>Closed the session</strong><span>One section marked done; the introduction still rough</span></span></li>
+          </ul>
+        </div>
+        <aside>
+          <div class="colhead">Editor’s note — observed, not concluded</div>
+          <p class="endnote">Smaller type held the column. You reduced the step once, and the work continued for thirty-eight more minutes afterward. One afternoon is not a pattern; the option simply remains in the layout.</p>
+        </aside>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="colophon">
+    <span class="folio">Direction F · Broadsheet · Candidate — nothing approved</span>
+    <span class="folio">Keys 1–5 turn sections · Space holds the clock</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var sheet = document.getElementById("sheet");
+  var pages = Array.prototype.slice.call(document.querySelectorAll(".page"));
+  var navBtns = Array.prototype.slice.call(document.querySelectorAll(".sections [data-screen-target]"));
+  var order = ["initiate", "focus", "checkin", "break", "review"];
+
+  function show(name) {
+    pages.forEach(function (p) { p.classList.toggle("is-current", p.dataset.screen === name); });
+    navBtns.forEach(function (b) { b.setAttribute("aria-selected", String(b.dataset.screenTarget === name)); });
+  }
+  navBtns.forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.screenTarget); }); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-screen-jump]"), function (b) {
+    b.addEventListener("click", function () { show(b.dataset.screenJump); });
+  });
+
+  // word-row selectors: exclusive
+  Array.prototype.forEach.call(document.querySelectorAll(".wordrow"), function (row) {
+    row.addEventListener("click", function (e) {
+      var btn = e.target.closest("button"); if (!btn) return;
+      Array.prototype.forEach.call(row.querySelectorAll("button"), function (b) {
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
+    });
+  });
+
+  // check-in answers
+  var responseLine = document.getElementById("checkResponse");
+  Array.prototype.forEach.call(document.querySelectorAll("[data-response]"), function (btn) {
+    btn.addEventListener("click", function () {
+      Array.prototype.forEach.call(document.querySelectorAll("[data-response]"), function (b) {
+        b.setAttribute("aria-pressed", String(b === btn));
+      });
+      responseLine.textContent = btn.dataset.response;
+    });
+  });
+
+  // margin notes
+  var marginInput = document.getElementById("marginInput");
+  var marginList = document.getElementById("marginList");
+  marginInput.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var v = marginInput.value.trim(); if (!v) return;
+    var now = new Date();
+    var li = document.createElement("li");
+    li.innerHTML = "<time>" + String(now.getHours()).padStart(2, "0") + ":" +
+      String(now.getMinutes()).padStart(2, "0") + "</time>";
+    li.appendChild(document.createTextNode(v));
+    marginList.appendChild(li);
+    marginInput.value = "";
+  });
+
+  // the timer, spelled out like copy
+  var remaining = 17 * 60 + 26, held = false;
+  var timerEl = document.getElementById("timerTime");
+  var captionEl = document.getElementById("timerCaption");
+  var stateEl = document.getElementById("timerState");
+  var holdBtn = document.getElementById("holdBtn");
+  var words = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
+    "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen",
+    "nineteen", "twenty", "twenty-one", "twenty-two", "twenty-three", "twenty-four", "twenty-five"];
+  function fmt(s) {
+    s = Math.max(0, s);
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function cap(w) { return w.charAt(0).toUpperCase() + w.slice(1); }
+  function render() {
+    timerEl.textContent = fmt(remaining);
+    timerEl.classList.toggle("held", held);
+    var m = Math.floor(remaining / 60);
+    var mWord = words[m] || String(m);
+    captionEl.textContent = (m >= 1 ? cap(mWord) + (m === 1 ? " minute remains. " : " minutes remain. ") : "Under a minute remains. ")
+      + "The step: mark the one section that already feels done.";
+    stateEl.textContent = held ? "Held · resume when you choose" : "Running · next check-in in six minutes";
+    holdBtn.textContent = held ? "Resume · Space" : "Hold · Space";
+  }
+  setInterval(function () { if (!held && remaining > 0) { remaining -= 1; render(); } }, 1000);
+  document.getElementById("minusBtn").addEventListener("click", function () { remaining = Math.max(0, remaining - 60); render(); });
+  document.getElementById("plusBtn").addEventListener("click", function () { remaining += 60; render(); });
+  holdBtn.addEventListener("click", function () { held = !held; render(); });
+  render();
+
+  // in-app motion control
+  var motionToggle = document.getElementById("motionToggle");
+  motionToggle.addEventListener("click", function () {
+    var still = sheet.dataset.motion !== "still";
+    sheet.dataset.motion = still ? "still" : "page";
+    motionToggle.setAttribute("aria-pressed", String(still));
+    motionToggle.textContent = still ? "Motion: still" : "Motion: page";
+  });
+
+  // keys 1–5 turn sections; space holds on the focus page
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    var idx = ["1", "2", "3", "4", "5"].indexOf(e.key);
+    if (idx !== -1) { show(order[idx]); return; }
+    if (e.key === " " && document.getElementById("screen-focus").classList.contains("is-current")) {
+      e.preventDefault(); held = !held; render();
+    }
+  });
+})();
+</script>
+</body>
+</html>

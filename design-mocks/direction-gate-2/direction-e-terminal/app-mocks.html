@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Praxmodoro · Direction E — Quiet Terminal</title>
+<style>
+/* ============================================================
+   DIRECTION E · "QUIET TERMINAL"
+   Monospace-first. Near-monochrome, one hot accent.
+   Text IS the interface: the check-in is a prompt line,
+   state changes are typographic, motion is almost none.
+   For the person to whom any decoration is noise.
+
+   BOTH THEMES SHIP: monochrome inverts losslessly, so light
+   and dark are the same design at zero extra cost.
+   Press [t] to flip; prefers-color-scheme is the default.
+   ============================================================ */
+:root {
+  /* -- colour: paper, ink, three grays, one hot accent ------- */
+  --color-paper:  oklch(97.5% 0.004 90);
+  --color-ink:    oklch(21% 0.005 90);
+  --color-gray-1: oklch(42% 0.005 90);
+  --color-gray-2: oklch(58% 0.004 90);
+  --color-gray-3: oklch(86% 0.004 90);
+  --color-accent: oklch(62% 0.21 35);       /* the one hot thing */
+  --color-accent-quiet: oklch(62% 0.21 35 / 0.14);
+
+  /* -- type: one family, sizes do all the work --------------- */
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --type-xs:  0.6875rem;
+  --type-sm:  0.8125rem;   /* the base: everything defaults here */
+  --type-md:  1rem;
+  --type-lg:  1.5rem;
+  --type-timer: clamp(4rem, 14vw, 9rem);
+
+  /* -- spacing: line-grid, ch-based -------------------------- */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 1rem;
+  --space-4: 1.5rem;  --space-5: 2.5rem; --space-6: 4rem;
+
+  /* -- radii: none. a terminal has no corners ---------------- */
+  --radius-0: 0px;
+
+  /* -- motion: state changes are typographic ----------------- */
+  --dur-none: 0ms;
+  --dur-cursor: 1.1s;      /* the only animation in the file */
+  --ease-none: linear;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-paper:  oklch(17% 0.004 90);
+    --color-ink:    oklch(90% 0.004 90);
+    --color-gray-1: oklch(72% 0.004 90);
+    --color-gray-2: oklch(55% 0.004 90);
+    --color-gray-3: oklch(30% 0.004 90);
+    --color-accent: oklch(68% 0.2 38);
+    --color-accent-quiet: oklch(68% 0.2 38 / 0.16);
+  }
+}
+:root[data-theme="light"] {
+  --color-paper:  oklch(97.5% 0.004 90);
+  --color-ink:    oklch(21% 0.005 90);
+  --color-gray-1: oklch(42% 0.005 90);
+  --color-gray-2: oklch(58% 0.004 90);
+  --color-gray-3: oklch(86% 0.004 90);
+  --color-accent: oklch(62% 0.21 35);
+  --color-accent-quiet: oklch(62% 0.21 35 / 0.14);
+}
+:root[data-theme="dark"] {
+  --color-paper:  oklch(17% 0.004 90);
+  --color-ink:    oklch(90% 0.004 90);
+  --color-gray-1: oklch(72% 0.004 90);
+  --color-gray-2: oklch(55% 0.004 90);
+  --color-gray-3: oklch(30% 0.004 90);
+  --color-accent: oklch(68% 0.2 38);
+  --color-accent-quiet: oklch(68% 0.2 38 / 0.16);
+}
+
+* { box-sizing: border-box; margin: 0; }
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-mono);
+  font-size: var(--type-sm);
+  line-height: 1.7;
+  padding: var(--space-5) var(--space-3) var(--space-6);
+}
+main, header, footer { max-width: 78ch; margin-left: auto; margin-right: auto; }
+button {
+  font: inherit; color: inherit; background: none; border: none;
+  cursor: pointer; padding: 0; text-align: left;
+}
+button:focus-visible, input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+input {
+  font: inherit; color: var(--color-ink); background: none;
+  border: none; border-bottom: 1px solid var(--color-gray-2);
+  padding: 0 0 2px; width: 100%;
+}
+input:focus { border-bottom-color: var(--color-accent); outline: none; }
+::placeholder { color: var(--color-gray-2); }
+
+/* -- chrome: two lines of text, that's the whole app frame -- */
+.topline {
+  display: flex; flex-wrap: wrap; gap: var(--space-2) var(--space-3);
+  color: var(--color-gray-1);
+  border-bottom: 1px solid var(--color-gray-3);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.topline .name { color: var(--color-ink); font-weight: 700; }
+.topline .name::before { content: "● "; color: var(--color-accent); }
+.navline { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-bottom: var(--space-5); }
+.navline button { color: var(--color-gray-1); }
+.navline button .k { color: var(--color-gray-2); }
+.navline button[aria-selected="true"] { color: var(--color-ink); font-weight: 700; }
+.navline button[aria-selected="true"] .k { color: var(--color-accent); }
+.navline button:hover { color: var(--color-ink); }
+.navline .theme { margin-left: auto; color: var(--color-gray-2); }
+
+/* -- screens ------------------------------------------------- */
+.screen { display: none; }
+.screen.is-current { display: block; }
+
+.prompt { color: var(--color-ink); font-weight: 700; }
+.prompt::before { content: "▸ "; color: var(--color-accent); }
+h1, h2 { font-size: var(--type-md); font-weight: 700; }
+h1::before, h2::before { content: "▸ "; color: var(--color-accent); }
+.sub { color: var(--color-gray-1); margin-bottom: var(--space-4); }
+.comment { color: var(--color-gray-2); }
+.comment::before { content: "# "; }
+.blank { height: var(--space-3); }
+.hr { border: none; border-top: 1px solid var(--color-gray-3); margin: var(--space-4) 0; }
+
+.field { margin-bottom: var(--space-4); }
+.field .lbl { color: var(--color-gray-1); display: block; }
+.field .lbl::before { content: "· "; color: var(--color-gray-2); }
+
+/* choice lines: [x] selects typographically, nothing moves */
+.choices { list-style: none; padding: 0; }
+.choices button { display: block; width: 100%; padding: 1px 0; color: var(--color-gray-1); }
+.choices button::before { content: "[ ] "; color: var(--color-gray-2); }
+.choices button[aria-pressed="true"] { color: var(--color-ink); font-weight: 700; }
+.choices button[aria-pressed="true"]::before { content: "[x] "; color: var(--color-accent); }
+.choices button:hover { color: var(--color-ink); }
+.choices .hint { color: var(--color-gray-2); font-weight: 400; }
+
+/* the primary action is a line of text you can't miss */
+.runline {
+  display: block; width: 100%;
+  border: 1px solid var(--color-ink);
+  padding: var(--space-2) var(--space-3);
+  font-weight: 700;
+}
+.runline .cmd::before { content: "$ "; color: var(--color-accent); }
+.runline .note { display: block; font-weight: 400; color: var(--color-gray-1); }
+.runline kbd { float: right; color: var(--color-gray-2); font-weight: 400; }
+.runline:hover { background: var(--color-accent-quiet); }
+
+/* -- the timer: nothing but type ----------------------------- */
+.bigtime {
+  font-size: var(--type-timer);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin: var(--space-3) 0 0;
+}
+.bigtime.held { color: var(--color-gray-2); }
+.meter { color: var(--color-gray-2); letter-spacing: 0.02em; overflow: hidden; white-space: nowrap; }
+.meter .fill { color: var(--color-accent); }
+.statusline { color: var(--color-gray-1); }
+.statusline b { color: var(--color-ink); font-weight: 700; }
+.keyhints { color: var(--color-gray-2); margin-top: var(--space-2); }
+.keyhints kbd { color: var(--color-gray-1); }
+
+/* the cursor: the single permitted animation */
+.cursor {
+  display: inline-block; width: 0.6ch; height: 1em;
+  background: var(--color-accent);
+  vertical-align: text-bottom;
+  animation: blink var(--dur-cursor) steps(2, start) infinite;
+}
+@keyframes blink { to { visibility: hidden; } }
+
+/* parked thoughts: plain lines */
+.parked { list-style: none; padding: 0; color: var(--color-gray-1); }
+.parked li::before { content: attr(data-t) "  "; color: var(--color-gray-2); }
+.parkentry { display: flex; gap: 1ch; align-items: baseline; margin-top: var(--space-2); }
+.parkentry .ps { color: var(--color-accent); }
+
+/* log lines */
+.loglines { list-style: none; padding: 0; }
+.loglines li { color: var(--color-ink); }
+.loglines li b { font-weight: 700; }
+.loglines .t { color: var(--color-gray-2); }
+.loglines .k { color: var(--color-accent); }
+.loglines .d { color: var(--color-gray-1); }
+
+.response { min-height: 1.7em; color: var(--color-ink); font-weight: 700; }
+.response:not(:empty)::before { content: "→ "; color: var(--color-accent); }
+
+.footline {
+  margin-top: var(--space-6);
+  border-top: 1px solid var(--color-gray-3);
+  padding-top: var(--space-2);
+  color: var(--color-gray-2);
+}
+
+/* Reduced motion or in-app still mode: the cursor stops blinking
+   and simply stays lit. Nothing else here moves in the first place. */
+@media (prefers-reduced-motion: reduce) { .cursor { animation: none; } }
+:root[data-motion="still"] .cursor { animation: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="topline">
+    <span class="name">praxmodoro</span>
+    <span>local session tool</span>
+    <span>no account · no watching · this mac only</span>
+  </div>
+  <nav class="navline" aria-label="Screens, keys 1 to 5">
+    <button data-screen-target="initiate" aria-selected="true"><span class="k">[1]</span> begin</button>
+    <button data-screen-target="focus" aria-selected="false"><span class="k">[2]</span> focus</button>
+    <button data-screen-target="checkin" aria-selected="false"><span class="k">[3]</span> check</button>
+    <button data-screen-target="break" aria-selected="false"><span class="k">[4]</span> break</button>
+    <button data-screen-target="review" aria-selected="false"><span class="k">[5]</span> log</button>
+    <button class="theme" id="themeToggle" aria-label="Toggle light and dark">[t] theme</button>
+    <button class="theme" id="motionToggle" aria-pressed="false" aria-label="Toggle motion still">[m] motion: on</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- 1 · BEGIN -->
+  <section class="screen is-current" id="screen-initiate" data-screen="initiate" aria-labelledby="t-init">
+    <h1 id="t-init">one task. one step. begin.</h1>
+    <p class="sub">say what the work is, how small the first move gets to be, and what you have right now. nothing else is asked.</p>
+
+    <div class="field">
+      <label class="lbl" for="taskInput">task — one only</label>
+      <input id="taskInput" value="edit the conference talk outline" autocomplete="off">
+    </div>
+
+    <div class="field">
+      <span class="lbl">first step — small enough to need no decisions</span>
+      <p>open the outline. mark the one section that already feels done.</p>
+      <p class="comment">concrete, reversible, about two minutes. rewrite it if it reads too large.</p>
+    </div>
+
+    <div class="field">
+      <span class="lbl">capacity right now — a reading, not a rating</span>
+      <ul class="choices" role="group" aria-label="Current capacity">
+        <li><button type="button" aria-pressed="false">foggy</button></li>
+        <li><button type="button" aria-pressed="true">steady</button></li>
+        <li><button type="button" aria-pressed="false">restless</button></li>
+        <li><button type="button" aria-pressed="false">charged</button></li>
+      </ul>
+    </div>
+
+    <div class="field">
+      <span class="lbl">timing policy</span>
+      <ul class="choices" role="group" aria-label="Session timing policy">
+        <li><button type="button" aria-pressed="true">gentle start <span class="hint">— 5 min to arrive, then 20</span></button></li>
+        <li><button type="button" aria-pressed="false">classic <span class="hint">— 25 on, 5 off</span></button></li>
+        <li><button type="button" aria-pressed="false">flow <span class="hint">— open-ended, you call the ends</span></button></li>
+        <li><button type="button" aria-pressed="false">recovery first <span class="hint">— break before the first block</span></button></li>
+      </ul>
+    </div>
+
+    <button class="runline" type="button" data-screen-jump="focus">
+      <span class="cmd">begin --gentle</span><kbd>⌘↩</kbd>
+      <span class="note">five minutes on the clock. nothing owed beyond them.</span>
+    </button>
+
+    <div class="blank"></div>
+    <p class="comment">everything you type stays on this mac. optional sync would carry history only — never the live clock.</p>
+  </section>
+
+  <!-- 2 · FOCUS -->
+  <section class="screen" id="screen-focus" data-screen="focus" aria-labelledby="t-focus">
+    <h2 id="t-focus">running. nothing else on screen.</h2>
+    <p class="sub">the clock is text. the step is text. that is the entire interface.</p>
+
+    <p class="statusline">task <b>edit the conference talk outline</b></p>
+    <p class="statusline">step <b>mark the one section that already feels done</b></p>
+
+    <div class="bigtime" id="timerTime" role="timer" aria-label="Time remaining in this block">17:26</div>
+    <p class="meter" id="meter" aria-hidden="true"></p>
+    <p class="statusline" id="timerState">block 1 · running · next check-in in 6 min</p>
+    <p class="keyhints"><kbd>space</kbd> hold · <kbd>-</kbd>/<kbd>+</kbd> one minute · <kbd>3</kbd> check in now · <kbd>4</kbd> break</p>
+
+    <hr class="hr">
+
+    <p class="lbl comment">parked thoughts — captured without leaving</p>
+    <ul class="parked" id="parkedList">
+      <li data-t="13:18">ask mira about the demo laptop</li>
+      <li data-t="13:22">slide 9 wants a simpler chart</li>
+    </ul>
+    <div class="parkentry">
+      <span class="ps" aria-hidden="true">›</span>
+      <label for="parkInput" style="position:absolute; width:1px; height:1px; overflow:hidden; clip-path: inset(50%);">park a thought</label>
+      <input id="parkInput" placeholder="park a thought and stay">
+    </div>
+  </section>
+
+  <!-- 3 · CHECK -->
+  <section class="screen" id="screen-checkin" data-screen="checkin" aria-labelledby="t-check">
+    <h2 id="t-check">checkpoint. no wrong answers.</h2>
+    <p class="sub">22 minutes in. the clock is held while you answer. each answer only changes what happens next.</p>
+
+    <p class="prompt">how does the step fit right now? <span class="cursor" aria-hidden="true"></span></p>
+    <div class="blank"></div>
+    <ul class="choices" role="group" aria-label="Check-in answer">
+      <li><button type="button" data-key="f" data-response="ok. resumed where it held.">
+        [f] still fits — keep going <span class="hint">· this line disappears and the clock resumes</span></button></li>
+      <li><button type="button" data-key="s" data-response="ok. step is now one line. nothing lost.">
+        [s] make the step smaller <span class="hint">· shrink it until it needs no decisions</span></button></li>
+      <li><button type="button" data-key="d" data-response="noted as information. return when you choose.">
+        [d] i drifted somewhere else <span class="hint">· a detour is data, not a verdict</span></button></li>
+      <li><button type="button" data-key="b" data-response="break queued. your place is saved.">
+        [b] i could use a break <span class="hint">· rest is a real next step</span></button></li>
+    </ul>
+    <div class="blank"></div>
+    <p class="response" id="checkResponse" aria-live="polite"></p>
+
+    <hr class="hr">
+    <p class="comment">session so far — stays on this mac</p>
+    <ul class="loglines">
+      <li><span class="t">13:04</span> began · steady capacity declared</li>
+      <li><span class="t">13:09</span> gentle start carried into a full block</li>
+      <li><span class="t">13:18</span> thought parked, focus unchanged</li>
+    </ul>
+  </section>
+
+  <!-- 4 · BREAK -->
+  <section class="screen" id="screen-break" data-screen="break" aria-labelledby="t-break">
+    <h2 id="t-break">paused for rest. state saved.</h2>
+    <p class="sub">suggestions come from what you told the tool — never from a claim about what is optimal. end the break whenever you say.</p>
+
+    <div class="bigtime" aria-label="Break time remaining">03:00</div>
+    <p class="statusline">break · ending early is a normal command</p>
+    <div class="blank"></div>
+
+    <span class="lbl comment">pick one or none</span>
+    <ul class="choices" role="group" aria-label="Break actions">
+      <li><button type="button" aria-pressed="false">water <span class="hint">— stand, pour, sip slowly</span></button></li>
+      <li><button type="button" aria-pressed="false">stretch <span class="hint">— unclench the jaw, drop the shoulders</span></button></li>
+      <li><button type="button" aria-pressed="false">step away <span class="hint">— a doorway or a window counts</span></button></li>
+      <li><button type="button" aria-pressed="false">quiet <span class="hint">— no prompt, just the saved place</span></button></li>
+    </ul>
+
+    <hr class="hr">
+    <p class="comment">on return, this is the only line on screen:</p>
+    <p class="prompt">mark the one section that feels done — open the outline, add a check beside it. rough is fine.</p>
+    <div class="blank"></div>
+    <button class="runline" type="button" data-screen-jump="focus">
+      <span class="cmd">resume</span><kbd>r</kbd>
+      <span class="note">the clock restarts exactly where it held.</span>
+    </button>
+    <div class="blank"></div>
+    <p class="comment">why movement first: you said restless, and you have been seated about forty minutes. this rule is editable and can be turned off.</p>
+  </section>
+
+  <!-- 5 · LOG -->
+  <section class="screen" id="screen-review" data-screen="review" aria-labelledby="t-log">
+    <h2 id="t-log">the day, as plain text.</h2>
+    <p class="sub">a log records what happened. it does not grade you. wednesday 30 july.</p>
+
+    <ul class="loglines">
+      <li><span class="t">13:04</span> <span class="k">start   </span> <b>began the outline edit</b> <span class="d">· gentle start, steady capacity</span></li>
+      <li><span class="t">13:09</span> <span class="k">choice  </span> <b>continued past the gentle start</b> <span class="d">· first step still fit</span></li>
+      <li><span class="t">13:18</span> <span class="k">capture </span> <b>parked a thought</b> <span class="d">· focus unchanged</span></li>
+      <li><span class="t">13:26</span> <span class="k">choice  </span> <b>made the step smaller</b> <span class="d">· one-line move chosen at checkpoint</span></li>
+      <li><span class="t">13:44</span> <span class="k">recovery</span> <b>movement break</b> <span class="d">· returned after 2 min 40 s</span></li>
+      <li><span class="t">14:22</span> <span class="k">close   </span> <b>closed the session</b> <span class="d">· one section marked done; intro still rough</span></li>
+    </ul>
+
+    <hr class="hr">
+    <ul class="loglines">
+      <li>focused time      <b>1h 02m</b></li>
+      <li>thoughts parked   <b>2</b></li>
+      <li>steps resized     <b>1</b></li>
+      <li>breaks taken      <b>1</b></li>
+    </ul>
+
+    <hr class="hr">
+    <p class="comment">observed, not concluded: you made the step smaller once and the work continued for 38 more minutes afterward. one afternoon is not a pattern — the option simply stays available.</p>
+  </section>
+
+</main>
+
+<footer class="footline">
+  direction e · quiet terminal · candidate, not approved — keys 1–5 switch screens · t theme · m motion
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var root = document.documentElement;
+  var screens = Array.prototype.slice.call(document.querySelectorAll(".screen"));
+  var navBtns = Array.prototype.slice.call(document.querySelectorAll(".navline [data-screen-target]"));
+  var order = ["initiate", "focus", "checkin", "break", "review"];
+
+  function show(name) {
+    screens.forEach(function (s) { s.classList.toggle("is-current", s.dataset.screen === name); });
+    navBtns.forEach(function (b) { b.setAttribute("aria-selected", String(b.dataset.screenTarget === name)); });
+  }
+  navBtns.forEach(function (b) { b.addEventListener("click", function () { show(b.dataset.screenTarget); }); });
+  Array.prototype.forEach.call(document.querySelectorAll("[data-screen-jump]"), function (b) {
+    b.addEventListener("click", function () { show(b.dataset.screenJump); });
+  });
+
+  // choice groups: single-select where the group is capacity/policy,
+  // multi-select on break actions (aria-label distinguishes)
+  Array.prototype.forEach.call(document.querySelectorAll(".choices[role=group]"), function (group) {
+    var multi = group.getAttribute("aria-label") === "Break actions";
+    group.addEventListener("click", function (e) {
+      var btn = e.target.closest("button"); if (!btn || btn.dataset.response) return;
+      if (multi) {
+        btn.setAttribute("aria-pressed", String(btn.getAttribute("aria-pressed") !== "true"));
+      } else {
+        Array.prototype.forEach.call(group.querySelectorAll("button"), function (b) {
+          b.setAttribute("aria-pressed", String(b === btn));
+        });
+      }
+    });
+  });
+
+  // check-in: answer by click or by letter key
+  var checkResponse = document.getElementById("checkResponse");
+  var checkBtns = Array.prototype.slice.call(document.querySelectorAll("[data-response]"));
+  function answer(btn) { checkResponse.textContent = btn.dataset.response; }
+  checkBtns.forEach(function (b) { b.addEventListener("click", function () { answer(b); }); });
+
+  // parked thoughts
+  var parkInput = document.getElementById("parkInput");
+  var parkedList = document.getElementById("parkedList");
+  parkInput.addEventListener("keydown", function (e) {
+    if (e.key !== "Enter") return;
+    var v = parkInput.value.trim(); if (!v) return;
+    var now = new Date();
+    var li = document.createElement("li");
+    li.dataset.t = String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0");
+    li.textContent = v;
+    parkedList.appendChild(li);
+    parkInput.value = "";
+  });
+
+  // the clock: text that changes once a second. that is the motion design.
+  var remaining = 17 * 60 + 26, total = 25 * 60, held = false;
+  var timerEl = document.getElementById("timerTime");
+  var stateEl = document.getElementById("timerState");
+  var meterEl = document.getElementById("meter");
+  function fmt(s) {
+    s = Math.max(0, s);
+    return String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  function render() {
+    timerEl.textContent = fmt(remaining);
+    timerEl.classList.toggle("held", held);
+    var cells = 40, filled = Math.round(cells * (total - remaining) / total);
+    meterEl.innerHTML = '<span class="fill">' + "█".repeat(filled) + "</span>" + "░".repeat(cells - filled);
+    stateEl.textContent = held
+      ? "block 1 · held — resume with space"
+      : "block 1 · running · next check-in in " + Math.max(1, Math.ceil((remaining - 11 * 60 - 26) / 60)) + " min";
+  }
+  setInterval(function () { if (!held && remaining > 0) { remaining -= 1; render(); } }, 1000);
+  render();
+
+  document.addEventListener("keydown", function (e) {
+    if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+    var idx = ["1", "2", "3", "4", "5"].indexOf(e.key);
+    if (idx !== -1) { show(order[idx]); return; }
+    var onFocus = document.getElementById("screen-focus").classList.contains("is-current");
+    var onCheck = document.getElementById("screen-checkin").classList.contains("is-current");
+    if (onFocus && e.key === " ") { e.preventDefault(); held = !held; render(); return; }
+    if (onFocus && e.key === "-") { remaining = Math.max(0, remaining - 60); render(); return; }
+    if (onFocus && (e.key === "+" || e.key === "=")) { remaining += 60; render(); return; }
+    if (onCheck) {
+      var hit = checkBtns.filter(function (b) { return b.dataset.key === e.key; })[0];
+      if (hit) { answer(hit); return; }
+    }
+    if (e.key === "t") {
+      var dark = root.dataset.theme !== "dark" &&
+        (root.dataset.theme === "light" || !window.matchMedia("(prefers-color-scheme: dark)").matches);
+      root.dataset.theme = dark ? "dark" : "light";
+      return;
+    }
+    if (e.key === "m") { toggleMotion(); }
+  });
+  document.getElementById("themeToggle").addEventListener("click", function () {
+    var isDark = root.dataset.theme === "dark" ||
+      (!root.dataset.theme && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    root.dataset.theme = isDark ? "light" : "dark";
+  });
+
+  // in-app motion control: still mode stops the one animation there is.
+  var motionBtn = document.getElementById("motionToggle");
+  function toggleMotion() {
+    var still = root.dataset.motion !== "still";
+    root.dataset.motion = still ? "still" : "";
+    motionBtn.setAttribute("aria-pressed", String(still));
+    motionBtn.textContent = still ? "[m] motion: still" : "[m] motion: on";
+  }
+  motionBtn.addEventListener("click", toggleMotion);
+})();
+</script>
+</body>
+</html>
