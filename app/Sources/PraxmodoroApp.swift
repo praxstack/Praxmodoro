@@ -75,6 +75,7 @@ struct PraxmodoroApp: App {
                     display: model.snapshot(at: context.date).display, actions: companionActions,
                     motionStilledOverride: model.motionStilled ? true : nil)
             }
+            .onDisappear { capsuleOpen = false }
         }
         .windowLevel(.floating)
         .windowStyle(.hiddenTitleBar)
@@ -101,13 +102,19 @@ struct PraxmodoroApp: App {
     }
 
     /// The capsule's keyboard path: open it, or put it away again.
+    ///
+    /// The flag tracks the window rather than the keystroke. Closing the
+    /// capsule by its own close button used to leave the flag true, so the
+    /// next ⌘⇧F dismissed an already-closed window and the shortcut looked
+    /// dead (found in review) — `onDisappear` on the scene keeps them in step.
     private func toggleCapsule() {
         if capsuleOpen {
             dismissWindow(id: Self.capsuleWindowID)
+            capsuleOpen = false
         } else {
             openWindow(id: Self.capsuleWindowID)
+            capsuleOpen = true
         }
-        capsuleOpen.toggle()
     }
 
     /// One wiring point for every companion surface: they report intent, the
@@ -117,6 +124,7 @@ struct PraxmodoroApp: App {
             begin: { try? model.begin() },
             toggleHold: { try? model.toggleHold() },
             checkIn: { try? model.openCheckin() },
+            endBreak: { try? model.endBreak() },
             openMainWindow: { NSApp.activate(ignoringOtherApps: true) }
         )
     }

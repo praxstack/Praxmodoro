@@ -27,7 +27,7 @@ import PraxmodoroStore
 
         #expect(capsule.taskText == "Edit the outline")
         #expect(capsule.timeText == "22:00")
-        #expect(FocusCapsule.controls == ["capsule-task", "capsule-time", "capsule-hold"])
+        #expect(capsule.controls == ["capsule-task", "capsule-time", "capsule-hold"])
         #expect(capsule.accessibilityLabel.hasPrefix("Focus capsule:"))
     }
 

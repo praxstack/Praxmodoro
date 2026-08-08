@@ -92,7 +92,7 @@ import PraxmodoroStore
         for frozen in [try snapshot(at: 60).display, try snapshot(at: 60, hold: true).display] {
             let rendered = (Array(PureSurfaces(frozen).strings.values)
                 + MenuBarPopover(display: frozen, actions: .inert).controls
-                + FocusCapsule.controls
+                + FocusCapsule(display: frozen, actions: .inert).controls
                 + ReturnOverlay.controls)
                 .joined(separator: " ")
                 .lowercased()
@@ -373,7 +373,16 @@ import PraxmodoroStore
         for name in surfaces {
             let url = surfacesDir.appendingPathComponent(name)
             guard FileManager.default.fileExists(atPath: url.path) else { continue }
+            // Comments are stripped, as the module-wide scan already does: a
+            // doc comment naming AppModel cannot host a clock, and a guard
+            // that fails on its own documentation trains people to weaken it.
             let source = try String(contentsOf: url, encoding: .utf8)
+                .split(separator: "\n", omittingEmptySubsequences: false)
+                .map { line -> String in
+                    guard let comment = line.range(of: "//") else { return String(line) }
+                    return String(line[..<comment.lowerBound])
+                }
+                .joined(separator: "\n")
 
             // Barrier 1: the input carries no interval to age.
             #expect(source.contains("CompanionDisplay"),

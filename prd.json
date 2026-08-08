@@ -82,6 +82,12 @@
       "title": "Sixth adversarial pass + seventh guard (GitHub #4)",
       "status": "done",
       "evidence": "validator DEFEATED the rasterised defense: bare Date() diff in SurfacePalette.swift (outside Sources/Surfaces), 1-hour period - beat scan matches no scheduling primitive, drift window cannot see an hour. Mechanism proven live first (1s period fired the drift test: 17:00 -> 17:00 2, 3.4% pixels). Fix: raw clock reads banned module-wide at line level with a 3-entry allowlist; replaying the compiling exploit now fails testNothingInTheAppRunsOnASchedule at both clock lines. Claim scoped down in design.md: no finite window proves absence of an arbitrarily slow clock."
+    },
+    {
+      "id": "review-fixes",
+      "title": "Independent code-review findings closed",
+      "status": "done",
+      "evidence": "red: 5 compile errors + 4 behavioural failures in BreakPhaseControlTests. green: 95 tests in 27 suites. Closed 4 findings: popover primary during a break routed through a hold the engine refuses (dead button) -> new CompanionActions.endBreak; capsule offered the same impossible hold -> hold affordance absent during a break, catalog is phase-dependent; return card could stack on a check-in -> openCheckin stands it down; capsuleOpen drifted from the real window -> onDisappear keeps them in step. Also fixed comment rot claiming production never sets motionStilledOverride (it does) and made the surface guard strip comments like its module-wide sibling. Negative control: @State in a surface still trips the guard."
     }
   ],
   "archivedMilestones": [

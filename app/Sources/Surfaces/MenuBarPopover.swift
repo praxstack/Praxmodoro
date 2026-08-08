@@ -8,6 +8,10 @@ struct CompanionActions {
     var begin: () -> Void = {}
     var toggleHold: () -> Void = {}
     var checkIn: () -> Void = {}
+    /// Distinct from `toggleHold`: the engine has no hold transition out of a
+    /// break, so a break-phase control that routed through hold silently threw
+    /// and did nothing (found in review).
+    var endBreak: () -> Void = {}
     var openMainWindow: () -> Void = {}
 
     /// For tests and previews: renders the surface without wiring anything.
@@ -51,11 +55,13 @@ struct MenuBarPopover: View {
         return ["popover-status", "popover-time", "popover-task", "popover-primary", "popover-check-in", "popover-open-main"]
     }
 
-    private func primaryAction() {
+    /// Internal rather than private so a test can prove the break-phase
+    /// control actually does something.
+    func primaryAction() {
         switch display.phase {
         case .idle, .closed: actions.begin()
         case .running, .held: actions.toggleHold()
-        case .onBreak: actions.checkIn()
+        case .onBreak: actions.endBreak()
         }
     }
 
@@ -67,9 +73,10 @@ struct MenuBarPopover: View {
     /// Forces the motion standdown regardless of the environment.
     ///
     /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
-    /// offscreen render cannot be made deterministic from the outside. This
-    /// seam lets the drift test rasterize a still frame. It selects an
-    /// alternate the product genuinely has; production never sets it.
+    /// offscreen render cannot be made deterministic from the outside, and the
+    /// in-app "Motion: still" preference has to reach these surfaces somehow.
+    /// Production sets it from `AppModel.motionStilled`; nil falls through to
+    /// the environment, which keeps system Reduce Motion authoritative.
     var motionStilledOverride: Bool?
 
     private var motionStilled: Bool { motionStilledOverride ?? reduceMotion }

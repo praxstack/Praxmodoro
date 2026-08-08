@@ -31,9 +31,10 @@ struct ReturnOverlay: View {
     /// Forces the motion standdown regardless of the environment.
     ///
     /// `accessibilityReduceMotion` is read-only in the macOS 26 SDK, so an
-    /// offscreen render cannot be made deterministic from the outside. This
-    /// seam lets the drift test rasterize a still frame. It selects an
-    /// alternate the product genuinely has; production never sets it.
+    /// offscreen render cannot be made deterministic from the outside, and the
+    /// in-app "Motion: still" preference has to reach these surfaces somehow.
+    /// Production sets it from `AppModel.motionStilled`; nil falls through to
+    /// the environment, which keeps system Reduce Motion authoritative.
     var motionStilledOverride: Bool?
 
     private var motionStilled: Bool { motionStilledOverride ?? reduceMotion }

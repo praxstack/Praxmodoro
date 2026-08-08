@@ -155,7 +155,12 @@ final class AppModel {
     private(set) var lastCheckinResponse: String?
 
     /// Open the check-in: the timer holds while the question is open.
+    ///
+    /// A pending return card stands down here. The card is a greeting for the
+    /// focus surface; if a check-in arrives before it is acknowledged, two
+    /// things would ask for attention at once (found in review).
     func openCheckin() throws {
+        returnPending = false
         if !isHeld { try applyHoldToggle() }
         surface = .checkin
     }
