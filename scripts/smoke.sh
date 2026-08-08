@@ -23,6 +23,12 @@ bundle="${products}/Praxmodoro.app"
 [ -d "$bundle" ] || { echo "FAIL: app bundle missing at ${bundle}"; exit 1; }
 codesign --verify --deep "$bundle" || { echo "FAIL: signature does not verify"; exit 1; }
 
+# Clear any instance a previously-killed run left behind. Without this the
+# leftover squats the bundle id and the next XCUITest launch dies with
+# "Runningboard error 5 / Launchd job spawn failed" — diagnosed 2026-08-08.
+pkill -x Praxmodoro 2>/dev/null || true
+sleep 0.5
+
 "${bundle}/Contents/MacOS/Praxmodoro" -praxmodoro-ephemeral-store &
 pid=$!
 cleanup() { kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true; }
