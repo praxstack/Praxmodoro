@@ -60,10 +60,12 @@ function oklchToSrgb({ lightness, chroma, hueDegrees }) {
 // CSS parsing
 // ---------------------------------------------------------------------------
 
-/** All `--name: value;` custom properties in declaration order. */
+/** All `--name: value;` custom properties in declaration order.
+ *  Comments are stripped first so prose mentioning a token cannot parse. */
 function parseCustomProperties(css) {
   const declarations = new Map();
-  for (const match of css.matchAll(/--([a-z0-9-]+)\s*:\s*([^;]+);/g)) {
+  const code = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const match of code.matchAll(/--([a-z0-9-]+)\s*:\s*([^;]+);/g)) {
     declarations.set(match[1], match[2].replace(/\s+/g, " ").trim());
   }
   return declarations;
