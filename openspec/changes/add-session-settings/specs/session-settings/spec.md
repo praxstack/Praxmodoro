@@ -57,6 +57,14 @@ The Rhythm pane SHALL offer exactly three block-end behaviours — break starts 
 - **WHEN** the Mac sleeps across an expiry with behaviour "offered default"
 - **THEN** on wake the transition SHALL be backdated to the canonical expiry instant exactly as gentle-start promotion already is
 
+#### Scenario: Auto-return offers focus at break end
+- **WHEN** the auto-return toggle is on and the chosen break length elapses
+- **THEN** the engine SHALL record the return to focus at the canonical break-end instant and the return overlay SHALL greet the user — an offer to re-enter, never a demand
+
+#### Scenario: Auto-return defaults off
+- **WHEN** the app runs with factory settings
+- **THEN** breaks SHALL remain open-ended until the user ends them, exactly as today
+
 ### Requirement: Rewind and forward as recorded adjustments
 WHILE a block is running, the user SHALL be able to nudge remaining time by ±1 minute via controls and the `+`/`-` keys; each nudge SHALL be a recorded engine adjustment transition, and remaining time SHALL remain a pure function of transitions and the current instant across sleep and relaunch.
 

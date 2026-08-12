@@ -5,7 +5,7 @@ The engine gains two transition kinds — user adjustments and autostart-at-expi
 ## MODIFIED Requirements
 
 ### Requirement: User-steerable timing policies
-The engine SHALL support the four session policies from the approved mocks (gentle start 5+20, classic 25+5, flow open-ended, recovery-first) as data, SHALL additionally accept user-constructed policies (custom focus and break durations, long-break cadence), and SHALL NOT claim or encode any policy as optimal (research w2-breaks-adhd-falsification-001). The engine SHALL support a recorded adjustment transition (±60 seconds) while a block is running, and an autostart transition recorded at the canonical expiry instant when the active block-end behaviour calls for it. Policy changes SHALL never mutate history, and remaining time SHALL stay a pure function of recorded transitions and the current instant.
+The engine SHALL support the four session policies from the approved mocks (gentle start 5+20, classic 25+5, flow open-ended, recovery-first) as data, SHALL additionally accept user-constructed policies (custom focus and break durations, long-break cadence), and SHALL NOT claim or encode any policy as optimal (research w2-breaks-adhd-falsification-001). The engine SHALL support a recorded adjustment transition (±60 seconds) while a block is running, an autostart transition recorded at the canonical expiry instant when the active block-end behaviour calls for it, and an auto-return transition recorded at the canonical break-end instant when auto-return is enabled. Policy changes SHALL never mutate history, and remaining time SHALL stay a pure function of recorded transitions and the current instant.
 
 #### Scenario: Gentle start promotes without judgment
 - **WHEN** a gentle-start 5-minute arrival period ends
@@ -26,3 +26,7 @@ The engine SHALL support the four session policies from the approved mocks (gent
 #### Scenario: Autostart records at the canonical instant
 - **WHEN** autostart applies and the app was not running at expiry
 - **THEN** relaunch reconstruction SHALL place the break transition exactly at the expiry instant, not at wake or launch time
+
+#### Scenario: Auto-return records at the canonical break-end instant
+- **WHEN** auto-return is enabled and the chosen break length elapses — including while asleep
+- **THEN** the engine SHALL record the return-to-focus transition at the canonical break-end instant, never at wake time, and with auto-return disabled breaks SHALL stay open-ended

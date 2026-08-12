@@ -22,6 +22,7 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 - [ ] 3.3 Test: with behaviour "manual", behaviour is bit-identical to today (golden derivation comparison). Implement (should be a no-op proven by test).
 - [ ] 3.4 Test: flow policy + autostart "offered default" → zero automatic transitions at any probed instant. The "Flow never auto-ends" guard extended to the autostart path.
 - [ ] 3.5 Test: behaviour setting is read at expiry-processing time — changing it mid-block governs the current block's end (design decision 4).
+- [ ] 3.6 Test: auto-return enabled — break-end recorded at the canonical break-end instant (break start + chosen length), including across simulated sleep; disabled (factory default) — breaks stay open-ended. Implement auto-return in the same reconciliation pass.
 
 ## 4. Preferences on the defaults seam (App)
 
