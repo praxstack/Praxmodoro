@@ -88,6 +88,14 @@ struct PraxmodoroApp: App {
         }
         .windowResizability(.contentSize)
 
+        // Rhythm, sound, and notification preferences (spec:
+        // add-session-settings). ⌘, comes with the scene; opening it never
+        // disturbs a running session because preferences live on the
+        // defaults seam, not in the session store.
+        Settings {
+            SettingsSurface(model: model)
+        }
+
         // The loop, reachable without fronting the app. The popover is a pure
         // function of a snapshot taken here, at the instant it renders
         // (spec: companion-surfaces "Menu-bar popover operates the loop").

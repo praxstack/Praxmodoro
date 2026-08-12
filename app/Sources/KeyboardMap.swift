@@ -17,5 +17,6 @@ enum KeyboardMap {
         "toggle-capsule": "⌘⇧F",
         "motion-still": "⌘⇧M",
         "return-continue": "↩",
+        "settings": "⌘,",
     ]
 }

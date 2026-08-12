@@ -46,6 +46,28 @@ final class AppModel {
         motionStilled ? "Motion: gentle" : "Motion: still"
     }
 
+    // MARK: Session settings (spec: add-session-settings). Preferences live
+    // on the injected defaults seam and never touch the session store.
+
+    private(set) var rhythm: RhythmPreferences = .factory
+    private(set) var sound: SoundPreferences = .factory
+    private(set) var notifications: NotificationPreferences = .factory
+
+    func setRhythm(_ preferences: RhythmPreferences) {
+        rhythm = preferences
+        preferences.save(to: defaults)
+    }
+
+    func setSound(_ preferences: SoundPreferences) {
+        sound = preferences
+        preferences.save(to: defaults)
+    }
+
+    func setNotifications(_ preferences: NotificationPreferences) {
+        notifications = preferences
+        preferences.save(to: defaults)
+    }
+
     private(set) var session: Session?
     private(set) var sessionID: UUID?
     private(set) var parkedThoughts: [String] = []
@@ -64,6 +86,9 @@ final class AppModel {
         self.clock = clock
         self.defaults = defaults
         self.motionStilled = defaults.bool(forKey: Self.motionStilledKey)
+        self.rhythm = RhythmPreferences.load(from: defaults)
+        self.sound = SoundPreferences.load(from: defaults)
+        self.notifications = NotificationPreferences.load(from: defaults)
         // Spec: startup validation fails fast in debug; lookup self-heals in release.
         do { try capabilities.validate() } catch { assertionFailure("capability validation failed: \(error)") }
     }
