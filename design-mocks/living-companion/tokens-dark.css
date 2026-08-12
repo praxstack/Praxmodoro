@@ -1,0 +1,62 @@
+/* Living Companion · dark variant — the same room after dusk, not a generic
+ * dark theme. The ground is deep warm dusk (hue 40–45, low chroma) instead of
+ * paper; ink turns to warm candlelight; the field colours bank down into
+ * embers that sit on the dark ground rather than glow against it.
+ *
+ * Colour tokens only: spacing, type, radius, motion and z-index are shared
+ * with tokens.css and are not re-declared here. Every --color-* name in
+ * tokens.css must appear here exactly once — scripts/generate-design-tokens.mjs
+ * enforces the parity and derives DesignTokens.Dark from this file. */
+
+:root {
+  /* Ground: deep warm dusk. Elevation lightens, as lamplight would. */
+  --color-paper: oklch(20% 0.018 42);
+  --color-paper-2: oklch(23% 0.02 44);
+  --color-paper-3: oklch(26% 0.022 46);
+  --color-paper-4: oklch(29% 0.024 48);
+
+  /* Ink: warm candlelight on the dusk ground. */
+  --color-ink: oklch(92% 0.02 78);
+  --color-ink-2: oklch(84% 0.022 74);
+  --color-ink-strong: oklch(97.5% 0.01 78); /* Increase Contrast ink — see tokens.css */
+  --color-muted: oklch(74% 0.024 70);
+  --color-neutral: oklch(64% 0.024 60);
+
+  /* Rules: a shade above the ground, never bright. */
+  --color-rule: oklch(34% 0.024 48);
+  --color-rule-2: oklch(29% 0.02 46);
+
+  /* Accent: the same ember, lifted so it reads on dusk instead of paper. */
+  --color-accent: oklch(68% 0.13 26);
+  --color-accent-strong: oklch(74% 0.125 28);
+  --color-accent-soft: oklch(38% 0.07 24);
+  --color-accent-ink: oklch(18% 0.025 30);
+  --color-focus: oklch(70% 0.13 26);
+
+  --color-calm: oklch(68% 0.075 168);
+  --color-calm-soft: oklch(32% 0.04 164);
+  --color-danger: oklch(62% 0.115 30);
+  --color-danger-ink: oklch(16% 0.02 30);
+
+  /* Veils: dusk glass — dark translucency instead of milk. */
+  --color-veil: oklch(22% 0.018 44 / 0.6);
+  --color-veil-strong: oklch(20% 0.016 44 / 0.82);
+  --color-veil-edge: oklch(72% 0.04 48 / 0.3);
+  --color-scrim: oklch(12% 0.02 40 / 0.5);
+  --color-shadow: oklch(8% 0.02 36 / 0.34);
+  --color-shadow-deep: oklch(6% 0.02 34 / 0.5);
+  --color-selection: oklch(68% 0.13 26 / 0.2);
+  --color-noise: oklch(78% 0.03 60 / 0.05);
+
+  /* Field: the companion's blobs, darkened and desaturated to embers. */
+  --color-field-rose: oklch(45% 0.055 20);
+  --color-field-rose-faint: oklch(45% 0.055 20 / 0.55);
+  --color-field-apricot: oklch(48% 0.06 62);
+  --color-field-apricot-faint: oklch(48% 0.06 62 / 0.55);
+  --color-field-lavender: oklch(46% 0.045 300);
+  --color-field-lavender-faint: oklch(46% 0.045 300 / 0.5);
+  --color-field-sage: oklch(47% 0.045 162);
+  --color-field-sage-faint: oklch(47% 0.045 162 / 0.55);
+  --color-field-gold: oklch(52% 0.05 88);
+  --color-clear: transparent;
+}

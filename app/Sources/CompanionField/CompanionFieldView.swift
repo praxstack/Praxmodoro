@@ -1,15 +1,16 @@
 import SwiftUI
 
-/// Living Companion palette for the field layers — sRGB approximations of the
-/// mock's oklch tokens (tokens.css); exact color pipeline lands with the
-/// design-system pass in group 6.
+/// Living Companion palette for the field layers — token-backed references to
+/// the mock's field colours (`--color-field-*`), derived from tokens.css by
+/// `scripts/generate-design-tokens.mjs`. The ring is the mock's `.field-ring`
+/// border token, `--color-veil-edge`.
 enum FieldPalette {
-    static let apricot = Color(red: 0.98, green: 0.82, blue: 0.66)
-    static let rose = Color(red: 0.96, green: 0.72, blue: 0.70)
-    static let lavender = Color(red: 0.85, green: 0.80, blue: 0.94)
-    static let sage = Color(red: 0.78, green: 0.90, blue: 0.81)
-    static let gold = Color(red: 0.99, green: 0.90, blue: 0.70)
-    static let ring = Color(red: 0.62, green: 0.44, blue: 0.40).opacity(0.35)
+    static let apricot = DesignTokens.Light.fieldApricot
+    static let rose = DesignTokens.Light.fieldRose
+    static let lavender = DesignTokens.Light.fieldLavender
+    static let sage = DesignTokens.Light.fieldSage
+    static let gold = DesignTokens.Light.fieldGold
+    static let ring = DesignTokens.Light.veilEdge
 }
 
 /// The companion field. When `motionStilled` is true (system Reduce Motion or

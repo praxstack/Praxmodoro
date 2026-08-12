@@ -8,6 +8,11 @@
   --color-paper-4: oklch(88.5% 0.026 66);
   --color-ink: oklch(27% 0.035 38);
   --color-ink-2: oklch(38% 0.032 36);
+  /* Increase Contrast companion to --color-ink: the native app's accessibility
+   * branch needs an ink darker than ink itself; the web mock has no
+   * prefers-contrast variant, so the token is declared here to keep every
+   * colour decision in this file rather than derived in a generator. */
+  --color-ink-strong: oklch(14% 0.03 38);
   --color-muted: oklch(47% 0.03 40);
   --color-neutral: oklch(57% 0.026 46);
   --color-rule: oklch(83% 0.026 62);

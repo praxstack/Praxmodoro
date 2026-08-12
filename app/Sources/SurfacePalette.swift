@@ -6,21 +6,23 @@ import SwiftUI
 /// "Reduce Transparency verified at render level" / "Increase Contrast
 /// verified at render level").
 ///
-/// Living Companion values: warm dusk paper, warm ink. These are the sRGB
-/// approximations of the mock's tokens, matching `FieldPalette`'s pipeline.
+/// Living Companion values, token-backed: every colour here is a
+/// `DesignTokens` reference derived from the mock's tokens.css by
+/// `scripts/generate-design-tokens.mjs` — this file states no colour of
+/// its own.
 enum SurfacePalette {
-    /// The veil's alpha when the system permits translucency.
-    static let veilOpacity = 0.72
+    /// The veil's alpha when the system permits translucency (`--color-veil`).
+    static let veilOpacity = DesignTokens.Light.veilAlpha
 
-    private static let paper = Color(red: 0.99, green: 0.97, blue: 0.94)
-    private static let ink = Color(red: 0.24, green: 0.20, blue: 0.18)
-    private static let deepInk = Color(red: 0.05, green: 0.04, blue: 0.03)
+    private static let paper = DesignTokens.Light.paper
+    private static let ink = DesignTokens.Light.ink
+    private static let deepInk = DesignTokens.Light.inkStrong
 
     /// Reduce Transparency replaces the veil with a solid fill — not a more
     /// opaque veil, a solid one. Nothing behind it may show through, which is
     /// what makes the alternate testable as backdrop-independence.
     static func background(reduceTransparency: Bool) -> Color {
-        reduceTransparency ? paper : paper.opacity(veilOpacity)
+        reduceTransparency ? paper : DesignTokens.Light.veil
     }
 
     /// Increase Contrast deepens the ink rather than only enlarging type, so
