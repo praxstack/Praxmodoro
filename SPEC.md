@@ -6,7 +6,7 @@ The durable definition of done. The independent validator checks work against th
 
 Praxmodoro: native macOS focus timer and non-clinical ADHD-aware focus coach. macOS 26+, Swift 6.3, SwiftUI, local-first. Editions Lite/Pro/Enterprise share one codebase behind explicit capability gates; initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load modes are Lite, always.
 
-Visual direction: **Living Companion** (approved 2026-07-30; binding reference `design-mocks/living-companion/`, physics contract `companion-physics.js`). Evidence roots: `research/pomodoro-landscape-20260720/` for product claims, the mocks for visual decisions.
+Visual direction: **Living Companion** (approved 2026-07-30, **re-affirmed 2026-08-12** against three divergent alternatives — decision record `docs/decisions/2026-08-12-direction-reaffirmed.md`; binding reference `design-mocks/living-companion/`, physics contract `companion-physics.js`). Evidence roots: `research/pomodoro-landscape-20260720/` for product claims, the mocks for visual decisions.
 
 ## Milestone M1 — app scaffold + core loop (COMPLETE 2026-07-31)
 
