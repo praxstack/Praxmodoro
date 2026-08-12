@@ -5,6 +5,7 @@
   "description": "Pinned specification tooling for the native Praxmodoro macOS app.",
   "scripts": {
     "spec:validate": "openspec validate --all --strict --no-interactive",
+    "tokens:build": "node scripts/generate-design-tokens.mjs",
     "spec:list": "openspec list",
     "docs:build": "node scripts/build-docs.mjs"
   },
