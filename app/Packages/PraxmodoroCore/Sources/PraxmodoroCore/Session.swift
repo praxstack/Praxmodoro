@@ -12,6 +12,22 @@ public enum SessionIntent: String, Sendable, Equatable, Codable {
 
 public enum SessionError: Error, Equatable, Sendable {
     case invalidTransition(intent: SessionIntent, from: SessionState)
+    /// Adjustments only exist while a finite block is running and unexpired
+    /// (spec: "Nudges never rescue an expired block").
+    case invalidAdjustment
+}
+
+/// A user nudge to the running block's remaining time (spec: "Rewind and
+/// forward as recorded adjustments"). An event the derivation folds in —
+/// never a mutation of the timeline.
+public struct AdjustmentRecord: Equatable, Sendable, Codable {
+    public let delta: TimeInterval
+    public let at: Date
+
+    public init(delta: TimeInterval, at: Date) {
+        self.delta = delta
+        self.at = at
+    }
 }
 
 /// One recorded transition. Canonical wall-clock timestamps are the only
@@ -33,6 +49,7 @@ public struct Session: Equatable, Sendable, Codable {
     public let policy: TimingPolicy
     public internal(set) var transitions: [TransitionRecord]
     var anomalyLog: [ClockAnomaly] = []
+    var adjustmentLog: [AdjustmentRecord] = []
 
     public init(policy: TimingPolicy, startedAt: Date?) {
         self.policy = policy
@@ -40,12 +57,13 @@ public struct Session: Equatable, Sendable, Codable {
     }
 
     /// Rebuild from persisted transitions (spec: relaunch recovery).
-    public init(policy: TimingPolicy, transitions: [TransitionRecord]) {
+    public init(policy: TimingPolicy, transitions: [TransitionRecord], adjustments: [AdjustmentRecord] = []) {
         self.policy = policy
         self.transitions =
             transitions.isEmpty
             ? [TransitionRecord(intent: nil, state: .idle, at: .distantPast)]
             : transitions
+        self.adjustmentLog = adjustments
     }
 
     public func state(at now: Date) -> SessionState {
@@ -67,5 +85,16 @@ public struct Session: Equatable, Sendable, Codable {
             throw SessionError.invalidTransition(intent: intent, from: current)
         }
         transitions.append(TransitionRecord(intent: intent, state: next, at: now))
+    }
+
+    public var adjustments: [AdjustmentRecord] { adjustmentLog }
+
+    /// Nudge the running block's remaining time. Only a finite, unexpired,
+    /// running block accepts one; history stays clean otherwise.
+    public mutating func applyAdjustment(_ delta: TimeInterval, at now: Date) throws {
+        guard transitions.last?.state == .running,
+            let expiry = expiryInstant(), now < expiry
+        else { throw SessionError.invalidAdjustment }
+        adjustmentLog.append(AdjustmentRecord(delta: delta, at: now))
     }
 }

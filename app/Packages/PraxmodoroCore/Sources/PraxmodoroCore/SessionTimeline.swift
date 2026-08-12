@@ -15,11 +15,47 @@ public extension Session {
         return elapsed
     }
 
-    /// Remaining focus time, derived — nil for open-ended policies.
-    /// Clamped to [0, policy.focus] so clock anomalies can never inflate it.
+    /// The instant the current focus block began: the last entry into
+    /// `running` from a break, or the first `running` record. Promotions and
+    /// resumes continue a block; only a break ending starts a new one.
+    func currentBlockStart() -> Date? {
+        var start: Date?
+        var previous = SessionState.idle
+        for record in transitions {
+            if record.state == .running, start == nil || previous == .onBreak {
+                start = record.at
+            }
+            previous = record.state
+        }
+        return start
+    }
+
+    /// Focused time within the current block only — remaining and expiry are
+    /// block-scoped so a block after a break starts whole (spec: timer-engine
+    /// "User-steerable timing policies").
+    func blockElapsed(at now: Date) -> TimeInterval {
+        guard let start = currentBlockStart() else { return 0 }
+        var elapsed: TimeInterval = 0
+        for (index, record) in transitions.enumerated()
+        where record.state == .running && record.at >= start {
+            let end = index + 1 < transitions.count ? transitions[index + 1].at : max(now, record.at)
+            elapsed += max(0, end.timeIntervalSince(record.at))
+        }
+        return elapsed
+    }
+
+    /// Adjustments belonging to the current block.
+    internal func blockAdjustmentTotal() -> TimeInterval {
+        guard let start = currentBlockStart() else { return 0 }
+        return adjustmentLog.filter { $0.at >= start }.reduce(0) { $0 + $1.delta }
+    }
+
+    /// Remaining focus time, derived — nil for open-ended policies. Clamped
+    /// to [0, adjusted focus] so clock anomalies can never inflate it.
     func remaining(at now: Date) -> TimeInterval? {
         guard let focus = policy.focus else { return nil }
-        return min(focus, max(0, focus - focusElapsed(at: now)))
+        let target = focus + blockAdjustmentTotal()
+        return min(target, max(0, target - blockElapsed(at: now)))
     }
 }
 
