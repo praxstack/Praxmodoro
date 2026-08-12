@@ -52,10 +52,10 @@ UI and gap-fixes are BOTH priorities; the only true dependency is that the Appea
 
 ## Risks / open questions for review
 
-- **Autostart vs. "no forced breaks"** — the adapted semantics above; is "break begins as offered default, decline is one keystroke" the right reading, or should autostart merely *prompt*?
+- ~~Autostart vs. "no forced breaks"~~ **RESOLVED 2026-08-12 (dcanvas export 01KZTPM2DDFA8Q5ZM76ES0JXEJ, words-win):** the autostart behaviour is itself a **three-way user setting** — *break starts as offered default* / *prompt first* / *fully manual* — shipping default **prompt-first**. The radio said stay-manual but the comment overrode it (comments outrank clicks): all three options in Settings, prompt-first as default.
 - **Custom notification text** — user-authored text is exempt from tone lint by principle (their words); defaults linted. Agree?
 - **Dock-icon toggle** requires `NSApp.setActivationPolicy` juggling with the Settings window open — known macOS awkwardness, needs a design.md decision.
-- **Rewind/forward (#6)** — still undecided; the Rhythm pane is its natural home if kept. This plan neither includes nor excludes it.
+- ~~Rewind/forward (#6)~~ **RESOLVED 2026-08-12 (default-confirmed, no objection):** kept, as a recorded engine adjustment event — joins the Rhythm scope in #15. Typography likewise resolved: **bundle all three OFL faces** (#9 executable). Custom notification text: **user words exempt**, shipped defaults linted. Standing ops: auto-push green milestones.
 
 ## GSTACK REVIEW REPORT
 

@@ -1,0 +1,186 @@
+{
+  "kind": "canvas",
+  "schemaVersion": "0.1.0",
+  "title": "Praxmodoro — every open blocker, one shot",
+  "lede": "Six decisions stand between here and uninterrupted execution. Everything else is already approved (Living Companion re-affirmed, settings plan approach D, both lanes authorized). Answer these once and nothing else waits on you: lane 1 (sounds, autostart, durations) and lane 2 (tokens + dark theme) run to completion, M2 closes after one Xcode run, and every ticket on the board becomes agent-executable.",
+  "generated": "2026-08-12T10:40:00Z",
+  "sections": [
+    {
+      "heading": "Timer rhythm",
+      "description": "Two questions that shape the Rhythm settings pane before its spec is written. Plain terms: rewind/forward is the ±1-minute nudge from your original mock; autostart is what happens the moment a focus block's time runs out.",
+      "questions": [
+        {
+          "key": "rewind_forward",
+          "type": "single",
+          "prompt": "Rewind / forward (±1 min on the running block) — keep or drop? It was in your approved mock but never made it into any spec. The engine derives time purely from recorded events (that's what makes it survive sleep and relaunch), so nudging time must itself be a recorded event — doable, just delicate.",
+          "default": "keep-as-engine-event",
+          "options": [
+            {
+              "value": "keep-as-engine-event",
+              "label": "Keep it",
+              "description": "±1 min lands as a real recorded adjustment in the engine, honest across sleep/relaunch, with +/- keys. Lives in the Rhythm pane. Moderate engine work, fully testable.",
+              "recommended": true
+            },
+            {
+              "value": "drop-record-nongoal",
+              "label": "Drop it",
+              "description": "Recorded as an explicit non-goal with the engine-integrity reasoning, so the next audit finds a decision instead of a gap. Ticket #6 closes as decided-no."
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPE"
+        },
+        {
+          "key": "autostart_semantics",
+          "type": "single",
+          "prompt": "When a focus block ends (autostart ON): what exactly happens? Your spec forbids forced breaks, so RoundPie's hard autostart needs adapting. Note: the flow policy is exempt either way — flow never auto-ends, the settings pane will say so.",
+          "default": "offered-default",
+          "options": [
+            {
+              "value": "offered-default",
+              "label": "Break starts as the offered default",
+              "description": "The break simply begins; declining or ending it is one ordinary keystroke, no penalty, no modal wall. Closest to RoundPie while honoring the no-forced-breaks rule.",
+              "recommended": true
+            },
+            {
+              "value": "prompt-first",
+              "label": "Prompt first",
+              "description": "Block ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted."
+            },
+            {
+              "value": "stay-manual",
+              "label": "Keep breaks fully manual",
+              "description": "No autostart at all; the setting is not built. Smallest scope, furthest from your RoundPie ask."
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPF"
+        }
+      ],
+      "id": "01KZTPD57J8QPVKZ7D5BJF4JPD"
+    },
+    {
+      "heading": "Sound & notifications",
+      "description": "Notification defaults we ship are lint-checked so they can never carry urgency or judgment language. The open question is text YOU type into the custom-notification box.",
+      "questions": [
+        {
+          "key": "notification_text_lint",
+          "type": "single",
+          "prompt": "Should text you write yourself in the notification box be exempt from the copy-tone rules?",
+          "default": "user-words-exempt",
+          "options": [
+            {
+              "value": "user-words-exempt",
+              "label": "My words are mine",
+              "description": "Product-shipped defaults stay linted; anything you type is yours verbatim, even if it's 'GET BACK TO WORK'.",
+              "recommended": true
+            },
+            {
+              "value": "lint-everything",
+              "label": "Lint mine too",
+              "description": "The same gentle-language rules apply to custom text; the box refuses urgency words. Protects the product voice, constrains you."
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPH"
+        }
+      ],
+      "id": "01KZTPD57J8QPVKZ7D5BJF4JPG"
+    },
+    {
+      "heading": "Design execution (lane 2)",
+      "description": "Living Companion specifies three typefaces (Gabarito, Hanken Grotesk, Sono). The app currently ships zero of them — pure system fonts. All three are SIL Open Font License, so bundling is legally clean.",
+      "questions": [
+        {
+          "key": "typography",
+          "type": "single",
+          "prompt": "Bundle the three Living Companion typefaces into the app, or formally amend the direction to system fonts?",
+          "default": "bundle-three-faces",
+          "options": [
+            {
+              "value": "bundle-three-faces",
+              "label": "Bundle all three",
+              "description": "The direction you just re-affirmed gets its real voice. OFL-licensed, ~1-2 MB binary cost, runtime test fails loudly if a face is missing instead of silently substituting.",
+              "recommended": true
+            },
+            {
+              "value": "system-fonts-amendment",
+              "label": "System fonts, amended",
+              "description": "San Francisco everywhere, recorded as a formal amendment so spec and app finally agree. Zero binary cost, loses most of the type personality."
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPK"
+        }
+      ],
+      "id": "01KZTPD57J8QPVKZ7D5BJF4JPJ"
+    },
+    {
+      "heading": "Operations",
+      "description": "One physical action only you can perform, and one standing policy so I never have to ask again.",
+      "questions": [
+        {
+          "key": "xcode_consent_run",
+          "type": "single",
+          "prompt": "M2's final gate needs macOS automation consent granted interactively — one 'Product ▸ Test' (Cmd-U) run in Xcode, approving any dialog that appears. Command to open it: open app/Praxmodoro.xcodeproj — when will you do this?",
+          "default": "now",
+          "options": [
+            {
+              "value": "now",
+              "label": "Doing it now",
+              "description": "I watch for the result, then immediately run the full verification gate, close milestone M2, and archive its change.",
+              "recommended": true
+            },
+            {
+              "value": "later-today",
+              "label": "Later today",
+              "description": "Both lanes proceed regardless; M2 closes whenever the run happens. Nothing else waits on it."
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPN"
+        },
+        {
+          "key": "push_policy",
+          "type": "single",
+          "prompt": "Standing push policy going forward, so momentum never pauses to ask: push main to origin automatically after each green, committed milestone?",
+          "default": "auto-push-green",
+          "options": [
+            {
+              "value": "auto-push-green",
+              "label": "Auto-push when green",
+              "description": "Every committed unit with a passing suite goes straight to origin/main. Matches what you have had me doing today. Never a force-push, ever.",
+              "recommended": true
+            },
+            {
+              "value": "ask-each-time",
+              "label": "Ask each time",
+              "description": "I hold pushes until you say the word, every time."
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPP"
+        }
+      ],
+      "id": "01KZTPD57J8QPVKZ7D5BJF4JPM"
+    },
+    {
+      "heading": "The gate",
+      "description": "GO means: both lanes run to completion without further questions — OpenSpec change, engine work, sounds, panes, tokens, dark theme — pausing only at spec-mandated independent validation, and M2 closes the moment the Xcode run lands.",
+      "questions": [
+        {
+          "key": "execute_all",
+          "type": "confirm",
+          "prompt": "Execute everything above to completion?",
+          "options": [
+            {
+              "value": "go",
+              "label": "GO"
+            },
+            {
+              "value": "hold",
+              "label": "HOLD"
+            }
+          ],
+          "id": "01KZTPD57J8QPVKZ7D5BJF4JPR"
+        }
+      ],
+      "id": "01KZTPD57J8QPVKZ7D5BJF4JPQ"
+    }
+  ],
+  "id": "01KZTPD57J8QPVKZ7D5BJF4JPC"
+}

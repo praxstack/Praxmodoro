@@ -1,0 +1,82 @@
+{
+  "kind": "decisions",
+  "schemaVersion": "0.1.0",
+  "canvasId": "01KZTPD57J8QPVKZ7D5BJF4JPC",
+  "exportId": "01KZTPM2DDFA8Q5ZM76ES0JXEJ",
+  "exportedAt": "2026-08-12T09:59:55.054Z",
+  "baseline": "2363e1395403aec2e834c3d086a7f40c1e40919bce8a8102b69e22516a881d16",
+  "answers": [
+    {
+      "questionId": "01KYSZMZQDXAVQXTQCCHH7ETYT",
+      "confirmation": "explicit",
+      "key": "base_direction",
+      "canvasId": "01KYSZMZQDXAVQXTQCCHH7ETYR",
+      "resolution": "answered",
+      "value": "living-companion"
+    },
+    {
+      "questionId": "01KYSZMZQDXAVQXTQCCHH7ETYX",
+      "confirmation": "explicit",
+      "key": "write_spec",
+      "canvasId": "01KYSZMZQDXAVQXTQCCHH7ETYR",
+      "resolution": "answered",
+      "value": "go"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPE",
+      "confirmation": "default",
+      "key": "rewind_forward",
+      "resolution": "answered",
+      "value": "keep-as-engine-event"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPF",
+      "confirmation": "explicit",
+      "key": "autostart_semantics",
+      "resolution": "answered",
+      "value": "stay-manual",
+      "comment": "Give All Options in settings to user but keep Prompt first as default [[Prompt first\nBlock ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted.]] && give these 3 optons in setting s\n\n1[[Break starts as the offered default\nThe break simply begins; declining or ending it is one ordinary keystroke, no penalty, no modal wall. Closest to RoundPie while honoring the no-forced-breaks rule.]]\n2[[Prompt first\nBlock ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted.]]\n3[[Keep breaks fully manual\nNo autostart at all; the setting is not built. Smallest scope, furthest from your RoundPie ask.]]"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPH",
+      "confirmation": "default",
+      "key": "notification_text_lint",
+      "resolution": "answered",
+      "value": "user-words-exempt"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPK",
+      "confirmation": "default",
+      "key": "typography",
+      "resolution": "answered",
+      "value": "bundle-three-faces"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPN",
+      "confirmation": "default",
+      "key": "xcode_consent_run",
+      "resolution": "answered",
+      "value": "now"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPP",
+      "confirmation": "default",
+      "key": "push_policy",
+      "resolution": "answered",
+      "value": "auto-push-green"
+    },
+    {
+      "questionId": "01KZTPD57J8QPVKZ7D5BJF4JPR",
+      "confirmation": "explicit",
+      "key": "execute_all",
+      "resolution": "answered",
+      "value": "go",
+      "comment": "create /goal /autononomou-irchestartion self /coding-leadrshop-pinciple- cmobined prompt for yourself \nor do we need to run /wayfinder or /implemetn as per matt poccock ?"
+    }
+  ],
+  "gate": {
+    "raw": "go",
+    "effective": "hold",
+    "wordsWinTriggered": true
+  }
+}
