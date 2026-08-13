@@ -14,6 +14,10 @@ enum FeatureKey: String, CaseIterable, Sendable {
     case menuBarSurface
     case focusCapsule
     case returnOverlay
+    // add-session-settings: all Lite, none paywallable.
+    case sessionSettings
+    case rhythmControl
+    case soundCues
 }
 
 /// Edition seam. Lite grants everything in this change; core ADHD/
@@ -36,9 +40,14 @@ struct CapabilityRegistry: Sendable {
     /// holds hold/resume, and the return overlay is the re-entry path out of a
     /// break. Gating any of them would gate the boundary behavior itself
     /// (spec: companion-surfaces "Companion surfaces are never paywalled").
+    /// The session-settings keys join because rhythm control and sound are
+    /// the accessibility scaffolding this product exists for — a paywalled
+    /// tick or break cadence would gate the boundary behaviour itself
+    /// (spec: session-settings "Settings are never paywalled").
     static let neverPaywalled: Set<FeatureKey> = [
         .initiation, .checkins, .adaptiveBreaks, .accessibilityModes,
         .menuBarSurface, .focusCapsule, .returnOverlay,
+        .sessionSettings, .rhythmControl, .soundCues,
     ]
 
     /// This change ships everything in Lite; Pro/Enterprise inherit it all.

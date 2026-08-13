@@ -36,31 +36,31 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 - [x] 5.2 Test: Rhythm pane binds every `RhythmPreferences` field; changes land on the seam. Implement the pane — `SurfacePalette` roles only, zero raw literals.
 - [x] 5.3 Test: the flow-exemption notice is present in the pane's rendered content when flow policy exists. Implement.
 - [x] 5.4 Test: Sound & Notifications pane binds every `SoundPreferences` field plus notification toggles/texts. Implement the pane.
-- [ ] 5.5 Test: store schema before/after the whole change is identical (existing schema-parity test re-run and cited in the task commit).
+- [x] 5.5 Test: store schema before/after the whole change is identical (existing schema-parity test re-run and cited in the task commit).
 
 ## 6. Block-end flow honours the setting (App)
 
-- [ ] 6.1 Test: offered-default — at expiry the break surface appears with decline/end as one ordinary action; the transition instant equals the canonical expiry instant. Wire AppModel to pass behaviour into the engine.
-- [ ] 6.2 Test: prompt-first — a non-modal offer renders; accept records the break; dismiss keeps the held place; copy passes the tone lint. Implement the offer surface on pure `CompanionDisplay` data.
-- [ ] 6.3 Test: rewind/forward — `+`/`-` during a running block appends adjustments via `CompanionActions`; controls absent when not running. Implement controls and key handling.
+- [x] 6.1 Test: offered-default — at expiry the break surface appears with decline/end as one ordinary action; the transition instant equals the canonical expiry instant. Wire AppModel to pass behaviour into the engine.
+- [x] 6.2 Test: prompt-first — a non-modal offer renders; accept records the break; dismiss keeps the held place; copy passes the tone lint. Implement the offer surface on pure `CompanionDisplay` data.
+- [x] 6.3 Test: rewind/forward — `+`/`-` during a running block appends adjustments via `CompanionActions`; controls absent when not running. Implement controls and key handling.
 
 ## 7. Sound (App)
 
-- [ ] 7.1 Commit bundled CC0/original sound assets under `app/Resources/Sounds/` with provenance in the commit message.
-- [ ] 7.2 Test: `SoundPlayer` with everything OFF produces zero play requests across a full simulated session (seam: a played-cue recorder injected in place of AVFoundation). Implement `SoundPlayer` as a transition listener behind a protocol.
-- [ ] 7.3 Test: chime enabled — exactly one chime per expiry, none retro-fired after a simulated sleep-through-expiry wake. Implement.
-- [ ] 7.4 Test: tick loop starts with a running block and stops within one period of hold/close; implemented as an AVAudioPlayer loop toggle, no `Timer` — guard suite proves it. Implement.
-- [ ] 7.5 Test: resource-load failure and device-vanish paths leave the session untouched and log quietly. Implement.
+- [x] 7.1 Commit bundled CC0/original sound assets under `app/Resources/Sounds/` with provenance in the commit message.
+- [x] 7.2 Test: `SoundPlayer` with everything OFF produces zero play requests across a full simulated session (seam: a played-cue recorder injected in place of AVFoundation). Implement `SoundPlayer` as a transition listener behind a protocol.
+- [x] 7.3 Test: chime enabled — exactly one chime per expiry, none retro-fired after a simulated sleep-through-expiry wake. Implement.
+- [x] 7.4 Test: tick loop starts with a running block and stops within one period of hold/close; implemented as an AVAudioPlayer loop toggle, no `Timer` — guard suite proves it. Implement.
+- [x] 7.5 Test: resource-load failure and device-vanish paths leave the session untouched and log quietly. Implement.
 
 ## 8. Notifications (App)
 
-- [ ] 8.1 Test: notification requests are created from `expiryInstant()` on begin/adjust and cancelled on hold/adjust/setting-change (seam: injected notification-center protocol). Implement scheduling.
-- [ ] 8.2 Test: shipped default texts pass the copy-tone lint; the lint explicitly exempts the user-text defaults keys. Implement defaults and lint carve-out.
-- [ ] 8.3 Test: user-edited text is stored and passed to the request verbatim. Implement.
-- [ ] 8.4 Test: denied permission renders toggles unavailable and schedules nothing; no re-prompt path exists. Implement.
+- [x] 8.1 Test: notification requests are created from `expiryInstant()` on begin/adjust and cancelled on hold/adjust/setting-change (seam: injected notification-center protocol). Implement scheduling.
+- [x] 8.2 Test: shipped default texts pass the copy-tone lint; the lint explicitly exempts the user-text defaults keys. Implement defaults and lint carve-out.
+- [x] 8.3 Test: user-edited text is stored and passed to the request verbatim. Implement.
+- [x] 8.4 Test: denied permission renders toggles unavailable and schedules nothing; no re-prompt path exists. Implement.
 
 ## 9. Registry and gates
 
-- [ ] 9.1 Test: `sessionSettings`, `rhythmControl`, `soundCues` resolve available in Lite; a hostile registry marking them non-Lite fails debug validation. Implement the keys.
+- [x] 9.1 Test: `sessionSettings`, `rhythmControl`, `soundCues` resolve available in Lite; a hostile registry marking them non-Lite fails debug validation. Implement the keys.
 - [ ] 9.2 Full gate: `./scripts/verify-project.sh` exit 0; `npm run spec:validate` strict; guard suite green; then single-line commit per task discipline and auto-push (standing green policy).
 - [ ] 9.3 Independent fresh-context validator reviews the change against the spec deltas before archive; findings fixed before `openspec archive`.
