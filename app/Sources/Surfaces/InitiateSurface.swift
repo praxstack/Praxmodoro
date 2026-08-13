@@ -14,7 +14,9 @@ struct InitiateSurface: View {
     @State private var beginFailed = false
 
     private let capacities = ["foggy", "steady", "restless", "charged"]
-    private let policies: [TimingPolicy] = [.gentleStart, .classic, .flow, .recoveryFirst]
+    /// Built-ins plus the user's own presets (spec: "A custom duration
+    /// drives a session"). The model owns the list; this surface offers it.
+    private var policies: [TimingPolicy] { model.availablePolicies }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -47,12 +49,25 @@ struct InitiateSurface: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 Text("Session policy").font(.headline)
-                Picker("Policy", selection: $model.policy) {
-                    ForEach(policies, id: \.name) { policy in
-                        Text(policyLabel(policy)).tag(policy)
+                Group {
+                    // Segments stay readable at four; user presets move the
+                    // control to a menu rather than shrinking every label.
+                    if policies.count > 4 {
+                        Picker("Policy", selection: $model.policy) {
+                            ForEach(policies, id: \.name) { policy in
+                                Text(policyLabel(policy)).tag(policy)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    } else {
+                        Picker("Policy", selection: $model.policy) {
+                            ForEach(policies, id: \.name) { policy in
+                                Text(policyLabel(policy)).tag(policy)
+                            }
+                        }
+                        .pickerStyle(.segmented)
                     }
                 }
-                .pickerStyle(.segmented)
                 .labelsHidden()
                 .accessibilityIdentifier("policy-choice")
             }
@@ -83,7 +98,9 @@ struct InitiateSurface: View {
         case "gentle-start": "Gentle start"
         case "classic": "Classic 25+5"
         case "flow": "Flow"
-        default: "Recovery first"
+        case "recovery-first": "Recovery first"
+        default:
+            "\(Int((policy.focus ?? 0) / 60))+\(Int(policy.suggestedBreak / 60))"
         }
     }
 }

@@ -113,3 +113,52 @@ import Testing
         #expect(reconciled.state(at: wake) == .running)
     }
 }
+
+/// Validator findings 4, 6, and task 3.5 (independent review, 2026-08-13):
+/// flow must be exempt from auto-return on breaks too, the auto-return
+/// length must honour the cadence at the boundary, and the behaviour is
+/// read at expiry-processing time.
+@Suite struct BlockEndBehaviourFindingsTests {
+    private let t0 = Date(timeIntervalSinceReferenceDate: 800_000_000)
+
+    @Test func testFlowBreakNeverAutoReturns() throws {
+        var session = Session(policy: .flow, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        try session.apply(.startBreak, at: t0.addingTimeInterval(50 * 60))
+        let later = t0.addingTimeInterval(4 * 60 * 60)
+        for behaviour in [BlockEndBehaviour.offeredDefault, .promptFirst, .manual] {
+            let reconciled = session.reconciled(at: later, blockEnd: behaviour, autoReturn: 5 * 60)
+            #expect(reconciled.state(at: later) == .onBreak, "a flow break must stay open-ended")
+            #expect(reconciled.transitions.count == session.transitions.count)
+        }
+    }
+
+    @Test func testAutoReturnHonoursCadenceAtTheBoundary() throws {
+        // Cadence every 2 blocks, long break 10 minutes, ordinary 5. The
+        // second break must auto-return after 10 minutes, not 5.
+        var session = Session(policy: .classic, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        let cadence = LongBreakCadence(everyBlocks: 2, length: 10 * 60)
+        // Materialize two full cycles: block 25 + break 5 + block 25, then
+        // the second break-end is boundary + 10, not + 5.
+        let wake = t0.addingTimeInterval(80 * 60)
+        let reconciled = session.reconciled(
+            at: wake, blockEnd: .offeredDefault, autoReturn: 5 * 60, cadence: cadence)
+        let instants = reconciled.transitions.map { Int($0.at.timeIntervalSince(t0) / 60) }
+        #expect(instants.contains(55), "second block ends at 55")
+        #expect(instants.contains(65), "second break is the long one: returns at 65, not 60")
+        #expect(!instants.contains(60), "the ordinary length must not fire at the cadence boundary")
+    }
+
+    @Test func testBehaviourIsReadAtProcessingTime() throws {
+        // The same recorded history yields different consequences depending
+        // on the behaviour in force when the expiry is processed — the
+        // setting is a parameter of reconciliation, never captured at begin.
+        var session = Session(policy: .classic, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        let after = t0.addingTimeInterval(26 * 60)
+        #expect(session.reconciled(at: after, blockEnd: .manual).state(at: after) == .running)
+        #expect(session.reconciled(at: after, blockEnd: .offeredDefault).state(at: after) == .onBreak)
+        #expect(session.reconciled(at: after, blockEnd: .promptFirst).state(at: after) == .held)
+    }
+}

@@ -21,7 +21,7 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 - [x] 3.2 Test: with behaviour "prompt first", expiry records the expiry-hold (place kept) and no break transition until an explicit accept, which records at accept time. Implement.
 - [x] 3.3 Test: with behaviour "manual", expiry records nothing — the block-end is presented and the user chooses. (As-built note: today's engine path equals offered-default, so manual is the new conservative option, not the status quo.)
 - [x] 3.4 Test: flow policy + autostart "offered default" → zero automatic transitions at any probed instant. The "Flow never auto-ends" guard extended to the autostart path.
-- [x] 3.5 Test: behaviour setting is read at expiry-processing time — changing it mid-block governs the current block's end (design decision 4).
+- [x] 3.5 Test: behaviour setting is read at expiry-processing time — the same history yields manual/offered/prompt consequences per the behaviour in force at reconciliation (`testBehaviourIsReadAtProcessingTime`, added on validator finding 11).
 - [x] 3.6 Test: auto-return enabled — break-end recorded at the canonical break-end instant (break start + chosen length), including across simulated sleep; disabled (factory default) — breaks stay open-ended. Implement auto-return in the same reconciliation pass.
 
 ## 4. Preferences on the defaults seam (App)
@@ -41,7 +41,7 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 ## 6. Block-end flow honours the setting (App)
 
 - [x] 6.1 Test: offered-default — at expiry the break surface appears with decline/end as one ordinary action; the transition instant equals the canonical expiry instant. Wire AppModel to pass behaviour into the engine.
-- [x] 6.2 Test: prompt-first — a non-modal offer renders; accept records the break; dismiss keeps the held place; copy passes the tone lint. Implement the offer surface on pure `CompanionDisplay` data.
+- [x] 6.2 Test: prompt-first — a non-modal offer renders; accept records the break; dismiss keeps the held place; copy passes the tone lint. (As-built: the offer flag rides `SessionSnapshot`, main window only — the capsule and popover stay offer-free by design, they are glanceable not conversational.)
 - [x] 6.3 Test: rewind/forward — `+`/`-` during a running block appends adjustments via `CompanionActions`; controls absent when not running. Implement controls and key handling.
 
 ## 7. Sound (App)
@@ -50,7 +50,7 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 - [x] 7.2 Test: `SoundPlayer` with everything OFF produces zero play requests across a full simulated session (seam: a played-cue recorder injected in place of AVFoundation). Implement `SoundPlayer` as a transition listener behind a protocol.
 - [x] 7.3 Test: chime enabled — exactly one chime per expiry, none retro-fired after a simulated sleep-through-expiry wake. Implement.
 - [x] 7.4 Test: tick loop starts with a running block and stops within one period of hold/close; implemented as an AVAudioPlayer loop toggle, no `Timer` — guard suite proves it. Implement.
-- [x] 7.5 Test: resource-load failure and device-vanish paths leave the session untouched and log quietly. Implement.
+- [x] 7.5 Test: resource-load failure leaves the session untouched and logs quietly (os.Logger, debug level). (As-built: device-vanish is untestable without hardware; AVAudioPlayer failures fall into the same silent path.)
 
 ## 8. Notifications (App)
 
@@ -63,4 +63,4 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 
 - [x] 9.1 Test: `sessionSettings`, `rhythmControl`, `soundCues` resolve available in Lite; a hostile registry marking them non-Lite fails debug validation. Implement the keys.
 - [ ] 9.2 Full gate: `./scripts/verify-project.sh` exit 0; `npm run spec:validate` strict; guard suite green; then single-line commit per task discipline and auto-push (standing green policy).
-- [ ] 9.3 Independent fresh-context validator reviews the change against the spec deltas before archive; findings fixed before `openspec archive`.
+- [ ] 9.3 Independent fresh-context validator reviews the change against the spec deltas before archive; findings fixed before `openspec archive`. (First pass 2026-08-13: 2 blockers, 5 majors, 8 minors/nits — fixed on branch fix/validator-findings; re-verification pending.)

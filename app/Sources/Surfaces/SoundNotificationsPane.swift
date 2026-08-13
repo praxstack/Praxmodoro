@@ -32,13 +32,16 @@ struct SoundNotificationsPane: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
-                Toggle("Notify when a block completes", isOn: notif(\.blockEndEnabled, set: { $0.blockEndEnabled = $1 }))
-                TextField("Block-end text", text: notifText(\.blockEndText, set: { $0.blockEndText = $1 }))
-                    .textFieldStyle(.roundedBorder)
-                Toggle("Notify when a break has run its length", isOn: notif(\.breakEndEnabled, set: { $0.breakEndEnabled = $1 }))
-                TextField("Break-end text", text: notifText(\.breakEndText, set: { $0.breakEndText = $1 }))
-                    .textFieldStyle(.roundedBorder)
-                Toggle("Bring Praxmodoro forward from a notification", isOn: notif(\.bringToFront, set: { $0.bringToFront = $1 }))
+                Group {
+                    Toggle("Notify when a block completes", isOn: notif(\.blockEndEnabled, set: { $0.blockEndEnabled = $1 }))
+                    TextField("Block-end text", text: notifText(\.blockEndText, set: { $0.blockEndText = $1 }))
+                        .textFieldStyle(.roundedBorder)
+                    Toggle("Notify when a break has run its length", isOn: notif(\.breakEndEnabled, set: { $0.breakEndEnabled = $1 }))
+                    TextField("Break-end text", text: notifText(\.breakEndText, set: { $0.breakEndText = $1 }))
+                        .textFieldStyle(.roundedBorder)
+                    Toggle("Bring Praxmodoro forward from a notification", isOn: notif(\.bringToFront, set: { $0.bringToFront = $1 }))
+                }
+                .disabled(model.notificationsUnavailable)
                 Text("Edited text is yours and is delivered exactly as written.")
                     .font(.callout)
                     .foregroundStyle(.secondary)

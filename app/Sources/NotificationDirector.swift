@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 // UNUserNotificationCenter predates strict concurrency; its completion
 // handlers are thread-safe by contract but not annotated Sendable.
@@ -30,9 +31,29 @@ protocol NotificationScheduling {
 /// quit — which is the point. Authorization is requested at most once (the
 /// system itself never re-shows the dialog); denial is reported, never
 /// worked around, never nagged.
-final class LocalNotificationScheduler: NotificationScheduling {
+final class LocalNotificationScheduler: NSObject, NotificationScheduling, UNUserNotificationCenterDelegate {
     private let center = UNUserNotificationCenter.current()
     private var pendingIDs: [String] = []
+
+    override init() {
+        super.init()
+        // Sole delegate duty: honour the user's bring-to-front choice when
+        // they act on a notification (validator finding 10).
+        center.delegate = self
+    }
+
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let bringToFront =
+            response.notification.request.content.userInfo["bringToFront"] as? Bool ?? false
+        if bringToFront {
+            Task { @MainActor in NSApp.activate(ignoringOtherApps: true) }
+        }
+        completionHandler()
+    }
 
     func checkAvailability(_ report: @escaping @MainActor (NotificationAvailability) -> Void) {
         center.getNotificationSettings { [center] settings in
