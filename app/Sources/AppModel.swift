@@ -99,19 +99,66 @@ final class AppModel {
                 if breakEnd > now { desired = (.breakEnd, breakEnd) }
             }
         }
-        guard scheduledChime?.cue != desired?.cue || scheduledChime?.at != desired?.at else { return }
-        if scheduledChime != nil {
-            soundScheduler.cancelScheduledChimes()
+        if scheduledChime?.cue != desired?.cue || scheduledChime?.at != desired?.at {
+            if scheduledChime != nil {
+                soundScheduler.cancelScheduledChimes()
+            }
+            if let desired {
+                soundScheduler.scheduleChime(desired.cue, at: desired.at, volume: sound.masterVolume)
+            }
+            scheduledChime = desired
         }
-        if let desired {
-            soundScheduler.scheduleChime(desired.cue, at: desired.at, volume: sound.masterVolume)
-        }
-        scheduledChime = desired
+        syncNotifications(at: now)
     }
 
     func setNotifications(_ preferences: NotificationPreferences) {
         notifications = preferences
         preferences.save(to: defaults)
+        syncNotifications(at: clock())
+    }
+
+    // MARK: Notification direction (spec: "Local notifications with honest
+    // text"). Same shape as sound: one pending request, anchored on a
+    // canonical instant, cancelled the moment the derivation changes.
+
+    /// Plain truth for the panes: the system has denied delivery.
+    private(set) var notificationsUnavailable = false
+    private var scheduledNotification: LocalNotificationRequest?
+
+    func refreshNotificationAvailability() {
+        notificationScheduler.checkAvailability { [weak self] availability in
+            self?.notificationsUnavailable = availability == .denied
+        }
+    }
+
+    private func syncNotifications(at now: Date) {
+        var desired: LocalNotificationRequest?
+        if !notificationsUnavailable, let session {
+            let reconciled = reconciledSession(session, at: now)
+            if notifications.blockEndEnabled, let expiry = reconciled.expiryInstant(), expiry > now {
+                desired = LocalNotificationRequest(
+                    id: "block-end", body: notifications.blockEndText, at: expiry,
+                    bringToFront: notifications.bringToFront)
+            } else if notifications.breakEndEnabled, reconciled.state(at: now) == .onBreak,
+                let breakStart = reconciled.transitions.last?.at
+            {
+                let breakEnd = breakStart.addingTimeInterval(
+                    reconciled.suggestedBreakLength(cadence: rhythm.cadence))
+                if breakEnd > now {
+                    desired = LocalNotificationRequest(
+                        id: "break-end", body: notifications.breakEndText, at: breakEnd,
+                        bringToFront: notifications.bringToFront)
+                }
+            }
+        }
+        guard desired != scheduledNotification else { return }
+        if scheduledNotification != nil {
+            notificationScheduler.cancelPending()
+        }
+        if let desired {
+            notificationScheduler.schedule(desired)
+        }
+        scheduledNotification = desired
     }
 
     private(set) var session: Session?
@@ -123,17 +170,20 @@ final class AppModel {
     private let clock: () -> Date
     private let defaults: UserDefaults
     private let soundScheduler: SoundCueScheduling
+    private let notificationScheduler: NotificationScheduling
 
     init(
         store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite),
         clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
-        soundScheduler: SoundCueScheduling = AudioCueScheduler()
+        soundScheduler: SoundCueScheduling = AudioCueScheduler(),
+        notificationScheduler: NotificationScheduling = LocalNotificationScheduler()
     ) {
         self.store = store
         self.capabilities = capabilities
         self.clock = clock
         self.defaults = defaults
         self.soundScheduler = soundScheduler
+        self.notificationScheduler = notificationScheduler
         self.motionStilled = defaults.bool(forKey: Self.motionStilledKey)
         self.rhythm = RhythmPreferences.load(from: defaults)
         self.sound = SoundPreferences.load(from: defaults)

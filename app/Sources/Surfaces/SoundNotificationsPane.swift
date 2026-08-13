@@ -25,6 +25,13 @@ struct SoundNotificationsPane: View {
             }
 
             Section("Notifications") {
+                if model.notificationsUnavailable {
+                    // Plain truth, no nag: the system said no, and the only
+                    // place to change that is System Settings.
+                    Text("Notifications are turned off for Praxmodoro in System Settings.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
                 Toggle("Notify when a block completes", isOn: notif(\.blockEndEnabled, set: { $0.blockEndEnabled = $1 }))
                 TextField("Block-end text", text: notifText(\.blockEndText, set: { $0.blockEndText = $1 }))
                     .textFieldStyle(.roundedBorder)
