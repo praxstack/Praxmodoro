@@ -201,4 +201,18 @@ import PraxmodoroStore
             #expect(FileManager.default.fileExists(atPath: url.path), "missing bundled asset \(cue.resourceName)")
         }
     }
+
+    /// The source tree had the files while the built product did not —
+    /// project.yml used a key xcodegen silently ignores, and the scan above
+    /// was blind to it (found live: an installed build with no sounds).
+    /// These tests run hosted in the app, so Bundle.main IS the built
+    /// product; this closes the gap at the artifact level.
+    @Test func testBundledResourcesResolveInTheBuiltProduct() {
+        for cue in [SoundCue.focusTick, .breakTick, .focusEnd, .breakEnd] {
+            let resolved =
+                Bundle.main.url(forResource: cue.resourceName, withExtension: nil, subdirectory: "Sounds")
+                ?? Bundle.main.url(forResource: cue.resourceName, withExtension: nil)
+            #expect(resolved != nil, "\(cue.resourceName) missing from the built app bundle")
+        }
+    }
 }

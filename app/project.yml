@@ -25,8 +25,10 @@ targets:
   Praxmodoro:
     type: application
     platform: macOS
-    sources: [Sources]
-    resources: [Resources]
+    sources:
+      - Sources
+      - path: Resources
+        buildPhase: resources
     dependencies:
       - package: PraxmodoroCore
       - package: PraxmodoroStore
