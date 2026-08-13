@@ -61,6 +61,52 @@ final class AppModel {
     func setSound(_ preferences: SoundPreferences) {
         sound = preferences
         preferences.save(to: defaults)
+        syncSound(at: clock())
+    }
+
+    // MARK: Sound direction (spec: "Sound cues, all optional"). Pure policy
+    // over the same derived state the surfaces render; the scheduler seam
+    // owns the audio machinery. Called after every intent, so cues follow
+    // transitions — nothing here runs on a schedule.
+
+    private var tickState: [SoundCue: Bool] = [:]
+    private var scheduledChime: (cue: SoundCue, at: Date)?
+
+    private func syncSound(at now: Date) {
+        let phase = snapshot(at: now).phase
+
+        let desiredTicks: [SoundCue: Bool] = [
+            .focusTick: sound.tickLoop && sound.focusTick && phase == .running,
+            .breakTick: sound.tickLoop && sound.breakTick && phase == .onBreak,
+        ]
+        for (cue, desired) in desiredTicks where tickState[cue, default: false] != desired {
+            soundScheduler.setTickLoop(cue, running: desired, volume: sound.masterVolume)
+            tickState[cue] = desired
+        }
+
+        // One pending chime at a time, always for a strictly future canonical
+        // instant — an expiry already past never retro-fires.
+        var desired: (cue: SoundCue, at: Date)?
+        if let session {
+            let reconciled = reconciledSession(session, at: now)
+            if sound.focusEndChime, let expiry = reconciled.expiryInstant(), expiry > now {
+                desired = (.focusEnd, expiry)
+            } else if sound.breakEndChime, reconciled.state(at: now) == .onBreak,
+                let breakStart = reconciled.transitions.last?.at
+            {
+                let breakEnd = breakStart.addingTimeInterval(
+                    reconciled.suggestedBreakLength(cadence: rhythm.cadence))
+                if breakEnd > now { desired = (.breakEnd, breakEnd) }
+            }
+        }
+        guard scheduledChime?.cue != desired?.cue || scheduledChime?.at != desired?.at else { return }
+        if scheduledChime != nil {
+            soundScheduler.cancelScheduledChimes()
+        }
+        if let desired {
+            soundScheduler.scheduleChime(desired.cue, at: desired.at, volume: sound.masterVolume)
+        }
+        scheduledChime = desired
     }
 
     func setNotifications(_ preferences: NotificationPreferences) {
@@ -76,15 +122,18 @@ final class AppModel {
     let capabilities: CapabilityRegistry
     private let clock: () -> Date
     private let defaults: UserDefaults
+    private let soundScheduler: SoundCueScheduling
 
     init(
         store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite),
-        clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard
+        clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
+        soundScheduler: SoundCueScheduling = AudioCueScheduler()
     ) {
         self.store = store
         self.capabilities = capabilities
         self.clock = clock
         self.defaults = defaults
+        self.soundScheduler = soundScheduler
         self.motionStilled = defaults.bool(forKey: Self.motionStilledKey)
         self.rhythm = RhythmPreferences.load(from: defaults)
         self.sound = SoundPreferences.load(from: defaults)
@@ -109,6 +158,7 @@ final class AppModel {
         if !capacity.isEmpty {
             try store?.appendEvent(sessionID: id, kind: .capacityReport, payload: capacity, at: now)
         }
+        syncSound(at: now)
     }
 
     /// Relaunch lands the user exactly where they were: rebuild the session
@@ -148,6 +198,7 @@ final class AppModel {
         case .onBreak: surface = .onBreak
         default: surface = .initiate
         }
+        syncSound(at: now)
     }
 
     // MARK: Block-end flow (spec: add-session-settings "Autostart behaviour
@@ -215,6 +266,7 @@ final class AppModel {
             try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
         }
         surface = .onBreak
+        syncSound(at: now)
     }
 
     /// Waving the offer away costs nothing and loses nothing: the place
@@ -246,6 +298,7 @@ final class AppModel {
                 try store?.appendEvent(sessionID: id, kind: .adjustment, payload: "\(Int(delta))", at: now)
             }
             fieldPulse += 1
+            syncSound(at: now)
         } catch {
             // A rejected nudge (not running, already expired) changes nothing.
         }
@@ -283,6 +336,7 @@ final class AppModel {
         if let id = sessionID {
             try store?.appendEvent(sessionID: id, kind: .transition, payload: current.state(at: now).rawValue, at: now)
         }
+        syncSound(at: now)
     }
 
     // MARK: Check-in (spec: no failure state; never interrupts destructively)
@@ -342,6 +396,7 @@ final class AppModel {
             }
             surface = .onBreak
         }
+        syncSound(at: now)
     }
 
     // MARK: Break (spec: user-steerable, held place, ending early is ordinary)
@@ -398,6 +453,7 @@ final class AppModel {
         }
         surface = .focus
         returnPending = true
+        syncSound(at: now)
     }
 
     // MARK: Review (spec: a record, not a verdict)
@@ -417,6 +473,7 @@ final class AppModel {
             try store?.appendEvent(sessionID: id, kind: .transition, payload: "closed", at: now)
         }
         surface = .review
+        syncSound(at: now)
     }
 
     /// Descriptive timeline straight from the event log — what happened,

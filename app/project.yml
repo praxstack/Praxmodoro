@@ -26,6 +26,7 @@ targets:
     type: application
     platform: macOS
     sources: [Sources]
+    resources: [Resources]
     dependencies:
       - package: PraxmodoroCore
       - package: PraxmodoroStore
