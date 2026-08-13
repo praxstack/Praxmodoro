@@ -76,17 +76,16 @@
       "id": "g8-hardening",
       "title": "cmd-K check-in, live-container schema parity, keyboard UI loop, first-run assertion",
       "status": "done",
-      "evidence": "unit half done - red: 4 compile errors (LocalStore.containerSchema absent); green: cmd-K check-in path with held-place invariant, two live containers (in-memory vs on-disk) compared attribute-by-attribute with a can-fail control. UI half BLOCKED: XCUITest cannot initialize while the host screen is locked (CGSSessionScreenIsLocked=true, LocalAuthentication -4). KeyboardLoopUITests compiles (** TEST BUILD SUCCEEDED **) but cannot execute. UI half UNBLOCKED 2026-08-13: the host condition cleared, verify-project.sh ran the signed PraxmodoroUITests target on this machine and exited 0, so KeyboardLoopUITests and the first-run assertion in LaunchUITests actually executed rather than merely compiling. Schema parity gained a second, stronger check: SchemaFingerprintTests in the Store package pins entity and attribute names as a golden string, which is the check that can notice a schema change at all.",
+      "evidence": "unit half done - red: 4 compile errors (LocalStore.containerSchema absent); green: cmd-K check-in path with held-place invariant, two live containers (in-memory vs on-disk) compared attribute-by-attribute with a can-fail control. UI half BLOCKED: XCUITest cannot initialize while the host screen is locked (CGSSessionScreenIsLocked=true, LocalAuthentication -4). KeyboardLoopUITests compiles (** TEST BUILD SUCCEEDED **) but cannot execute. UI half UNBLOCKED 2026-08-13: the host condition cleared, verify-project.sh ran the signed PraxmodoroUITests target on this machine and exited 0, so KeyboardLoopUITests and the first-run assertion (KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath) actually executed rather than merely compiling. Schema parity gained a second, stronger check: SchemaFingerprintTests in the Store package pins entity and attribute names as a golden string, which is the check that can notice a schema change at all. The SchemaFingerprintTests golden check named above arrived later, with add-session-settings (merge 9a6dc8c), not with this M2 atom.",
       "commits": [
-        "6f8a809",
-        "9a6dc8c"
+        "6f8a809"
       ]
     },
     {
       "id": "g9-closeout",
       "title": "Full gauntlet, evidence bookkeeping, archive and independent validation",
       "status": "done",
-      "evidence": "five independent validator defeats of the no-second-clock guard, all closed; the current rasterized defense has not itself been independently attacked. 73 tests in 23 suites, packages 12/12 and 7/7, strict lint, build, spec:validate 5/5, smoke.sh all green. BLOCKED: the UI suite has never executed (locked screen), so verify-project.sh cannot exit 0 and M2 cannot be called complete. UNBLOCKED 2026-08-13: verify-project.sh exit 0 including the UI target, spec:validate strict 6/6, focused suite 172 tests green, smoke.sh exit 0, and an independent fresh-context validator returned C1-C4 and C6 pass. That validator also failed C5 on closeout bookkeeping (this file stale at 2026-08-04, tasks.md 8.3/8.4/9.1 unticked, no commit SHAs, atoms not 1:1 with commits) - the first three are fixed in this update, the fourth is recorded as a documented deviation below.",
+      "evidence": "five independent validator defeats of the no-second-clock guard, all closed; the current rasterized defense has not itself been independently attacked [SUPERSEDED same evening by the sixth defeat, and again on 2026-08-13 by the whole-change validator]. 73 tests in 23 suites, packages 12/12 and 7/7, strict lint, build, spec:validate 5/5, smoke.sh all green. BLOCKED: the UI suite has never executed (locked screen), so verify-project.sh cannot exit 0 and M2 cannot be called complete. UNBLOCKED 2026-08-13: verify-project.sh exit 0 including the UI target, spec:validate strict 6/6, focused suite 172 tests green, smoke.sh exit 0, and an independent fresh-context validator returned C1-C4 and C6 pass. That validator also failed C5 on closeout bookkeeping (this file stale at 2026-08-04, tasks.md 8.3/8.4/9.1 unticked, no commit SHAs, atoms not 1:1 with commits) - the first three are fixed in this update, the fourth is recorded as a documented deviation below.",
       "commits": [
         "d4c7830",
         "00b4a91",
@@ -304,7 +303,12 @@
     }
   ],
   "commitMapping": {
-    "rule": "C5 asks for one conventional commit per atom. Held for 6 of 9 M2 atoms; the deviations are deliberate and were justified in progress.txt when made.",
+    "criterion": "C5 asks that every atom land as one conventional commit.",
+    "countByReading": {
+      "each atom landed in exactly one commit": "6 of 9 (g2, g3, g5, g6, g7, g8). Deviations: g1, g4, g9 each span several commits.",
+      "strict bijection, one commit per atom and one atom per commit": "2 of 9 (g2, g3). Additional deviations: g5+g6 share a5da9cf, g7+g8 share 6f8a809."
+    },
+    "status": "Literally unmet under either reading. Disclosed here rather than resolved by rewriting history.",
     "deviations": [
       {
         "atoms": [
@@ -312,7 +316,8 @@
           "g6-return-overlay"
         ],
         "commit": "a5da9cf",
-        "reason": "both edit the same scene file; splitting them would have produced a non-building intermediate commit."
+        "reason": "both edit the same scene file; splitting them would have produced a non-building intermediate commit, which the tasks.md preamble forbids.",
+        "justification": "contemporaneous \u2014 progress.txt 2026-08-04T17:30 records the shared commit and the reason as it was made."
       },
       {
         "atoms": [
@@ -320,7 +325,8 @@
           "g8-hardening"
         ],
         "commit": "6f8a809",
-        "reason": "the accessibility standdown and the keyboard loop touch the same surfaces and keyboard map together."
+        "reason": "the accessibility standdown and the keyboard loop touch the same surfaces and keyboard map together.",
+        "justification": "post-hoc reconstruction, 2026-08-13. No contemporaneous record states the sharing was deliberate."
       },
       {
         "atoms": [
@@ -328,8 +334,10 @@
           "g4-menu-bar-popover",
           "g9-closeout"
         ],
-        "reason": "landed across several commits each: an atom that survived independent validator attacks carries one commit per attack cycle (red, defeat, repair), which is the evidence trail, not noise."
+        "reason": "each spans several commits because every independent-validator defeat carries its own red-then-repair commit. That trail is the evidence the C2 guarantee rests on; collapsing it would destroy evidence to satisfy a bookkeeping rule.",
+        "justification": "contemporaneous \u2014 each defeat and repair is recorded in progress.txt as it happened."
       }
-    ]
+    ],
+    "proposedAmendment": "Recommended by the independent validator and NOT self-granted: reword C5 to 'every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified.' Pending the criterion owner's decision; C5 stands as FAIL until then."
   }
 }
