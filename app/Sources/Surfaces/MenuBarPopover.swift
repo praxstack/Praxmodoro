@@ -56,7 +56,9 @@ struct MenuBarPopover: View {
         guard display.hasSession else {
             return ["popover-status", "popover-primary", "popover-open-main"]
         }
-        return ["popover-status", "popover-time", "popover-task", "popover-primary", "popover-check-in", "popover-open-main"]
+        var catalog = ["popover-status", "popover-time", "popover-task", "popover-primary", "popover-check-in", "popover-open-main"]
+        if display.offersAdjustment { catalog.insert("popover-adjust", at: 3) }
+        return catalog
     }
 
     /// Internal rather than private so a test can prove the break-phase
@@ -117,6 +119,16 @@ struct MenuBarPopover: View {
 
             Divider()
 
+            // The minute nudges, wherever the loop is operated from —
+            // present only while a finite block runs (spec: "Nudges never
+            // rescue an expired block").
+            if display.offersAdjustment {
+                HStack(spacing: 8) {
+                    Button("−1 min") { actions.rewindMinute() }
+                    Button("+1 min") { actions.forwardMinute() }
+                }
+                .accessibilityIdentifier("popover-adjust")
+            }
             Button(primaryControlLabel) { primaryAction() }
                 .accessibilityIdentifier("popover-primary")
 

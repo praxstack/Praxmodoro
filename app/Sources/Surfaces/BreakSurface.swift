@@ -44,6 +44,16 @@ struct BreakSurface: View {
                     .font(.title3)
                     .accessibilityIdentifier("break-suggestion")
 
+                // The cadence's longer break, offered in words when due —
+                // a suggestion with ordinary decline, never a score
+                // (spec: "Long-break cadence suggests, never scores").
+                if let minutes = model.longBreakMinutesDueNow {
+                    Text("This one could be longer — \(minutes) minutes, if you want it.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("long-break-suggestion")
+                }
+
                 HStack(spacing: 10) {
                     ForEach(choices, id: \.self) { choice in
                         Button(choice) { try? model.chooseBreak(choice.lowercased()) }

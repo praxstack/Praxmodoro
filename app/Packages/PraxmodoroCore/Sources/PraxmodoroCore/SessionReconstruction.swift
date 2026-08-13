@@ -62,7 +62,8 @@ public extension Session {
     func reconciled(
         at now: Date,
         blockEnd: BlockEndBehaviour = .offeredDefault,
-        autoReturn: TimeInterval? = nil
+        autoReturn: TimeInterval? = nil,
+        cadence: LongBreakCadence? = nil
     ) -> Session {
         var copy = self
         if let promotion = promotionInstant(), promotion <= now,
@@ -85,13 +86,28 @@ public extension Session {
                     break
                 }
             }
-            if let autoReturn, autoReturn > 0,
-                let last = copy.transitions.last, last.state == .onBreak,
-                last.at.addingTimeInterval(autoReturn) <= now
+            // Auto-return: never for flow — with no finite focus there is
+            // nothing to return *to* on a rhythm, and the flow exemption
+            // means no automatic transition at any instant (validator
+            // finding 4). The length is cadence-aware per materialized
+            // break, so the Nth break runs long (finding 6).
+            if let autoReturn, autoReturn > 0, policy.focus != nil,
+                let last = copy.transitions.last, last.state == .onBreak
             {
-                copy.transitions.append(
-                    TransitionRecord(intent: nil, state: .running, at: last.at.addingTimeInterval(autoReturn)))
-                advanced = true
+                let completed = copy.transitions.filter { $0.state == .onBreak }.count
+                let length: TimeInterval =
+                    if let cadence, cadence.everyBlocks > 0, completed > 0,
+                        completed % cadence.everyBlocks == 0
+                    {
+                        cadence.length
+                    } else {
+                        autoReturn
+                    }
+                if last.at.addingTimeInterval(length) <= now {
+                    copy.transitions.append(
+                        TransitionRecord(intent: nil, state: .running, at: last.at.addingTimeInterval(length)))
+                    advanced = true
+                }
             }
         }
         return copy

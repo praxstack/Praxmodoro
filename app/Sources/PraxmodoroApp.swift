@@ -33,12 +33,21 @@ struct PraxmodoroApp: App {
             // block-end presents the break without any UI-side timer
             // advancing state (spec: add-session-settings).
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                switch model.effectiveSurface(at: context.date) {
-                case .initiate: InitiateSurface(model: model)
-                case .focus: FocusSurface(model: model)
-                case .checkin: CheckinSurface(model: model)
-                case .onBreak: BreakSurface(model: model)
-                case .review: ReviewSurface(model: model)
+                Group {
+                    switch model.effectiveSurface(at: context.date) {
+                    case .initiate: InitiateSurface(model: model)
+                    case .focus: FocusSurface(model: model)
+                    case .checkin: CheckinSurface(model: model)
+                    case .onBreak: BreakSurface(model: model)
+                    case .review: ReviewSurface(model: model)
+                    }
+                }
+                // A derived phase change (expiry, autostart, auto-return)
+                // hands presentation — sound and notifications only, never
+                // session state — back to the model. Rendering itself stays
+                // pure; this fires only on the transition edge.
+                .onChange(of: model.snapshot(at: context.date).phase) {
+                    model.syncPresentation(at: context.date)
                 }
             }
             .frame(minWidth: 720, minHeight: 520)

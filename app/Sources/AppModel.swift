@@ -69,19 +69,58 @@ final class AppModel {
     // owns the audio machinery. Called after every intent, so cues follow
     // transitions — nothing here runs on a schedule.
 
+    /// The render loop's hand-off: when routing observes a derived phase
+    /// change (expiry, autostart, auto-return), it lets the model bring
+    /// sound and notifications in line. Presentation only — the session is
+    /// never touched here, so the one-clock rule stands (finding 3).
+    func syncPresentation(at now: Date) {
+        syncSound(at: now)
+    }
+
+    /// Everything the initiation surface may offer: the four built-ins plus
+    /// every user preset as a real policy (validator finding 1).
+    var availablePolicies: [TimingPolicy] {
+        let customBreak = rhythm.breakPresets.first ?? 5 * 60
+        let custom = rhythm.focusPresets.map {
+            TimingPolicy.custom(arrival: nil, focus: $0, suggestedBreak: customBreak)
+        }
+        return [.gentleStart, .classic, .flow, .recoveryFirst] + custom
+    }
+
+    /// Minutes of the cadence's longer break, when this break is the Nth —
+    /// nil otherwise. The break surface presents it as a suggestion with
+    /// ordinary decline (validator finding 7).
+    /// Surface-facing flavour: reads the injected clock so no view touches
+    /// the wall clock (surface guard).
+    var longBreakMinutesDueNow: Int? { longBreakMinutesDue(at: clock()) }
+
+    func longBreakMinutesDue(at now: Date) -> Int? {
+        guard let cadence = rhythm.cadence, let session else { return nil }
+        let reconciled = reconciledSession(session, at: now)
+        guard reconciled.state(at: now) == .onBreak else { return nil }
+        guard reconciled.suggestedBreakLength(cadence: cadence) == cadence.length else { return nil }
+        return Int(cadence.length / 60)
+    }
+
     private var tickState: [SoundCue: Bool] = [:]
     private var scheduledChime: (cue: SoundCue, at: Date)?
 
     private func syncSound(at now: Date) {
         let phase = snapshot(at: now).phase
 
-        let desiredTicks: [SoundCue: Bool] = [
-            .focusTick: sound.tickLoop && sound.focusTick && phase == .running,
-            .breakTick: sound.tickLoop && sound.breakTick && phase == .onBreak,
+        let desiredTicks: [(cue: SoundCue, on: Bool)] = [
+            (.focusTick, sound.tickLoop && sound.focusTick && phase == .running),
+            (.breakTick, sound.tickLoop && sound.breakTick && phase == .onBreak),
         ]
-        for (cue, desired) in desiredTicks where tickState[cue, default: false] != desired {
-            soundScheduler.setTickLoop(cue, running: desired, volume: sound.masterVolume)
-            tickState[cue] = desired
+        // Stops before starts, in a fixed order: a phase handover silences
+        // the old loop before the new one begins, deterministically.
+        for (cue, on) in desiredTicks where !on && tickState[cue, default: false] {
+            soundScheduler.setTickLoop(cue, running: false, volume: sound.masterVolume)
+            tickState[cue] = false
+        }
+        for (cue, on) in desiredTicks where on && !tickState[cue, default: false] {
+            soundScheduler.setTickLoop(cue, running: true, volume: sound.masterVolume)
+            tickState[cue] = true
         }
 
         // One pending chime at a time, always for a strictly future canonical
@@ -112,8 +151,14 @@ final class AppModel {
     }
 
     func setNotifications(_ preferences: NotificationPreferences) {
+        let firstEnable =
+            (preferences.blockEndEnabled || preferences.breakEndEnabled)
+            && !(notifications.blockEndEnabled || notifications.breakEndEnabled)
         notifications = preferences
         preferences.save(to: defaults)
+        // The system dialog appears at the moment the user asks for
+        // notifications, never at launch (validator finding 2).
+        if firstEnable { refreshNotificationAvailability() }
         syncNotifications(at: clock())
     }
 
@@ -190,6 +235,11 @@ final class AppModel {
         self.notifications = NotificationPreferences.load(from: defaults)
         // Spec: startup validation fails fast in debug; lookup self-heals in release.
         do { try capabilities.validate() } catch { assertionFailure("capability validation failed: \(error)") }
+        // A returning user's denial state refreshes at launch; a fresh
+        // install with nothing enabled is never prompted (finding 2).
+        if notifications.blockEndEnabled || notifications.breakEndEnabled {
+            refreshNotificationAvailability()
+        }
     }
 
     func begin() throws {
@@ -261,7 +311,8 @@ final class AppModel {
     private func reconciledSession(_ session: Session, at now: Date) -> Session {
         session.reconciled(
             at: now, blockEnd: rhythm.blockEnd,
-            autoReturn: rhythm.autoReturn ? session.suggestedBreakLength(cadence: rhythm.cadence) : nil)
+            autoReturn: rhythm.autoReturn ? session.policy.suggestedBreak : nil,
+            cadence: rhythm.cadence)
     }
 
     /// Derived routing for the main window: the stored surface, corrected by
@@ -288,8 +339,16 @@ final class AppModel {
             if let id = sessionID {
                 try store?.appendEvent(sessionID: id, kind: .transition, payload: record.state.rawValue, at: record.at)
             }
-            // A materialized return from a break greets like any other return.
-            if record.state == .running { returnPending = true }
+            // A materialized return FROM A BREAK greets like any other
+            // return. A promotion also materializes as .running but its
+            // predecessor is running — promotions are seamless, never a
+            // comeback (validator finding 5).
+            if record.state == .running,
+                let index = reconciled.transitions.firstIndex(of: record), index > 0,
+                reconciled.transitions[index - 1].state == .onBreak
+            {
+                returnPending = true
+            }
         }
         session = reconciled
         blockEndOfferDismissed = false
