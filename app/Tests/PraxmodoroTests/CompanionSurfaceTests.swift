@@ -289,7 +289,8 @@ import PraxmodoroStore
         let sixteen = PureSurfaces(
             CompanionDisplay(
                 phase: frozen.phase, taskLine: frozen.taskLine, nextAction: frozen.nextAction,
-                timeText: "16:00", statusLine: frozen.statusLine, fieldSummary: frozen.fieldSummary))
+                timeText: "16:00", statusLine: frozen.statusLine, fieldSummary: frozen.fieldSummary,
+                offersAdjustment: frozen.offersAdjustment))
 
         // Measure the noise floor for every surface, so nondeterministic
         // rasterization shows up as a clear failure rather than a flake.
@@ -330,7 +331,8 @@ import PraxmodoroStore
         }
 
         let probe = CompanionDisplay(
-            phase: .running, taskLine: "t", nextAction: "n", timeText: "01:00", statusLine: "s", fieldSummary: "f")
+            phase: .running, taskLine: "t", nextAction: "n", timeText: "01:00", statusLine: "s", fieldSummary: "f",
+            offersAdjustment: true)
         let covered = Set(PureSurfaces(probe).strings.keys.map { String($0.split(separator: ".")[0]) })
 
         #expect(covered == ["popover", "capsule", "overlay", "readout"],

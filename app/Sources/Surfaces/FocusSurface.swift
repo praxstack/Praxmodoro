@@ -8,8 +8,12 @@ struct FocusSurface: View {
     static let controls = [
         "task-line", "next-action-line", "companion-field", "time-remaining",
         "hold-toggle", "thought-parking-input", "parked-thoughts-list",
-        "checkin-response",
+        "checkin-response", "block-end-offer", "adjust-controls",
     ]
+
+    /// The prompt-first offer, in the product's voice: an invitation with no
+    /// urgency and no judgment (spec: "Prompt-first asks gently").
+    static let blockEndOfferText = "The block is complete — your place is kept. Take the break?"
 
     @Bindable var model: AppModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -66,17 +70,51 @@ struct FocusSurface: View {
                     }
                 }
 
-                Button {
-                    try? model.toggleHold()
-                } label: {
-                    Image(systemName: snapshot.phase == .held ? "play.fill" : "pause.fill")
-                        .frame(width: 44, height: 44)
+                // Non-modal by construction: an ordinary card among the
+                // controls, never a sheet or an alert wall.
+                if snapshot.offersBlockEndPrompt {
+                    VStack(spacing: 8) {
+                        Text(Self.blockEndOfferText)
+                            .font(.callout)
+                            .multilineTextAlignment(.center)
+                        HStack(spacing: 10) {
+                            Button("Take the break") { try? model.acceptBlockEndOffer() }
+                                .buttonStyle(.borderedProminent)
+                                .keyboardShortcut(.return, modifiers: [])
+                            Button("Not yet") { model.dismissBlockEndOffer() }
+                                .buttonStyle(.bordered)
+                        }
+                    }
+                    .padding(12)
+                    .accessibilityIdentifier("block-end-offer")
                 }
-                .buttonStyle(.bordered)
-                .clipShape(Circle())
-                .keyboardShortcut(.space, modifiers: [])
-                .accessibilityLabel(snapshot.phase == .held ? "Resume timer" : "Hold timer")
-                .accessibilityIdentifier("hold-toggle")
+
+                HStack(spacing: 10) {
+                    if snapshot.offersAdjustment {
+                        Button("−1 min") { model.rewindMinute() }
+                            .buttonStyle(.bordered)
+                            .keyboardShortcut("-", modifiers: [])
+                            .accessibilityLabel("Take a minute back")
+                    }
+                    Button {
+                        try? model.toggleHold()
+                    } label: {
+                        Image(systemName: snapshot.phase == .held ? "play.fill" : "pause.fill")
+                            .frame(width: 44, height: 44)
+                    }
+                    .buttonStyle(.bordered)
+                    .clipShape(Circle())
+                    .keyboardShortcut(.space, modifiers: [])
+                    .accessibilityLabel(snapshot.phase == .held ? "Resume timer" : "Hold timer")
+                    .accessibilityIdentifier("hold-toggle")
+                    if snapshot.offersAdjustment {
+                        Button("+1 min") { model.forwardMinute() }
+                            .buttonStyle(.bordered)
+                            .keyboardShortcut("+", modifiers: [])
+                            .accessibilityLabel("Give the block a minute")
+                    }
+                }
+                .accessibilityIdentifier("adjust-controls")
             }
 
             VStack(alignment: .leading, spacing: 12) {

@@ -112,7 +112,9 @@ final class AppModel {
     }
 
     /// Relaunch lands the user exactly where they were: rebuild the session
-    /// purely from persisted transitions (spec: app-scaffold lifecycle).
+    /// purely from persisted transitions and adjustments (spec: app-scaffold
+    /// lifecycle). Sorted by timestamp because materialized records are
+    /// backdated to canonical instants, not appended in wall-clock order.
     func restore() throws {
         guard let store, let summary = try store.latestSession() else { return }
         let events = try store.events(sessionID: summary.id)
@@ -120,10 +122,16 @@ final class AppModel {
             events
             .filter { $0.kind == .transition }
             .map { TransitionRecord(intent: nil, state: SessionState(rawValue: $0.payload) ?? .running, at: $0.at) }
+            .sorted { $0.at < $1.at }
         guard let last = transitions.last, last.state != .closed else { return }
 
+        let adjustments =
+            events
+            .filter { $0.kind == .adjustment }
+            .compactMap { event in Int(event.payload).map { AdjustmentRecord(delta: TimeInterval($0), at: event.at) } }
         let records = [TransitionRecord(intent: nil, state: .idle, at: summary.startedAt)] + transitions
-        session = Session(policy: TimingPolicy.named(summary.policyName), transitions: records)
+        session = Session(
+            policy: TimingPolicy.named(summary.policyName), transitions: records, adjustments: adjustments)
         sessionID = summary.id
         policy = TimingPolicy.named(summary.policyName)
         if let task = try store.task(sessionID: summary.id) {
@@ -132,11 +140,114 @@ final class AppModel {
         }
         parkedThoughts = events.filter { $0.kind == .thoughtParked }.map(\.payload)
 
+        // Auto-return is deliberately absent here (design decision 10): an
+        // absence must not fill with focus blocks nobody lived through.
         let now = clock()
-        switch session?.reconciled(at: now).state(at: now) {
+        switch session?.reconciled(at: now, blockEnd: rhythm.blockEnd, autoReturn: nil).state(at: now) {
         case .running, .held: surface = .focus
         case .onBreak: surface = .onBreak
         default: surface = .initiate
+        }
+    }
+
+    // MARK: Block-end flow (spec: add-session-settings "Autostart behaviour
+    // is the user's choice"). Presentation derives from the reconciled
+    // engine; persistence materializes when an intent arrives.
+
+    /// The one reconciliation every read and intent goes through: the user's
+    /// block-end behaviour, and — while the app is alive to witness it — the
+    /// auto-return rhythm with the cadence-aware break length.
+    private func reconciledSession(_ session: Session, at now: Date) -> Session {
+        session.reconciled(
+            at: now, blockEnd: rhythm.blockEnd,
+            autoReturn: rhythm.autoReturn ? session.suggestedBreakLength(cadence: rhythm.cadence) : nil)
+    }
+
+    /// Derived routing for the main window: the stored surface, corrected by
+    /// what the engine says this instant. Pure — rendering never mutates.
+    func effectiveSurface(at now: Date) -> Surface {
+        guard surface == .focus || surface == .onBreak, let session else { return surface }
+        switch reconciledSession(session, at: now).state(at: now) {
+        case .onBreak where surface == .focus: return .onBreak
+        case .running where surface == .onBreak: return .focus
+        default: return surface
+        }
+    }
+
+    /// Persist whatever reconciliation has derived, so the stored history
+    /// catches up with presented truth before an intent lands on it.
+    private func materialize(at now: Date) throws {
+        guard let current = session else { return }
+        let reconciled = reconciledSession(current, at: now)
+        // Structural diff, not a keyed one: the arrays are small and
+        // TransitionRecord equality already covers instant + state.
+        let fresh = reconciled.transitions.filter { !current.transitions.contains($0) }
+        guard !fresh.isEmpty else { return }
+        for record in fresh {
+            if let id = sessionID {
+                try store?.appendEvent(sessionID: id, kind: .transition, payload: record.state.rawValue, at: record.at)
+            }
+            // A materialized return from a break greets like any other return.
+            if record.state == .running { returnPending = true }
+        }
+        session = reconciled
+        blockEndOfferDismissed = false
+    }
+
+    /// True while the prompt-first offer should present: the block is
+    /// complete, the place is held, and the user has not waved it away.
+    private var blockEndOfferDismissed = false
+
+    func blockEndOffer(at now: Date) -> Bool {
+        snapshot(at: now).offersBlockEndPrompt
+    }
+
+    /// Accepting the offer records the break at accept time — the engine
+    /// held the place at the canonical expiry instant already.
+    func acceptBlockEndOffer() throws {
+        let now = clock()
+        try materialize(at: now)
+        guard var current = session, current.state(at: now) == .held else { return }
+        fieldPulse += 1
+        try current.apply(.startBreak, at: now)
+        session = current
+        if let id = sessionID {
+            try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
+        }
+        surface = .onBreak
+    }
+
+    /// Waving the offer away costs nothing and loses nothing: the place
+    /// stays held until the user chooses.
+    func dismissBlockEndOffer() {
+        blockEndOfferDismissed = true
+    }
+
+    // MARK: Rewind / forward (spec: "Rewind and forward as recorded
+    // adjustments"). ±1 minute, an engine event, never a mutation.
+
+    func forwardMinute() {
+        nudge(60)
+    }
+
+    func rewindMinute() {
+        nudge(-60)
+    }
+
+    private func nudge(_ delta: TimeInterval) {
+        let now = clock()
+        guard var current = session else { return }
+        do {
+            try materialize(at: now)
+            current = session ?? current
+            try current.applyAdjustment(delta, at: now)
+            session = current
+            if let id = sessionID {
+                try store?.appendEvent(sessionID: id, kind: .adjustment, payload: "\(Int(delta))", at: now)
+            }
+            fieldPulse += 1
+        } catch {
+            // A rejected nudge (not running, already expired) changes nothing.
         }
     }
 
@@ -162,9 +273,10 @@ final class AppModel {
     /// not user choices and must not pulse — the M1 pulse test pins exactly
     /// one bloom per answered check-in.
     private func applyHoldToggle() throws {
-        guard var current = session else { return }
         let now = clock()
-        let state = current.reconciled(at: now).state(at: now)
+        try materialize(at: now)
+        guard var current = session else { return }
+        let state = current.state(at: now)
         let intent: SessionIntent = state == .held ? .resume : .hold
         try current.apply(intent, at: now)
         session = current
@@ -276,8 +388,9 @@ final class AppModel {
     /// Ending a break — at any moment — is ordinary: resume and return to
     /// focus with no notice, penalty, or record beyond the transition itself.
     func endBreak() throws {
-        guard var current = session else { return }
         let now = clock()
+        try materialize(at: now)
+        guard var current = session else { return }
         try current.apply(.endBreak, at: now)
         session = current
         if let id = sessionID {
@@ -295,8 +408,9 @@ final class AppModel {
     }
 
     func closeSession() throws {
-        guard var current = session else { return }
         let now = clock()
+        try materialize(at: now)
+        guard var current = session else { return }
         try current.apply(.close, at: now)
         session = current
         if let id = sessionID {
@@ -328,6 +442,8 @@ final class AppModel {
             case .capacityReport: label = "Reported capacity: \(event.payload)"
             case .edit: label = "Edited a note"
             case .clockAnomaly: label = "Clock changed — time kept honest"
+            case .adjustment:
+                label = (Int(event.payload) ?? 0) >= 0 ? "Gave the block a minute" : "Took a minute back"
             }
             return TimelineEntry(at: event.at, label: label)
         }
@@ -359,10 +475,12 @@ final class AppModel {
                 remaining: nil,
                 remainingText: nil,
                 statusLine: Self.statusLine(for: .idle),
-                accessibilitySummary: "Companion: resting"
+                accessibilitySummary: "Companion: resting",
+                offersAdjustment: false,
+                offersBlockEndPrompt: false
             )
         }
-        let reconciled = session.reconciled(at: now)
+        let reconciled = reconciledSession(session, at: now)
         let phase = SessionSnapshot.Phase(reconciled.state(at: now))
         let remaining = reconciled.remaining(at: now)
         return SessionSnapshot(
@@ -372,7 +490,10 @@ final class AppModel {
             remaining: remaining,
             remainingText: remaining.map(SessionSnapshot.clockFace) ?? "open",
             statusLine: Self.statusLine(for: phase),
-            accessibilitySummary: Self.fieldSummary(phase: phase, remaining: remaining)
+            accessibilitySummary: Self.fieldSummary(phase: phase, remaining: remaining),
+            offersAdjustment: phase == .running && remaining.map { $0 > 0 } ?? false,
+            offersBlockEndPrompt: rhythm.blockEnd == .promptFirst && !blockEndOfferDismissed
+                && phase == .held && remaining == 0
         )
     }
 
@@ -402,11 +523,12 @@ final class AppModel {
     var isHeld: Bool {
         guard let session else { return false }
         let now = clock()
-        return session.reconciled(at: now).state(at: now) == .held
+        return reconciledSession(session, at: now).state(at: now) == .held
     }
 
     /// Remaining time is derived through the engine — the view never counts.
     func remaining(at now: Date) -> TimeInterval? {
-        session?.reconciled(at: now).remaining(at: now)
+        guard let session else { return nil }
+        return reconciledSession(session, at: now).remaining(at: now)
     }
 }

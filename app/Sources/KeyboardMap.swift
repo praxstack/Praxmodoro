@@ -18,5 +18,7 @@ enum KeyboardMap {
         "motion-still": "⌘⇧M",
         "return-continue": "↩",
         "settings": "⌘,",
+        "forward-minute": "+",
+        "rewind-minute": "-",
     ]
 }

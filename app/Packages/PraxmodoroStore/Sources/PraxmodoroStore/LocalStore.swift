@@ -10,6 +10,11 @@ public enum StoredEventKind: String, Codable, Sendable, Equatable {
     case capacityReport
     case edit
     case clockAnomaly
+    /// A rewind/forward nudge, payload = signed whole seconds (spec:
+    /// add-session-settings "Rewind and forward as recorded adjustments").
+    /// A new kind value, not a schema change: entities and attributes are
+    /// untouched.
+    case adjustment
 }
 
 /// A plain value view of a stored event, for consumers outside SwiftData.

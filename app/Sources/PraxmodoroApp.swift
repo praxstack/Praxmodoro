@@ -28,8 +28,12 @@ struct PraxmodoroApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                switch model.surface {
+            // Routing derives from the engine each second — the stored
+            // surface corrected by wall-clock truth, so an offered-default
+            // block-end presents the break without any UI-side timer
+            // advancing state (spec: add-session-settings).
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                switch model.effectiveSurface(at: context.date) {
                 case .initiate: InitiateSurface(model: model)
                 case .focus: FocusSurface(model: model)
                 case .checkin: CheckinSurface(model: model)
@@ -133,7 +137,9 @@ struct PraxmodoroApp: App {
             toggleHold: { try? model.toggleHold() },
             checkIn: { try? model.openCheckin() },
             endBreak: { try? model.endBreak() },
-            openMainWindow: { NSApp.activate(ignoringOtherApps: true) }
+            openMainWindow: { NSApp.activate(ignoringOtherApps: true) },
+            forwardMinute: { model.forwardMinute() },
+            rewindMinute: { model.rewindMinute() }
         )
     }
 }

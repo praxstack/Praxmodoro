@@ -33,6 +33,13 @@ struct SessionSnapshot: Equatable, Sendable {
     let remainingText: String?
     let statusLine: String
     let accessibilitySummary: String
+    /// Rewind/forward exists only while a finite block is running and
+    /// unexpired — absent, never disabled-looking (spec: "Nudges never
+    /// rescue an expired block").
+    let offersAdjustment: Bool
+    /// The prompt-first invitation: block complete, place held, not yet
+    /// waved away (spec: "Prompt-first asks gently").
+    let offersBlockEndPrompt: Bool
 
     var hasSession: Bool { phase != .idle && phase != .closed }
 
@@ -51,7 +58,8 @@ struct SessionSnapshot: Equatable, Sendable {
             nextAction: nextAction,
             timeText: remainingText,
             statusLine: statusLine,
-            fieldSummary: accessibilitySummary
+            fieldSummary: accessibilitySummary,
+            offersAdjustment: offersAdjustment
         )
     }
 }
@@ -77,6 +85,9 @@ struct CompanionDisplay: Equatable, Sendable {
     let timeText: String?
     let statusLine: String
     let fieldSummary: String
+    /// Whether the ±1-minute nudges apply right now. A Bool on purpose: the
+    /// interval ban above stays intact.
+    let offersAdjustment: Bool
 
     var hasSession: Bool { phase != .idle && phase != .closed }
 }

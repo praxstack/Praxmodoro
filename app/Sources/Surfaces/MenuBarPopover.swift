@@ -13,6 +13,10 @@ struct CompanionActions {
     /// and did nothing (found in review).
     var endBreak: () -> Void = {}
     var openMainWindow: () -> Void = {}
+    /// ±1 minute, decided by the model — surfaces never touch an interval
+    /// (spec: "Rewind and forward as recorded adjustments").
+    var forwardMinute: () -> Void = {}
+    var rewindMinute: () -> Void = {}
 
     /// For tests and previews: renders the surface without wiring anything.
     static let inert = CompanionActions()
