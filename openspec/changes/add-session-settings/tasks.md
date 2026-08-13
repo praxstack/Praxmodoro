@@ -26,16 +26,16 @@ Every task is red-test-first: write the failing test, watch it fail for the righ
 
 ## 4. Preferences on the defaults seam (App)
 
-- [ ] 4.1 Test: `RhythmPreferences` (durations, cadence, autostart behaviour) round-trips through an injected ephemeral `UserDefaults`; factory default is prompt-first with today's durations. Implement the value type on the seam, mirroring the Motion pattern.
-- [ ] 4.2 Test: `SoundPreferences` (master volume, per-cue toggles, tick loop) round-trips; factory default is everything OFF. Implement.
-- [ ] 4.3 Test: malformed/missing defaults decode to factory values, never crash, never write back garbage.
+- [x] 4.1 Test: `RhythmPreferences` (durations, cadence, autostart behaviour) round-trips through an injected ephemeral `UserDefaults`; factory default is prompt-first with today's durations. Implement the value type on the seam, mirroring the Motion pattern.
+- [x] 4.2 Test: `SoundPreferences` (master volume, per-cue toggles, tick loop) round-trips; factory default is everything OFF. Implement.
+- [x] 4.3 Test: malformed/missing defaults decode to factory values, never crash, never write back garbage.
 
 ## 5. Settings scene (App)
 
-- [ ] 5.1 Test: the Settings scene exists with Rhythm and Sound & Notifications panes and opens via ⌘, without disturbing a running session (state-level assertion, not UI automation). Implement the `Settings` scene.
-- [ ] 5.2 Test: Rhythm pane binds every `RhythmPreferences` field; changes land on the seam. Implement the pane — `SurfacePalette` roles only, zero raw literals.
-- [ ] 5.3 Test: the flow-exemption notice is present in the pane's rendered content when flow policy exists. Implement.
-- [ ] 5.4 Test: Sound & Notifications pane binds every `SoundPreferences` field plus notification toggles/texts. Implement the pane.
+- [x] 5.1 Test: the Settings scene exists with Rhythm and Sound & Notifications panes and opens via ⌘, without disturbing a running session (state-level assertion, not UI automation). Implement the `Settings` scene.
+- [x] 5.2 Test: Rhythm pane binds every `RhythmPreferences` field; changes land on the seam. Implement the pane — `SurfacePalette` roles only, zero raw literals.
+- [x] 5.3 Test: the flow-exemption notice is present in the pane's rendered content when flow policy exists. Implement.
+- [x] 5.4 Test: Sound & Notifications pane binds every `SoundPreferences` field plus notification toggles/texts. Implement the pane.
 - [ ] 5.5 Test: store schema before/after the whole change is identical (existing schema-parity test re-run and cited in the task commit).
 
 ## 6. Block-end flow honours the setting (App)

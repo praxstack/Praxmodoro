@@ -1,0 +1,50 @@
+# CI mirrors the local gates: spec validation, package suites, the app unit
+# suite, and the format lint. The UI-test target stays local-only — it needs
+# a logged-in session and automation consent no hosted runner has.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select newest Xcode on the runner
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          xcodebuild -version
+
+      - name: Install xcodegen
+        run: brew install xcodegen
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Spec validation (strict)
+        run: |
+          npm ci
+          npm run spec:validate
+
+      - name: Format lint (gated trees)
+        run: swift format lint --strict --recursive app/Sources app/Packages/PraxmodoroCore/Sources app/Packages/PraxmodoroStore/Sources
+
+      - name: Core package tests
+        run: swift test --package-path app/Packages/PraxmodoroCore
+
+      - name: Store package tests
+        run: swift test --package-path app/Packages/PraxmodoroStore
+
+      - name: App unit suite
+        run: ./scripts/focused.sh
