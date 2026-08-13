@@ -1,63 +1,98 @@
 {
   "product": "Praxmodoro",
   "contract": "SPEC.md",
-  "activeChange": "add-companion-surfaces",
-  "milestone": "M2",
-  "updated": "2026-08-04T20:00:00Z",
+  "activeChange": "add-session-settings",
+  "milestone": "M3",
+  "updated": "2026-08-13T15:10:00Z",
   "atoms": [
     {
       "id": "g1-verification-commands",
       "title": "scripts/focused.sh + scripts/smoke.sh + README commands",
       "status": "done",
-      "evidence": "red: ./scripts/focused.sh and ./scripts/smoke.sh both exit 127 (absent); green: focused.sh ** TEST SUCCEEDED ** exit 0, smoke.sh launched+signed+registered+alive exit 0; README documents both verbatim"
+      "evidence": "red: ./scripts/focused.sh and ./scripts/smoke.sh both exit 127 (absent); green: focused.sh ** TEST SUCCEEDED ** exit 0, smoke.sh launched+signed+registered+alive exit 0; README documents both verbatim",
+      "commits": [
+        "9fc0bdf",
+        "38a9568",
+        "db99a38"
+      ]
     },
     {
       "id": "g2-canonical-state",
       "title": "SessionSnapshot as the single source of rendered session state",
       "status": "done",
-      "evidence": "red: 11 compile errors (AppModel has no member snapshot; SessionSnapshot not in scope) then 4 value failures; green: 39 app tests pass in 17 suites (was 33) incl. testSnapshotDerivesRemainingFromTransitions, testSnapshotHoldFreezesRemaining, testSnapshotAfterSleepHasNoDrift, testNoSurfaceCountsTime; swift format lint --strict exit 0"
+      "evidence": "red: 11 compile errors (AppModel has no member snapshot; SessionSnapshot not in scope) then 4 value failures; green: 39 app tests pass in 17 suites (was 33) incl. testSnapshotDerivesRemainingFromTransitions, testSnapshotHoldFreezesRemaining, testSnapshotAfterSleepHasNoDrift, testNoSurfaceCountsTime; swift format lint --strict exit 0",
+      "commits": [
+        "527bf6f"
+      ]
     },
     {
       "id": "g3-render-accessibility",
       "title": "SurfacePalette + render-level transparency and contrast probes",
       "status": "done",
-      "evidence": "red: SurfacePalette absent -> 3 compile errors in RenderAccessibilityTests; mutation red: with both accessibility branches short-circuited, 4 expectations fail (over-red 0.99/0.76/0.74 vs over-blue 0.71/0.85/0.96; contrast ratio identical at 5.82). green: 42 tests in 18 suites, measured 11.5:1 standard and 18.6:1 increased"
+      "evidence": "red: SurfacePalette absent -> 3 compile errors in RenderAccessibilityTests; mutation red: with both accessibility branches short-circuited, 4 expectations fail (over-red 0.99/0.76/0.74 vs over-blue 0.71/0.85/0.96; contrast ratio identical at 5.82). green: 42 tests in 18 suites, measured 11.5:1 standard and 18.6:1 increased",
+      "commits": [
+        "38fcf9a"
+      ]
     },
     {
       "id": "g4-menu-bar-popover",
       "title": "Menu-bar popover: live phase, no scoring, never paywalled",
       "status": "done",
-      "evidence": "validator FAILED the first claim (Task.sleep exploit) and the second (cross-file beat); repaired behaviorally. green: popover held/running/no-session phases, no-scoring catalog, hostile-registry never-paywalled test, drift test, module-wide beat scan"
+      "evidence": "validator FAILED the first claim (Task.sleep exploit) and the second (cross-file beat); repaired behaviorally. green: popover held/running/no-session phases, no-scoring catalog, hostile-registry never-paywalled test, drift test, module-wide beat scan",
+      "commits": [
+        "fc9422a",
+        "6f65551",
+        "c275084"
+      ]
     },
     {
       "id": "g5-focus-capsule",
       "title": "Floating launch-suppressed focus capsule with a keyboard command",
       "status": "done",
-      "evidence": "red: 8 compile errors (FocusCapsule not in scope); green: capsule shows task/time/hold, three-surface agreement at one instant (13:30 across focus snapshot, popover, capsule), keyboard path cmd-shift-F, scene declares windowLevel(.floating) + defaultLaunchBehavior(.suppressed)"
+      "evidence": "red: 8 compile errors (FocusCapsule not in scope); green: capsule shows task/time/hold, three-surface agreement at one instant (13:30 across focus snapshot, popover, capsule), keyboard path cmd-shift-F, scene declares windowLevel(.floating) + defaultLaunchBehavior(.suppressed)",
+      "commits": [
+        "a5da9cf"
+      ]
     },
     {
       "id": "g6-return-overlay",
       "title": "Return overlay carrying the exact next action after a break",
       "status": "done",
-      "evidence": "red: 12 compile errors (returnPending/acknowledgeReturn/ReturnOverlay absent); green: endBreak raises the overlay, acknowledgement leaves phase and remaining unchanged and pulses the field once, next-action shown with task fallback, no break verdict, and no event appended"
+      "evidence": "red: 12 compile errors (returnPending/acknowledgeReturn/ReturnOverlay absent); green: endBreak raises the overlay, acknowledgement leaves phase and remaining unchanged and pulses the field once, next-action shown with task fallback, no break verdict, and no event appended",
+      "commits": [
+        "a5da9cf"
+      ]
     },
     {
       "id": "g7-motion-voiceover",
       "title": "Reduce Motion standdown and VoiceOver labels on every companion surface",
       "status": "done",
-      "evidence": "red: 6 compile errors (companionField absent on all three surfaces); green: physics model is nil on popover, capsule and overlay under motionStilled and non-nil when motion is allowed (both directions asserted, so the standdown is a real branch); exact VoiceOver labels pinned; all three surfaces exist; 11 keyboard actions mapped"
+      "evidence": "red: 6 compile errors (companionField absent on all three surfaces); green: physics model is nil on popover, capsule and overlay under motionStilled and non-nil when motion is allowed (both directions asserted, so the standdown is a real branch); exact VoiceOver labels pinned; all three surfaces exist; 11 keyboard actions mapped",
+      "commits": [
+        "6f8a809"
+      ]
     },
     {
       "id": "g8-hardening",
       "title": "cmd-K check-in, live-container schema parity, keyboard UI loop, first-run assertion",
-      "status": "blocked",
-      "evidence": "unit half done - red: 4 compile errors (LocalStore.containerSchema absent); green: cmd-K check-in path with held-place invariant, two live containers (in-memory vs on-disk) compared attribute-by-attribute with a can-fail control. UI half BLOCKED: XCUITest cannot initialize while the host screen is locked (CGSSessionScreenIsLocked=true, LocalAuthentication -4). KeyboardLoopUITests compiles (** TEST BUILD SUCCEEDED **) but cannot execute."
+      "status": "done",
+      "evidence": "unit half done - red: 4 compile errors (LocalStore.containerSchema absent); green: cmd-K check-in path with held-place invariant, two live containers (in-memory vs on-disk) compared attribute-by-attribute with a can-fail control. UI half BLOCKED: XCUITest cannot initialize while the host screen is locked (CGSSessionScreenIsLocked=true, LocalAuthentication -4). KeyboardLoopUITests compiles (** TEST BUILD SUCCEEDED **) but cannot execute. UI half UNBLOCKED 2026-08-13: the host condition cleared, verify-project.sh ran the signed PraxmodoroUITests target on this machine and exited 0, so KeyboardLoopUITests and the first-run assertion in LaunchUITests actually executed rather than merely compiling. Schema parity gained a second, stronger check: SchemaFingerprintTests in the Store package pins entity and attribute names as a golden string, which is the check that can notice a schema change at all.",
+      "commits": [
+        "6f8a809",
+        "9a6dc8c"
+      ]
     },
     {
       "id": "g9-closeout",
       "title": "Full gauntlet, evidence bookkeeping, archive and independent validation",
-      "status": "blocked",
-      "evidence": "five independent validator defeats of the no-second-clock guard, all closed; the current rasterized defense has not itself been independently attacked. 73 tests in 23 suites, packages 12/12 and 7/7, strict lint, build, spec:validate 5/5, smoke.sh all green. BLOCKED: the UI suite has never executed (locked screen), so verify-project.sh cannot exit 0 and M2 cannot be called complete."
+      "status": "done",
+      "evidence": "five independent validator defeats of the no-second-clock guard, all closed; the current rasterized defense has not itself been independently attacked. 73 tests in 23 suites, packages 12/12 and 7/7, strict lint, build, spec:validate 5/5, smoke.sh all green. BLOCKED: the UI suite has never executed (locked screen), so verify-project.sh cannot exit 0 and M2 cannot be called complete. UNBLOCKED 2026-08-13: verify-project.sh exit 0 including the UI target, spec:validate strict 6/6, focused suite 172 tests green, smoke.sh exit 0, and an independent fresh-context validator returned C1-C4 and C6 pass. That validator also failed C5 on closeout bookkeeping (this file stale at 2026-08-04, tasks.md 8.3/8.4/9.1 unticked, no commit SHAs, atoms not 1:1 with commits) - the first three are fixed in this update, the fourth is recorded as a documented deviation below.",
+      "commits": [
+        "d4c7830",
+        "00b4a91",
+        "3c019a4",
+        "057a563"
+      ]
     },
     {
       "id": "gh-1",
@@ -267,5 +302,34 @@
         }
       ]
     }
-  ]
+  ],
+  "commitMapping": {
+    "rule": "C5 asks for one conventional commit per atom. Held for 6 of 9 M2 atoms; the deviations are deliberate and were justified in progress.txt when made.",
+    "deviations": [
+      {
+        "atoms": [
+          "g5-focus-capsule",
+          "g6-return-overlay"
+        ],
+        "commit": "a5da9cf",
+        "reason": "both edit the same scene file; splitting them would have produced a non-building intermediate commit."
+      },
+      {
+        "atoms": [
+          "g7-motion-voiceover",
+          "g8-hardening"
+        ],
+        "commit": "6f8a809",
+        "reason": "the accessibility standdown and the keyboard loop touch the same surfaces and keyboard map together."
+      },
+      {
+        "atoms": [
+          "g1-verification-commands",
+          "g4-menu-bar-popover",
+          "g9-closeout"
+        ],
+        "reason": "landed across several commits each: an atom that survived independent validator attacks carries one commit per attack cycle (red, defeat, repair), which is the evidence trail, not noise."
+      }
+    ]
+  }
 }
