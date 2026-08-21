@@ -1,0 +1,211 @@
+[0/1] Planning build
+Building for debugging...
+[0/2] Write swift-version--58304C5D6DBC2206.txt
+Build complete! (0.10s)
+Test Suite 'All tests' started at 2026-08-21 16:11:44.245.
+Test Suite 'All tests' passed at 2026-08-21 16:11:44.250.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.005) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite TimingPolicyTests started.
+◇ Suite BlockEndBehaviourTests started.
+◇ Suite SessionReconstructionTests started.
+◇ Suite SessionStateMachineTests started.
+◇ Suite BlockEndBehaviourFindingsTests started.
+◇ Suite ModuleTests started.
+◇ Suite CustomPolicyTests started.
+◇ Suite BlockScopedRemainingTests started.
+◇ Suite HoldResumeTests started.
+◇ Suite AdjustmentTests started.
+◇ Suite SessionTimelineTests started.
+◇ Test testFlowNeverAutoTransitions() started.
+◇ Test testExpiryWhileAsleepBackdated() started.
+◇ Test testGentleStartPromotesSeamlessly() started.
+◇ Suite LongBreakCadenceTests started.
+◇ Test testRelaunchRestoresHeldState() started.
+◇ Test testFullRhythmMaterializesAcrossAGap() started.
+◇ Test testWakeAfterSleepShowsTrueRemaining() started.
+◇ Suite ModuleIsolationTests started.
+◇ Test testPromptFirstHoldsThePlaceAtExpiry() started.
+◇ Test testManualRecordsNothingAtExpiry() started.
+◇ Test testFlowIsExemptFromEveryBehaviour() started.
+◇ Test testAutoReturnOffKeepsBreaksOpenEnded() started.
+◇ Test testAutoReturnRecordsAtCanonicalBreakEnd() started.
+◇ Test testFlowBreakNeverAutoReturns() started.
+◇ Test testBehaviourIsReadAtProcessingTime() started.
+◇ Test testPromptFirstIsIdempotentAcrossReconciles() started.
+◇ Test testOfferedDefaultRecordsBreakAtCanonicalExpiry() started.
+◇ Test testInvalidTransitionReturnsTypedError() started.
+◇ Test testGentleStartPromotionUnchangedUnderPromptFirst() started.
+◇ Test moduleIsPresent() started.
+◇ Test testHoldFreezesRemainingExactly() started.
+◇ Test testAutoReturnHonoursCadenceAtTheBoundary() started.
+◇ Test testEndBreakStartsAFreshBlock() started.
+◇ Test testTotalFocusStillSpansAllBlocks() started.
+◇ Test testCustomPolicyNameRoundTrips() started.
+◇ Test testCustomPolicyDrivesDerivation() started.
+◇ Test testHoldWithinABlockStillFreezesThePlace() started.
+◇ Test testValidLifecycle() started.
+◇ Test testUnparseableCustomNameFallsBackToClassic() started.
+◇ Test testCustomPolicySurvivesRelaunch() started.
+◇ Test testRemainingDerivedNotCounted() started.
+◇ Test testBackwardsClockClampsAndLogsAnomaly() started.
+◇ Test testBuiltInNamesStillResolve() started.
+◇ Test testAdjustmentsSurviveRelaunch() started.
+◇ Test testAdjustmentShiftsDerivationImmediately() started.
+◇ Test testSleepThroughShiftedExpiryBackdatesExactly() started.
+◇ Test testAdjustmentRejectedAfterExpiry() started.
+◇ Test testAdjustmentRejectedWhenNotRunning() started.
+◇ Test testRewindPastZeroExpiresAtTheAdjustmentInstant() started.
+◇ Test testNoCadenceMeansPolicyBreak() started.
+◇ Test testOtherBlockEndsSuggestOrdinaryBreak() started.
+✔ Test testFlowNeverAutoTransitions() passed after 0.001 seconds.
+◇ Test testNthBlockEndSuggestsLongBreak() started.
+◇ Test testCoreLinksOnlyFoundation() started.
+✔ Test testFlowIsExemptFromEveryBehaviour() passed after 0.001 seconds.
+✔ Test testFullRhythmMaterializesAcrossAGap() passed after 0.001 seconds.
+✔ Test testManualRecordsNothingAtExpiry() passed after 0.001 seconds.
+✔ Test testWakeAfterSleepShowsTrueRemaining() passed after 0.001 seconds.
+✔ Test testExpiryWhileAsleepBackdated() passed after 0.001 seconds.
+✔ Test testFlowBreakNeverAutoReturns() passed after 0.001 seconds.
+✔ Test testRelaunchRestoresHeldState() passed after 0.001 seconds.
+✔ Test testAutoReturnRecordsAtCanonicalBreakEnd() passed after 0.001 seconds.
+✔ Test testGentleStartPromotesSeamlessly() passed after 0.001 seconds.
+✔ Test testBehaviourIsReadAtProcessingTime() passed after 0.001 seconds.
+✔ Test testAutoReturnOffKeepsBreaksOpenEnded() passed after 0.001 seconds.
+✔ Test testPromptFirstIsIdempotentAcrossReconciles() passed after 0.001 seconds.
+✔ Test moduleIsPresent() passed after 0.001 seconds.
+✔ Test testGentleStartPromotionUnchangedUnderPromptFirst() passed after 0.001 seconds.
+✔ Test testPromptFirstHoldsThePlaceAtExpiry() passed after 0.001 seconds.
+✔ Test testHoldFreezesRemainingExactly() passed after 0.001 seconds.
+✔ Test testOfferedDefaultRecordsBreakAtCanonicalExpiry() passed after 0.001 seconds.
+✔ Test testTotalFocusStillSpansAllBlocks() passed after 0.001 seconds.
+✔ Test testEndBreakStartsAFreshBlock() passed after 0.001 seconds.
+✔ Test testHoldWithinABlockStillFreezesThePlace() passed after 0.001 seconds.
+✔ Test testCustomPolicyDrivesDerivation() passed after 0.001 seconds.
+✔ Test testValidLifecycle() passed after 0.001 seconds.
+✔ Test testAutoReturnHonoursCadenceAtTheBoundary() passed after 0.001 seconds.
+✔ Test testBackwardsClockClampsAndLogsAnomaly() passed after 0.001 seconds.
+✔ Test testRemainingDerivedNotCounted() passed after 0.001 seconds.
+✔ Test testBuiltInNamesStillResolve() passed after 0.001 seconds.
+✔ Test testAdjustmentsSurviveRelaunch() passed after 0.001 seconds.
+✔ Test testAdjustmentShiftsDerivationImmediately() passed after 0.001 seconds.
+✔ Test testSleepThroughShiftedExpiryBackdatesExactly() passed after 0.001 seconds.
+✔ Test testNoCadenceMeansPolicyBreak() passed after 0.001 seconds.
+✔ Test testRewindPastZeroExpiresAtTheAdjustmentInstant() passed after 0.001 seconds.
+✔ Test testOtherBlockEndsSuggestOrdinaryBreak() passed after 0.001 seconds.
+✔ Suite TimingPolicyTests passed after 0.001 seconds.
+✔ Test testNthBlockEndSuggestsLongBreak() passed after 0.001 seconds.
+✔ Suite SessionReconstructionTests passed after 0.001 seconds.
+✔ Suite BlockEndBehaviourTests passed after 0.001 seconds.
+✔ Suite BlockEndBehaviourFindingsTests passed after 0.001 seconds.
+✔ Suite HoldResumeTests passed after 0.001 seconds.
+✔ Suite ModuleTests passed after 0.001 seconds.
+✔ Suite BlockScopedRemainingTests passed after 0.001 seconds.
+✔ Suite SessionTimelineTests passed after 0.001 seconds.
+✔ Suite LongBreakCadenceTests passed after 0.001 seconds.
+✔ Test testUnparseableCustomNameFallsBackToClassic() passed after 0.001 seconds.
+✔ Test testCustomPolicyNameRoundTrips() passed after 0.001 seconds.
+✔ Test testInvalidTransitionReturnsTypedError() passed after 0.001 seconds.
+✔ Test testCustomPolicySurvivesRelaunch() passed after 0.001 seconds.
+✔ Test testAdjustmentRejectedAfterExpiry() passed after 0.001 seconds.
+✔ Test testAdjustmentRejectedWhenNotRunning() passed after 0.001 seconds.
+✔ Suite SessionStateMachineTests passed after 0.001 seconds.
+✔ Suite AdjustmentTests passed after 0.001 seconds.
+✔ Suite CustomPolicyTests passed after 0.001 seconds.
+✔ Test testCoreLinksOnlyFoundation() passed after 0.001 seconds.
+✔ Suite ModuleIsolationTests passed after 0.002 seconds.
+✔ Test run with 41 tests in 13 suites passed after 0.002 seconds.
+[0/1] Planning build
+Building for debugging...
+[0/2] Write swift-version--58304C5D6DBC2206.txt
+Build complete! (0.10s)
+Test Suite 'All tests' started at 2026-08-21 16:11:44.830.
+Test Suite 'All tests' passed at 2026-08-21 16:11:44.835.
+	 Executed 0 tests, with 0 failures (0 unexpected) in 0.000 (0.005) seconds
+◇ Test run started.
+↳ Testing Library Version: 1902
+↳ Target Platform: arm64e-apple-macos14.0
+◇ Suite StoreRecoveryTests started.
+◇ Suite StoreAuditTests started.
+◇ Suite ModuleTests started.
+◇ Suite SchemaFingerprintTests started.
+◇ Suite AppendOnlyTests started.
+◇ Test testCorruptStoreStillReachesInitiate() started.
+◇ Test testNoNetworkSymbolsLinked() started.
+◇ Test testSchemaFingerprintIsPinned() started.
+◇ Test testHealthyStoreOpensWithoutNotice() started.
+◇ Suite StoreRoundTripTests started.
+◇ Test testNoPassiveObservationFields() started.
+◇ Test moduleIsPresent() started.
+◇ Test testFullSessionRoundTrip() started.
+◇ Test testEditCreatesReferencingEventNotMutation() started.
+✔ Test moduleIsPresent() passed after 0.001 seconds.
+✔ Suite ModuleTests passed after 0.001 seconds.
+✔ Test testSchemaFingerprintIsPinned() passed after 0.001 seconds.
+✔ Suite SchemaFingerprintTests passed after 0.001 seconds.
+✔ Test testNoPassiveObservationFields() passed after 0.001 seconds.
+✔ Test testNoNetworkSymbolsLinked() passed after 0.001 seconds.
+✔ Suite StoreAuditTests passed after 0.001 seconds.
+CoreData: error: addPersistentStoreWithType:configuration:URL:options:error: returned error NSCocoaErrorDomain (259)
+CoreData: error: userInfo:
+CoreData: error: 	NSFilePath : /var/folders/n0/4hwt0zvx1vx60vk91xlm1y700000gn/T/95353C40-5728-4018-9634-8161F5BC4C2E/praxmodoro.store
+CoreData: error: 	NSSQLiteErrorDomain : 26
+CoreData: error: storeType: SQLite
+CoreData: error: configuration: default
+CoreData: error: URL: file:///var/folders/n0/4hwt0zvx1vx60vk91xlm1y700000gn/T/95353C40-5728-4018-9634-8161F5BC4C2E/praxmodoro.store
+CoreData: annotation: options:
+CoreData: annotation: 	NSMigratePersistentStoresAutomaticallyOption : 1
+CoreData: annotation: 	NSInferMappingModelAutomaticallyOption : 1
+CoreData: annotation: 	NSPersistentStoreRemoteChangeNotificationOptionKey : 1
+CoreData: annotation: 	NSPersistentHistoryTrackingKey : 1
+CoreData: error: <NSPersistentStoreCoordinator: 0xb27064300>: Attempting recovery from error encountered during addPersistentStore: 0xb2701ce10 Error Domain=NSCocoaErrorDomain Code=259 "The file “praxmodoro.store” couldn’t be opened because it isn’t in the correct format." UserInfo={NSFilePath=/var/folders/n0/4hwt0zvx1vx60vk91xlm1y700000gn/T/95353C40-5728-4018-9634-8161F5BC4C2E/praxmodoro.store, NSSQLiteErrorDomain=26}
+CoreData: error: Store failed to load.  <NSPersistentStoreDescription: 0xb2701cd20> (type: SQLite, url: file:///var/folders/n0/4hwt0zvx1vx60vk91xlm1y700000gn/T/95353C40-5728-4018-9634-8161F5BC4C2E/praxmodoro.store) with error = Error Domain=NSCocoaErrorDomain Code=259 "The file “praxmodoro.store” couldn’t be opened because it isn’t in the correct format." UserInfo={NSFilePath=/var/folders/n0/4hwt0zvx1vx60vk91xlm1y700000gn/T/95353C40-5728-4018-9634-8161F5BC4C2E/praxmodoro.store, NSSQLiteErrorDomain=26} with userInfo {
+    NSFilePath = "/var/folders/n0/4hwt0zvx1vx60vk91xlm1y700000gn/T/95353C40-5728-4018-9634-8161F5BC4C2E/praxmodoro.store";
+    NSSQLiteErrorDomain = 26;
+}
+✔ Test testHealthyStoreOpensWithoutNotice() passed after 0.008 seconds.
+✔ Test testEditCreatesReferencingEventNotMutation() passed after 0.009 seconds.
+✔ Suite AppendOnlyTests passed after 0.009 seconds.
+✔ Test testFullSessionRoundTrip() passed after 0.010 seconds.
+✔ Suite StoreRoundTripTests passed after 0.010 seconds.
+✔ Test testCorruptStoreStillReachesInitiate() passed after 0.019 seconds.
+✔ Suite StoreRecoveryTests passed after 0.019 seconds.
+✔ Test run with 8 tests in 6 suites passed after 0.019 seconds.
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00008132-000445223EF0801C, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00008132-000445223EF0801C, name:My Mac }
+note: Disabling hardened runtime with ad-hoc codesigning. (in target 'Praxmodoro' from project 'Praxmodoro')
+** BUILD SUCCEEDED **
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00008132-000445223EF0801C, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00008132-000445223EF0801C, name:My Mac }
+2026-08-21 16:12:12.891 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 16:12:12.891 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-08-21 16:12:19.959 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 16:12:19.959 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-08-21 16:12:34.341 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 16:12:34.341 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-08-21 16:13:06.791 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 16:13:06.791 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-08-21 16:13:17.675 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 16:13:17.675 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-08-21 16:13:20.645 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 16:13:20.645 xcodebuild[28851:351012] [MT] IDELaunchParametersSnapshot: no debugger version
+2026-08-21 16:13:30.971 xcodebuild[28851:351012] [MT] IDETestOperationsObserverDebug: 87.570 elapsed -- Testing started completed.
+2026-08-21 16:13:30.971 xcodebuild[28851:351012] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-08-21 16:13:30.971 xcodebuild[28851:351012] [MT] IDETestOperationsObserverDebug: 87.570 sec, +87.570 sec -- end
+Failing tests:
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testNewSessionShortcutIsARealKeyEvent()
+	KeyboardLoopUITests.testWholeLoopByKeyboard()
+
+** TEST FAILED **
+
+
+Testing started

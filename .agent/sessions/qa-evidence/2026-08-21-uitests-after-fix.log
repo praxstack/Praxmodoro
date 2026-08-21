@@ -1,0 +1,1079 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project app/Praxmodoro.xcodeproj -scheme Praxmodoro -destination platform=macOS test "-only-testing:PraxmodoroUITests"
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  PraxmodoroStore: /Users/prax/Developer/Praxomodoro/app/Packages/PraxmodoroStore
+  PraxmodoroCore: /Users/prax/Developer/Praxomodoro/app/Packages/PraxmodoroCore
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00008132-000445223EF0801C, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00008132-000445223EF0801C, name:My Mac }
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (7 targets)
+    Target 'PraxmodoroUITests' in project 'Praxmodoro'
+        ➜ Explicit dependency on target 'Praxmodoro' in project 'Praxmodoro'
+    Target 'PraxmodoroTests' in project 'Praxmodoro'
+        ➜ Explicit dependency on target 'Praxmodoro' in project 'Praxmodoro'
+    Target 'Praxmodoro' in project 'Praxmodoro'
+        ➜ Explicit dependency on target 'PraxmodoroCore' in project 'PraxmodoroCore'
+        ➜ Explicit dependency on target 'PraxmodoroStore' in project 'PraxmodoroStore'
+    Target 'PraxmodoroStore' in project 'PraxmodoroStore'
+        ➜ Explicit dependency on target 'PraxmodoroStore' in project 'PraxmodoroStore'
+        ➜ Explicit dependency on target 'PraxmodoroCore' in project 'PraxmodoroCore'
+    Target 'PraxmodoroStore' in project 'PraxmodoroStore'
+        ➜ Explicit dependency on target 'PraxmodoroCore' in project 'PraxmodoroCore'
+    Target 'PraxmodoroCore' in project 'PraxmodoroCore'
+        ➜ Explicit dependency on target 'PraxmodoroCore' in project 'PraxmodoroCore'
+    Target 'PraxmodoroCore' in project 'PraxmodoroCore' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache
+    cd /Users/prax/Developer/Praxomodoro/app/Praxmodoro.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -o /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache
+
+note: Disabling hardened runtime with ad-hoc codesigning. (in target 'Praxmodoro' from project 'Praxmodoro')
+SwiftDriver Praxmodoro normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Praxmodoro -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.SwiftFileList -DDEBUG -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+SwiftCompile normal arm64 Compiling\ AppModel.swift,\ BreakSurface.swift /Users/prax/Developer/Praxomodoro/app/Sources/AppModel.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/BreakSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/AppModel.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/BreakSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ InitiateSurface.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/InitiateSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/InitiateSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ FocusSurface.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/FocusSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/FocusSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ CheckinSurface.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/CheckinSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/CheckinSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ ReviewSurface.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/ReviewSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/ReviewSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ SoundDirector.swift /Users/prax/Developer/Praxomodoro/app/Sources/SoundDirector.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/SoundDirector.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ SettingsSurface.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/SettingsSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/SettingsSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ RhythmPane.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/RhythmPane.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/RhythmPane.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ PraxmodoroApp.swift /Users/prax/Developer/Praxomodoro/app/Sources/PraxmodoroApp.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/PraxmodoroApp.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ Praxmodoro (in target 'Praxmodoro' from project 'Praxmodoro')
+
+EmitSwiftModule normal arm64 (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ SoundNotificationsPane.swift /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/SoundNotificationsPane.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Sources/Surfaces/SoundNotificationsPane.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling SettingsSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling ReviewSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling CheckinSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling RhythmPane.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling InitiateSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling FocusSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling PraxmodoroApp.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for Praxmodoro (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriver\ Compilation\ Requirements Praxmodoro normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Praxmodoro -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.SwiftFileList -DDEBUG -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.swiftsourceinfo (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.swiftsourceinfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.swiftmodule/arm64-apple-macos.abi.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.abi.json (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.abi.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.swiftmodule/arm64-apple-macos.abi.json
+
+SwiftDriver PraxmodoroTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name PraxmodoroTests -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.SwiftFileList -DDEBUG -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+SwiftDriver PraxmodoroUITests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-SwiftDriver -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name PraxmodoroUITests -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.SwiftFileList -DDEBUG -module-alias Testing\=_Testing_Unavailable -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal arm64 Compiling SoundNotificationsPane.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SoundDirector.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AppModel.swift, BreakSurface.swift (in target 'Praxmodoro' from project 'Praxmodoro')
+
+SwiftDriver\ Compilation Praxmodoro normal arm64 com.apple.xcode.tools.swift.compiler (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name Praxmodoro -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.SwiftFileList -DDEBUG -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib normal (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-macos26.0 -dynamiclib -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -O0 -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/EagerLinkingTBDs/Debug -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/EagerLinkingTBDs/Debug -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -filelist /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.LinkFileList -install_name @rpath/Praxmodoro.debug.dylib -Xlinker -rpath -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/../Frameworks -Xlinker -object_path_lto -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.swiftmodule @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro-linker-args.resp -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Xlinker -alias -Xlinker _main -Xlinker ___debug_main_executable_dylib_entry_point -Xlinker -no_adhoc_codesign -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib -Xlinker -add_ast_path -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/PraxmodoroCore.build/Debug/PraxmodoroCore.build/Objects-normal/arm64/PraxmodoroCore.swiftmodule @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/PraxmodoroCore.build/Debug/PraxmodoroCore.build/Objects-normal/arm64/PraxmodoroCore-linker-args.resp -Xlinker -add_ast_path -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/PraxmodoroStore.build/Debug/PraxmodoroStore.build/Objects-normal/arm64/PraxmodoroStore.swiftmodule @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/PraxmodoroStore.build/Debug/PraxmodoroStore.build/Objects-normal/arm64/PraxmodoroStore-linker-args.resp
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCUIAutomation-4UDQ41COHBH14VFNLTW2NNDG8.pcm
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/Testing-313T7A0H0ROAR.swiftmodule
+
+SwiftExplicitDependencyGeneratePcm arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCTest-CD34AUNH14GO00CW0A7G2YD29.pcm
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCUIAutomation-30J4T3REDK378.swiftmodule
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCTest-35VSZXH27PM88.swiftmodule
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/_Testing_Foundation-252FOJQILQFFV.swiftmodule
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/_Testing_CoreGraphics-OUDSAKIO7G1X.swiftmodule
+
+ConstructStubExecutorLinkFileList /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-ExecutorLinkFileList-normal-arm64.txt (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    construct-stub-executor-link-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libPreviewsJITStubExecutor_no_swift_entry_point.a /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libPreviewsJITStubExecutor.a --output /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-ExecutorLinkFileList-normal-arm64.txt
+note: Using stub executor library with Swift entry point. (in target 'Praxmodoro' from project 'Praxmodoro')
+
+Ld /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro normal (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-macos26.0 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -O0 -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Xlinker -rpath -Xlinker @executable_path -Xlinker -rpath -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -Xlinker -rpath -Xlinker @executable_path/../Frameworks -rdynamic -Xlinker -no_deduplicate -e ___debug_blank_executor_main -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_dylib -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-DebugDylibPath-normal-arm64.txt -Xlinker -sectcreate -Xlinker __TEXT -Xlinker __debug_instlnm -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-DebugDylibInstallName-normal-arm64.txt -Xlinker -filelist -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro-ExecutorLinkFileList-normal-arm64.txt /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib -Xlinker -no_adhoc_codesign -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro
+
+CopySwiftLibs /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/Frameworks --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/Library/SystemExtensions --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/Extensions --platform macosx --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/Frameworks --strip-bitcode --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ExtractAppIntentsMetadata (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name Praxmodoro --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk --xcode-version 17F113 --platform-family macOS --deployment-target 26.0 --bundle-identifier com.praxstack.praxmodoro --output /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/Resources --target-triple arm64-apple-macos26.0 --binary-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro --dependency-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro_dependency_info.dat --stringsdata-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.SwiftFileList --metadata-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro.DependencyMetadataFileList --static-metadata-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro.DependencyStaticMetadataFileList --swift-const-vals-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Objects-normal/arm64/Praxmodoro.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-08-21 23:16:06.550 appintentsmetadataprocessor[86109:1223659] Starting appintentsmetadataprocessor export
+2026-08-21 23:16:06.553 appintentsmetadataprocessor[86109:1223659] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+SwiftCompile normal arm64 Compiling\ SettingsSceneTests.swift,\ SnapshotTests.swift,\ SoundDirectorTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SettingsSceneTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SnapshotTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SoundDirectorTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SettingsSceneTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SnapshotTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SoundDirectorTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ PraxmodoroTests (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+EmitSwiftModule normal arm64 (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ SurfaceTests.swift,\ ValidatorFindingsTests.swift,\ ValidatorGapTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SurfaceTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ValidatorFindingsTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ValidatorGapTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SurfaceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ValidatorFindingsTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ValidatorGapTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ HardeningTests.swift,\ LifecycleTests.swift,\ MotionPreferenceTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/HardeningTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/LifecycleTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/MotionPreferenceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/HardeningTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/LifecycleTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/MotionPreferenceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ ProvenanceTests.swift,\ PulseWiringTests.swift,\ RenderAccessibilityTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ProvenanceTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/PulseWiringTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/RenderAccessibilityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ProvenanceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/PulseWiringTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/RenderAccessibilityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ BreakTests.swift,\ CapabilityTests.swift,\ CheckinResponseTests.swift,\ CheckinTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/BreakTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CapabilityTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CheckinResponseTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CheckinTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/BreakTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CapabilityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CheckinResponseTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CheckinTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ CompanionAccessibilityTests.swift,\ CompanionFieldTests.swift,\ CompanionSurfaceTests.swift,\ CopyToneTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CompanionAccessibilityTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CompanionFieldTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CompanionSurfaceTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CopyToneTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CompanionAccessibilityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CompanionFieldTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CompanionSurfaceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/CopyToneTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ ReturnOverlayTests.swift,\ ReviewTests.swift,\ SessionSettingsRegistryTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ReturnOverlayTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ReviewTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SessionSettingsRegistryTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ReturnOverlayTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/ReviewTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/SessionSettingsRegistryTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ AccessibilityTests.swift,\ AppSmokeTests.swift,\ BlockEndFlowTests.swift,\ BreakPhaseControlTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/AccessibilityTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/AppSmokeTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/BlockEndFlowTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/BreakPhaseControlTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/AccessibilityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/AppSmokeTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/BlockEndFlowTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/BreakPhaseControlTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 Compiling\ NetworkSilenceTests.swift,\ NotificationDirectorTests.swift,\ PreferencesTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/NetworkSilenceTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/NotificationDirectorTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/PreferencesTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/NetworkSilenceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/NotificationDirectorTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/PreferencesTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ PraxmodoroUITests (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+
+EmitSwiftModule normal arm64 (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling ReturnOverlayTests.swift, ReviewTests.swift, SessionSettingsRegistryTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 Compiling\ KeyboardLoopUITests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling ProvenanceTests.swift, PulseWiringTests.swift, RenderAccessibilityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 Compiling\ LaunchUITests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/LaunchUITests.swift (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/LaunchUITests.swift (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftDriverJobDiscovery normal arm64 Compiling BreakTests.swift, CapabilityTests.swift, CheckinResponseTests.swift, CheckinTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftCompile normal arm64 Compiling\ DesignTokenParityTests.swift,\ FieldPhysicsGoldenTests.swift,\ FocusCapsuleTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/DesignTokenParityTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/FieldPhysicsGoldenTests.swift /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/FocusCapsuleTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/DesignTokenParityTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/FieldPhysicsGoldenTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftCompile normal arm64 /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/FocusCapsuleTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for PraxmodoroUITests (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+
+SwiftDriver\ Compilation\ Requirements PraxmodoroUITests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name PraxmodoroUITests -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.SwiftFileList -DDEBUG -module-alias Testing\=_Testing_Unavailable -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal arm64 Compiling HardeningTests.swift, LifecycleTests.swift, MotionPreferenceTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftMergeGeneratedHeaders /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources/PraxmodoroUITests-Swift.h /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-Swift.h (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-swiftHeaderTool -arch arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-Swift.h -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources/PraxmodoroUITests-Swift.h
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/arm64-apple-macos.swiftmodule /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftmodule (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftmodule /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/arm64-apple-macos.swiftmodule
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/arm64-apple-macos.swiftdoc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftdoc (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftdoc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/arm64-apple-macos.swiftdoc
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/arm64-apple-macos.abi.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.abi.json (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.abi.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/arm64-apple-macos.abi.json
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftsourceinfo (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftsourceinfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo
+
+ProcessInfoPlistFile /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Info.plist /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/empty-PraxmodoroTests.plist (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-infoPlistUtility /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/empty-PraxmodoroTests.plist -producttype com.apple.product-type.bundle.unit-test -expandbuildsettings -platform macosx -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Info.plist
+
+CpResource /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Resources/field-physics-golden.json /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/field-physics-golden.json (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroTests/field-physics-golden.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Resources
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for PraxmodoroTests (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriver\ Compilation\ Requirements PraxmodoroTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name PraxmodoroTests -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.SwiftFileList -DDEBUG -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+SwiftMergeGeneratedHeaders /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources/PraxmodoroTests-Swift.h /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-Swift.h (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-swiftHeaderTool -arch arm64 /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-Swift.h -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources/PraxmodoroTests-Swift.h
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/arm64-apple-macos.swiftmodule /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftmodule (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftmodule /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/arm64-apple-macos.swiftmodule
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/arm64-apple-macos.swiftdoc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftdoc (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftdoc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/arm64-apple-macos.swiftdoc
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/arm64-apple-macos.abi.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.abi.json (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.abi.json /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/arm64-apple-macos.abi.json
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftsourceinfo (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftsourceinfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroTests.swiftmodule/Project/arm64-apple-macos.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal arm64 Compiling LaunchUITests.swift (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling KeyboardLoopUITests.swift (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+
+SwiftDriver\ Compilation PraxmodoroUITests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name PraxmodoroUITests -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.SwiftFileList -DDEBUG -module-alias Testing\=_Testing_Unavailable -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+SwiftDriverJobDiscovery normal arm64 Compiling NetworkSilenceTests.swift, NotificationDirectorTests.swift, PreferencesTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SurfaceTests.swift, ValidatorFindingsTests.swift, ValidatorGapTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling AccessibilityTests.swift, AppSmokeTests.swift, BlockEndFlowTests.swift, BreakPhaseControlTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling SettingsSceneTests.swift, SnapshotTests.swift, SoundDirectorTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling CompanionAccessibilityTests.swift, CompanionFieldTests.swift, CompanionSurfaceTests.swift, CopyToneTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriverJobDiscovery normal arm64 Compiling DesignTokenParityTests.swift, FieldPhysicsGoldenTests.swift, FocusCapsuleTests.swift (in target 'PraxmodoroTests' from project 'Praxmodoro')
+
+SwiftDriver\ Compilation PraxmodoroTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-Swift-Compilation -- /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -module-name PraxmodoroTests -Onone @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.SwiftFileList -DDEBUG -plugin-path /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -target arm64-apple-macos26.0 -g -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -enable-testing -warnings-as-errors -index-store-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 6 -I /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -Isystem /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -F /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -c -j10 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/SDKStatCaches.noindex/macosx26.5-25F70-e082c4a02f00227109f4ed75e425c832.sdkstatcache -output-file-map /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-OutputFileMap.json -use-frontend-parseable-output -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -sdk-module-cache-path /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex -serialize-diagnostics -emit-dependencies -emit-module -emit-module-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftmodule -validate-clang-modules-once -clang-build-session-file /Users/prax/Library/Developer/Xcode/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/swift-overrides.hmap -emit-const-values -Xfrontend -const-gather-protocols-file -Xfrontend /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests_const_extract_protocols.json -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-generated-files.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-own-target-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-all-non-framework-target-headers.hmap -Xcc -ivfsoverlay -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro-d49506d07c26a6601fc35bfe844bce82-VFS/all-product-headers.yaml -Xcc -iquote -Xcc /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests-project-headers.hmap -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/include -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources-normal/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources/arm64 -Xcc -I/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/DerivedSources -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-Swift.h -working-directory /Users/prax/Developer/Praxomodoro/app -experimental-emit-module-separately -disable-cmo
+
+Ld /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/MacOS/PraxmodoroTests normal (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-macos26.0 -bundle -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -O0 -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/EagerLinkingTBDs/Debug -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/EagerLinkingTBDs/Debug -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -iframework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -filelist /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.LinkFileList -Xlinker -rpath -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PackageFrameworks -Xlinker -rpath -Xlinker @loader_path/../Frameworks -Xlinker -rpath -Xlinker @executable_path/../Frameworks -bundle_loader /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro -Xlinker -object_path_lto -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.swiftmodule @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests-linker-args.resp -Wl,-no_warn_duplicate_libraries -Wl,-no_warn_duplicate_libraries -Xlinker -needed_framework -Xlinker XCTest -framework XCTest -Xlinker -needed-lXCTestSwiftSupport -lXCTestSwiftSupport /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib -Xlinker -no_adhoc_codesign -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/MacOS/PraxmodoroTests
+
+CopySwiftLibs /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/MacOS/PraxmodoroTests --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Frameworks --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/PlugIns --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Library/SystemExtensions --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Extensions --platform macosx --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ExtractAppIntentsMetadata (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name PraxmodoroTests --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk --xcode-version 17F113 --platform-family macOS --deployment-target 26.0 --bundle-identifier com.praxstack.PraxmodoroTests --output /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/Resources --target-triple arm64-apple-macos26.0 --binary-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest/Contents/MacOS/PraxmodoroTests --dependency-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests_dependency_info.dat --stringsdata-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.SwiftFileList --metadata-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests.DependencyMetadataFileList --static-metadata-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/PraxmodoroTests.DependencyStaticMetadataFileList --swift-const-vals-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroTests.build/Objects-normal/arm64/PraxmodoroTests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-08-21 23:16:09.544 appintentsmetadataprocessor[86136:1223803] Starting appintentsmetadataprocessor export
+2026-08-21 23:16:09.545 appintentsmetadataprocessor[86136:1223803] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest
+
+RegisterExecutionPolicyException /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-RegisterExecutionPolicyException /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest
+
+Touch /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest (in target 'PraxmodoroTests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /usr/bin/touch -c /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/PlugIns/PraxmodoroTests.xctest
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/Praxmodoro.debug.dylib
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/__preview.dylib (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app/Contents/MacOS/__preview.dylib
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/Praxmodoro.build/Praxmodoro.app.xcent --timestamp\=none --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app
+
+RegisterExecutionPolicyException /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-RegisterExecutionPolicyException /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app
+
+Validate /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-validationUtility /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app -no-validate-extension -infoplist-subpath Contents/Info.plist
+
+Touch /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /usr/bin/touch -c /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app
+
+RegisterWithLaunchServices /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app (in target 'Praxmodoro' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /System/Library/Frameworks/CoreServices.framework/Versions/Current/Frameworks/LaunchServices.framework/Versions/Current/Support/lsregister -f -R -trusted /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/Praxmodoro.app
+
+ProcessInfoPlistFile /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Info.plist /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/empty-PraxmodoroUITests.plist (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-infoPlistUtility /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/empty-PraxmodoroUITests.plist -producttype com.apple.product-type.bundle.ui-testing -expandbuildsettings -platform macosx -additionalcontentfile /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/ProductTypeInfoPlistAdditions.plist -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Info.plist
+
+Ld /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/MacOS/PraxmodoroUITests normal (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-macos26.0 -bundle -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk -O0 -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/EagerLinkingTBDs/Debug -L/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/EagerLinkingTBDs/Debug -F/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug -iframework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks -filelist /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.LinkFileList -Xlinker -rpath -Xlinker @loader_path/../Frameworks -Xlinker -rpath -Xlinker @executable_path/Frameworks -Xlinker -rpath -Xlinker @loader_path/Frameworks -Xlinker -object_path_lto -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests_lto.o -rdynamic -Xlinker -no_deduplicate -Xlinker -dependency_info -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/macosx -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.swiftmodule @/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests-linker-args.resp -Xlinker -needed_framework -Xlinker XCTest -framework XCTest -Xlinker -needed-lXCTestSwiftSupport -lXCTestSwiftSupport -Xlinker -no_adhoc_codesign -o /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/MacOS/PraxmodoroUITests
+
+CopySwiftLibs /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-swiftStdLibTool --copy --verbose --sign - --scan-executable /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/MacOS/PraxmodoroUITests --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Frameworks --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/PlugIns --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Library/SystemExtensions --scan-folder /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Extensions --platform macosx --toolchain /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Frameworks --strip-bitcode --scan-executable /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+
+ExtractAppIntentsMetadata (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --module-name PraxmodoroUITests --sdk-root /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.5.sdk --xcode-version 17F113 --platform-family macOS --deployment-target 26.0 --bundle-identifier com.praxstack.PraxmodoroUITests --output /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Resources --target-triple arm64-apple-macos26.0 --binary-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/MacOS/PraxmodoroUITests --dependency-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests_dependency_info.dat --stringsdata-file /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.SwiftFileList --metadata-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests.DependencyMetadataFileList --static-metadata-file-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests.DependencyStaticMetadataFileList --swift-const-vals-list /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/Objects-normal/arm64/PraxmodoroUITests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --validate-assistant-intents --no-app-shortcuts-localization
+2026-08-21 23:16:09.868 appintentsmetadataprocessor[86148:1223899] Starting appintentsmetadataprocessor export
+2026-08-21 23:16:09.869 appintentsmetadataprocessor[86148:1223899] warning: Metadata extraction skipped. No AppIntents.framework dependency found.
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PkgInfo /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/XCTRunner.app/Contents/PkgInfo (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/XCTRunner.app/Contents/PkgInfo /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents
+
+CopyPlistFile /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Info.plist /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/XCTRunner.app/Contents/Info.plist (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copyPlist --validate --convert xml1 --macro-expansion WRAPPEDPRODUCTNAME PraxmodoroUITests-Runner --macro-expansion WRAPPEDPRODUCTBUNDLEIDENTIFIER com.praxstack.PraxmodoroUITests.xctrunner --macro-expansion TESTPRODUCTNAME PraxmodoroUITests --macro-expansion TESTPRODUCTBUNDLEIDENTIFIER com.praxstack.PraxmodoroUITests --copy-value UIDeviceFamily /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest/Contents/Info.plist --outdir /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents -- /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/XCTRunner.app/Contents/Info.plist
+
+CopyAndPreserveArchs /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/MacOS/PraxmodoroUITests-Runner (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/lipo /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/XCTRunner.app/Contents/MacOS/XCTRunner -output /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/MacOS/PraxmodoroUITests-Runner -extract arm64
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestSupport.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestSupport.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestCore.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTestCore.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUnit.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCUnit.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCUnit.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTest.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUIAutomation.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCUIAutomation.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/XCUIAutomation.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/libXCTestSwiftSupport.dylib /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+MkDir /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /bin/mkdir -p /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTAutomationSupport.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks/XCTAutomationSupport.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+Copy /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/Testing.framework /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -exclude Headers -exclude PrivateHeaders -exclude Modules -exclude \*.tbd -resolve-src-symlinks /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/libXCTestSwiftSupport.dylib (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/libXCTestSwiftSupport.dylib
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/libXCTestSwiftSupport.dylib: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests.xctest.xcent --timestamp\=none --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTest.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTest.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTest.framework: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUnit.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUnit.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUnit.framework: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestSupport.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestSupport.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestSupport.framework: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTAutomationSupport.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTAutomationSupport.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTAutomationSupport.framework: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestCore.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestCore.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCTestCore.framework: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUIAutomation.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUIAutomation.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/XCUIAutomation.framework: replacing existing signature
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/Testing.framework (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --timestamp\=none --preserve-metadata\=identifier,entitlements,flags --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/Testing.framework
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/Frameworks/Testing.framework: replacing existing signature
+
+RegisterExecutionPolicyException /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    builtin-RegisterExecutionPolicyException /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest
+
+Touch /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    /usr/bin/touch -c /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app/Contents/PlugIns/PraxmodoroUITests.xctest
+
+CodeSign /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app (in target 'PraxmodoroUITests' from project 'Praxmodoro')
+    cd /Users/prax/Developer/Praxomodoro/app
+    
+    Signing Identity:     "Sign to Run Locally"
+    
+    /usr/bin/codesign --force --sign - --entitlements /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Intermediates.noindex/Praxmodoro.build/Debug/PraxmodoroUITests.build/PraxmodoroUITests.xctest.xcent --timestamp\=none --generate-entitlement-der /Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app
+/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Build/Products/Debug/PraxmodoroUITests-Runner.app: replacing existing signature
+
+2026-08-21 23:16:10.946276+0530 PraxmodoroUITests-Runner[86166:1224147] [Default] Running tests...
+Test Suite 'All tests' started at 2026-08-21 23:16:15.381.
+Test Suite 'PraxmodoroUITests.xctest' started at 2026-08-21 23:16:15.381.
+Test Suite 'KeyboardLoopUITests' started at 2026-08-21 23:16:15.381.
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testCapsuleOpensAndClosesFromTheKeyboard]' started.
+    t =     0.00s Start Test at 2026-08-21 23:16:15.382
+    t =     0.24s Set Up
+    t =     0.24s Open com.praxstack.praxmodoro
+    t =     0.24s     Launch com.praxstack.praxmodoro
+2026-08-21 23:16:15.868 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 23:16:15.868 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.15s         Wait for accessibility to load
+    t =     1.23s         Setting up automation session
+    t =     1.25s         Wait for com.praxstack.praxmodoro to idle
+    t =     1.25s Waiting 10.0s for "task-input" TextField to exist
+    t =     2.28s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     2.28s         Checking existence of `"task-input" TextField`
+    t =     2.38s         Capturing element debug description
+    t =     3.31s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     3.31s         Checking existence of `"task-input" TextField`
+    t =     3.35s         Capturing element debug description
+    t =     4.27s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     4.27s         Checking existence of `"task-input" TextField`
+    t =     4.31s         Capturing element debug description
+    t =     5.34s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     5.34s         Checking existence of `"task-input" TextField`
+    t =     5.38s         Capturing element debug description
+    t =     6.30s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     6.30s         Checking existence of `"task-input" TextField`
+    t =     6.34s         Capturing element debug description
+    t =     7.26s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     7.26s         Checking existence of `"task-input" TextField`
+    t =     7.30s         Capturing element debug description
+    t =     8.33s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     8.33s         Checking existence of `"task-input" TextField`
+    t =     8.38s         Capturing element debug description
+    t =     9.31s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     9.31s         Checking existence of `"task-input" TextField`
+    t =     9.34s         Capturing element debug description
+    t =    10.27s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    10.27s         Checking existence of `"task-input" TextField`
+    t =    10.31s         Capturing element debug description
+    t =    11.25s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    11.26s         Checking existence of `"task-input" TextField`
+    t =    11.29s         Capturing element debug description
+    t =    11.29s     Checking existence of `"task-input" TextField`
+    t =    11.32s Collecting debug information to assist test failure triage
+    t =    11.32s     Requesting snapshot of accessibility hierarchy for app with pid 86185
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:126: error: -[PraxmodoroUITests.KeyboardLoopUITests testCapsuleOpensAndClosesFromTheKeyboard] : XCTAssertTrue failed
+    t =    11.41s Checking existence of `"Focus capsule" Window`
+    t =    11.44s Type 'f' key with modifiers '⌘⇧' (0x12)
+    t =    11.44s     Wait for com.praxstack.praxmodoro to idle
+    t =    11.44s     Find the Target Application 'com.praxstack.praxmodoro'
+    t =    11.45s     Check for interrupting elements affecting "Praxmodoro" Application
+    t =    11.45s     Synthesize event
+    t =    11.64s     Wait for com.praxstack.praxmodoro to idle
+    t =    11.64s Waiting 5.0s for "Focus capsule" Window to exist
+    t =    12.67s     Checking `Expect predicate `existsNoRetry == 1` for object "Focus capsule" Window`
+    t =    12.67s         Checking existence of `"Focus capsule" Window`
+    t =    12.74s Type 'f' key with modifiers '⌘⇧' (0x12)
+    t =    12.74s     Wait for com.praxstack.praxmodoro to idle
+    t =    12.75s     Find the Target Application 'com.praxstack.praxmodoro'
+    t =    12.77s     Check for interrupting elements affecting "Praxmodoro" Application
+    t =    12.77s     Synthesize event
+    t =    12.87s     Wait for com.praxstack.praxmodoro to idle
+    t =    13.91s Checking `Expect predicate `exists == 0` for object "Focus capsule" Window`
+    t =    13.91s     Checking existence of `"Focus capsule" Window`
+    t =    13.95s Tear Down
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testCapsuleOpensAndClosesFromTheKeyboard]' failed (14.299 seconds).
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testFirstRunLaunchPresentsOnlyTheStartPath]' started.
+    t =     0.00s Start Test at 2026-08-21 23:16:29.682
+    t =     0.08s Set Up
+    t =     0.08s Open com.praxstack.praxmodoro
+    t =     0.08s     Launch com.praxstack.praxmodoro
+    t =     0.08s         Terminate com.praxstack.praxmodoro:86185
+2026-08-21 23:16:30.842 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 23:16:30.842 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.38s         Wait for accessibility to load
+    t =     1.45s         Setting up automation session
+    t =     1.46s         Wait for com.praxstack.praxmodoro to idle
+    t =     1.47s Waiting 10.0s for "task-input" TextField to exist
+    t =     2.51s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     2.51s         Checking existence of `"task-input" TextField`
+    t =     2.60s         Capturing element debug description
+    t =     3.53s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     3.53s         Checking existence of `"task-input" TextField`
+    t =     3.57s         Capturing element debug description
+    t =     4.49s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     4.49s         Checking existence of `"task-input" TextField`
+    t =     4.53s         Capturing element debug description
+    t =     5.57s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     5.57s         Checking existence of `"task-input" TextField`
+    t =     5.60s         Capturing element debug description
+    t =     6.53s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     6.53s         Checking existence of `"task-input" TextField`
+    t =     6.57s         Capturing element debug description
+    t =     7.50s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     7.50s         Checking existence of `"task-input" TextField`
+    t =     7.54s         Capturing element debug description
+    t =     8.57s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     8.57s         Checking existence of `"task-input" TextField`
+    t =     8.61s         Capturing element debug description
+    t =     9.53s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     9.53s         Checking existence of `"task-input" TextField`
+    t =     9.56s         Capturing element debug description
+    t =    10.49s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    10.49s         Checking existence of `"task-input" TextField`
+    t =    10.53s         Capturing element debug description
+    t =    11.48s     Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    11.48s         Checking existence of `"task-input" TextField`
+    t =    11.51s         Capturing element debug description
+    t =    11.51s     Checking existence of `"task-input" TextField`
+    t =    11.54s Collecting debug information to assist test failure triage
+    t =    11.54s     Requesting snapshot of accessibility hierarchy for app with pid 86197
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:24: error: -[PraxmodoroUITests.KeyboardLoopUITests testFirstRunLaunchPresentsOnlyTheStartPath] : XCTAssertTrue failed - a fresh store must land on the start path
+    t =    11.60s Checking existence of `"first-action" TextField`
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:25: error: -[PraxmodoroUITests.KeyboardLoopUITests testFirstRunLaunchPresentsOnlyTheStartPath] : XCTAssertTrue failed
+    t =    11.62s Checking existence of `"begin-control" Button`
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:26: error: -[PraxmodoroUITests.KeyboardLoopUITests testFirstRunLaunchPresentsOnlyTheStartPath] : XCTAssertTrue failed
+    t =    11.65s Checking existence of `"task-line" StaticText`
+    t =    11.67s Checking existence of `"time-remaining" StaticText`
+    t =    11.68s Find the "begin-control" Button
+    t =    12.71s     Find the "begin-control" Button (retry 1)
+    t =    13.75s     Find the "begin-control" Button (retry 2)
+    t =    13.79s     Collecting debug information to assist test failure triage
+    t =    13.79s         Requesting snapshot of accessibility hierarchy for app with pid 86197
+    t =    13.85s     Requesting snapshot of accessibility hierarchy for app with pid 86197
+    t =    13.85s Using snapshot previously cached by application
+    t =    13.85s     Find: Descendants matching type Button
+    t =    13.85s     Requesting snapshot of accessibility hierarchy for app with pid 86197
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:33: error: -[PraxmodoroUITests.KeyboardLoopUITests testFirstRunLaunchPresentsOnlyTheStartPath] : Failed to get matching snapshot: No matches found for Descendants matching type Button from input {(
+    Application, pid: 86197, title: 'Praxmodoro'
+)}
+    t =    13.89s Tear Down
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testFirstRunLaunchPresentsOnlyTheStartPath]' failed (14.151 seconds).
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testNewSessionShortcutIsARealKeyEvent]' started.
+    t =     0.00s Start Test at 2026-08-21 23:16:43.834
+    t =     0.08s Set Up
+    t =     0.08s     Open com.praxstack.praxmodoro
+    t =     0.08s         Launch com.praxstack.praxmodoro
+    t =     0.08s             Terminate com.praxstack.praxmodoro:86197
+2026-08-21 23:16:44.982 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 23:16:44.982 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.37s             Wait for accessibility to load
+    t =     1.42s             Setting up automation session
+    t =     1.43s             Wait for com.praxstack.praxmodoro to idle
+    t =     1.43s     Waiting 10.0s for "task-input" TextField to exist
+    t =     2.44s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     2.44s             Checking existence of `"task-input" TextField`
+    t =     2.54s             Capturing element debug description
+    t =     3.47s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     3.47s             Checking existence of `"task-input" TextField`
+    t =     3.50s             Capturing element debug description
+    t =     4.53s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     4.53s             Checking existence of `"task-input" TextField`
+    t =     4.58s             Capturing element debug description
+    t =     5.51s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     5.51s             Checking existence of `"task-input" TextField`
+    t =     5.55s             Capturing element debug description
+    t =     6.47s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     6.47s             Checking existence of `"task-input" TextField`
+    t =     6.51s             Capturing element debug description
+    t =     7.44s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     7.44s             Checking existence of `"task-input" TextField`
+    t =     7.48s             Capturing element debug description
+    t =     8.50s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     8.51s             Checking existence of `"task-input" TextField`
+    t =     8.55s             Capturing element debug description
+    t =     9.47s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     9.47s             Checking existence of `"task-input" TextField`
+    t =     9.50s             Capturing element debug description
+    t =    10.53s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    10.53s             Checking existence of `"task-input" TextField`
+    t =    10.57s             Capturing element debug description
+    t =    11.44s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    11.44s             Checking existence of `"task-input" TextField`
+    t =    11.47s             Capturing element debug description
+    t =    11.47s         Checking existence of `"task-input" TextField`
+    t =    11.49s     Collecting debug information to assist test failure triage
+    t =    11.49s         Requesting snapshot of accessibility hierarchy for app with pid 86841
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:107: error: -[PraxmodoroUITests.KeyboardLoopUITests testNewSessionShortcutIsARealKeyEvent] : XCTAssertTrue failed
+    t =    11.54s     Click "task-input" TextField
+    t =    11.54s         Wait for com.praxstack.praxmodoro to idle
+    t =    11.54s         Find the "task-input" TextField
+    t =    12.57s             Find the "task-input" TextField (retry 1)
+    t =    13.62s             Find the "task-input" TextField (retry 2)
+    t =    13.67s     Requesting snapshot of accessibility hierarchy for app with pid 86841
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:108: error: -[PraxmodoroUITests.KeyboardLoopUITests testNewSessionShortcutIsARealKeyEvent] : Failed to click "task-input" TextField: No matches found for Descendants matching type TextField from input {(
+    Application, pid: 86841, title: 'Praxmodoro'
+)}
+    t =    13.73s Tear Down
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testNewSessionShortcutIsARealKeyEvent]' failed (14.014 seconds).
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testWholeLoopByKeyboard]' started.
+    t =     0.00s Start Test at 2026-08-21 23:16:57.848
+    t =     0.09s Set Up
+    t =     0.10s     Open com.praxstack.praxmodoro
+    t =     0.10s         Launch com.praxstack.praxmodoro
+    t =     0.10s             Terminate com.praxstack.praxmodoro:86841
+2026-08-21 23:16:59.014 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 23:16:59.014 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.40s             Wait for accessibility to load
+    t =     1.49s             Setting up automation session
+    t =     1.49s             Wait for com.praxstack.praxmodoro to idle
+    t =     1.50s     Waiting 10.0s for "task-input" TextField to exist
+    t =     2.52s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     2.52s             Checking existence of `"task-input" TextField`
+    t =     2.62s             Capturing element debug description
+    t =     3.55s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     3.55s             Checking existence of `"task-input" TextField`
+    t =     3.59s             Capturing element debug description
+    t =     4.52s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     4.52s             Checking existence of `"task-input" TextField`
+    t =     4.56s             Capturing element debug description
+    t =     5.58s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     5.58s             Checking existence of `"task-input" TextField`
+    t =     5.62s             Capturing element debug description
+    t =     6.55s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     6.55s             Checking existence of `"task-input" TextField`
+    t =     6.59s             Capturing element debug description
+    t =     7.52s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     7.52s             Checking existence of `"task-input" TextField`
+    t =     7.56s             Capturing element debug description
+    t =     8.50s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     8.50s             Checking existence of `"task-input" TextField`
+    t =     8.54s             Capturing element debug description
+    t =     9.57s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     9.57s             Checking existence of `"task-input" TextField`
+    t =     9.61s             Capturing element debug description
+    t =    10.54s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    10.54s             Checking existence of `"task-input" TextField`
+    t =    10.58s             Capturing element debug description
+    t =    11.50s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    11.50s             Checking existence of `"task-input" TextField`
+    t =    11.54s             Capturing element debug description
+    t =    11.55s         Checking existence of `"task-input" TextField`
+    t =    11.57s     Collecting debug information to assist test failure triage
+    t =    11.57s         Requesting snapshot of accessibility hierarchy for app with pid 87132
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:51: error: -[PraxmodoroUITests.KeyboardLoopUITests testWholeLoopByKeyboard] : XCTAssertTrue failed
+    t =    11.63s     Click "task-input" TextField
+    t =    11.63s         Wait for com.praxstack.praxmodoro to idle
+    t =    11.63s         Find the "task-input" TextField
+    t =    12.66s             Find the "task-input" TextField (retry 1)
+    t =    13.70s             Find the "task-input" TextField (retry 2)
+    t =    13.76s     Requesting snapshot of accessibility hierarchy for app with pid 87132
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift:52: error: -[PraxmodoroUITests.KeyboardLoopUITests testWholeLoopByKeyboard] : Failed to click "task-input" TextField: No matches found for Descendants matching type TextField from input {(
+    Application, pid: 87132, title: 'Praxmodoro'
+)}
+    t =    13.82s Tear Down
+Test Case '-[PraxmodoroUITests.KeyboardLoopUITests testWholeLoopByKeyboard]' failed (14.090 seconds).
+Test Suite 'KeyboardLoopUITests' failed at 2026-08-21 23:17:11.939.
+	 Executed 4 tests, with 9 failures (0 unexpected) in 56.554 (56.557) seconds
+Test Suite 'LaunchUITests' started at 2026-08-21 23:17:11.939.
+Test Case '-[PraxmodoroUITests.LaunchUITests testAppLaunches]' started.
+    t =     0.00s Start Test at 2026-08-21 23:17:11.940
+    t =     0.08s Set Up
+    t =     0.08s     Open com.praxstack.praxmodoro
+    t =     0.08s         Launch com.praxstack.praxmodoro
+    t =     0.08s             Terminate com.praxstack.praxmodoro:87132
+2026-08-21 23:17:13.091 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 23:17:13.091 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.38s             Wait for accessibility to load
+    t =     1.44s             Setting up automation session
+    t =     1.45s             Wait for com.praxstack.praxmodoro to idle
+    t =     1.46s     Waiting 10.0s for Window (First Match) to exist
+    t =     2.48s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     2.48s             Checking existence of `Window (First Match)`
+    t =     2.58s             Capturing element debug description
+    t =     3.51s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     3.51s             Checking existence of `Window (First Match)`
+    t =     3.54s             Capturing element debug description
+    t =     4.47s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     4.47s             Checking existence of `Window (First Match)`
+    t =     4.52s             Capturing element debug description
+    t =     5.54s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     5.54s             Checking existence of `Window (First Match)`
+    t =     5.58s             Capturing element debug description
+    t =     6.52s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     6.52s             Checking existence of `Window (First Match)`
+    t =     6.56s             Capturing element debug description
+    t =     7.48s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     7.48s             Checking existence of `Window (First Match)`
+    t =     7.53s             Capturing element debug description
+    t =     8.56s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     8.56s             Checking existence of `Window (First Match)`
+    t =     8.61s             Capturing element debug description
+    t =     9.53s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =     9.53s             Checking existence of `Window (First Match)`
+    t =     9.57s             Capturing element debug description
+    t =    10.49s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =    10.49s             Checking existence of `Window (First Match)`
+    t =    10.54s             Capturing element debug description
+    t =    11.47s         Checking `Expect predicate `existsNoRetry == 1` for object Window (First Match)`
+    t =    11.47s             Checking existence of `Window (First Match)`
+    t =    11.51s             Capturing element debug description
+    t =    11.51s         Checking existence of `Window (First Match)`
+    t =    11.54s     Collecting debug information to assist test failure triage
+    t =    11.54s         Requesting snapshot of accessibility hierarchy for app with pid 87171
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/LaunchUITests.swift:9: error: -[PraxmodoroUITests.LaunchUITests testAppLaunches] : XCTAssertTrue failed
+    t =    11.60s Tear Down
+Test Case '-[PraxmodoroUITests.LaunchUITests testAppLaunches]' failed (11.852 seconds).
+Test Case '-[PraxmodoroUITests.LaunchUITests testKeyboardBeginReachesFocus]' started.
+    t =     0.00s Start Test at 2026-08-21 23:17:23.792
+    t =     0.09s Set Up
+    t =     0.10s     Open com.praxstack.praxmodoro
+    t =     0.10s         Launch com.praxstack.praxmodoro
+    t =     0.10s             Terminate com.praxstack.praxmodoro:87171
+2026-08-21 23:17:24.971 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: The operation couldn’t be completed. (DebuggerLLDB.DebuggerVersionStore.StoreError error 0.)
+2026-08-21 23:17:24.971 xcodebuild[85420:1222611] [MT] IDELaunchParametersSnapshot: no debugger version
+    t =     1.41s             Wait for accessibility to load
+    t =     1.50s             Setting up automation session
+    t =     1.50s             Wait for com.praxstack.praxmodoro to idle
+    t =     1.51s     Waiting 10.0s for "task-input" TextField to exist
+    t =     2.54s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     2.54s             Checking existence of `"task-input" TextField`
+    t =     2.65s             Capturing element debug description
+    t =     3.56s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     3.56s             Checking existence of `"task-input" TextField`
+    t =     3.61s             Capturing element debug description
+    t =     4.52s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     4.53s             Checking existence of `"task-input" TextField`
+    t =     4.57s             Capturing element debug description
+    t =     5.59s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     5.59s             Checking existence of `"task-input" TextField`
+    t =     5.64s             Capturing element debug description
+    t =     6.56s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     6.56s             Checking existence of `"task-input" TextField`
+    t =     6.61s             Capturing element debug description
+    t =     7.53s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     7.53s             Checking existence of `"task-input" TextField`
+    t =     7.56s             Capturing element debug description
+    t =     8.59s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     8.59s             Checking existence of `"task-input" TextField`
+    t =     8.62s             Capturing element debug description
+    t =     9.55s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =     9.55s             Checking existence of `"task-input" TextField`
+    t =     9.59s             Capturing element debug description
+    t =    10.52s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    10.52s             Checking existence of `"task-input" TextField`
+    t =    10.56s             Capturing element debug description
+    t =    11.51s         Checking `Expect predicate `existsNoRetry == 1` for object "task-input" TextField`
+    t =    11.51s             Checking existence of `"task-input" TextField`
+    t =    11.54s             Capturing element debug description
+    t =    11.55s         Checking existence of `"task-input" TextField`
+    t =    11.57s     Collecting debug information to assist test failure triage
+    t =    11.57s         Requesting snapshot of accessibility hierarchy for app with pid 87400
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/LaunchUITests.swift:20: error: -[PraxmodoroUITests.LaunchUITests testKeyboardBeginReachesFocus] : XCTAssertTrue failed - fresh store must land on initiate
+    t =    11.62s     Click "task-input" TextField
+    t =    11.62s         Wait for com.praxstack.praxmodoro to idle
+    t =    11.62s         Find the "task-input" TextField
+    t =    12.64s             Find the "task-input" TextField (retry 1)
+    t =    13.68s             Find the "task-input" TextField (retry 2)
+    t =    13.71s     Requesting snapshot of accessibility hierarchy for app with pid 87400
+/Users/prax/Developer/Praxomodoro/app/Tests/PraxmodoroUITests/LaunchUITests.swift:21: error: -[PraxmodoroUITests.LaunchUITests testKeyboardBeginReachesFocus] : Failed to click "task-input" TextField: No matches found for Descendants matching type TextField from input {(
+    Application, pid: 87400, title: 'Praxmodoro'
+)}
+    t =    13.76s Tear Down
+Test Case '-[PraxmodoroUITests.LaunchUITests testKeyboardBeginReachesFocus]' failed (14.055 seconds).
+Test Suite 'LaunchUITests' failed at 2026-08-21 23:17:37.848.
+	 Executed 2 tests, with 3 failures (0 unexpected) in 25.907 (25.909) seconds
+Test Suite 'PraxmodoroUITests.xctest' failed at 2026-08-21 23:17:37.848.
+	 Executed 6 tests, with 12 failures (0 unexpected) in 82.461 (82.467) seconds
+Test Suite 'All tests' failed at 2026-08-21 23:17:37.849.
+	 Executed 6 tests, with 12 failures (0 unexpected) in 82.461 (82.468) seconds
+2026-08-21 23:17:42.714 xcodebuild[85420:1222611] [MT] IDETestOperationsObserverDebug: 92.716 elapsed -- Testing started completed.
+2026-08-21 23:17:42.714 xcodebuild[85420:1222611] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-08-21 23:17:42.714 xcodebuild[85420:1222611] [MT] IDETestOperationsObserverDebug: 92.716 sec, +92.716 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/prax/Library/Developer/Xcode/DerivedData/Praxmodoro-fuqfowzeywgwdqgmmishkqihbvms/Logs/Test/Test-Praxmodoro-2026.08.21_23-16-03-+0530.xcresult
+
+Failing tests:
+	KeyboardLoopUITests.testCapsuleOpensAndClosesFromTheKeyboard()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath()
+	KeyboardLoopUITests.testNewSessionShortcutIsARealKeyEvent()
+	KeyboardLoopUITests.testNewSessionShortcutIsARealKeyEvent()
+	KeyboardLoopUITests.testWholeLoopByKeyboard()
+	KeyboardLoopUITests.testWholeLoopByKeyboard()
+	LaunchUITests.testAppLaunches()
+	LaunchUITests.testKeyboardBeginReachesFocus()
+	LaunchUITests.testKeyboardBeginReachesFocus()
+
+** TEST FAILED **
+
+Testing started
