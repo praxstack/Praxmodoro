@@ -4,7 +4,7 @@ final class LaunchUITests: XCTestCase {
     @MainActor
     func testAppLaunches() {
         let app = XCUIApplication()
-        app.launchArguments = ["-praxmodoro-ephemeral-store"]
+        app.launchArguments = ["-praxmodoro-ephemeral-store", "-praxmodoro-clean-window-state"]
         app.launch()
         XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 10))
     }
@@ -14,7 +14,7 @@ final class LaunchUITests: XCTestCase {
     @MainActor
     func testKeyboardBeginReachesFocus() {
         let app = XCUIApplication()
-        app.launchArguments = ["-praxmodoro-ephemeral-store"]
+        app.launchArguments = ["-praxmodoro-ephemeral-store", "-praxmodoro-clean-window-state"]
         app.launch()
         let taskField = app.textFields["task-input"]
         XCTAssertTrue(taskField.waitForExistence(timeout: 10), "fresh store must land on initiate")

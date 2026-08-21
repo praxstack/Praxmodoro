@@ -10,7 +10,7 @@ final class KeyboardLoopUITests: XCTestCase {
     @MainActor
     private func launchFresh() -> XCUIApplication {
         let app = XCUIApplication()
-        app.launchArguments = ["-praxmodoro-ephemeral-store"]
+        app.launchArguments = ["-praxmodoro-ephemeral-store", "-praxmodoro-clean-window-state"]
         app.launch()
         return app
     }

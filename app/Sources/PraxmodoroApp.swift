@@ -14,6 +14,14 @@ struct PraxmodoroApp: App {
     init() {
         // UI tests pass this flag for a hermetic, fresh in-memory store.
         if CommandLine.arguments.contains("-praxmodoro-ephemeral-store") {
+            // Window-frame autosave lives in the shared defaults domain, not
+            // the store — a capsule frame saved by any earlier run would
+            // otherwise restore-create the capsule and fail the
+            // "suppressed at launch" assertions. Tests must not inherit the
+            // machine's window history.
+            if CommandLine.arguments.contains("-praxmodoro-clean-window-state") {
+                UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
+            }
             self._model = State(initialValue: AppModel(store: try? LocalStore(inMemory: true)))
             return
         }
@@ -82,6 +90,11 @@ struct PraxmodoroApp: App {
         }
 
         // Always above ordinary windows, never opened for you.
+        // restorationBehavior(.disabled): a frame autosaved while the capsule
+        // was open must not resurrect the window on the next launch — macOS
+        // restoration defeats defaultLaunchBehavior(.suppressed), which is
+        // exactly the "opened itself at launch" defect (2026-08-21). The
+        // capsule exists only when the user calls it.
         Window("Focus capsule", id: Self.capsuleWindowID) {
             TimelineView(.periodic(from: .now, by: 1)) { context in
                 FocusCapsule(
@@ -94,6 +107,7 @@ struct PraxmodoroApp: App {
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
         .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
         .windowBackgroundDragBehavior(.enabled)
 
         Window("About Praxmodoro", id: "about") {
