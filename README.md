@@ -6,7 +6,7 @@ Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach
 
 Research is complete, **Living Companion** is the approved base direction (2026-07-30), and **milestone M1 — app scaffold + complete core loop — is implemented and independently validated** (2026-07-31; change archived as `2026-07-31-add-app-scaffold-core-loop`, 27 requirements synced to `openspec/specs/`). The native app runs the full loop: initiate → focus (physics-driven companion field) → check-in → break → review, local-first with no account.
 
-**Milestone M2 (companion surfaces) is implemented on `feat/m2-companion-surfaces`** — menu-bar popover, floating focus capsule, return overlay, and the four M1 hardening follow-ups, as OpenSpec change `add-companion-surfaces`. One gate is outstanding and it is environmental: the UI test suite cannot run while the Mac's screen is locked, so `./scripts/verify-project.sh` stops at its final stage. Unlock and re-run it to close M2. See `SPEC.md` for the gate list and status. No shipping release or Enterprise service is claimed yet.
+**Milestone M2 (companion surfaces) is implemented and merged to `main`** — menu-bar popover, floating focus capsule, return overlay, and the four M1 hardening follow-ups, as OpenSpec change `add-companion-surfaces`, joined on the same files by `add-session-settings` (rhythm, sound cues, local notifications). The full verification gate — including the previously environment-blocked UI suite — exited 0 on 2026-08-13. The one open item before archiving is an independent re-validation under the amended C5 criterion (owner-granted 2026-08-22); tracked as issue #7. Next feature work: presence & continuity pack (issue #27). No shipping release or Enterprise service is claimed yet.
 
 ## Editions
 
