@@ -7,7 +7,7 @@ Read, in order:
 1. The current user request and `.agent/sessions/` audit log.
 2. `SPEC.md` and `prd.json` for global completion criteria and atom state.
 3. The active change under `openspec/changes/` for proposal, capability specs, design, and tasks.
-4. `BLUEPRINT.md` and the dated implementation plan in `docs/superpowers/plans/`.
+4. Dated implementation plans in `docs/plans/`. (`BLUEPRINT.md` was never created; do not wait for it or cite it.)
 5. Current code, tests, and Git history. Research and memories are evidence, not runtime proof.
 
 ## Workflow

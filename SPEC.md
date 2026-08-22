@@ -31,11 +31,9 @@ Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and o
 5. `./scripts/verify-project.sh` exits 0 and `./scripts/smoke.sh` exits 0.
 6. `npm run spec:validate` passes strict, and an independent validator session confirms 1–5 from a fresh context.
 
-**Status 2026-08-04.** Gates 1 and 4 are met. Gate 3 is met for its two unit-level follow-ups. Gate 2 is met by the current defense but has a history worth knowing: five independent validators each defeated the no-second-clock guard with a real, compiling, drifting counterexample, and each defeat was closed. The current defense — rasterizing held surfaces and comparing renders, so `body` is in scope — has **not yet itself faced an independent attack**, and the test states its own residual limit (a beat slower than the 2.5s window evades it).
+**Status 2026-08-22.** Gate 2's no-second-clock defense survived six adversarial defeats being closed against it (full history in `prd.json` / `progress.txt`). The whole-change independent validator at HEAD `9a6dc8c` on 2026-08-13 confirmed C1–C4 and C6 pass, including the UI half of gate 3 actually executing — `verify-project.sh` exited 0 end to end once the host condition cleared. C5 failed on its bookkeeping clause only: literal one-commit-per-atom is unmeetable without rewriting the per-defeat commit trail that makes the C2 guarantee trustworthy. On 2026-08-22 the criterion owner granted the amendment recorded in `prd.json` (`commitMapping.proposedAmendment`): C5 now reads "every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified."
 
-Gates 3 (UI half), 5 and 6 are **blocked by the host, not the code**: XCUITest cannot initialize while the Mac's screen is locked (`LocalAuthentication -4`, `CGSSessionScreenIsLocked = true`), so `KeyboardLoopUITests` has never executed and `verify-project.sh` stops at its final stage. Everything upstream passes: staleness gate, PraxmodoroCore 12/12, PraxmodoroStore 7/7, strict format lint, build, 73 app unit tests in 23 suites, `spec:validate` 5/5, `smoke.sh`, and `** TEST BUILD SUCCEEDED **` for the UI target.
-
-**Unblock: unlock the Mac and run `./scripts/verify-project.sh`.** M2 is not complete until that exits 0 and an independent validator confirms gates 1–5 against the result.
+**Remaining for M2 close:** an independent fresh-context re-validation against the amended criterion, then archive of `add-companion-surfaces`; `add-session-settings` tasks 9.2–9.3 gate that change's own archive. Tracked as issue #7.
 
 ## Later milestones (not yet specified)
 

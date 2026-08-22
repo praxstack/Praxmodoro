@@ -338,6 +338,6 @@
         "justification": "contemporaneous \u2014 each defeat and repair is recorded in progress.txt as it happened."
       }
     ],
-    "proposedAmendment": "Recommended by the independent validator and NOT self-granted: reword C5 to 'every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified.' Pending the criterion owner's decision; C5 stands as FAIL until then."
+    "proposedAmendment": "Recommended by the independent validator and NOT self-granted: reword C5 to 'every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified.' GRANTED 2026-08-22: the criterion owner (Prax) accepted the amendment explicitly in the gap-review session (D3), so C5 now carries the amended wording. M2 close still requires a fresh independent validation against the amended criterion before archive; tracked as issue #7."
   }
 }
