@@ -19,6 +19,7 @@ struct FocusCapsule: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var timeText: String? { display.timeText }
     var taskText: String { display.taskLine }
@@ -77,6 +78,7 @@ struct FocusCapsule: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
+        .foregroundStyle(SurfacePalette.primaryText(increasedContrast: contrast == .increased))
         .background(
             Capsule().fill(SurfacePalette.background(reduceTransparency: reduceTransparency))
         )

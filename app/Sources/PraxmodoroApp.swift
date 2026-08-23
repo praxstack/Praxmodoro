@@ -11,6 +11,18 @@ struct PraxmodoroApp: App {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
 
+    private var menuBarSurfaceAvailable: Bool {
+        model.capabilities.isAvailable(.menuBarSurface)
+    }
+
+    private var focusCapsuleAvailable: Bool {
+        model.capabilities.isAvailable(.focusCapsule)
+    }
+
+    private var returnOverlayAvailable: Bool {
+        model.capabilities.isAvailable(.returnOverlay)
+    }
+
     init() {
         // UI tests pass this flag for a hermetic, fresh in-memory store.
         if CommandLine.arguments.contains("-praxmodoro-ephemeral-store") {
@@ -63,7 +75,7 @@ struct PraxmodoroApp: App {
             // (spec: companion-surfaces "Return overlay presents the exact
             // next action").
             .overlay {
-                if model.returnPending {
+                if returnOverlayAvailable && model.returnPending {
                     ReturnOverlay(
                         display: model.snapshot(at: Date()).display,
                         onAcknowledge: { model.acknowledgeReturn() },
@@ -89,26 +101,25 @@ struct PraxmodoroApp: App {
             }
         }
 
-        // Always above ordinary windows, never opened for you.
-        // restorationBehavior(.disabled): a frame autosaved while the capsule
-        // was open must not resurrect the window on the next launch — macOS
-        // restoration defeats defaultLaunchBehavior(.suppressed), which is
-        // exactly the "opened itself at launch" defect (2026-08-21). The
-        // capsule exists only when the user calls it.
-        Window("Focus capsule", id: Self.capsuleWindowID) {
-            TimelineView(.periodic(from: .now, by: 1)) { context in
-                FocusCapsule(
-                    display: model.snapshot(at: context.date).display, actions: companionActions,
-                    motionStilledOverride: model.motionStilled ? true : nil)
+        ({
+            if focusCapsuleAvailable {
+                return Window("Focus capsule", id: Self.capsuleWindowID) {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        FocusCapsule(
+                            display: model.snapshot(at: context.date).display, actions: companionActions,
+                            motionStilledOverride: model.motionStilled ? true : nil)
+                    }
+                    .onDisappear { capsuleOpen = false }
+                }
+                .windowLevel(.floating)
+                .windowStyle(.hiddenTitleBar)
+                .windowResizability(.contentSize)
+                .defaultLaunchBehavior(.suppressed)
+                .restorationBehavior(.disabled)
+                .windowBackgroundDragBehavior(.enabled)
             }
-            .onDisappear { capsuleOpen = false }
-        }
-        .windowLevel(.floating)
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        .windowBackgroundDragBehavior(.enabled)
+            fatalError("validated focus-capsule capability is unavailable")
+        })()
 
         Window("About Praxmodoro", id: "about") {
             AboutView()
@@ -123,17 +134,19 @@ struct PraxmodoroApp: App {
             SettingsSurface(model: model)
         }
 
-        // The loop, reachable without fronting the app. The popover is a pure
-        // function of a snapshot taken here, at the instant it renders
-        // (spec: companion-surfaces "Menu-bar popover operates the loop").
-        MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
-            TimelineView(.periodic(from: .now, by: 1)) { context in
-                MenuBarPopover(
-                    display: model.snapshot(at: context.date).display, actions: companionActions,
-                    motionStilledOverride: model.motionStilled ? true : nil)
+        ({
+            if menuBarSurfaceAvailable {
+                return MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        MenuBarPopover(
+                            display: model.snapshot(at: context.date).display, actions: companionActions,
+                            motionStilledOverride: model.motionStilled ? true : nil)
+                    }
+                }
+                .menuBarExtraStyle(.window)
             }
-        }
-        .menuBarExtraStyle(.window)
+            fatalError("validated menu-bar capability is unavailable")
+        })()
     }
 
     /// The capsule's keyboard path: open it, or put it away again.

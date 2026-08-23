@@ -1,11 +1,11 @@
-import Foundation
 import CoreGraphics
+import Foundation
 import PraxmodoroCore
+import PraxmodoroStore
 import SwiftUI
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroStore
 
 /// Spec: companion-surfaces "Menu-bar popover operates the loop",
 /// "Companion surfaces are never paywalled", and the hard half of
@@ -90,7 +90,8 @@ import PraxmodoroStore
     @Test func testNoCompanionSurfaceRendersScoringOrUpsell() throws {
         let banned = ["streak", "score", "grade", "percent", "rank", "upgrade", "unlock", "trial", "premium", "subscribe"]
         for frozen in [try snapshot(at: 60).display, try snapshot(at: 60, hold: true).display] {
-            let rendered = (Array(PureSurfaces(frozen).strings.values)
+            let rendered =
+                (Array(PureSurfaces(frozen).strings.values)
                 + MenuBarPopover(display: frozen, actions: .inert).controls
                 + FocusCapsule(display: frozen, actions: .inert).controls
                 + ReturnOverlay.controls)
@@ -119,6 +120,123 @@ import PraxmodoroStore
             #expect(hostile.isAvailable(key), "\(key) must resolve as available even when a configuration withholds it")
         }
         #expect(throws: CapabilityRegistry.ValidationError.self) { try hostile.validate() }
+    }
+
+    @Test func testAppConsultsTheMatchingCapabilityAroundEachCompanionScene() throws {
+        let appURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/PraxmodoroApp.swift")
+        let source = try String(contentsOf: appURL, encoding: .utf8)
+        let code = Self.codeOnly(source)
+        let cases = [
+            (guardName: "menuBarSurfaceAvailable", key: "menuBarSurface", construction: #"MenuBarExtra\s*\("#),
+            (
+                guardName: "focusCapsuleAvailable", key: "focusCapsule",
+                construction: #"Window\s*\(\s*,\s*id:\s*Self\.capsuleWindowID\s*\)\s*\{"#
+            ),
+            (guardName: "returnOverlayAvailable", key: "returnOverlay", construction: #"ReturnOverlay\s*\("#),
+        ]
+
+        for item in cases {
+            let guardBody = Self.balancedBody(after: "private var \(item.guardName): Bool", in: code)
+            #expect(guardBody != nil, "\(item.guardName) is missing")
+            if let guardBody {
+                #expect(
+                    guardBody.filter { !$0.isWhitespace }
+                        == "model.capabilities.isAvailable(.\(item.key))",
+                    "\(item.guardName) must contain only its matching direct lookup")
+            }
+
+            #expect(
+                Self.matchCount(item.construction, in: code) == 1,
+                "the app must construct exactly one \(item.key) scene")
+            let guardedBody = Self.balancedBody(after: "if \(item.guardName)", in: code)
+            #expect(guardedBody != nil, "if \(item.guardName) is missing")
+            if let guardedBody {
+                #expect(
+                    Self.matchCount(item.construction, in: guardedBody) == 1,
+                    "the sole \(item.key) construction must be enclosed by if \(item.guardName)")
+            }
+        }
+    }
+
+    /// Blanks comments and string literals while preserving braces and line
+    /// layout, so source assertions cannot be satisfied by prose or by braces
+    /// embedded in copy.
+    private static func codeOnly(_ source: String) -> String {
+        enum Mode { case code, lineComment, blockComment, string }
+        let input = Array(source.utf8)
+        var output = input
+        var mode = Mode.code
+        var blockDepth = 0
+        var index = 0
+
+        func blank(_ position: Int) {
+            if output[position] != 10 && output[position] != 13 { output[position] = 32 }
+        }
+
+        while index < input.count {
+            let byte = input[index]
+            let next = index + 1 < input.count ? input[index + 1] : 0
+            switch mode {
+            case .code:
+                if byte == 47 && next == 47 {
+                    blank(index); blank(index + 1); index += 2; mode = .lineComment
+                } else if byte == 47 && next == 42 {
+                    blank(index); blank(index + 1); index += 2; blockDepth = 1; mode = .blockComment
+                } else if byte == 34 {
+                    blank(index); index += 1; mode = .string
+                } else {
+                    index += 1
+                }
+            case .lineComment:
+                blank(index)
+                index += 1
+                if byte == 10 { mode = .code }
+            case .blockComment:
+                if byte == 47 && next == 42 {
+                    blank(index); blank(index + 1); index += 2; blockDepth += 1
+                } else if byte == 42 && next == 47 {
+                    blank(index); blank(index + 1); index += 2; blockDepth -= 1
+                    if blockDepth == 0 { mode = .code }
+                } else {
+                    blank(index); index += 1
+                }
+            case .string:
+                blank(index)
+                if byte == 92 && index + 1 < input.count {
+                    blank(index + 1); index += 2
+                } else {
+                    index += 1
+                    if byte == 34 { mode = .code }
+                }
+            }
+        }
+        return String(decoding: output, as: UTF8.self)
+    }
+
+    private static func balancedBody(after marker: String, in code: String) -> String? {
+        guard let markerRange = code.range(of: marker),
+            let opening = code[markerRange.upperBound...].firstIndex(of: "{")
+        else { return nil }
+        var depth = 0
+        var cursor = opening
+        while cursor < code.endIndex {
+            if code[cursor] == "{" { depth += 1 }
+            if code[cursor] == "}" {
+                depth -= 1
+                if depth == 0 {
+                    return String(code[code.index(after: opening)..<cursor])
+                }
+            }
+            cursor = code.index(after: cursor)
+        }
+        return nil
+    }
+
+    private static func matchCount(_ pattern: String, in source: String) -> Int {
+        (try? NSRegularExpression(pattern: pattern))?
+            .numberOfMatches(in: source, range: NSRange(source.startIndex..., in: source)) ?? 0
     }
 
     /// The four pure surfaces, built once and held.
@@ -234,8 +352,9 @@ import PraxmodoroStore
         // Same instances, read again. Nothing about the input changed.
         let afterStrings = surfaces.strings
         for (name, value) in beforeStrings {
-            #expect(afterStrings[name] == value,
-                    "\(name) drifted from a frozen input: “\(value)” became “\(afterStrings[name] ?? "nil")”")
+            #expect(
+                afterStrings[name] == value,
+                "\(name) drifted from a frozen input: “\(value)” became “\(afterStrings[name] ?? "nil")”")
         }
 
         // And what actually renders — `body` included — must not change.
@@ -248,8 +367,10 @@ import PraxmodoroStore
         let afterPixels = try surfaces.bitmaps()
         for (name, pixels) in beforePixels {
             let difference = Self.changedPixelFraction(pixels, try #require(afterPixels[name]))
-            #expect(difference <= Self.renderNoiseTolerance,
-                    "\(name) rendered differently from a frozen input (\(difference) of pixels changed); something inside its body reads a clock")
+            #expect(
+                difference <= Self.renderNoiseTolerance,
+                "\(name) rendered differently from a frozen input (\(difference) of pixels changed); something inside its body reads a clock"
+            )
         }
     }
 
@@ -303,16 +424,19 @@ import PraxmodoroStore
         var noise = 0.0
         for (name, pixels) in first {
             let delta = Self.changedPixelFraction(pixels, try #require(second[name]))
-            #expect(delta <= Self.renderNoiseTolerance,
-                    "\(name) does not rasterize deterministically (noise \(delta)); the drift threshold cannot be trusted")
+            #expect(
+                delta <= Self.renderNoiseTolerance,
+                "\(name) does not rasterize deterministically (noise \(delta)); the drift threshold cannot be trusted")
             noise = max(noise, delta)
         }
         let oneGlyph = Self.changedPixelFraction(try #require(first["readout"]), try #require(sixteen.bitmaps()["readout"]))
 
-        #expect(oneGlyph > Self.renderNoiseTolerance,
-                "a single changed digit (17:00 -> 16:00) moved only \(oneGlyph) of pixels, inside the tolerance; the probe is blind")
-        #expect(oneGlyph > Self.renderNoiseTolerance * 10,
-                "one changed digit must dwarf the tolerance, not skim it: \(oneGlyph) vs \(Self.renderNoiseTolerance)")
+        #expect(
+            oneGlyph > Self.renderNoiseTolerance,
+            "a single changed digit (17:00 -> 16:00) moved only \(oneGlyph) of pixels, inside the tolerance; the probe is blind")
+        #expect(
+            oneGlyph > Self.renderNoiseTolerance * 10,
+            "one changed digit must dwarf the tolerance, not skim it: \(oneGlyph) vs \(Self.renderNoiseTolerance)")
         #expect(noise == 0 || oneGlyph > noise * 10, "one changed digit must dwarf renderer noise: \(oneGlyph) vs \(noise)")
     }
 
@@ -339,10 +463,12 @@ import PraxmodoroStore
             offersAdjustment: true)
         let covered = Set(PureSurfaces(probe).strings.keys.map { String($0.split(separator: ".")[0]) })
 
-        #expect(covered == ["popover", "capsule", "overlay", "readout"],
-                "drift coverage changed unexpectedly: \(covered.sorted())")
-        #expect(pureSurfaces == ["MenuBarPopover", "FocusCapsule", "ReturnOverlay", "RemainingReadout"],
-                "a pure surface exists that the drift test does not exercise: \(pureSurfaces.sorted())")
+        #expect(
+            covered == ["popover", "capsule", "overlay", "readout"],
+            "drift coverage changed unexpectedly: \(covered.sorted())")
+        #expect(
+            pureSurfaces == ["MenuBarPopover", "FocusCapsule", "ReturnOverlay", "RemainingReadout"],
+            "a pure surface exists that the drift test does not exercise: \(pureSurfaces.sorted())")
     }
 
     /// Static barriers, kept as defense in depth behind the drift test above.
@@ -391,16 +517,20 @@ import PraxmodoroStore
                 .joined(separator: "\n")
 
             // Barrier 1: the input carries no interval to age.
-            #expect(source.contains("CompanionDisplay"),
-                    "\(name) must take a CompanionDisplay, whose time is already a string")
-            #expect(!source.contains("SessionSnapshot"),
-                    "\(name) takes a SessionSnapshot, which exposes a raw TimeInterval it could age")
-            #expect(!source.contains("String(format:"),
-                    "\(name) formats a number into time; CompanionDisplay hands it a finished string")
+            #expect(
+                source.contains("CompanionDisplay"),
+                "\(name) must take a CompanionDisplay, whose time is already a string")
+            #expect(
+                !source.contains("SessionSnapshot"),
+                "\(name) takes a SessionSnapshot, which exposes a raw TimeInterval it could age")
+            #expect(
+                !source.contains("String(format:"),
+                "\(name) formats a number into time; CompanionDisplay hands it a finished string")
 
             for token in beats + clockAccess + mutableState {
-                #expect(!source.contains(token),
-                        "\(name) can host a second clock via “\(token)”")
+                #expect(
+                    !source.contains(token),
+                    "\(name) can host a second clock via “\(token)”")
             }
         }
     }
@@ -422,12 +552,21 @@ import PraxmodoroStore
             let url = surfacesDir.appendingPathComponent(name)
             guard FileManager.default.fileExists(atPath: url.path) else { continue }
             let source = try String(contentsOf: url, encoding: .utf8)
-            #expect(source.contains("accessibilityReduceTransparency"),
-                    "\(name) never reads Reduce Transparency, so its opaque alternate can never engage")
-            #expect(source.contains("accessibilityReduceMotion"),
-                    "\(name) never reads Reduce Motion, so the physics standdown can never engage")
-            #expect(source.contains("SurfacePalette.background(reduceTransparency:"),
-                    "\(name) does not draw its background from the verified palette")
+            #expect(
+                source.contains("accessibilityReduceTransparency"),
+                "\(name) never reads Reduce Transparency, so its opaque alternate can never engage")
+            #expect(
+                source.contains("accessibilityReduceMotion"),
+                "\(name) never reads Reduce Motion, so the physics standdown can never engage")
+            #expect(
+                source.contains("colorSchemeContrast"),
+                "\(name) never reads Increase Contrast")
+            #expect(
+                source.contains("SurfacePalette.background(reduceTransparency:"),
+                "\(name) does not draw its background from the verified palette")
+            #expect(
+                source.contains("SurfacePalette.primaryText(increasedContrast:"),
+                "\(name) does not draw its primary text from the verified palette")
         }
     }
 
@@ -444,8 +583,10 @@ import PraxmodoroStore
             for line in source.split(separator: "\n", omittingEmptySubsequences: false) {
                 let code = line.contains("//") ? String(line[..<(line.range(of: "//")?.lowerBound ?? line.endIndex)]) : String(line)
                 guard code.contains("Date()") || code.contains("context.date") else { continue }
-                #expect(code.contains("snapshot(at:"),
-                        "\(file.lastPathComponent) reads the clock for something other than a snapshot: \(code.trimmingCharacters(in: .whitespaces))")
+                #expect(
+                    code.contains("snapshot(at:"),
+                    "\(file.lastPathComponent) reads the clock for something other than a snapshot: \(code.trimmingCharacters(in: .whitespaces))"
+                )
             }
         }
     }

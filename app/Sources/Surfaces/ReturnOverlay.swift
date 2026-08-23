@@ -14,6 +14,7 @@ struct ReturnOverlay: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
 
     /// The recorded first action, or the task itself when none was recorded —
     /// never an empty card.
@@ -61,7 +62,7 @@ struct ReturnOverlay: View {
                 .font(.title3)
                 .multilineTextAlignment(.center)
                 .padding(14)
-                .background(RoundedRectangle(cornerRadius: 10).fill(.quaternary.opacity(0.4)))
+                .background(RoundedRectangle(cornerRadius: 10).stroke(DesignTokens.Light.paper3))
                 .accessibilityIdentifier("return-next-action")
 
             Button {
@@ -70,11 +71,13 @@ struct ReturnOverlay: View {
                 Label("Continue", systemImage: "arrow.right")
                     .frame(minWidth: 160, minHeight: 38)
             }
-            .buttonStyle(.borderedProminent)
+            .buttonStyle(.borderless)
+            .background(RoundedRectangle(cornerRadius: 8).stroke(DesignTokens.Light.paper3))
             .keyboardShortcut(.return, modifiers: [])
             .accessibilityIdentifier("return-continue")
         }
         .padding(36)
+        .foregroundStyle(SurfacePalette.primaryText(increasedContrast: contrast == .increased))
         .background(
             RoundedRectangle(cornerRadius: 20).fill(SurfacePalette.background(reduceTransparency: reduceTransparency))
         )
