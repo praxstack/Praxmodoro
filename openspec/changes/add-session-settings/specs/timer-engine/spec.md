@@ -28,5 +28,9 @@ The engine SHALL support the four session policies from the approved mocks (gent
 - **THEN** relaunch reconstruction SHALL place the break transition exactly at the expiry instant, not at wake or launch time
 
 #### Scenario: Auto-return records at the canonical break-end instant
-- **WHEN** auto-return is enabled and the chosen break length elapses — including while asleep
-- **THEN** the engine SHALL record the return-to-focus transition at the canonical break-end instant, never at wake time, and with auto-return disabled breaks SHALL stay open-ended
+- **WHEN** auto-return is enabled and the chosen break length elapses while the app process remains active, including across system sleep
+- **THEN** wake reconciliation SHALL record the return-to-focus transition at the canonical break-end instant, never at wake time, when that instant is later than the process's live-observation start; with auto-return disabled breaks SHALL stay open-ended
+
+#### Scenario: Relaunch does not invent unattended focus blocks
+- **WHEN** the app relaunches after being absent across a break end
+- **THEN** restore SHALL reconstruct recorded history with auto-return disabled, seed the new process's live-observation boundary, leave the break open, and SHALL NOT synthesize that return-to-focus transition on the first or any later observation

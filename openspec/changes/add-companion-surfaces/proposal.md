@@ -8,21 +8,21 @@ This change gives the session three ambient surfaces — a menu-bar popover, a f
 
 ## Goals, non-goals, assumptions
 
-**Goals:** three new surfaces that are *views* of the existing session and never a second source of truth; one canonical engine-derived snapshot every surface renders; a re-entry path that shows the exact next action at the moment of return; render-level (not source-level) proof of the Reduce Transparency and Increase Contrast alternates; real keyboard coverage of the whole loop as key events; genuine two-configuration schema parity; a launch-time first-run assertion.
+**Goals:** three new surfaces that are *views* of the existing session and never a second source of truth; exactly one canonical engine-derived snapshot per scene render, with all surfaces agreeing when supplied a common instant; a re-entry path that shows the exact next action at the moment of return; render-level (not source-level) proof of the Reduce Transparency and Increase Contrast alternates; real keyboard coverage of the whole loop as key events; genuine two-configuration schema parity; a launch-time first-run assertion.
 
-**Non-goals (explicitly deferred):** global system hotkeys or any Accessibility/Input-Monitoring entitlement; notifications of any kind; EventKit or Reminders import; App Intents; Shortcuts; CloudKit sync; a Dock-less/agent-only app mode; Pro/Enterprise feature content; any network, account, or analytics capability. None of the new surfaces introduces a new persisted field or a new event kind.
+**Non-goals (explicitly deferred):** global system hotkeys or any Accessibility/Input-Monitoring entitlement; notifications of any kind; EventKit or Reminders import; App Intents; Shortcuts; CloudKit sync; a Dock-less/agent-only app mode; any network, account, analytics, or separately specified future content. None of the new surfaces introduces a new persisted field or a new event kind.
 
 **Assumptions:** macOS 26 SwiftUI `MenuBarExtra`, scene-level `windowLevel(_:)`, and `defaultLaunchBehavior(_:)` are available and sufficient — no `NSWindow` subclassing or AppKit window plumbing is required (design decision 2 records the fallback). `ImageRenderer` gives deterministic offscreen rasterization for the render-level accessibility assertions.
 
-**Edition impact:** everything here ships in Lite. The menu-bar popover, the capsule, and the return overlay all carry initiation, hold/resume, check-in entry and accessibility behavior, so all three fall inside the never-paywalled set and the capability registry's startup validation covers them.
+**Product availability:** everything here ships in the one product for every user. The menu-bar popover, capsule, and return overlay carry initiation, hold/resume, check-in entry, and accessibility behavior, so their internal provenance keys are part of the registry's always-available validation set.
 
 **User value:** the session stays visible and operable from the menu bar or a small always-on-top capsule without fronting the app; after a break the exact next action is presented rather than recalled; and a keyboard-only or Reduce-Motion/Reduce-Transparency/Increase-Contrast user gets the same complete product, verified by rendering rather than by inspection.
 
-**Measurable success:** every EARS scenario in this change is covered by a passing automated test; the three surfaces produce byte-identical remaining-time text from one snapshot at one instant; no surface source constructs a countdown; `./scripts/verify-project.sh` exits 0 including the signed UI suite; `npm run spec:validate` passes strict.
+**Measurable success:** every EARS scenario in this change is covered by a passing automated test; each scene render reads one snapshot, and the three surfaces produce byte-identical remaining-time text when supplied the same instant; no surface source constructs a countdown; `./scripts/verify-project.sh` exits 0 including the signed UI suite; `npm run spec:validate` passes strict.
 
 ## What Changes
 
-- **New `SessionSnapshot` value and `AppModel.snapshot(at:)`** — the single canonical projection of engine state into everything a surface can render (phase, task line, next action, remaining interval, remaining text, status line, VoiceOver summary). Existing surfaces are migrated onto it, so the rule is enforced by construction rather than by convention.
+- **New `SessionSnapshot` value and `AppModel.snapshot(at:)`** — the canonical projection of engine state into everything a surface can render (phase, task line, next action, remaining interval, remaining text, status line, VoiceOver summary). Each scene captures it once per render; existing surfaces are migrated onto the value, so common-instant agreement is enforced by construction rather than convention.
 - **New menu-bar popover** (`MenuBarExtra`, window style): status line, remaining time, current task, and the loop entry points — begin, hold/resume, check in, open the main window.
 - **New floating focus capsule**: a small always-on-top window with the task line, remaining time, and hold/resume; opened and closed from a menu command; suppressed at launch.
 - **New return overlay**: presented over the focus surface the moment a break ends, carrying the exact next action, dismissed by ⏎ or its button. In-memory presentation state only — no new persisted field, no new event kind.
@@ -40,5 +40,5 @@ This change gives the session three ambient surfaces — a menu-bar popover, a f
 ### Modified Capabilities
 
 - `focus-loop-ui`: "Complete accessibility alternates" gains render-level verification of the Reduce Transparency and Increase Contrast alternates and extends the keyboard scenario to the whole loop as real key events.
-- `session-persistence`: "Edition-neutral storage" gains a two-configuration parity scenario against live container schemas.
+- `session-persistence`: "Configuration-neutral storage" gains a two-configuration parity scenario against live container schemas.
 - `app-scaffold`: "App lifecycle restores state" gains a launch-time first-run assertion.

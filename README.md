@@ -6,15 +6,11 @@ Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach
 
 Research is complete, **Living Companion** is the approved base direction (2026-07-30), and **milestone M1 — app scaffold + complete core loop — is implemented and independently validated** (2026-07-31; change archived as `2026-07-31-add-app-scaffold-core-loop`, 27 requirements synced to `openspec/specs/`). The native app runs the full loop: initiate → focus (physics-driven companion field) → check-in → break → review, local-first with no account.
 
-**Milestone M2 (companion surfaces) is implemented and merged to `main`** — menu-bar popover, floating focus capsule, return overlay, and the four M1 hardening follow-ups, as OpenSpec change `add-companion-surfaces`, joined on the same files by `add-session-settings` (rhythm, sound cues, local notifications). The full verification gate — including the previously environment-blocked UI suite — exited 0 on 2026-08-13. The one open item before archiving is an independent re-validation under the amended C5 criterion (owner-granted 2026-08-22); tracked as issue #7. Next feature work: presence & continuity pack (issue #27). No shipping release or Enterprise service is claimed yet.
+M2 companion surfaces and the settings implementation are merged, but neither active change is archive-ready: fresh 2026-08-23 validators reopened behavior, accessibility, compatibility, and evidence work. The active change set is `add-companion-surfaces`, `add-session-settings`, and `stabilize-runtime-contracts`; the amended specifications passed their final reviews, the owner pre-approved them, and red-first implementation is in progress on the feature branch. Their dated plans live under `docs/plans/2026-08-23-*.md`. Historical green output remains evidence, not a current completion claim. No shipping release is claimed yet.
 
-## Editions
+## One product
 
-- **Lite:** complete local focus loop, initiation support, check-ins, adaptive breaks, accessibility modes, menu-bar controls, and local review.
-- **Pro:** advanced local insights, richer automations/integrations, optional sync, and deeper customization.
-- **Enterprise:** the same native client with managed policy, audit/export, deployment, and identity integration boundaries. Team/cloud services are separate deliverables, not hidden inside the scaffold.
-
-Core accessibility and ADHD-aware focus support are not paywalled.
+Praxmodoro is one complete app. Every capability ships to every user; capability keys remain internal provenance checks and cannot withhold behavior. Any future network, sync, analytics, or AI work requires its own explicit optional specification.
 
 ## Repository map
 
@@ -28,7 +24,7 @@ Core accessibility and ADHD-aware focus support are not paywalled.
 - `.agent/sessions/` — continuous autonomous build audit trail.
 - `progress.txt` — append-only execution log.
 
-`SPEC.md` (completion contract) and `prd.json` (atom state) now exist and govern milestone M1. `BLUEPRINT.md` remains a planned artifact for the implementation phase.
+`SPEC.md` is the completion contract, `prd.json` is atom state, active changes live under `openspec/changes/`, and dated execution plans live under `docs/plans/`. `BLUEPRINT.md` was never created and is not part of the workflow.
 
 ## Specification commands
 

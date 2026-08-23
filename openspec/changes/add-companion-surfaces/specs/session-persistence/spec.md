@@ -4,17 +4,22 @@ M1 asserted schema parity against a single static schema declaration, which cann
 
 ## MODIFIED Requirements
 
-### Requirement: Edition-neutral storage
-Stored data SHALL be identical in shape across editions and across store configurations; no field SHALL exist solely to enforce or upsell editions, and no store configuration SHALL produce a different entity or attribute set from any other.
+### Requirement: Configuration-neutral storage
+Stored data SHALL be identical in shape across store configurations; no field SHALL encode an edition, tier, license, paywall, or upsell concept, and no store configuration SHALL produce a different entity or attribute set from any other.
 
 #### Scenario: Schema parity
-- **WHEN** the schema is generated under Lite and Pro flags
-- **THEN** the schemas SHALL be identical
+- **WHEN** the schema is generated for the sole product configuration
+- **THEN** it SHALL contain no feature-availability branch or tier-shaped attribute
 
 #### Scenario: Two-configuration parity against live containers
 - **WHEN** one store is opened in memory and another is opened on disk, and each live container's schema is read back
 - **THEN** the entity names, attribute names, and attribute value types SHALL be identical between the two containers
 
-#### Scenario: No edition-shaped field
+#### Scenario: No tier-shaped field
 - **WHEN** every attribute name in the live container schema is inspected
-- **THEN** none SHALL name an edition, paywall, or upsell concept
+- **THEN** none SHALL name an edition, tier, license, paywall, or upsell concept
+
+## RENAMED Requirements
+
+- FROM: `### Requirement: Edition-neutral storage`
+- TO: `### Requirement: Configuration-neutral storage`

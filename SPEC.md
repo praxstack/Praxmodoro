@@ -20,7 +20,7 @@ Governed by OpenSpec change `add-app-scaffold-core-loop` (archived `2026-07-31-a
 6. The copy-tone lint (no medical/diagnostic/judgment claims), no-network harness, and never-paywalled-set validation all pass.
 7. `npm run spec:validate` passes strict, and an independent validator session confirms 1–6 from a fresh context using only this file, the change artifacts, and the repo.
 
-## Milestone M2 — companion surfaces (in progress, one gate blocked 2026-08-04)
+## Milestone M2 — companion surfaces (reopened 2026-08-23)
 
 Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and only when:
 
@@ -33,17 +33,23 @@ Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and o
 
 **Status 2026-08-22.** Gate 2's no-second-clock defense survived six adversarial defeats being closed against it (full history in `prd.json` / `progress.txt`). The whole-change independent validator at HEAD `9a6dc8c` on 2026-08-13 confirmed C1–C4 and C6 pass, including the UI half of gate 3 actually executing — `verify-project.sh` exited 0 end to end once the host condition cleared. C5 failed on its bookkeeping clause only: literal one-commit-per-atom is unmeetable without rewriting the per-defeat commit trail that makes the C2 guarantee trustworthy. On 2026-08-22 the criterion owner granted the amendment recorded in `prd.json` (`commitMapping.proposedAmendment`): C5 now reads "every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified."
 
-**Remaining for M2 close:** an independent fresh-context re-validation against the amended criterion, then archive of `add-companion-surfaces`; `add-session-settings` tasks 9.2–9.3 gate that change's own archive. Tracked as issue #7.
+**Reopened 2026-08-23.** A fresh validator found that capability consultation was not wired at the companion construction sites, capsule/overlay Increase Contrast was not connected to the environment, the main focus render mixed wall-clock instants, the return overlay could clear before acknowledgement, and the signed keyboard evidence omitted required paths. The active `add-companion-surfaces` tasks 10–11 now govern M2 close. Historical green runs remain evidence, not current completion proof. Issue #7 remains open.
+
+## Active architecture stabilization batch (2026-08-23)
+
+Three OpenSpec changes are active: `add-companion-surfaces`, `add-session-settings`, and `stabilize-runtime-contracts`. `add-session-settings` was also reopened after a fresh validator found preset, rendered-token, notification-denial, sound-compatibility, live-auto-return, audio-retention, and evidence gaps. The runtime-contract change is the narrow owner-approved prerequisite represented by issues #51–#53. Implementation is complete and independently review-clear but remains uncommitted pending the fresh full gate, isolated atom commits, evidence reconciliation, and archive; no release is claimed.
+
+The active specifications and dated plans define new red-first atoms and fresh validation gates without rewriting historical evidence. The owner pre-approved the specifications in the active completion goal on 2026-08-23, accepting `add-session-settings`' immutable grouped historical commits and missing contemporaneous red receipts as documented deviations. That decision permits implementation and later archive after every remaining gate; it does not rewrite history or turn absent receipts into evidence.
 
 ## Charted next (2026-08-23)
 
-Between M2 close and M3 sit two charted bodies of work. Detail lives on the issue tracker; each arrives as its own OpenSpec change with EARS specs, red-then-green atoms, and independent validation.
+The active stabilization batch has extracted issue #18 and architecture prerequisites #51–#53 from the roadmap above. The work still charted below remains unscheduled; detail lives on the issue tracker, and each future slice requires its own OpenSpec change with EARS specs, red-then-green atoms, and independent validation.
 
-1. **Presence & continuity pack** (issue #27): global keyboard shortcuts (#19), recent-task reuse (#20), day timeline browser (#21), today-at-a-glance summary (#22); chimes default-on with the block-start cue (#18) ships independently; parking list (#30), music (#31), launch-at-login (#32), finite Session length (#33) are charted siblings.
-2. **Enterprise-grade pass** (plan `docs/plans/2026-08-23-enterprise-grade.md`, issues #35–#53):
+1. **Presence & continuity pack** (issue #27): global keyboard shortcuts (#19), recent-task reuse (#20), day timeline browser (#21), today-at-a-glance summary (#22), parking list (#30), music (#31), launch-at-login (#32), and finite Session length (#33).
+2. **Trust and presence pass** (plan `docs/plans/2026-08-23-enterprise-grade.md`, remaining issues #35–#50):
    - Data trust: persistence-failure surfacing (#35), persist-before-mutate (#36), VersionedSchema plan (#37), clock-anomaly honesty (#38), local diagnostics (#39), event-log indexing (#40), parked-thoughts defect (#41).
    - Companion presence grade: coach-initiated check-ins (#43), truthful break countdowns (#44), real step editing (#45), flow elapsed time (#46), capsule parity (#47), drift notes (#48), review totals (#49), fullscreen capsule (#42).
-   - Distribution base (#50). Architecture prerequisites land first: payload vocabulary and restore extraction (#51), single break-end derivation (#52), surface routing discipline (#53).
+   - Distribution base (#50).
 
 ## Later milestones (not yet specified)
 
@@ -52,7 +58,7 @@ M3 staged integrations (EventKit import, App Intents, richer local analytics) ·
 ## Global invariants (hold at every milestone)
 
 - Deterministic timing from canonical wall-clock timestamps; ticks are presentation only.
-- Local-first: no network, account, or telemetry without a spec'd, explicit, optional, edition-gated opt-in.
+- Local-first: no network, account, or telemetry without a spec'd, explicit, optional, capability-scoped opt-in.
 - Non-medical positioning in every string; no punitive mechanics (streak loss, forced breaks, urgency, judgment of activity).
 - Accessibility alternates are architecture, not polish; they ship in the same change as the feature they serve.
 - One independently testable atom per commit; conventional commits; never weaken a test to go green.
