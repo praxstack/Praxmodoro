@@ -38,6 +38,13 @@ public extension Session {
         return max(derived, lastNudge)
     }
 
+    /// The canonical end of the active break, including a due long-break
+    /// cadence — nil unless the recorded tail is a break.
+    func breakEndInstant(cadence: LongBreakCadence?) -> Date? {
+        guard let last = transitions.last, last.state == .onBreak else { return nil }
+        return last.at.addingTimeInterval(suggestedBreakLength(cadence: cadence))
+    }
+
     /// The canonical instant a gentle-start arrival period completes — nil when
     /// the policy has no arrival phase or the block never ran that long.
     func promotionInstant() -> Date? {
@@ -51,18 +58,19 @@ public extension Session {
     /// `now`: a completed gentle-start arrival is recorded as an ordinary
     /// event (state unchanged — the promotion is seamless), a block that
     /// expired at or before `now` gains the consequence of `blockEnd` at the
-    /// expiry instant, and — when `autoReturn` carries a break length — a
-    /// break that ran its length gains the return to focus at the canonical
-    /// break-end instant. Every materialized record is backdated to its
+    /// expiry instant, and — when `autoReturn` is enabled for a break whose
+    /// end occurred after `autoReturnAfter` — a completed break gains the
+    /// return to focus at the canonical break-end instant. Every record is
+    /// backdated to its
     /// canonical timestamp, never stamped at wake time. Idempotent.
     ///
-    /// Callers decide when the rhythm should continue: pass `autoReturn`
-    /// only while the user is plausibly present, or an absence fills with
-    /// materialized cycles nobody lived through.
+    /// `autoReturnAfter` is the process-live fence: breaks ending at or before
+    /// it remain open, so an absence cannot fill with cycles nobody lived.
     func reconciled(
         at now: Date,
         blockEnd: BlockEndBehaviour = .offeredDefault,
-        autoReturn: TimeInterval? = nil,
+        autoReturn: Bool = false,
+        autoReturnAfter: Date? = nil,
         cadence: LongBreakCadence? = nil
     ) -> Session {
         var copy = self
@@ -86,28 +94,14 @@ public extension Session {
                     break
                 }
             }
-            // Auto-return: never for flow — with no finite focus there is
-            // nothing to return *to* on a rhythm, and the flow exemption
-            // means no automatic transition at any instant (validator
-            // finding 4). The length is cadence-aware per materialized
-            // break, so the Nth break runs long (finding 6).
-            if let autoReturn, autoReturn > 0, policy.focus != nil,
-                let last = copy.transitions.last, last.state == .onBreak
+            // Auto-return: never for flow, never for an unwitnessed break,
+            // and always at Core's cadence-aware canonical end.
+            if autoReturn, policy.focus != nil, let autoReturnAfter,
+                let breakEnd = copy.breakEndInstant(cadence: cadence),
+                breakEnd > autoReturnAfter, breakEnd <= now
             {
-                let completed = copy.transitions.filter { $0.state == .onBreak }.count
-                let length: TimeInterval =
-                    if let cadence, cadence.everyBlocks > 0, completed > 0,
-                        completed % cadence.everyBlocks == 0
-                    {
-                        cadence.length
-                    } else {
-                        autoReturn
-                    }
-                if last.at.addingTimeInterval(length) <= now {
-                    copy.transitions.append(
-                        TransitionRecord(intent: nil, state: .running, at: last.at.addingTimeInterval(length)))
-                    advanced = true
-                }
+                copy.transitions.append(TransitionRecord(intent: nil, state: .running, at: breakEnd))
+                advanced = true
             }
         }
         return copy

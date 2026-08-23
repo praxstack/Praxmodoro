@@ -56,6 +56,7 @@ final class AppModel {
     func setRhythm(_ preferences: RhythmPreferences) {
         rhythm = preferences
         preferences.save(to: defaults)
+        syncSound(at: clock())
     }
 
     func setSound(_ preferences: SoundPreferences) {
@@ -143,11 +144,9 @@ final class AppModel {
             let reconciled = reconciledSession(session, at: now)
             if sound.focusEndChime, let expiry = reconciled.expiryInstant(), expiry > now {
                 desired = (.focusEnd, expiry)
-            } else if sound.breakEndChime, reconciled.state(at: now) == .onBreak,
-                let breakStart = reconciled.transitions.last?.at
+            } else if sound.breakEndChime,
+                let breakEnd = reconciled.breakEndInstant(cadence: rhythm.cadence)
             {
-                let breakEnd = breakStart.addingTimeInterval(
-                    reconciled.suggestedBreakLength(cadence: rhythm.cadence))
                 if breakEnd > now { desired = (.breakEnd, breakEnd) }
             }
         }
@@ -199,11 +198,9 @@ final class AppModel {
                 desired = LocalNotificationRequest(
                     id: "block-end", body: notifications.blockEndText, at: expiry,
                     bringToFront: notifications.bringToFront)
-            } else if notifications.breakEndEnabled, reconciled.state(at: now) == .onBreak,
-                let breakStart = reconciled.transitions.last?.at
+            } else if notifications.breakEndEnabled,
+                let breakEnd = reconciled.breakEndInstant(cadence: rhythm.cadence)
             {
-                let breakEnd = breakStart.addingTimeInterval(
-                    reconciled.suggestedBreakLength(cadence: rhythm.cadence))
                 if breakEnd > now {
                     desired = LocalNotificationRequest(
                         id: "break-end", body: notifications.breakEndText, at: breakEnd,
@@ -228,6 +225,7 @@ final class AppModel {
     let store: LocalStore?
     let capabilities: CapabilityRegistry
     private let clock: () -> Date
+    private let liveObservationStartedAt: Date
     private let defaults: UserDefaults
     private let soundScheduler: SoundCueScheduling
     private let notificationScheduler: NotificationScheduling
@@ -242,6 +240,7 @@ final class AppModel {
         self.store = store
         self.capabilities = capabilities
         self.clock = clock
+        self.liveObservationStartedAt = clock()
         self.defaults = defaults
         self.soundScheduler = soundScheduler
         self.notificationScheduler = notificationScheduler
@@ -305,7 +304,7 @@ final class AppModel {
         // absence must not fill with focus blocks nobody lived through.
         let now = clock()
         switch result.session.reconciled(
-            at: now, blockEnd: rhythm.blockEnd, autoReturn: nil
+            at: now, blockEnd: rhythm.blockEnd, autoReturn: false, autoReturnAfter: nil
         ).state(at: now) {
         case .running, .held: surface = .focus
         case .onBreak: surface = .onBreak
@@ -324,7 +323,8 @@ final class AppModel {
     private func reconciledSession(_ session: Session, at now: Date) -> Session {
         session.reconciled(
             at: now, blockEnd: rhythm.blockEnd,
-            autoReturn: rhythm.autoReturn ? session.policy.suggestedBreak : nil,
+            autoReturn: rhythm.autoReturn,
+            autoReturnAfter: rhythm.autoReturn ? liveObservationStartedAt : nil,
             cadence: rhythm.cadence)
     }
 

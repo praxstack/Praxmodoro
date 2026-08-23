@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import PraxmodoroCore
 
 /// Spec: add-session-settings — "Autostart behaviour is the user's choice"
@@ -11,6 +12,37 @@ import Testing
         var session = Session(policy: .classic, startedAt: nil)
         try session.apply(.begin, at: t0)
         return session
+    }
+
+    @Test func testBreakEndInstantUsesOrdinaryPolicyLength() throws {
+        var session = try running()
+        let breakStart = t0.addingTimeInterval(25 * 60)
+        try session.apply(.startBreak, at: breakStart)
+
+        #expect(session.breakEndInstant(cadence: nil) == breakStart.addingTimeInterval(5 * 60))
+    }
+
+    @Test func testBreakEndInstantUsesCadenceLength() throws {
+        var session = try running()
+        let breakStart = t0.addingTimeInterval(25 * 60)
+        try session.apply(.startBreak, at: breakStart)
+        let cadence = LongBreakCadence(everyBlocks: 1, length: 12 * 60)
+
+        #expect(session.breakEndInstant(cadence: cadence) == breakStart.addingTimeInterval(12 * 60))
+    }
+
+    @Test func testBreakEndInstantIsNilOutsideAnActiveBreak() throws {
+        let idle = Session(policy: .classic, startedAt: t0)
+        var running = idle
+        try running.apply(.begin, at: t0)
+        var held = running
+        try held.apply(.hold, at: t0.addingTimeInterval(1))
+        var closed = running
+        try closed.apply(.close, at: t0.addingTimeInterval(1))
+
+        for session in [idle, running, held, closed] {
+            #expect(session.breakEndInstant(cadence: nil) == nil)
+        }
     }
 
     @Test func testOfferedDefaultRecordsBreakAtCanonicalExpiry() throws {
@@ -59,7 +91,8 @@ import Testing
         try session.apply(.begin, at: t0)
         let later = t0.addingTimeInterval(6 * 60 * 60)
         for behaviour in [BlockEndBehaviour.offeredDefault, .promptFirst, .manual] {
-            let reconciled = session.reconciled(at: later, blockEnd: behaviour, autoReturn: 5 * 60)
+            let reconciled = session.reconciled(
+                at: later, blockEnd: behaviour, autoReturn: true, autoReturnAfter: t0)
             #expect(reconciled.state(at: later) == .running)
             #expect(reconciled.transitions.count == session.transitions.count)
         }
@@ -80,7 +113,8 @@ import Testing
         try session.apply(.startBreak, at: blockEnd)
         // Sleep across the break's end; wake later. The return is backdated.
         let wake = blockEnd.addingTimeInterval(9 * 60)
-        let reconciled = session.reconciled(at: wake, blockEnd: .manual, autoReturn: 5 * 60)
+        let reconciled = session.reconciled(
+            at: wake, blockEnd: .manual, autoReturn: true, autoReturnAfter: t0)
         #expect(reconciled.state(at: wake) == .running)
         let ret = try #require(reconciled.transitions.last)
         #expect(ret.at == blockEnd.addingTimeInterval(5 * 60))
@@ -88,6 +122,40 @@ import Testing
         // The new block's remaining is fresh and derives from the backdated start.
         let remaining = try #require(reconciled.remaining(at: wake))
         #expect(remaining == TimeInterval(21 * 60))
+    }
+
+    @Test func testCustomSevenMinutePolicyOwnsAutoReturnLength() throws {
+        let policy = TimingPolicy.custom(arrival: nil, focus: 25 * 60, suggestedBreak: 7 * 60)
+        var session = Session(policy: policy, startedAt: t0)
+        try session.apply(.begin, at: t0)
+        let breakStart = t0.addingTimeInterval(25 * 60)
+        try session.apply(.startBreak, at: breakStart)
+        let breakEnd = breakStart.addingTimeInterval(7 * 60)
+
+        let reconciled = session.reconciled(
+            at: breakEnd.addingTimeInterval(1), blockEnd: .manual,
+            autoReturn: true, autoReturnAfter: t0)
+
+        #expect(session.breakEndInstant(cadence: nil) == breakEnd)
+        #expect(reconciled.transitions.last?.state == .running)
+        #expect(reconciled.transitions.last?.at == breakEnd)
+    }
+
+    @Test func testBreakAtOrBeforeProcessBoundaryNeverCatchesUp() throws {
+        var session = try running()
+        let breakStart = t0.addingTimeInterval(25 * 60)
+        try session.apply(.startBreak, at: breakStart)
+        let breakEnd = breakStart.addingTimeInterval(5 * 60)
+
+        let once = session.reconciled(
+            at: breakEnd.addingTimeInterval(1), blockEnd: .manual,
+            autoReturn: true, autoReturnAfter: breakEnd)
+        let twice = once.reconciled(
+            at: breakEnd.addingTimeInterval(60 * 60), blockEnd: .manual,
+            autoReturn: true, autoReturnAfter: breakEnd)
+
+        #expect(once.transitions.last?.state == .onBreak)
+        #expect(twice.transitions == once.transitions)
     }
 
     @Test func testAutoReturnOffKeepsBreaksOpenEnded() throws {
@@ -104,7 +172,9 @@ import Testing
         // whole 25+5 rhythm at canonical instants — two full cycles in.
         let session = try running()
         let wake = t0.addingTimeInterval(62 * 60)
-        let reconciled = session.reconciled(at: wake, blockEnd: .offeredDefault, autoReturn: 5 * 60)
+        #expect(session.state(at: t0) == .running)
+        let reconciled = session.reconciled(
+            at: wake, blockEnd: .offeredDefault, autoReturn: true, autoReturnAfter: t0)
         let instants = reconciled.transitions.map { $0.at.timeIntervalSince(t0) / 60 }
         #expect(instants.contains(25))
         #expect(instants.contains(30))
@@ -127,7 +197,8 @@ import Testing
         try session.apply(.startBreak, at: t0.addingTimeInterval(50 * 60))
         let later = t0.addingTimeInterval(4 * 60 * 60)
         for behaviour in [BlockEndBehaviour.offeredDefault, .promptFirst, .manual] {
-            let reconciled = session.reconciled(at: later, blockEnd: behaviour, autoReturn: 5 * 60)
+            let reconciled = session.reconciled(
+                at: later, blockEnd: behaviour, autoReturn: true, autoReturnAfter: t0)
             #expect(reconciled.state(at: later) == .onBreak, "a flow break must stay open-ended")
             #expect(reconciled.transitions.count == session.transitions.count)
         }
@@ -143,7 +214,8 @@ import Testing
         // the second break-end is boundary + 10, not + 5.
         let wake = t0.addingTimeInterval(80 * 60)
         let reconciled = session.reconciled(
-            at: wake, blockEnd: .offeredDefault, autoReturn: 5 * 60, cadence: cadence)
+            at: wake, blockEnd: .offeredDefault, autoReturn: true, autoReturnAfter: t0,
+            cadence: cadence)
         let instants = reconciled.transitions.map { Int($0.at.timeIntervalSince(t0) / 60) }
         #expect(instants.contains(55), "second block ends at 55")
         #expect(instants.contains(65), "second break is the long one: returns at 65, not 60")

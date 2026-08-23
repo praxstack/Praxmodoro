@@ -1,9 +1,9 @@
 import Foundation
+import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroCore
-import PraxmodoroStore
 
 /// Fixes for the independent validator's findings on add-session-settings
 /// (report 2026-08-13): each test names the finding it closes.
@@ -173,6 +173,46 @@ import PraxmodoroStore
         #expect(cues.scheduled.last?.at == t0.addingTimeInterval(30 * 60), "break-end chime anchors on the derived break's end")
     }
 
+    @Test func testCoreBreakEndAgreesWithSoundNotificationAndMaterializedReturn() throws {
+        let (model, ticker, cues, notifications) = try makeModel()
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        rhythm.cadence = LongBreakCadence(everyBlocks: 1, length: 10 * 60)
+        model.setRhythm(rhythm)
+        var sound = model.sound
+        sound.breakEndChime = true
+        model.setSound(sound)
+        var notificationPreferences = model.notifications
+        notificationPreferences.breakEndEnabled = true
+        model.setNotifications(notificationPreferences)
+        model.policy = .classic
+        try model.begin()
+
+        ticker.now = t0.addingTimeInterval(26 * 60)
+        model.syncPresentation(at: ticker.now)
+        let canonicalBreakEnd = t0.addingTimeInterval(35 * 60)
+        #expect(cues.scheduled.last?.at == canonicalBreakEnd)
+        #expect(notifications.scheduled.last?.at == canonicalBreakEnd)
+
+        ticker.now = canonicalBreakEnd.addingTimeInterval(1)
+        try model.toggleHold()
+        #expect(
+            model.session?.transitions.contains {
+                $0.state == .running && $0.at == canonicalBreakEnd
+            } == true)
+    }
+
+    @Test func testAppModelUsesOnlyTheCoreBreakEndAndProcessBoundary() throws {
+        let compact = try source("AppModel.swift").filter { !$0.isWhitespace }
+        #expect(compact.components(separatedBy: "breakEndInstant(cadence:rhythm.cadence)").count - 1 == 2)
+        #expect(!compact.contains("breakStart.addingTimeInterval"))
+        #expect(compact.contains("privateletliveObservationStartedAt:Date"))
+        #expect(
+            compact.contains(
+                "autoReturn:rhythm.autoReturn,autoReturnAfter:rhythm.autoReturn?liveObservationStartedAt:nil"))
+        #expect(compact.contains("autoReturn:false,autoReturnAfter:nil"))
+    }
     @Test func testRoutingHookSyncsPresentation() throws {
         let app = try source("PraxmodoroApp.swift")
         #expect(app.contains("syncPresentation"), "the render loop must hand derived phase changes to the model")

@@ -106,6 +106,22 @@ import Testing
         #expect(recorder.cancels >= 1)
     }
 
+    @Test func testCadenceChangeReschedulesActiveBreakNotification() throws {
+        let (model, ticker, recorder) = try makeModel { $0.breakEndEnabled = true }
+        try model.begin()
+        ticker.now = t0.addingTimeInterval(26 * 60)
+        try model.acceptBlockEndOffer()
+        #expect(recorder.scheduled.last?.at == t0.addingTimeInterval(31 * 60))
+        let cancelsBefore = recorder.cancels
+        var rhythm = model.rhythm
+        rhythm.cadence = LongBreakCadence(everyBlocks: 1, length: 10 * 60)
+
+        model.setRhythm(rhythm)
+
+        #expect(recorder.cancels == cancelsBefore + 1)
+        #expect(recorder.scheduled.last?.at == t0.addingTimeInterval(36 * 60))
+    }
+
     @Test func testBringToFrontRidesTheRequest() throws {
         let (model, _, recorder) = try makeModel {
             $0.blockEndEnabled = true
