@@ -40,11 +40,14 @@ Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and o
 Between M2 close and M3 sit two charted bodies of work. Detail lives on the issue tracker; each arrives as its own OpenSpec change with EARS specs, red-then-green atoms, and independent validation.
 
 1. **Presence & continuity pack** (issue #27): global keyboard shortcuts (#19), recent-task reuse (#20), day timeline browser (#21), today-at-a-glance summary (#22); chimes default-on with the block-start cue (#18) ships independently; parking list (#30), music (#31), launch-at-login (#32), finite Session length (#33) are charted siblings.
-2. **Enterprise-grade pass** (plan `docs/plans/2026-08-23-enterprise-grade.md`, issues #35–#53): data trust — persistence-failure surfacing (#35), persist-before-mutate (#36), VersionedSchema plan (#37), clock-anomaly honesty (#38), local diagnostics (#39), event-log indexing (#40), parked-thoughts defect (#41) — and companion presence grade — coach-initiated check-ins (#43), truthful break countdowns (#44), real step editing (#45), flow elapsed time (#46), capsule parity (#47), drift notes (#48), review totals (#49), fullscreen capsule (#42) — plus distribution base (#50). Architecture prerequisites land first: payload vocabulary + restore extraction (#51), single break-end derivation (#52), surface routing discipline (#53).
+2. **Enterprise-grade pass** (plan `docs/plans/2026-08-23-enterprise-grade.md`, issues #35–#53):
+   - Data trust: persistence-failure surfacing (#35), persist-before-mutate (#36), VersionedSchema plan (#37), clock-anomaly honesty (#38), local diagnostics (#39), event-log indexing (#40), parked-thoughts defect (#41).
+   - Companion presence grade: coach-initiated check-ins (#43), truthful break countdowns (#44), real step editing (#45), flow elapsed time (#46), capsule parity (#47), drift notes (#48), review totals (#49), fullscreen capsule (#42).
+   - Distribution base (#50). Architecture prerequisites land first: payload vocabulary and restore extraction (#51), single break-end derivation (#52), surface routing discipline (#53).
 
 ## Later milestones (not yet specified)
 
-M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 future content (insights, automations — cloud/team services are separate deliverables, if ever). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.
+M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 future content (insights, automations; cloud/team services are separate deliverables, if ever). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.
 
 ## Global invariants (hold at every milestone)
 

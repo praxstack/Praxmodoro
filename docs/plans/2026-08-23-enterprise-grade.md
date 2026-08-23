@@ -1,16 +1,16 @@
-# Enterprise-grade pass — CEO review (plan)
+# Enterprise-grade pass: CEO review plan
 
 Generated 2026-08-23 by /plan-ceo-review (+ office-hours builder lens, grilling/domain-modeling discipline).
-Mode: **SELECTIVE EXPANSION** — hold the ticketed roadmap (#7, #17–#34), cherry-pick hardening and truth-telling work from two parallel code audits.
+Mode: **SELECTIVE EXPANSION**, meaning hold the ticketed roadmap (#7, #17–#34) and cherry-pick hardening and truth-telling work from two parallel code audits.
 Authority: Prax granted autonomous subagent fan-out and decision authority for this review; every gate below records its ruling and remains vetoable.
 
 ## Premise challenge
 
-- **Is "enterprise-grade" the right problem?** Rephrased: the app must earn daily-driver *trust*. Features are already charted (24 open tickets). What is missing is the guarantee that the app never loses a byte, never shows a lie, and never fails silently. That is the actual ask, and it is the right one: session history is the product's memory, and today three defects put that memory at risk.
-- **What if we do nothing?** The store-open failure path silently disables all persistence while looking normal; 26 `try?` sites can diverge on-screen state from the persisted record; the first schema change quarantines the entire history without telling anyone. These are not hypotheticals — they are written in the code today.
-- **Framing ruled out:** adding an Enterprise tier (contradicts issue #34, owner-authorized), and adding net-new feature surface beyond the ticketed roadmap (premature — the roadmap is already the feature work).
+- **Is "enterprise-grade" the right problem?** Rephrased: the app must earn daily-driver *trust*. Features are already charted. What is missing is the guarantee that the app never loses a byte, never shows a lie, and never fails silently. That is the actual ask, and it is the right one: session history is the product's memory, and three defects put that memory at risk today.
+- **What if we do nothing?** The store-open failure path silently disables all persistence while looking normal; 26 `try?` sites can diverge on-screen state from the persisted record; the first schema change quarantines the entire history without telling anyone. None of this is hypothetical. It is written in the code.
+- **Framing ruled out:** adding an Enterprise tier (contradicts issue #34, owner-authorized), and adding net-new feature surface beyond the ticketed roadmap (premature; the roadmap is already the feature work).
 
-## Existing-code leverage (audit finding, high value)
+## Existing-code leverage (audit finding)
 
 Four capabilities are fully built and idle; wiring them is cheaper than building anything:
 
@@ -46,7 +46,7 @@ APPROACH C: B + all product refinements
 
 ## Accepted scope (filed as tickets, ready-for-agent)
 
-**Change lane 1 — data trust (`harden-data-trust`):**
+**Change lane 1, data trust (`harden-data-trust`):**
 1. Surface persistence-failure states (nil-store alert, recovery notice shown, orphan-session prune)
 2. Persist-before-mutate; stop swallowing store errors; one observable error channel
 3. VersionedSchema v1 + migration plan before any model change
@@ -54,9 +54,9 @@ APPROACH C: B + all product refinements
 5. Local diagnostics: OSLog categories + last-session breadcrumb
 6. Store index + O(1) orderIndex derivation
 7. Parked-thoughts bleed defect (clear on begin)
-8. Backup escape hatch — amendment to #25 (reveal store in Finder; auto-copy on version mismatch)
+8. Backup escape hatch (amendment to #25: reveal store in Finder; auto-copy on version mismatch)
 
-**Change lane 2 — companion presence grade (`companion-presence-grade`):**
+**Change lane 2, companion presence grade (`companion-presence-grade`):**
 9. Coach-initiated check-ins (gentle cadence, off by default)
 10. Break countdown on popover/capsule (no more 00:00 during breaks)
 11. "Smaller step" really edits the step (via `.edit`)
