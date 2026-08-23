@@ -58,7 +58,7 @@ import Testing
         let model = try answered(.smallerStep)
 
         try model.closeSession()
-        model.surface = .initiate
+        model.beginNextSession()
         model.taskTitle = "A fresh task"
         try model.begin()
 

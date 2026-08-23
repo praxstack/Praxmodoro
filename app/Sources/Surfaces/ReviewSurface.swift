@@ -44,7 +44,7 @@ struct ReviewSurface: View {
                     .font(.callout)
                     .accessibilityIdentifier("insight-card")
                 Button {
-                    model.surface = .initiate
+                    model.beginNextSession()
                 } label: {
                     Label("Begin something new", systemImage: "arrow.counterclockwise")
                         .frame(maxWidth: .infinity, minHeight: 38)

@@ -12,7 +12,7 @@ enum Surface: Equatable {
 @MainActor
 @Observable
 final class AppModel {
-    var surface: Surface = .initiate
+    private(set) var surface: Surface = .initiate
     var taskTitle = ""
     var firstAction = ""
     var capacity = "steady"
@@ -595,6 +595,10 @@ final class AppModel {
         try appendTransition(.closed, at: now)
         surface = .review
         syncSound(at: now)
+    }
+
+    func beginNextSession() {
+        surface = .initiate
     }
 
     /// Descriptive timeline straight from the event log — what happened,
