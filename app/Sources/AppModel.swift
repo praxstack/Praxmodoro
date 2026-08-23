@@ -185,7 +185,9 @@ final class AppModel {
 
     func refreshNotificationAvailability() {
         notificationScheduler.checkAvailability { [weak self] availability in
-            self?.notificationsUnavailable = availability == .denied
+            guard let self else { return }
+            self.notificationsUnavailable = availability == .denied
+            self.syncNotifications(at: self.clock())
         }
     }
 

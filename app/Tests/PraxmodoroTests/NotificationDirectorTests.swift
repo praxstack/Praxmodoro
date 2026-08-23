@@ -1,9 +1,9 @@
 import Foundation
+import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroCore
-import PraxmodoroStore
 
 /// Spec: add-session-settings "Local notifications with honest text"
 /// (tasks 8.1–8.4). Scheduling anchors on canonical instants through a seam;
@@ -21,6 +21,8 @@ import PraxmodoroStore
         var scheduled: [LocalNotificationRequest] = []
         var cancels = 0
         var availability = NotificationAvailability.available
+        var deferredAvailability = false
+        private var deferredReport: (@MainActor (NotificationAvailability) -> Void)?
 
         func schedule(_ request: LocalNotificationRequest) {
             scheduled.append(request)
@@ -32,7 +34,16 @@ import PraxmodoroStore
 
         func checkAvailability(_ report: @escaping @MainActor (NotificationAvailability) -> Void) {
             let value = availability
+            if deferredAvailability {
+                deferredReport = report
+                return
+            }
             Task { @MainActor in report(value) }
+        }
+
+        @MainActor func deliverAvailability(_ value: NotificationAvailability) {
+            deferredReport?(value)
+            deferredReport = nil
         }
     }
 
@@ -138,6 +149,21 @@ import PraxmodoroStore
         try model.begin()
         #expect(recorder.scheduled.isEmpty, "denied permission must schedule nothing")
         #expect(model.notificationsUnavailable, "the panes need the plain truth to render")
+    }
+
+    @Test func testDenialAfterSchedulingCancelsPendingWithoutReplacement() throws {
+        let (model, _, recorder) = try makeModel()
+        recorder.deferredAvailability = true
+        var preferences = model.notifications
+        preferences.blockEndEnabled = true
+        model.setNotifications(preferences)
+        try model.begin()
+        #expect(recorder.scheduled.count == 1)
+
+        recorder.deliverAvailability(.denied)
+        #expect(model.notificationsUnavailable)
+        #expect(recorder.cancels == 1)
+        #expect(recorder.scheduled.count == 1)
     }
 
     @Test func testNoReAuthorizationNagPathExists() throws {
