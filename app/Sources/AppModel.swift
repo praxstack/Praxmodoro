@@ -80,11 +80,24 @@ final class AppModel {
     /// Everything the initiation surface may offer: the four built-ins plus
     /// every user preset as a real policy (validator finding 1).
     var availablePolicies: [TimingPolicy] {
-        let customBreak = rhythm.breakPresets.first ?? 5 * 60
-        let custom = rhythm.focusPresets.map {
-            TimingPolicy.custom(arrival: nil, focus: $0, suggestedBreak: customBreak)
+        let builtIns: [TimingPolicy] = [.gentleStart, .classic, .flow, .recoveryFirst]
+        guard !rhythm.focusPresets.isEmpty || !rhythm.breakPresets.isEmpty else { return builtIns }
+
+        let focuses =
+            rhythm.focusPresets.isEmpty
+            ? [TimingPolicy.classic.focus].compactMap { $0 }
+            : rhythm.focusPresets
+        let breaks =
+            rhythm.breakPresets.isEmpty
+            ? [TimingPolicy.classic.suggestedBreak]
+            : rhythm.breakPresets
+        var seen = Set<TimingPolicy>()
+        let custom = focuses.flatMap { focus in
+            breaks.map { TimingPolicy.custom(arrival: nil, focus: focus, suggestedBreak: $0) }
+        }.filter {
+            seen.insert($0).inserted
         }
-        return [.gentleStart, .classic, .flow, .recoveryFirst] + custom
+        return builtIns + custom
     }
 
     /// Minutes of the cadence's longer break, when this break is the Nth —

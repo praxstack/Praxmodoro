@@ -97,16 +97,18 @@ import Testing
     }
 
     private func pixels(
-        of view: some View, width: Int, height: Int, contrast: ColorSchemeContrast
+        of view: some View, width: Int, height: Int, contrast: ColorSchemeContrast,
+        reduceTransparency: Bool = true,
+        backdrop: Color = SurfacePalette.background(reduceTransparency: true)
     ) throws -> [Pixel] {
         let renderer = ImageRenderer(
             content:
                 ZStack {
-                    SurfacePalette.background(reduceTransparency: true)
+                    backdrop
                     view
                 }
                 .frame(width: CGFloat(width), height: CGFloat(height))
-                .environment(\._accessibilityReduceTransparency, true)
+                .environment(\._accessibilityReduceTransparency, reduceTransparency)
                 .environment(\._colorSchemeContrast, contrast)
                 .environment(\.colorScheme, .light)
                 .environment(\.locale, Locale(identifier: "en_US_POSIX")))
@@ -237,6 +239,42 @@ import Testing
         #expect(standardRatio >= 4.5, "\(name) standard primary text must clear 4.5:1")
         #expect(increasedRatio > standardRatio, "\(name) Increase Contrast must raise the ratio")
         #expect(increasedRatio >= 7, "\(name) increased primary text must clear 7:1")
+    }
+
+    func assertActualSurfaceTransparency(
+        _ view: some View, width: Int, height: Int, name: String
+    ) throws {
+        func rendered(_ reduceTransparency: Bool, over backdrop: Color) throws -> [Pixel] {
+            try pixels(
+                of: view, width: width, height: height, contrast: .standard,
+                reduceTransparency: reduceTransparency, backdrop: backdrop)
+        }
+
+        let opaqueToken = try centrePixel(
+            of: Rectangle().fill(SurfacePalette.background(reduceTransparency: true)))
+        let opaqueOverRed = try rendered(true, over: .red)
+        let opaqueOverBlue = try rendered(true, over: .blue)
+        var sampledBackground = 0
+        var backdropLeaks = 0
+        for (red, blue) in zip(opaqueOverRed, opaqueOverBlue) {
+            let redMatches = red.maximumRGBByteDelta(from: opaqueToken) <= 1
+            let blueMatches = blue.maximumRGBByteDelta(from: opaqueToken) <= 1
+            if redMatches || blueMatches {
+                sampledBackground += 1
+                if !redMatches || !blueMatches || red.maximumRGBByteDelta(from: blue) > 1 {
+                    backdropLeaks += 1
+                }
+            }
+        }
+        #expect(sampledBackground >= 100, "\(name) exposed no measurable opaque pane background")
+        #expect(backdropLeaks == 0, "\(name) leaked its backdrop through \(backdropLeaks) sampled pixels")
+
+        let veiledOverRed = try rendered(false, over: .red)
+        let veiledOverBlue = try rendered(false, over: .blue)
+        let backdropSensitive = zip(veiledOverRed, veiledOverBlue).count {
+            $0.maximumRGBByteDelta(from: $1) >= 3
+        }
+        #expect(backdropSensitive >= 20, "\(name) transparency control cannot detect its backdrop")
     }
 
     private var fixedDisplay: CompanionDisplay {

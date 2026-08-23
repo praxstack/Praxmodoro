@@ -5,6 +5,8 @@ import PraxmodoroCore
 /// on the injected defaults seam — the Motion pattern, scaled. Nothing here
 /// touches the session store or its schema.
 struct RhythmPreferences: Equatable, Codable {
+    static let presetHelp = "Use a unique whole number from 1 to 240."
+
     /// User-added focus durations in seconds; built-in policies always exist.
     var focusPresets: [TimeInterval] = []
     /// User-added break durations in seconds.
@@ -30,6 +32,32 @@ struct RhythmPreferences: Equatable, Codable {
     func save(to defaults: UserDefaults) {
         guard let data = try? JSONEncoder().encode(self) else { return }
         defaults.set(data, forKey: Self.key)
+    }
+
+    /// Commits one validated draft. Invalid input and the previous preset stay
+    /// untouched so the pane can keep the user's text beside the range help.
+    @discardableResult
+    mutating func commitPreset(
+        _ input: inout String,
+        at index: Int? = nil,
+        in keyPath: WritableKeyPath<RhythmPreferences, [TimeInterval]>
+    ) -> Bool {
+        guard let minutes = Int(input), (1...240).contains(minutes) else { return false }
+        let seconds = TimeInterval(minutes * 60)
+        var presets = self[keyPath: keyPath]
+        if let index, !presets.indices.contains(index) { return false }
+        guard !presets.enumerated().contains(where: { $0.offset != index && $0.element == seconds }) else {
+            return false
+        }
+
+        if let index {
+            presets[index] = seconds
+        } else {
+            presets.append(seconds)
+        }
+        self[keyPath: keyPath] = presets
+        input = ""
+        return true
     }
 }
 
