@@ -160,6 +160,46 @@ import Testing
         }
     }
 
+    @Test func testEachSceneRenderCapturesOneSnapshotInstant() throws {
+        let appURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/PraxmodoroApp.swift")
+        let code = Self.codeOnly(try String(contentsOf: appURL, encoding: .utf8))
+        let timelineMarker = "TimelineView(.periodic(from: .now, by: 1))"
+        let mainWindow = try #require(Self.balancedBody(after: "WindowGroup", in: code))
+        let mainTimeline = try #require(Self.balancedBody(after: timelineMarker, in: mainWindow))
+
+        #expect(
+            Self.matchCount(#"snapshot\s*\(at:"#, in: mainTimeline) == 1,
+            "the main render must capture exactly one snapshot")
+        #expect(Self.matchCount(#"let\s+snapshot\s*=\s*model\.snapshot\s*\(at:\s*context\.date\s*\)"#, in: mainTimeline) == 1)
+        for clockRead in ["Date()", "Date.now", "Date.init", "timeIntervalSince"] {
+            #expect(!mainTimeline.contains(clockRead), "the main render reads a second clock via \(clockRead)")
+        }
+        for required in [
+            "model.effectiveSurface(for: snapshot)",
+            "FocusSurface(model: model, snapshot: snapshot)",
+            "display: snapshot.display",
+            ".onChange(of: snapshot.phase)",
+            "model.syncPresentation(at: context.date)",
+        ] {
+            #expect(mainTimeline.contains(required), "the main render does not route \(required) through its snapshot")
+        }
+
+        for (guardName, surface) in [
+            ("focusCapsuleAvailable", "FocusCapsule("),
+            ("menuBarSurfaceAvailable", "MenuBarPopover("),
+        ] {
+            let scene = try #require(Self.balancedBody(after: "if \(guardName)", in: code))
+            let timeline = try #require(Self.balancedBody(after: timelineMarker, in: scene))
+            #expect(
+                Self.matchCount(#"snapshot\s*\(at:"#, in: timeline) == 1,
+                "\(surface) must capture one snapshot")
+            #expect(Self.matchCount(#"snapshot\s*\(at:\s*context\.date\s*\)"#, in: timeline) == 1)
+            #expect(timeline.contains(surface))
+        }
+    }
+
     /// Blanks comments and string literals while preserving braces and line
     /// layout, so source assertions cannot be satisfied by prose or by braces
     /// embedded in copy.

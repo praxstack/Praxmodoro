@@ -16,11 +16,20 @@ struct FocusSurface: View {
     static let blockEndOfferText = "The block is complete — your place is kept. Take the break?"
 
     @Bindable var model: AppModel
+    let snapshot: SessionSnapshot
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var thoughtDraft = ""
 
-    /// Everything this surface renders comes from one snapshot instant.
-    private var snapshot: SessionSnapshot { model.snapshot(at: Date()) }
+    init(model: AppModel, snapshot: SessionSnapshot) {
+        self.model = model
+        self.snapshot = snapshot
+    }
+
+    var taskText: String { snapshot.taskLine }
+    var nextActionText: String { snapshot.nextAction }
+    var fieldState: String { snapshot.phase == .held ? "held" : "breathing" }
+    var showsBlockEndPrompt: Bool { snapshot.offersBlockEndPrompt }
+    var remainingReadout: RemainingReadout { RemainingReadout(display: snapshot.display) }
 
     /// The response to the check-in just answered, if any — the product
     /// answering back in its own words (GitHub #3; spec: check-in responses
@@ -32,10 +41,10 @@ struct FocusSurface: View {
             VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Now focusing").font(.caption.smallCaps()).foregroundStyle(.secondary)
-                    Text(snapshot.taskLine).font(.title2.weight(.semibold))
+                    Text(taskText).font(.title2.weight(.semibold))
                         .accessibilityIdentifier("task-line")
-                    if !snapshot.nextAction.isEmpty {
-                        Text("Next: \(snapshot.nextAction)").foregroundStyle(.secondary)
+                    if !nextActionText.isEmpty {
+                        Text("Next: \(nextActionText)").foregroundStyle(.secondary)
                             .accessibilityIdentifier("next-action-line")
                     }
                 }
@@ -52,7 +61,7 @@ struct FocusSurface: View {
 
                 ZStack {
                     CompanionFieldView(
-                        state: snapshot.phase == .held ? "held" : "breathing",
+                        state: fieldState,
                         motionStilled: model.fieldIsStilled(systemReduceMotion: reduceMotion),
                         pulseSignal: model.fieldPulse
                     )
@@ -60,19 +69,12 @@ struct FocusSurface: View {
                     .accessibilityIdentifier("companion-field")
                     .accessibilityElement()
                     .accessibilityLabel(snapshot.accessibilitySummary)
-                    // The timeline re-asks the model; it never advances a count
-                    // of its own (spec: companion-surfaces "No surface counts
-                    // time"). Each tick is a fresh snapshot at that instant,
-                    // and the rendering is delegated to a pure readout so this
-                    // surface holds no formatting logic of its own.
-                    TimelineView(.periodic(from: .now, by: 0.5)) { context in
-                        RemainingReadout(display: model.snapshot(at: context.date).display)
-                    }
+                    remainingReadout
                 }
 
                 // Non-modal by construction: an ordinary card among the
                 // controls, never a sheet or an alert wall.
-                if snapshot.offersBlockEndPrompt {
+                if showsBlockEndPrompt {
                     VStack(spacing: 8) {
                         Text(Self.blockEndOfferText)
                             .font(.callout)

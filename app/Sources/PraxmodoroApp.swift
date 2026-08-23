@@ -53,33 +53,33 @@ struct PraxmodoroApp: App {
             // block-end presents the break without any UI-side timer
             // advancing state (spec: add-session-settings).
             TimelineView(.periodic(from: .now, by: 1)) { context in
+                let snapshot = model.snapshot(at: context.date)
                 Group {
-                    switch model.effectiveSurface(at: context.date) {
+                    switch model.effectiveSurface(for: snapshot) {
                     case .initiate: InitiateSurface(model: model)
-                    case .focus: FocusSurface(model: model)
+                    case .focus: FocusSurface(model: model, snapshot: snapshot)
                     case .checkin: CheckinSurface(model: model)
                     case .onBreak: BreakSurface(model: model)
                     case .review: ReviewSurface(model: model)
                     }
                 }
-                // A derived phase change (expiry, autostart, auto-return)
-                // hands presentation — sound and notifications only, never
-                // session state — back to the model. Rendering itself stays
-                // pure; this fires only on the transition edge.
-                .onChange(of: model.snapshot(at: context.date).phase) {
+                // Presentation follows the phase derived from this exact
+                // render snapshot; session materialization is added by the
+                // later live-observation atom.
+                .onChange(of: snapshot.phase) {
                     model.syncPresentation(at: context.date)
                 }
-            }
-            .frame(minWidth: 720, minHeight: 520)
-            // The way back, over the surface you are coming back to
-            // (spec: companion-surfaces "Return overlay presents the exact
-            // next action").
-            .overlay {
-                if returnOverlayAvailable && model.returnPending {
-                    ReturnOverlay(
-                        display: model.snapshot(at: Date()).display,
-                        onAcknowledge: { model.acknowledgeReturn() },
-                        motionStilledOverride: model.motionStilled ? true : nil)
+                .frame(minWidth: 720, minHeight: 520)
+                // The way back, over the surface you are coming back to
+                // (spec: companion-surfaces "Return overlay presents the exact
+                // next action").
+                .overlay {
+                    if returnOverlayAvailable && model.returnPending {
+                        ReturnOverlay(
+                            display: snapshot.display,
+                            onAcknowledge: { model.acknowledgeReturn() },
+                            motionStilledOverride: model.motionStilled ? true : nil)
+                    }
                 }
             }
         }
@@ -105,9 +105,11 @@ struct PraxmodoroApp: App {
             if focusCapsuleAvailable {
                 return Window("Focus capsule", id: Self.capsuleWindowID) {
                     TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let snapshot = model.snapshot(at: context.date)
                         FocusCapsule(
-                            display: model.snapshot(at: context.date).display, actions: companionActions,
-                            motionStilledOverride: model.motionStilled ? true : nil)
+                            display: snapshot.display, actions: companionActions,
+                            motionStilledOverride: model.motionStilled ? true : nil
+                        )
                     }
                     .onDisappear { capsuleOpen = false }
                 }
@@ -138,9 +140,11 @@ struct PraxmodoroApp: App {
             if menuBarSurfaceAvailable {
                 return MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
                     TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let snapshot = model.snapshot(at: context.date)
                         MenuBarPopover(
-                            display: model.snapshot(at: context.date).display, actions: companionActions,
-                            motionStilledOverride: model.motionStilled ? true : nil)
+                            display: snapshot.display, actions: companionActions,
+                            motionStilledOverride: model.motionStilled ? true : nil
+                        )
                     }
                 }
                 .menuBarExtraStyle(.window)

@@ -1,9 +1,9 @@
 import Foundation
 import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroStore
 
 /// A code review found two dead controls and one stacking overlay, all rooted
 /// in the same blind spot: the companion surfaces were written and tested for
@@ -82,18 +82,24 @@ import PraxmodoroStore
         #expect(capsule.controls.contains("capsule-hold"))
     }
 
-    // The return card is a greeting for the focus surface. A check-in that
-    // becomes due before the user acknowledges it must not leave two things
-    // asking for attention at once.
-    @Test func testReturnCardStandsDownWhenACheckinTakesOver() throws {
+    // The return card remains the one visible request for attention; the
+    // check-in waits behind it and appears after acknowledgement.
+    @Test func testReturnCardKeepsCheckinWaitingUntilAcknowledged() throws {
         let model = try modelOnBreak()
         try model.endBreak()
         #expect(model.returnPending)
 
         try model.openCheckin()
 
+        #expect(model.surface == .focus)
+        #expect(model.returnPending)
+        #expect(model.checkinPending)
+
+        model.acknowledgeReturn()
+
         #expect(model.surface == .checkin)
-        #expect(!model.returnPending, "the return card stacked on top of the check-in")
+        #expect(!model.returnPending)
+        #expect(!model.checkinPending)
     }
 
     // Ending a break and then acknowledging normally is unaffected.

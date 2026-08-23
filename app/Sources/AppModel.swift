@@ -319,8 +319,12 @@ final class AppModel {
     /// Derived routing for the main window: the stored surface, corrected by
     /// what the engine says this instant. Pure — rendering never mutates.
     func effectiveSurface(at now: Date) -> Surface {
-        guard surface == .focus || surface == .onBreak, let session else { return surface }
-        switch reconciledSession(session, at: now).state(at: now) {
+        effectiveSurface(for: snapshot(at: now))
+    }
+
+    func effectiveSurface(for snapshot: SessionSnapshot) -> Surface {
+        guard surface == .focus || surface == .onBreak else { return surface }
+        switch snapshot.phase {
         case .onBreak where surface == .focus: return .onBreak
         case .running where surface == .onBreak: return .focus
         default: return surface
@@ -457,11 +461,14 @@ final class AppModel {
 
     /// Open the check-in: the timer holds while the question is open.
     ///
-    /// A pending return card stands down here. The card is a greeting for the
-    /// focus surface; if a check-in arrives before it is acknowledged, two
-    /// things would ask for attention at once (found in review).
+    /// A pending return card stays visible. The check-in holds once and waits
+    /// behind it, so two requests never compete for attention.
     func openCheckin() throws {
-        returnPending = false
+        if returnPending {
+            if !isHeld { try applyHoldToggle() }
+            checkinPending = true
+            return
+        }
         if !isHeld { try applyHoldToggle() }
         surface = .checkin
     }
@@ -547,6 +554,10 @@ final class AppModel {
     func acknowledgeReturn() {
         guard returnPending else { return }
         returnPending = false
+        if checkinPending {
+            checkinPending = false
+            surface = .checkin
+        }
         fieldPulse += 1
     }
 
