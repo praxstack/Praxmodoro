@@ -5,7 +5,8 @@ import SwiftUI
 struct BreakSurface: View {
     static let controls = [
         "companion-field", "break-suggestion", "break-choices", "why-disclosure", "reentry-card",
-        "ready-control", "checkin-response",
+        "ready-control", "checkin-response", "break-choice-water", "break-choice-stretch",
+        "break-choice-step-away", "break-choice-quiet",
     ]
 
     @Bindable var model: AppModel
@@ -55,11 +56,19 @@ struct BreakSurface: View {
                 }
 
                 HStack(spacing: 10) {
-                    ForEach(choices, id: \.self) { choice in
+                    ForEach(Array(choices.enumerated()), id: \.element) { index, choice in
                         Button(choice) { try? model.chooseBreak(choice.lowercased()) }
                             .buttonStyle(.bordered)
+                            .keyboardShortcut(
+                                KeyEquivalent(Character("\(index + 1)")), modifiers: []
+                            )
+                            .accessibilityIdentifier(
+                                "break-choice-\(choice.lowercased().replacingOccurrences(of: " ", with: "-"))"
+                            )
+                            .focusable()
                     }
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("break-choices")
 
                 DisclosureGroup("Why this suggestion?", isExpanded: $whyExpanded) {

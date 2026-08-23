@@ -109,6 +109,7 @@ struct FocusSurface: View {
                     .keyboardShortcut(.space, modifiers: [])
                     .accessibilityLabel(snapshot.phase == .held ? "Resume timer" : "Hold timer")
                     .accessibilityIdentifier("hold-toggle")
+                    .focusable()
                     if snapshot.offersAdjustment {
                         Button("+1 min") { model.forwardMinute() }
                             .buttonStyle(.bordered)
@@ -116,6 +117,7 @@ struct FocusSurface: View {
                             .accessibilityLabel("Give the block a minute")
                     }
                 }
+                .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("adjust-controls")
             }
 

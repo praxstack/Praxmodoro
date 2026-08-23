@@ -82,6 +82,17 @@ import Testing
         #expect(capsule.controls.contains("capsule-hold"))
     }
 
+    @Test func testEachBreakChoiceHasAStableAccessibilityIdentifier() {
+        let identifiers = [
+            "break-choice-water", "break-choice-stretch",
+            "break-choice-step-away", "break-choice-quiet",
+        ]
+
+        for identifier in identifiers {
+            #expect(BreakSurface.controls.contains(identifier), "missing \(identifier)")
+        }
+    }
+
     // The return card remains the one visible request for attention; the
     // check-in waits behind it and appears after acknowledgement.
     @Test func testReturnCardKeepsCheckinWaitingUntilAcknowledged() throws {

@@ -1,5 +1,14 @@
 import XCTest
 
+@MainActor
+private extension XCUIElement {
+    /// XCTest's macOS runner tracks this automation attribute but, unlike its
+    /// other platforms, does not surface it as an `XCUIElement` property.
+    var hasKeyboardFocus: Bool {
+        value(forKey: "hasKeyboardFocus") as? Bool == true
+    }
+}
+
 /// The two interface-level follow-ups the independent M1 validator recorded:
 /// keyboard coverage beyond `begin` as real key events, and a launch-time
 /// first-run assertion.
@@ -8,17 +17,40 @@ import XCTest
 /// Application Support store is never opened and the tests are hermetic.
 final class KeyboardLoopUITests: XCTestCase {
     @MainActor
-    private func launchFresh() -> XCUIApplication {
-        let app = XCUIApplication()
-        app.launchArguments = ["-praxmodoro-ephemeral-store", "-praxmodoro-clean-window-state"]
-        app.launch()
-        return app
+    private func moveFocus(
+        to element: XCUIElement,
+        in app: XCUIApplication,
+        backwards: Bool = false,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        guard element.waitForExistence(timeout: 5) else {
+            XCTFail("Expected focus stop does not exist: \(element)", file: file, line: line)
+            return
+        }
+        for _ in 0..<20 {
+            app.typeKey(.tab, modifierFlags: backwards ? .shift : [])
+            if element.hasKeyboardFocus { return }
+        }
+        XCTFail("Tab traversal did not reach \(element)", file: file, line: line)
+    }
+
+    @MainActor
+    private func waitForLabel(
+        _ label: String,
+        on element: XCUIElement,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        let changed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "label == %@", label), object: element)
+        XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed, file: file, line: line)
     }
 
     /// Spec: app-scaffold "Launch-time first-run assertion".
     @MainActor
     func testFirstRunLaunchPresentsOnlyTheStartPath() {
-        let app = launchFresh()
+        let app = launchFresh(for: self)
 
         let taskField = app.textFields["task-input"]
         XCTAssertTrue(taskField.waitForExistence(timeout: 10), "a fresh store must land on the start path")
@@ -41,20 +73,42 @@ final class KeyboardLoopUITests: XCTestCase {
     }
 
     /// Spec: focus-loop-ui "Keyboard loop as real key events" — begin, the
-    /// user-initiated check-in, each answer, the break end, and a new session,
-    /// with no pointer interaction beyond focusing the first text field.
+    /// user-initiated check-in, each answer, and the break end, with no pointer
+    /// interaction.
     @MainActor
     func testWholeLoopByKeyboard() {
-        let app = launchFresh()
+        let app = launchFresh(for: self)
 
         let taskField = app.textFields["task-input"]
         XCTAssertTrue(taskField.waitForExistence(timeout: 10))
-        taskField.click()
+        moveFocus(to: taskField, in: app)
+        XCTAssertTrue(taskField.hasKeyboardFocus)
         taskField.typeText("Edit the conference talk outline")
 
         // Begin — ⌘↩
         app.typeKey(.return, modifierFlags: .command)
         XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5), "⌘↩ did not begin the session")
+
+        // Hold and resume — native Tab focus plus Space, with visible focus
+        // confirmed before each activation.
+        let hold = app.descendants(matching: .any)["hold-toggle"]
+        moveFocus(to: hold, in: app)
+        XCTAssertTrue(hold.hasKeyboardFocus)
+        hold.typeKey(.space, modifierFlags: [])
+        waitForLabel("Resume timer", on: hold)
+        if !hold.hasKeyboardFocus { moveFocus(to: hold, in: app) }
+        XCTAssertTrue(hold.hasKeyboardFocus)
+        hold.typeKey(.space, modifierFlags: [])
+        waitForLabel("Hold timer", on: hold)
+
+        // Park a thought without leaving focus.
+        let thought = "Ask Maya for the final chart"
+        let thoughtField = app.textFields["thought-parking-input"]
+        moveFocus(to: thoughtField, in: app)
+        XCTAssertTrue(thoughtField.hasKeyboardFocus)
+        thoughtField.typeText(thought)
+        app.typeKey(.return, modifierFlags: [])
+        XCTAssertTrue(app.staticTexts[thought].waitForExistence(timeout: 5), "Return did not park the thought")
 
         // Check in — ⌘K — then answer "still fits" with 1, landing back on focus.
         app.typeKey("k", modifierFlags: .command)
@@ -76,6 +130,15 @@ final class KeyboardLoopUITests: XCTestCase {
         app.typeKey("4", modifierFlags: [])
         XCTAssertTrue(app.staticTexts["break-suggestion"].waitForExistence(timeout: 5), "answer 4 did not start a break")
 
+        // Choose a break with reverse native traversal and its surface-local
+        // numeric shortcut. The review assertion below proves the handler ran.
+        let breakChoice = app.buttons["break-choice-water"]
+        moveFocus(to: breakChoice, in: app, backwards: true)
+        XCTAssertEqual(breakChoice.label, "Water")
+        XCTAssertTrue(breakChoice.hasKeyboardFocus)
+        breakChoice.typeKey("1", modifierFlags: [])
+        XCTAssertTrue(app.staticTexts["break-suggestion"].exists)
+
         // End the break — R — and the return overlay meets us.
         app.typeKey("r", modifierFlags: [])
         XCTAssertTrue(app.staticTexts["return-heading"].waitForExistence(timeout: 5), "R did not end the break into the return overlay")
@@ -92,6 +155,17 @@ final class KeyboardLoopUITests: XCTestCase {
         app.typeKey("3", modifierFlags: [])
         XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5))
 
+        // The review timeline is the signed proof that Space invoked the
+        // break-choice handler rather than merely leaving the button focused.
+        app.typeKey("w", modifierFlags: [.command, .shift])
+        let breakEntry = app.descendants(matching: .any)
+            .matching(
+                NSPredicate(
+                    format: "label CONTAINS %@ OR value CONTAINS %@", "Break: water", "Break: water")
+            )
+            .firstMatch
+        XCTAssertTrue(breakEntry.waitForExistence(timeout: 5))
+
         // ⌘N's leg is covered by testNewSessionShortcutIsARealKeyEvent, which
         // needs a closed session to reach the review surface.
     }
@@ -101,11 +175,12 @@ final class KeyboardLoopUITests: XCTestCase {
     /// drives the loop to review and then presses ⌘N.
     @MainActor
     func testNewSessionShortcutIsARealKeyEvent() {
-        let app = launchFresh()
+        let app = launchFresh(for: self)
 
         let taskField = app.textFields["task-input"]
         XCTAssertTrue(taskField.waitForExistence(timeout: 10))
-        taskField.click()
+        moveFocus(to: taskField, in: app)
+        XCTAssertTrue(taskField.hasKeyboardFocus)
         taskField.typeText("Edit the outline")
         app.typeKey(.return, modifierFlags: .command)
         XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5))
@@ -122,7 +197,7 @@ final class KeyboardLoopUITests: XCTestCase {
     /// "Capsule is suppressed at launch".
     @MainActor
     func testCapsuleOpensAndClosesFromTheKeyboard() {
-        let app = launchFresh()
+        let app = launchFresh(for: self)
         XCTAssertTrue(app.textFields["task-input"].waitForExistence(timeout: 10))
 
         let capsule = app.windows["Focus capsule"]

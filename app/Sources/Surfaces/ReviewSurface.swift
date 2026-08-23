@@ -23,8 +23,10 @@ struct ReviewSurface: View {
                                     .foregroundStyle(.secondary)
                                 Text(entry.label)
                             }
+                            .accessibilityElement(children: .combine)
                         }
                     }
+                    .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("timeline")
                 }
             }
