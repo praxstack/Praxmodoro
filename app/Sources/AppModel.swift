@@ -258,6 +258,12 @@ final class AppModel {
         }
     }
 
+    private func appendTransition(_ state: SessionState, at instant: Date) throws {
+        let payload = try TransitionPayload.encode(state)
+        guard let id = sessionID else { return }
+        try store?.appendEvent(sessionID: id, kind: .transition, payload: payload, at: instant)
+    }
+
     func begin() throws {
         fieldPulse += 1
         lastCheckinResponse = nil
@@ -270,7 +276,7 @@ final class AppModel {
         surface = .focus
         try store?.createSession(id: id, policyName: policy.name, startedAt: now)
         try store?.saveTask(sessionID: id, title: taskTitle, firstAction: firstAction, at: now)
-        try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
+        try appendTransition(.running, at: now)
         if !capacity.isEmpty {
             try store?.appendEvent(sessionID: id, kind: .capacityReport, payload: capacity, at: now)
         }
@@ -284,32 +290,23 @@ final class AppModel {
     func restore() throws {
         guard let store, let summary = try store.latestSession() else { return }
         let events = try store.events(sessionID: summary.id)
-        let transitions =
-            events
-            .filter { $0.kind == .transition }
-            .map { TransitionRecord(intent: nil, state: SessionState(rawValue: $0.payload) ?? .running, at: $0.at) }
-            .sorted { $0.at < $1.at }
-        guard let last = transitions.last, last.state != .closed else { return }
+        let task = try store.task(sessionID: summary.id)
+        let result = try SessionReplay(summary: summary).replay(events: events, task: task)
+        guard result.session.transitions.last?.state != .closed else { return }
 
-        let adjustments =
-            events
-            .filter { $0.kind == .adjustment }
-            .compactMap { event in Int(event.payload).map { AdjustmentRecord(delta: TimeInterval($0), at: event.at) } }
-        let records = [TransitionRecord(intent: nil, state: .idle, at: summary.startedAt)] + transitions
-        session = Session(
-            policy: TimingPolicy.named(summary.policyName), transitions: records, adjustments: adjustments)
-        sessionID = summary.id
-        policy = TimingPolicy.named(summary.policyName)
-        if let task = try store.task(sessionID: summary.id) {
-            taskTitle = task.title
-            firstAction = task.firstAction
-        }
-        parkedThoughts = events.filter { $0.kind == .thoughtParked }.map(\.payload)
+        session = result.session
+        sessionID = result.sessionID
+        policy = result.session.policy
+        taskTitle = result.taskTitle
+        firstAction = result.firstAction
+        parkedThoughts = result.parkedThoughts
 
         // Auto-return is deliberately absent here (design decision 10): an
         // absence must not fill with focus blocks nobody lived through.
         let now = clock()
-        switch session?.reconciled(at: now, blockEnd: rhythm.blockEnd, autoReturn: nil).state(at: now) {
+        switch result.session.reconciled(
+            at: now, blockEnd: rhythm.blockEnd, autoReturn: nil
+        ).state(at: now) {
         case .running, .held: surface = .focus
         case .onBreak: surface = .onBreak
         default: surface = .initiate
@@ -356,9 +353,7 @@ final class AppModel {
         let fresh = reconciled.transitions.filter { !current.transitions.contains($0) }
         guard !fresh.isEmpty else { return }
         for record in fresh {
-            if let id = sessionID {
-                try store?.appendEvent(sessionID: id, kind: .transition, payload: record.state.rawValue, at: record.at)
-            }
+            try appendTransition(record.state, at: record.at)
             // A materialized return FROM A BREAK greets like any other
             // return. A promotion also materializes as .running but its
             // predecessor is running — promotions are seamless, never a
@@ -391,9 +386,7 @@ final class AppModel {
         fieldPulse += 1
         try current.apply(.startBreak, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
-        }
+        try appendTransition(.onBreak, at: now)
         surface = .onBreak
         syncSound(at: now)
     }
@@ -462,9 +455,7 @@ final class AppModel {
         let intent: SessionIntent = state == .held ? .resume : .hold
         try current.apply(intent, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: current.state(at: now).rawValue, at: now)
-        }
+        try appendTransition(current.state(at: now), at: now)
         syncSound(at: now)
     }
 
@@ -523,9 +514,7 @@ final class AppModel {
             guard var current = session else { return }
             try current.apply(.startBreak, at: now)
             session = current
-            if let id = sessionID {
-                try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
-            }
+            try appendTransition(.onBreak, at: now)
             surface = .onBreak
         }
         syncSound(at: now)
@@ -584,9 +573,7 @@ final class AppModel {
         guard var current = session else { return }
         try current.apply(.endBreak, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
-        }
+        try appendTransition(.running, at: now)
         surface = .focus
         returnPending = true
         syncSound(at: now)
@@ -605,9 +592,7 @@ final class AppModel {
         guard var current = session else { return }
         try current.apply(.close, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: "closed", at: now)
-        }
+        try appendTransition(.closed, at: now)
         surface = .review
         syncSound(at: now)
     }
@@ -620,14 +605,7 @@ final class AppModel {
             let label: String
             switch event.kind {
             case .transition:
-                label =
-                    switch event.payload {
-                    case "running": "Focus resumed"
-                    case "held": "Held — place kept"
-                    case "break": "Chose an intentional break"
-                    case "closed": "Closed the session"
-                    default: "State: \(event.payload)"
-                    }
+                label = TransitionPayload.reviewLabel(for: event.payload)
             case .checkinAnswer:
                 label = "Check-in: \(CheckinAnswer(rawValue: event.payload)?.label ?? event.payload)"
             case .thoughtParked: label = "Parked a thought"

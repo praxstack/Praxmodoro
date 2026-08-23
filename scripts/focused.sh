@@ -15,7 +15,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-[ -d app/Praxmodoro.xcodeproj ] || ./scripts/generate.sh
+./scripts/generate.sh
 
 log=$(mktemp -t praxmodoro-focused)
 trap 'rm -f "$log"' EXIT
