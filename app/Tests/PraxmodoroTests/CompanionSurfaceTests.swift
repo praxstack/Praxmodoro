@@ -102,15 +102,19 @@ import PraxmodoroStore
         }
     }
 
-    // Spec: "Companion surface keys cannot be gated off Lite".
-    @Test func testCompanionSurfaceKeysAreNeverPaywalled() {
+    // Spec: companion surfaces are present in the one configured product.
+    @Test func testCompanionSurfaceKeysCannotBeWithheld() throws {
         let companionKeys: Set<FeatureKey> = [.menuBarSurface, .focusCapsule, .returnOverlay]
-        #expect(companionKeys.isSubset(of: CapabilityRegistry.neverPaywalled))
+        let configured = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases))
+        try configured.validate()
+        for key in companionKeys {
+            #expect(configured.isAvailable(key))
+        }
 
         // A registry that tries to withhold them still resolves them, and
         // startup validation refuses the configuration.
         let withheld = Set(FeatureKey.allCases).subtracting(companionKeys)
-        let hostile = CapabilityRegistry(edition: .lite, grants: [.lite: withheld, .pro: withheld, .enterprise: withheld])
+        let hostile = CapabilityRegistry(configuredKeys: withheld)
         for key in companionKeys {
             #expect(hostile.isAvailable(key), "\(key) must resolve as available even when a configuration withholds it")
         }

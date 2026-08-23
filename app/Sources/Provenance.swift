@@ -6,16 +6,14 @@ import SwiftUI
 struct Provenance {
     let version: String
     let gitSHA: String
-    let edition: String
 
     static let current = Provenance(
         version: BuildProvenance.version,
-        gitSHA: BuildProvenance.gitSHA,
-        edition: BuildProvenance.edition
+        gitSHA: BuildProvenance.gitSHA
     )
 
     var aboutText: String {
-        "Praxmodoro \(version) (\(gitSHA)) · \(edition.capitalized) edition · local-first, no account"
+        "Praxmodoro \(version) (\(gitSHA)) · local-first, no account"
     }
 }
 

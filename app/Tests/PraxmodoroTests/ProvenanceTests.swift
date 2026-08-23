@@ -9,11 +9,13 @@ import Testing
         #expect(!provenance.version.isEmpty)
         #expect(!provenance.gitSHA.isEmpty)
         #expect(provenance.gitSHA != "unknown", "generate.sh must stamp the git SHA")
-        #expect(provenance.edition == "lite")
 
         let text = provenance.aboutText
         #expect(text.contains(provenance.version))
         #expect(text.contains(provenance.gitSHA))
-        #expect(text.lowercased().contains("lite"))
+        #expect(text.contains("local-first, no account"))
+        for term in ["edition", "lite", "pro", "enterprise", "tier", "license", "paywall", "upsell"] {
+            #expect(!text.lowercased().contains(term), "About provenance contains product-tier term: \(term)")
+        }
     }
 }

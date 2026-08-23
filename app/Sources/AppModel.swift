@@ -218,7 +218,8 @@ final class AppModel {
     private let notificationScheduler: NotificationScheduling
 
     init(
-        store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite),
+        store: LocalStore?,
+        capabilities: CapabilityRegistry = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases)),
         clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
         soundScheduler: SoundCueScheduling = AudioCueScheduler(),
         notificationScheduler: NotificationScheduling = LocalNotificationScheduler()
