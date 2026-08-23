@@ -211,4 +211,39 @@ final class KeyboardLoopUITests: XCTestCase {
         expectation(for: closed, evaluatedWith: capsule)
         waitForExpectations(timeout: 5)
     }
+
+    /// Spec: session-settings "Five cue samples work without a session".
+    @MainActor
+    func testSoundSamplesAreKeyboardReachableInBothDirections() {
+        let app = launchFresh(for: self)
+        XCTAssertTrue(app.textFields["task-input"].waitForExistence(timeout: 10))
+
+        app.typeKey(",", modifierFlags: .command)
+        let soundTab = app.descendants(matching: .any)["Sound & Notifications"]
+        XCTAssertTrue(soundTab.waitForExistence(timeout: 5))
+        soundTab.click()
+
+        let samples = [
+            ("sound-sample-block-start", "Play Block start sample"),
+            ("sound-sample-focus-tick", "Play Focus tick sample"),
+            ("sound-sample-break-tick", "Play Break tick sample"),
+            ("sound-sample-focus-end", "Play Focus end sample"),
+            ("sound-sample-break-end", "Play Break end sample"),
+        ]
+        for (identifier, label) in samples {
+            let button = app.buttons[identifier]
+            moveFocus(to: button, in: app)
+            XCTAssertEqual(button.label, label)
+            XCTAssertTrue(button.hasKeyboardFocus)
+            button.typeKey(.space, modifierFlags: [])
+        }
+
+        app.typeKey(.tab, modifierFlags: [])
+        for (identifier, label) in samples.reversed() {
+            let button = app.buttons[identifier]
+            moveFocus(to: button, in: app, backwards: true)
+            XCTAssertEqual(button.label, label)
+            XCTAssertTrue(button.hasKeyboardFocus)
+        }
+    }
 }

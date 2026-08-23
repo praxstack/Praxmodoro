@@ -63,11 +63,11 @@ struct PraxmodoroApp: App {
                     case .review: ReviewSurface(model: model)
                     }
                 }
-                // Presentation follows the phase derived from this exact
-                // render snapshot; session materialization is added by the
-                // later live-observation atom.
-                .onChange(of: snapshot.phase) {
-                    model.syncPresentation(at: context.date)
+                // Every root date edge lets the model materialize canonical
+                // transitions before presentation. Phase equality cannot
+                // hide a complete focus-break-focus cycle across sleep.
+                .onChange(of: context.date) {
+                    try? model.observeDerivedPhase(at: context.date)
                 }
                 .frame(minWidth: 720, minHeight: 520)
                 // The way back, over the surface you are coming back to
@@ -81,6 +81,11 @@ struct PraxmodoroApp: App {
                             motionStilledOverride: model.motionStilled ? true : nil)
                     }
                 }
+            }
+            .onReceive(
+                NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
+            ) { _ in
+                model.handleSystemWake()
             }
         }
         .commands {
@@ -110,6 +115,14 @@ struct PraxmodoroApp: App {
                             display: snapshot.display, actions: companionActions,
                             motionStilledOverride: model.motionStilled ? true : nil
                         )
+                        .onChange(of: context.date) {
+                            try? model.observeDerivedPhase(at: context.date)
+                        }
+                    }
+                    .onReceive(
+                        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
+                    ) { _ in
+                        model.handleSystemWake()
                     }
                     .onDisappear { capsuleOpen = false }
                 }
@@ -145,6 +158,14 @@ struct PraxmodoroApp: App {
                             display: snapshot.display, actions: companionActions,
                             motionStilledOverride: model.motionStilled ? true : nil
                         )
+                        .onChange(of: context.date) {
+                            try? model.observeDerivedPhase(at: context.date)
+                        }
+                    }
+                    .onReceive(
+                        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
+                    ) { _ in
+                        model.handleSystemWake()
                     }
                 }
                 .menuBarExtraStyle(.window)

@@ -2,8 +2,8 @@ import SwiftUI
 
 /// Sound cues and local notifications (spec: add-session-settings "Sound
 /// cues, all optional" / "Local notifications with honest text"). Factory
-/// state is silence; every cue defaults off, and a sound is presentation,
-/// never state. Text the user edits here is delivered verbatim — their words are
+/// state marks transitions without ticking; a sound is presentation, never
+/// state. Text the user edits here is delivered verbatim — their words are
 /// theirs. This file states no colour of its own.
 struct SoundNotificationsPane: View {
     @Bindable var model: AppModel
@@ -19,12 +19,28 @@ struct SoundNotificationsPane: View {
                     Slider(value: masterVolume, in: 0...1) {
                         Text("Volume")
                     }
-                    Toggle("Tick during focus", isOn: sound(\.focusTick, set: { $0.focusTick = $1 }))
-                    Toggle("Tick during breaks", isOn: sound(\.breakTick, set: { $0.breakTick = $1 }))
-                    Toggle("Chime when a block completes", isOn: sound(\.focusEndChime, set: { $0.focusEndChime = $1 }))
-                    Toggle("Chime when a break has run its length", isOn: sound(\.breakEndChime, set: { $0.breakEndChime = $1 }))
+                    soundRow(
+                        "Block start", cue: .blockStart, identifier: "sound-sample-block-start",
+                        sampleLabel: "Play Block start sample",
+                        isOn: sound(\.blockStart, set: { $0.blockStart = $1 }))
+                    soundRow(
+                        "Focus tick", cue: .focusTick, identifier: "sound-sample-focus-tick",
+                        sampleLabel: "Play Focus tick sample",
+                        isOn: sound(\.focusTick, set: { $0.focusTick = $1 }))
+                    soundRow(
+                        "Break tick", cue: .breakTick, identifier: "sound-sample-break-tick",
+                        sampleLabel: "Play Break tick sample",
+                        isOn: sound(\.breakTick, set: { $0.breakTick = $1 }))
+                    soundRow(
+                        "Focus end", cue: .focusEnd, identifier: "sound-sample-focus-end",
+                        sampleLabel: "Play Focus end sample",
+                        isOn: sound(\.focusEndChime, set: { $0.focusEndChime = $1 }))
+                    soundRow(
+                        "Break end", cue: .breakEnd, identifier: "sound-sample-break-end",
+                        sampleLabel: "Play Break end sample",
+                        isOn: sound(\.breakEndChime, set: { $0.breakEndChime = $1 }))
                     Toggle("Loop the tick continuously", isOn: sound(\.tickLoop, set: { $0.tickLoop = $1 }))
-                    Text("Everything is off until you ask for it.")
+                    Text("Block start and both end cues are on. Ticks stay off unless you ask.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
@@ -60,6 +76,24 @@ struct SoundNotificationsPane: View {
     }
 
     // MARK: Bindings onto the seam.
+
+    private func soundRow(
+        _ name: String, cue: SoundCue, identifier: String, sampleLabel: String,
+        isOn: Binding<Bool>
+    ) -> some View {
+        HStack {
+            Toggle(name, isOn: isOn)
+            Spacer()
+            Button {
+                model.previewSound(cue)
+            } label: {
+                Image(systemName: "play.fill")
+            }
+            .accessibilityIdentifier(identifier)
+            .accessibilityLabel(Text(sampleLabel))
+            .focusable()
+        }
+    }
 
     private var masterVolume: Binding<Double> {
         Binding(

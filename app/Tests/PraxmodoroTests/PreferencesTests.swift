@@ -103,22 +103,41 @@ import Testing
         #expect(RhythmPreferences.presetHelp == "Use a unique whole number from 1 to 240.")
     }
 
-    // MARK: Sound (task 4.2)
+    // MARK: Sound (task 10.5 supersedes historical factory-off task 4.2)
 
-    @Test func testSoundFactoryDefaultsAreSilent() {
+    @Test func testSoundFactoryDefaultsMakeTransitionsPerceptibleWithoutTicks() {
         let sound = SoundPreferences.load(from: scratchDefaults())
         #expect(sound == SoundPreferences.factory)
+        #expect(sound.masterVolume == 0.7)
+        #expect(sound.blockStart == true)
         #expect(sound.focusTick == false)
         #expect(sound.breakTick == false)
-        #expect(sound.focusEndChime == false)
-        #expect(sound.breakEndChime == false)
+        #expect(sound.focusEndChime == true)
+        #expect(sound.breakEndChime == true)
         #expect(sound.tickLoop == false)
+    }
+
+    @Test func testLegacySoundBlobPreservesEveryStoredChoiceAndDefaultsOnlyBlockStartOff() throws {
+        let defaults = scratchDefaults()
+        let legacy = Data(
+            #"{"masterVolume":0.42,"focusTick":true,"breakTick":false,"focusEndChime":false,"breakEndChime":true,"tickLoop":true}"#.utf8)
+        defaults.set(legacy, forKey: SoundPreferences.key)
+
+        let sound = SoundPreferences.load(from: defaults)
+        #expect(sound.masterVolume == 0.42)
+        #expect(sound.blockStart == false)
+        #expect(sound.focusTick == true)
+        #expect(sound.breakTick == false)
+        #expect(sound.focusEndChime == false)
+        #expect(sound.breakEndChime == true)
+        #expect(sound.tickLoop == true)
     }
 
     @Test func testSoundRoundTripsThroughDefaults() {
         let defaults = scratchDefaults()
         var sound = SoundPreferences.factory
         sound.masterVolume = 0.4
+        sound.blockStart = false
         sound.focusEndChime = true
         sound.tickLoop = true
         sound.save(to: defaults)

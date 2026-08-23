@@ -180,8 +180,8 @@ import Testing
             "model.effectiveSurface(for: snapshot)",
             "FocusSurface(model: model, snapshot: snapshot)",
             "display: snapshot.display",
-            ".onChange(of: snapshot.phase)",
-            "model.syncPresentation(at: context.date)",
+            ".onChange(of: context.date)",
+            "try? model.observeDerivedPhase(at: context.date)",
         ] {
             #expect(mainTimeline.contains(required), "the main render does not route \(required) through its snapshot")
         }
@@ -197,6 +197,22 @@ import Testing
                 "\(surface) must capture one snapshot")
             #expect(Self.matchCount(#"snapshot\s*\(at:\s*context\.date\s*\)"#, in: timeline) == 1)
             #expect(timeline.contains(surface))
+        }
+    }
+
+    @Test func testEveryCompanionSceneDrivesLifecycleWithoutTheMainWindow() throws {
+        let appURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources/PraxmodoroApp.swift")
+        let code = Self.codeOnly(try String(contentsOf: appURL, encoding: .utf8))
+        for guardName in ["focusCapsuleAvailable", "menuBarSurfaceAvailable"] {
+            let scene = try #require(Self.balancedBody(after: "if \(guardName)", in: code))
+            let timeline = try #require(
+                Self.balancedBody(after: "TimelineView(.periodic(from: .now, by: 1))", in: scene))
+
+            #expect(timeline.contains("try? model.observeDerivedPhase(at: context.date)"))
+            #expect(scene.contains("publisher(for: NSWorkspace.didWakeNotification)"))
+            #expect(scene.contains("model.handleSystemWake()"))
         }
     }
 

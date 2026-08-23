@@ -276,12 +276,27 @@ import Testing
     @Test func testSoundPaneBindsEveryField() throws {
         let pane = try source("Surfaces/SoundNotificationsPane.swift")
         for field in [
-            "masterVolume", "focusTick", "breakTick", "focusEndChime", "breakEndChime",
+            "masterVolume", "blockStart", "focusTick", "breakTick", "focusEndChime", "breakEndChime",
             "tickLoop", "blockEndEnabled", "breakEndEnabled", "blockEndText", "breakEndText",
             "bringToFront",
         ] {
             #expect(pane.contains(field), "Sound & Notifications pane does not bind \(field)")
         }
+    }
+
+    @Test func testSoundPaneExposesFiveExactSampleControls() throws {
+        let pane = try source("Surfaces/SoundNotificationsPane.swift")
+        for (identifier, label) in [
+            ("sound-sample-block-start", "Play Block start sample"),
+            ("sound-sample-focus-tick", "Play Focus tick sample"),
+            ("sound-sample-break-tick", "Play Break tick sample"),
+            ("sound-sample-focus-end", "Play Focus end sample"),
+            ("sound-sample-break-end", "Play Break end sample"),
+        ] {
+            #expect(pane.contains(identifier))
+            #expect(pane.contains(label))
+        }
+        #expect(pane.components(separatedBy: "model.previewSound(").count - 1 == 1)
     }
 
     // MARK: 5.5 — panes speak SurfacePalette only

@@ -199,5 +199,7 @@ import Testing
 private struct InertSoundScheduler: SoundCueScheduling {
     func scheduleChime(_ cue: SoundCue, at instant: Date, volume: Double) {}
     func cancelScheduledChimes() {}
+    func setChimeVolume(_ volume: Double) {}
+    func cancelExpiredChimes(at now: Date) {}
     func setTickLoop(_ cue: SoundCue, running: Bool, volume: Double) {}
 }

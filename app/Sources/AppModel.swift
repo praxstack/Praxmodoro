@@ -60,9 +60,24 @@ final class AppModel {
     }
 
     func setSound(_ preferences: SoundPreferences) {
+        let volumeChanged = sound.masterVolume != preferences.masterVolume
         sound = preferences
         preferences.save(to: defaults)
+        if volumeChanged {
+            soundScheduler.setChimeVolume(preferences.masterVolume)
+            for (cue, running) in tickState where running {
+                soundScheduler.setTickLoop(cue, running: true, volume: preferences.masterVolume)
+            }
+        }
         syncSound(at: clock())
+    }
+
+    func previewSound(_ cue: SoundCue) {
+        soundScheduler.scheduleChime(cue, at: clock(), volume: sound.masterVolume)
+    }
+
+    func handleSystemWake() {
+        soundScheduler.cancelExpiredChimes(at: clock())
     }
 
     // MARK: Sound direction (spec: "Sound cues, all optional"). Pure policy
@@ -75,6 +90,14 @@ final class AppModel {
     /// sound and notifications in line. Presentation only — the session is
     /// never touched here, so the one-clock rule stands (finding 3).
     func syncPresentation(at now: Date) {
+        syncSound(at: now)
+    }
+
+    /// Record every canonical transition visible at this root-render
+    /// instant, then align presentation. Date edges matter even when the
+    /// phase before and after a full focus-break-focus cycle is `.running`.
+    func observeDerivedPhase(at now: Date) throws {
+        try materialize(at: now)
         syncSound(at: now)
     }
 
@@ -118,6 +141,7 @@ final class AppModel {
 
     private var tickState: [SoundCue: Bool] = [:]
     private var scheduledChime: (cue: SoundCue, at: Date)?
+    private var pendingBlockStartAt: Date?
 
     private func syncSound(at now: Date) {
         let phase = snapshot(at: now).phase
@@ -158,6 +182,12 @@ final class AppModel {
                 soundScheduler.scheduleChime(desired.cue, at: desired.at, volume: sound.masterVolume)
             }
             scheduledChime = desired
+        }
+        if let instant = pendingBlockStartAt {
+            pendingBlockStartAt = nil
+            if sound.blockStart {
+                soundScheduler.scheduleChime(.blockStart, at: instant, volume: sound.masterVolume)
+            }
         }
         syncNotifications(at: now)
     }
@@ -279,6 +309,7 @@ final class AppModel {
         if !capacity.isEmpty {
             try store?.appendEvent(sessionID: id, kind: .capacityReport, payload: capacity, at: now)
         }
+        pendingBlockStartAt = now
         syncSound(at: now)
     }
 
@@ -363,6 +394,7 @@ final class AppModel {
                 reconciled.transitions[index - 1].state == .onBreak
             {
                 returnPending = true
+                pendingBlockStartAt = record.at
             }
         }
         session = reconciled
@@ -576,6 +608,7 @@ final class AppModel {
         try appendTransition(.running, at: now)
         surface = .focus
         returnPending = true
+        pendingBlockStartAt = now
         syncSound(at: now)
     }
 

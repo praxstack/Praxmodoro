@@ -171,10 +171,10 @@ import Testing
             // physics integrator, never session time.
             ("CompanionFieldView.swift", "lastTick.map { now.timeIntervalSince($0) }"),
             // The audio scheduler's own clock seam, mirroring AppModel's.
-            ("SoundDirector.swift", "private let clock: () -> Date = { Date() }"),
+            ("SoundDirector.swift", "clock: @escaping () -> Date = { Date() }"),
             // Converting a canonical engine instant into the audio device's
             // timebase — presentation lead time, never session arithmetic.
-            ("SoundDirector.swift", "instant.timeIntervalSince(clock())"),
+            ("SoundDirector.swift", "instant.timeIntervalSince(now)"),
         ]
 
         var sawSnapshotUse = false

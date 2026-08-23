@@ -61,15 +61,45 @@ struct RhythmPreferences: Equatable, Codable {
     }
 }
 
-/// Sound preferences (spec: "Sound cues, all optional"). Factory state is
-/// silence: every cue defaults off, and a sound is presentation, never state.
+/// Sound preferences (spec: "Sound cues, all optional"). Factory state marks
+/// transitions without ticking; a sound is presentation, never state.
 struct SoundPreferences: Equatable, Codable {
     var masterVolume: Double = 0.7
+    var blockStart: Bool = true
     var focusTick: Bool = false
     var breakTick: Bool = false
-    var focusEndChime: Bool = false
-    var breakEndChime: Bool = false
+    var focusEndChime: Bool = true
+    var breakEndChime: Bool = true
     var tickLoop: Bool = false
+
+    init(
+        masterVolume: Double = 0.7, blockStart: Bool = true, focusTick: Bool = false,
+        breakTick: Bool = false, focusEndChime: Bool = true, breakEndChime: Bool = true,
+        tickLoop: Bool = false
+    ) {
+        self.masterVolume = masterVolume
+        self.blockStart = blockStart
+        self.focusTick = focusTick
+        self.breakTick = breakTick
+        self.focusEndChime = focusEndChime
+        self.breakEndChime = breakEndChime
+        self.tickLoop = tickLoop
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case masterVolume, blockStart, focusTick, breakTick, focusEndChime, breakEndChime, tickLoop
+    }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        masterVolume = try values.decode(Double.self, forKey: .masterVolume)
+        blockStart = values.contains(.blockStart) ? try values.decode(Bool.self, forKey: .blockStart) : false
+        focusTick = try values.decode(Bool.self, forKey: .focusTick)
+        breakTick = try values.decode(Bool.self, forKey: .breakTick)
+        focusEndChime = try values.decode(Bool.self, forKey: .focusEndChime)
+        breakEndChime = try values.decode(Bool.self, forKey: .breakEndChime)
+        tickLoop = try values.decode(Bool.self, forKey: .tickLoop)
+    }
 
     static let factory = SoundPreferences()
     static let key = "praxmodoro.sound-preferences"

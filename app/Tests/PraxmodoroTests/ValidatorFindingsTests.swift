@@ -27,6 +27,10 @@ import Testing
 
         func cancelScheduledChimes() { cancels += 1 }
 
+        func setChimeVolume(_ volume: Double) {}
+
+        func cancelExpiredChimes(at now: Date) {}
+
         func setTickLoop(_ cue: SoundCue, running: Bool, volume: Double) {
             loops.append((cue, running))
         }
@@ -213,9 +217,85 @@ import Testing
                 "autoReturn:rhythm.autoReturn,autoReturnAfter:rhythm.autoReturn?liveObservationStartedAt:nil"))
         #expect(compact.contains("autoReturn:false,autoReturnAfter:nil"))
     }
-    @Test func testRoutingHookSyncsPresentation() throws {
+
+    @Test func testLiveObserverMaterializesAWholeCycleEvenWhenPhaseMatches() throws {
+        let (model, ticker, cues, _) = try makeModel()
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        model.setRhythm(rhythm)
+        var sound = model.sound
+        sound.focusEndChime = false
+        sound.breakEndChime = false
+        model.setSound(sound)
+        model.policy = .classic
+        try model.begin()
+
+        let before = t0.addingTimeInterval(60)
+        #expect(model.snapshot(at: before).phase == .running)
+        try model.observeDerivedPhase(at: before)
+
+        ticker.now = t0.addingTimeInterval(31 * 60)
+        #expect(model.snapshot(at: ticker.now).phase == .running)
+        try model.observeDerivedPhase(at: ticker.now)
+        try model.observeDerivedPhase(at: ticker.now)
+
+        let canonicalReturn = t0.addingTimeInterval(30 * 60)
+        #expect(
+            model.session?.transitions.filter {
+                $0.state == .running && $0.at == canonicalReturn
+            }.count == 1)
+        #expect(model.returnPending)
+        #expect(cues.scheduled.filter { $0.cue == .blockStart }.map(\.at) == [t0, canonicalReturn])
+        let sessionID = try #require(model.sessionID)
+        let storedReturns = try #require(model.store).events(sessionID: sessionID).filter {
+            $0.kind == .transition && $0.payload == "running" && $0.at == canonicalReturn
+        }
+        #expect(storedReturns.count == 1)
+    }
+
+    @Test func testPostRelaunchObserverNeverCatchesUpAnAbsentBreak() throws {
+        let defaults = scratchDefaults()
+        let store = try LocalStore(inMemory: true)
+        let firstTicker = Ticker(t0)
+        let first = AppModel(
+            store: store, clock: { firstTicker.now }, defaults: defaults,
+            soundScheduler: CueRecorder(), notificationScheduler: NotificationRecorder())
+        var firstRhythm = first.rhythm
+        firstRhythm.blockEnd = .offeredDefault
+        first.setRhythm(firstRhythm)
+        first.policy = .classic
+        try first.begin()
+        firstTicker.now = t0.addingTimeInterval(26 * 60)
+        try first.observeDerivedPhase(at: firstTicker.now)
+        firstRhythm.autoReturn = true
+        first.setRhythm(firstRhythm)
+
+        let secondTicker = Ticker(t0.addingTimeInterval(31 * 60))
+        let cues = CueRecorder()
+        let restored = AppModel(
+            store: store, clock: { secondTicker.now }, defaults: defaults,
+            soundScheduler: cues, notificationScheduler: NotificationRecorder())
+        try restored.restore()
+        try restored.observeDerivedPhase(at: secondTicker.now)
+        #expect(restored.session?.state(at: secondTicker.now) == .onBreak)
+        secondTicker.now = t0.addingTimeInterval(2 * 60 * 60)
+        try restored.observeDerivedPhase(at: secondTicker.now)
+
+        #expect(restored.session?.state(at: secondTicker.now) == .onBreak)
+        #expect(
+            restored.session?.transitions.contains {
+                $0.state == .running && $0.at > t0.addingTimeInterval(25 * 60)
+            } == false)
+        #expect(restored.returnPending == false)
+        #expect(cues.scheduled.allSatisfy { $0.cue != .blockStart })
+    }
+
+    @Test func testRoutingHookObservesEveryRootDateEdge() throws {
         let app = try source("PraxmodoroApp.swift")
-        #expect(app.contains("syncPresentation"), "the render loop must hand derived phase changes to the model")
+        #expect(app.contains(".onChange(of: context.date)"))
+        #expect(app.contains("try? model.observeDerivedPhase(at: context.date)"))
+        #expect(!app.contains(".onChange(of: snapshot.phase)"))
     }
 
     // MARK: Finding 5 (major) — promotion never raises the return overlay
@@ -275,13 +355,16 @@ import Testing
 
     @Test func testPaneDisablesControlsWhenDenied() throws {
         let pane = try source("Surfaces/SoundNotificationsPane.swift")
-        #expect(pane.contains(".disabled(model.notificationsUnavailable)"),
-                "denied permission must render the controls plainly unavailable, not just captioned")
+        #expect(
+            pane.contains(".disabled(model.notificationsUnavailable)"),
+            "denied permission must render the controls plainly unavailable, not just captioned")
     }
 }
 
 private struct InertCues: SoundCueScheduling {
     func scheduleChime(_ cue: SoundCue, at instant: Date, volume: Double) {}
     func cancelScheduledChimes() {}
+    func setChimeVolume(_ volume: Double) {}
+    func cancelExpiredChimes(at now: Date) {}
     func setTickLoop(_ cue: SoundCue, running: Bool, volume: Double) {}
 }
