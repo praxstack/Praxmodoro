@@ -103,6 +103,7 @@ import Testing
 
         #expect(surface.taskText == "sentinel task")
         #expect(surface.nextActionText == "sentinel next action")
+        #expect(surface.statusText == "sentinel status")
         #expect(surface.fieldState == "held")
         #expect(surface.showsBlockEndPrompt)
         #expect(surface.remainingReadout.text == "09:08")

@@ -27,6 +27,7 @@ struct FocusSurface: View {
 
     var taskText: String { snapshot.taskLine }
     var nextActionText: String { snapshot.nextAction }
+    var statusText: String { snapshot.statusLine }
     var fieldState: String { snapshot.phase == .held ? "held" : "breathing" }
     var showsBlockEndPrompt: Bool { snapshot.offersBlockEndPrompt }
     var remainingReadout: RemainingReadout { RemainingReadout(display: snapshot.display) }
@@ -40,7 +41,7 @@ struct FocusSurface: View {
         HStack(alignment: .top, spacing: 28) {
             VStack(spacing: 20) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Now focusing").font(.caption.smallCaps()).foregroundStyle(.secondary)
+                    Text(statusText).font(.caption.smallCaps()).foregroundStyle(.secondary)
                     Text(taskText).font(.title2.weight(.semibold))
                         .accessibilityIdentifier("task-line")
                     if !nextActionText.isEmpty {

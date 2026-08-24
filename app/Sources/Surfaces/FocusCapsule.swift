@@ -11,7 +11,9 @@ struct FocusCapsule: View {
     var offersHold: Bool { display.phase != .onBreak }
 
     var controls: [String] {
-        offersHold ? ["capsule-task", "capsule-time", "capsule-hold"] : ["capsule-task", "capsule-time"]
+        offersHold
+            ? ["capsule-status", "capsule-task", "capsule-time", "capsule-hold"]
+            : ["capsule-status", "capsule-task", "capsule-time"]
     }
 
     let display: CompanionDisplay
@@ -23,6 +25,7 @@ struct FocusCapsule: View {
 
     var timeText: String? { display.timeText }
     var taskText: String { display.taskLine }
+    var statusText: String { display.statusLine }
 
     var accessibilityLabel: String {
         guard let timeText else { return "Focus capsule: \(display.statusLine)" }
@@ -56,6 +59,10 @@ struct FocusCapsule: View {
                 .frame(width: 22, height: 22)
 
             VStack(alignment: .leading, spacing: 1) {
+                Text(statusText)
+                    .font(.caption2.smallCaps())
+                    .lineLimit(1)
+                    .accessibilityIdentifier("capsule-status")
                 Text(taskText.isEmpty ? display.statusLine : taskText)
                     .font(.caption)
                     .lineLimit(1)
