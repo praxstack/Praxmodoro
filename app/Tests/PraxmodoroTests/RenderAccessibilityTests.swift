@@ -254,14 +254,26 @@ import Testing
             of: Rectangle().fill(SurfacePalette.background(reduceTransparency: true)))
         let opaqueOverRed = try rendered(true, over: .red)
         let opaqueOverBlue = try rendered(true, over: .blue)
+        let redMatches = opaqueOverRed.map { $0.maximumRGBByteDelta(from: opaqueToken) <= 1 }
+        let blueMatches = opaqueOverBlue.map { $0.maximumRGBByteDelta(from: opaqueToken) <= 1 }
+        func hasOpaqueNeighborhood(_ matches: [Bool], at index: Int) -> Bool {
+            let x = index % width
+            let y = index / width
+            guard x > 0, x < width - 1, y > 0, y < height - 1 else { return false }
+            return (-1...1).allSatisfy { dy in
+                (-1...1).allSatisfy { dx in matches[(y + dy) * width + x + dx] }
+            }
+        }
         var sampledBackground = 0
         var backdropLeaks = 0
-        for (red, blue) in zip(opaqueOverRed, opaqueOverBlue) {
-            let redMatches = red.maximumRGBByteDelta(from: opaqueToken) <= 1
-            let blueMatches = blue.maximumRGBByteDelta(from: opaqueToken) <= 1
-            if redMatches || blueMatches {
+        for index in opaqueOverRed.indices {
+            if hasOpaqueNeighborhood(redMatches, at: index)
+                || hasOpaqueNeighborhood(blueMatches, at: index)
+            {
                 sampledBackground += 1
-                if !redMatches || !blueMatches || red.maximumRGBByteDelta(from: blue) > 1 {
+                if !redMatches[index] || !blueMatches[index]
+                    || opaqueOverRed[index].maximumRGBByteDelta(from: opaqueOverBlue[index]) > 1
+                {
                     backdropLeaks += 1
                 }
             }
@@ -362,6 +374,27 @@ import Testing
                 ReturnOverlay(
                     display: fixedDisplay, onAcknowledge: {}, motionStilledOverride: true)
             },
+            width: 480, height: 360, name: "ReturnOverlay")
+    }
+
+    @Test func testActualMenuBarPopoverHonorsReduceTransparency() throws {
+        try assertActualSurfaceTransparency(
+            MenuBarPopover(
+                display: fixedDisplay, actions: .inert, motionStilledOverride: true),
+            width: 320, height: 420, name: "MenuBarPopover")
+    }
+
+    @Test func testActualFocusCapsuleHonorsReduceTransparency() throws {
+        try assertActualSurfaceTransparency(
+            FocusCapsule(
+                display: fixedDisplay, actions: .inert, motionStilledOverride: true),
+            width: 320, height: 72, name: "FocusCapsule")
+    }
+
+    @Test func testActualReturnOverlayHonorsReduceTransparency() throws {
+        try assertActualSurfaceTransparency(
+            ReturnOverlay(
+                display: fixedDisplay, onAcknowledge: {}, motionStilledOverride: true),
             width: 480, height: 360, name: "ReturnOverlay")
     }
 }
