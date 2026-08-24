@@ -8,7 +8,7 @@ import Testing
 @testable import Praxmodoro
 
 /// Spec: companion-surfaces "Menu-bar popover operates the loop",
-/// "Companion surfaces are never paywalled", and the hard half of
+/// "Companion surfaces ship in the one product", and the hard half of
 /// "One canonical session state for every surface".
 ///
 /// Two independent validators have now defeated a substring-based guard here.
@@ -84,8 +84,8 @@ import Testing
         }
     }
 
-    // Spec: "Lite grants every companion surface" — "no surface SHALL render
-    // an upsell". The popover has its own test above; the capsule and the
+    // Spec: "Companion surfaces ship in the one product" — no surface may
+    // render an upsell. The popover has its own test above; the capsule and
     // overlay were previously covered only by inspection.
     @Test func testNoCompanionSurfaceRendersScoringOrUpsell() throws {
         let banned = ["streak", "score", "grade", "percent", "rank", "upgrade", "unlock", "trial", "premium", "subscribe"]

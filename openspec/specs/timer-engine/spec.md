@@ -1,7 +1,7 @@
 # timer-engine Specification
 
 ## Purpose
-The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transitions and the current instant, never a counted tick. Covers the transition table, timestamp arithmetic, sleep/wake and relaunch recovery, hold semantics, user-steerable timing policies, and the engine's freedom from UI and edition concerns.
+The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transitions and the current instant, never a counted tick. Covers the transition table, timestamp arithmetic, sleep/wake and relaunch recovery, hold semantics, user-steerable timing policies, and the engine's independence from UI and app-layer capability provenance.
 ## Requirements
 ### Requirement: Session state machine
 The engine SHALL model a session as the states `idle`, `running`, `held`, `break`, and `closed`, with transitions only via explicit user intents (begin, hold, resume, startBreak, endBreak, close) or policy expiry, and SHALL reject invalid transitions with a typed error.
@@ -64,4 +64,3 @@ The timer engine SHALL be a pure Swift module with no SwiftUI, AppKit, or networ
 #### Scenario: Module isolation is testable
 - **WHEN** the engine test target builds
 - **THEN** it SHALL link only Foundation and the persistence protocol, and all scenarios above SHALL run headlessly with an injected clock
-

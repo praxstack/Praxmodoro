@@ -1,7 +1,7 @@
 # session-persistence Specification
 
 ## Purpose
-What is stored, and what is deliberately not. Local SwiftData models with an append-only event log, no network and no account, data minimisation, graceful degradation when the store cannot be opened, and storage whose shape is identical across editions and store configurations.
+What is stored, and what is deliberately not. Local SwiftData models with an append-only event log, no network and no account, data minimisation, graceful degradation when the store cannot be opened, and storage whose shape is identical across store configurations.
 ## Requirements
 ### Requirement: Local SwiftData models
 The persistence layer SHALL store tasks, sessions, session events (transitions, check-in answers, parked thoughts, breaks, clock anomalies), and self-reported capacity as SwiftData models in the app's local container.
@@ -48,4 +48,3 @@ Stored data SHALL be identical in shape across editions; no field SHALL exist so
 #### Scenario: Schema parity
 - **WHEN** the schema is generated under Lite and Pro flags
 - **THEN** the schemas SHALL be identical
-

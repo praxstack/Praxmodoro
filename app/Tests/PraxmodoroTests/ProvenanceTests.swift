@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import Praxmodoro
 
-/// Spec: app-scaffold "Deterministic versioning and provenance".
+/// Spec: app-scaffold "Deterministic build provenance".
 @Suite struct ProvenanceTests {
     @Test func testAboutShowsProvenance() {
         let provenance = Provenance.current

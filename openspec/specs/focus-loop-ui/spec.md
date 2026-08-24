@@ -1,7 +1,7 @@
 # focus-loop-ui Specification
 
 ## Purpose
-The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in with no failure state, a break that keeps your place, and a review that records rather than judges. Also carries the companion field's physics contract, the complete accessibility alternates, the non-medical copy rule, and the edition-gating seam.
+The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in with no failure state, a break that keeps your place, and a review that records rather than judges. Also carries the companion field's physics contract, the complete accessibility alternates, the non-medical copy rule, and the capability-provenance seam that keeps every behavior available in the one product.
 ## Requirements
 ### Requirement: One-task initiation
 The initiate surface SHALL ask for exactly one task, one tiny first action, a self-reported capacity (foggy/steady/restless/charged), and a timing policy, and SHALL show no other configuration on the start path (research w1-user-friction-004).
@@ -93,4 +93,3 @@ Every surface SHALL consult the capability registry for feature availability, an
 #### Scenario: Lite includes the whole loop
 - **WHEN** the app runs with the Lite edition flag
 - **THEN** all five surfaces and all behaviors in this spec SHALL be available with no upsell present on any of them
-

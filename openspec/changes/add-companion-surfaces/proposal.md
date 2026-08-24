@@ -42,3 +42,4 @@ This change gives the session three ambient surfaces — a menu-bar popover, a f
 - `focus-loop-ui`: "Complete accessibility alternates" gains render-level verification of the Reduce Transparency and Increase Contrast alternates and extends the keyboard scenario to the whole loop as real key events.
 - `session-persistence`: "Configuration-neutral storage" gains a two-configuration parity scenario against live container schemas.
 - `app-scaffold`: "App lifecycle restores state" gains a launch-time first-run assertion.
+- `timer-engine`: the module-isolation requirement drops retired edition terminology and states the actual boundary: Core does not import or consult the app-layer capability registry.

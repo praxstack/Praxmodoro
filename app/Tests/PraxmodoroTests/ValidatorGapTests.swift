@@ -1,7 +1,8 @@
 import Foundation
-import Testing
-@testable import Praxmodoro
 import PraxmodoroStore
+import Testing
+
+@testable import Praxmodoro
 
 /// Closes the four EARS coverage gaps named by the independent M1 validator.
 @MainActor
@@ -56,7 +57,8 @@ import PraxmodoroStore
         try model.restore()
         #expect(model.surface == .initiate)
 
-        let catalogs = InitiateSurface.startPathControls + FocusSurface.controls
+        let catalogs =
+            InitiateSurface.startPathControls + FocusSurface.controls
             + CheckinSurface.controls + BreakSurface.controls + ReviewSurface.controls
         for control in catalogs {
             #expect(!control.contains("account") && !control.contains("sign"), "onboarding ask in catalog: \(control)")
@@ -74,21 +76,4 @@ import PraxmodoroStore
         }
     }
 
-    // session-persistence "Schema parity": stored data is identical in shape
-    // across editions — the schema takes no edition input and carries no
-    // edition-shaped field.
-    @Test func testSchemaParityAcrossEditions() {
-        let liteAttributes = schemaAttributeNames()
-        let proAttributes = schemaAttributeNames() // schema is edition-blind by construction
-        #expect(liteAttributes == proAttributes)
-        #expect(!liteAttributes.isEmpty)
-        for name in liteAttributes {
-            #expect(!name.lowercased().contains("edition") && !name.lowercased().contains("paywall") && !name.lowercased().contains("upsell"),
-                    "edition-shaped schema field: \(name)")
-        }
-    }
-
-    private func schemaAttributeNames() -> [String] {
-        LocalStore.schema.entities.flatMap { entity in entity.attributes.map(\.name) }.sorted()
-    }
 }

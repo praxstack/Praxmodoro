@@ -59,6 +59,8 @@ This document is the change's architecture record. Within the goal ledger tracki
 
 9. **The registry records provenance for one product, not editions.** Owner-authorized issue #34 removes the dead Lite/Pro/Enterprise framing. `CapabilityRegistry` retains the `FeatureKey` catalog and startup-validation harness, but has one configured set: by default all keys. A hostile test fixture may omit keys so `validate()` can prove the configuration invalid; `isAvailable(_:)` still returns true for every defined key, preventing that fixture from withholding production behavior. The `Edition` enum, edition-indexed grants, generated edition stamp, and About edition label are deleted. Build provenance remains version plus git SHA. No replacement tier, license, or monetization abstraction is introduced.
 
+   The same correction renames Core's historical module-isolation requirement to `Engine is UI-free and capability-registry-independent`. This is terminology alignment, not a Core behavior change: the package remains Foundation-only and cannot import the app-layer registry.
+
 ## Data boundaries
 
 No new persisted field, no new `SessionEvent` kind, no new model. `SessionSnapshot` is a derived value that never round-trips to storage. The return overlay's state is in-memory. Nothing in this change opens a socket, reads a calendar, or writes outside the app's Application Support directory — the existing `NetworkSilenceTests` structural harness continues to cover the new sources because it scans the whole `Sources` tree.

@@ -1,15 +1,16 @@
 import Foundation
 import Testing
 
-/// Spec: timer-engine "Engine is UI-free and edition-free". The engine may
-/// import only Foundation — no SwiftUI, AppKit, network, persistence, or
-/// edition awareness. Enforced structurally by scanning the module sources.
+/// Spec: timer-engine "Engine is UI-free and capability-registry-independent".
+/// The engine may import only Foundation — no SwiftUI, AppKit, network,
+/// persistence, or app-layer capability-registry awareness. Enforced
+/// structurally by scanning the module sources.
 @Suite struct ModuleIsolationTests {
     @Test func testCoreLinksOnlyFoundation() throws {
         let sourcesDir = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent() // ModuleIsolationTests.swift
-            .deletingLastPathComponent() // PraxmodoroCoreTests
-            .deletingLastPathComponent() // Tests
+            .deletingLastPathComponent()  // ModuleIsolationTests.swift
+            .deletingLastPathComponent()  // PraxmodoroCoreTests
+            .deletingLastPathComponent()  // Tests
             .appendingPathComponent("Sources/PraxmodoroCore")
         let files = try FileManager.default.contentsOfDirectory(at: sourcesDir, includingPropertiesForKeys: nil)
             .filter { $0.pathExtension == "swift" }

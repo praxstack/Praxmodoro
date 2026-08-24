@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// Build provenance shown in About (spec: app-scaffold "Deterministic
-/// versioning and provenance"). Values are stamped by scripts/generate.sh
+/// Build provenance shown in About (spec: app-scaffold "Deterministic build
+/// provenance"). Values are stamped by scripts/generate.sh
 /// into Generated/BuildProvenance.swift.
 struct Provenance {
     let version: String

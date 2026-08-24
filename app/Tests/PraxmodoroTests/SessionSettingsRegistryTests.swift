@@ -3,7 +3,7 @@ import Testing
 
 @testable import Praxmodoro
 
-/// Spec: add-session-settings "Settings are part of the one product" (task 9.1).
+/// Spec: session-settings "Settings ship in the one product" (task 9.1).
 @Suite struct SessionSettingsRegistryTests {
     @Test func testSettingsKeysResolveAvailableInProduct() {
         let registry = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases))
