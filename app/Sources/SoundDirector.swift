@@ -28,8 +28,8 @@ func shouldRetainChime(scheduledAt: Date, now: Date, isPlaying: Bool) -> Bool {
 protocol SoundCueScheduling {
     /// Arrange a one-shot chime for a future canonical instant.
     func scheduleChime(_ cue: SoundCue, at instant: Date, volume: Double)
-    /// Withdraw every pending chime — the derivation it was based on changed.
-    func cancelScheduledChimes()
+    /// Withdraw one derived chime whose canonical instant changed.
+    func cancelScheduledChime(_ cue: SoundCue, at instant: Date)
     /// Apply the master volume without interrupting in-flight one-shot cues.
     func setChimeVolume(_ volume: Double)
     /// Withdraw only chimes whose canonical instant has passed during sleep.
@@ -46,7 +46,7 @@ final class AudioCueScheduler: SoundCueScheduling {
     private static let log = Logger(subsystem: "com.praxstack.praxmodoro", category: "sound")
     private let resourceLookup: (SoundCue) -> URL?
     private let clock: () -> Date
-    private(set) var pendingChimes: [(player: AVAudioPlayer, scheduledAt: Date)] = []
+    private(set) var pendingChimes: [(cue: SoundCue, player: AVAudioPlayer, scheduledAt: Date)] = []
     private var tickPlayers: [SoundCue: AVAudioPlayer] = [:]
 
     init(
@@ -79,12 +79,15 @@ final class AudioCueScheduler: SoundCueScheduling {
         player.volume = Float(volume)
         player.prepareToPlay()
         player.play(atTime: player.deviceCurrentTime + delay)
-        pendingChimes.append((player, instant))
+        pendingChimes.append((cue, player, instant))
     }
 
-    func cancelScheduledChimes() {
-        pendingChimes.forEach { $0.player.stop() }
-        pendingChimes.removeAll()
+    func cancelScheduledChime(_ cue: SoundCue, at instant: Date) {
+        pendingChimes.removeAll {
+            guard $0.cue == cue, $0.scheduledAt == instant else { return false }
+            $0.player.stop()
+            return true
+        }
     }
 
     func setChimeVolume(_ volume: Double) {

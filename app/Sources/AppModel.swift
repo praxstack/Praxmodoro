@@ -175,8 +175,8 @@ final class AppModel {
             }
         }
         if scheduledChime?.cue != desired?.cue || scheduledChime?.at != desired?.at {
-            if scheduledChime != nil {
-                soundScheduler.cancelScheduledChimes()
+            if let scheduledChime {
+                soundScheduler.cancelScheduledChime(scheduledChime.cue, at: scheduledChime.at)
             }
             if let desired {
                 soundScheduler.scheduleChime(desired.cue, at: desired.at, volume: sound.masterVolume)

@@ -198,7 +198,7 @@ import Testing
 /// A silent stand-in so notification tests exercise one seam at a time.
 private struct InertSoundScheduler: SoundCueScheduling {
     func scheduleChime(_ cue: SoundCue, at instant: Date, volume: Double) {}
-    func cancelScheduledChimes() {}
+    func cancelScheduledChime(_ cue: SoundCue, at instant: Date) {}
     func setChimeVolume(_ volume: Double) {}
     func cancelExpiredChimes(at now: Date) {}
     func setTickLoop(_ cue: SoundCue, running: Bool, volume: Double) {}

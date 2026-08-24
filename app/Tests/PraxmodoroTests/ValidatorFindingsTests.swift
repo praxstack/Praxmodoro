@@ -25,7 +25,7 @@ import Testing
             scheduled.append((cue, instant, volume))
         }
 
-        func cancelScheduledChimes() { cancels += 1 }
+        func cancelScheduledChime(_ cue: SoundCue, at instant: Date) { cancels += 1 }
 
         func setChimeVolume(_ volume: Double) {}
 
@@ -363,7 +363,7 @@ import Testing
 
 private struct InertCues: SoundCueScheduling {
     func scheduleChime(_ cue: SoundCue, at instant: Date, volume: Double) {}
-    func cancelScheduledChimes() {}
+    func cancelScheduledChime(_ cue: SoundCue, at instant: Date) {}
     func setChimeVolume(_ volume: Double) {}
     func cancelExpiredChimes(at now: Date) {}
     func setTickLoop(_ cue: SoundCue, running: Bool, volume: Double) {}

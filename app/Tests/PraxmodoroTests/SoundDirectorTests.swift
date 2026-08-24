@@ -31,9 +31,9 @@ import Testing
             pending.append((cue, instant, volume))
         }
 
-        func cancelScheduledChimes() {
+        func cancelScheduledChime(_ cue: SoundCue, at instant: Date) {
             cancels += 1
-            pending.removeAll()
+            pending.removeAll { $0.cue == cue && $0.at == instant }
         }
 
         func setChimeVolume(_ volume: Double) {
@@ -121,6 +121,22 @@ import Testing
         model.forwardMinute()
         #expect(recorder.cancels >= 1, "the stale chime must be cancelled")
         #expect(recorder.scheduled.last?.at == t0.addingTimeInterval(26 * 60))
+    }
+
+    @Test func testAdjustmentKeepsTheBlockStartCue() throws {
+        let (model, ticker, recorder) = try makeModel { $0.focusEndChime = true }
+        try model.begin()
+        model.previewSound(.focusEnd)
+        #expect(recorder.pending.count == 3)
+
+        ticker.now = t0.addingTimeInterval(1)
+        model.forwardMinute()
+
+        #expect(recorder.pending.contains { $0.cue == .blockStart && $0.at == t0 })
+        #expect(recorder.pending.contains { $0.cue == .focusEnd && $0.at == t0 })
+        #expect(!recorder.pending.contains { $0.cue == .focusEnd && $0.at == t0.addingTimeInterval(25 * 60) })
+        #expect(recorder.pending.last?.cue == .focusEnd)
+        #expect(recorder.pending.last?.at == t0.addingTimeInterval(26 * 60))
     }
 
     @Test func testHoldCancelsAndResumeReschedules() throws {
@@ -341,7 +357,7 @@ import Testing
         let player = AudioCueScheduler(resourceLookup: { _ in nil })
         player.scheduleChime(.focusEnd, at: Date.distantFuture, volume: 1)
         player.setTickLoop(.focusTick, running: true, volume: 1)
-        player.cancelScheduledChimes()
+        player.cancelScheduledChime(.focusEnd, at: .distantFuture)
         #expect(Bool(true), "reaching here without a crash is the assertion")
     }
 
@@ -383,6 +399,29 @@ import Testing
         #expect(scheduler.pendingChimes.first?.player === futurePlayer)
         #expect(!expiredPlaying.isPlaying)
         #expect(!expiredStopped.isPlaying)
+    }
+
+    @Test func testTargetedCancellationKeepsOtherCueAndInstantPlayers() throws {
+        let url = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Resources/Sounds/chime-focus-end.wav")
+        let scheduler = AudioCueScheduler(resourceLookup: { _ in url }, clock: { self.t0 })
+        let oldExpiry = t0.addingTimeInterval(60)
+        let preview = t0.addingTimeInterval(120)
+        let blockStart = t0.addingTimeInterval(180)
+        scheduler.scheduleChime(.focusEnd, at: oldExpiry, volume: 0)
+        let oldPlayer = try #require(scheduler.pendingChimes.last?.player)
+        scheduler.scheduleChime(.focusEnd, at: preview, volume: 0)
+        let previewPlayer = try #require(scheduler.pendingChimes.last?.player)
+        scheduler.scheduleChime(.blockStart, at: blockStart, volume: 0)
+        let blockStartPlayer = try #require(scheduler.pendingChimes.last?.player)
+
+        scheduler.cancelScheduledChime(.focusEnd, at: oldExpiry)
+
+        #expect(!oldPlayer.isPlaying)
+        #expect(scheduler.pendingChimes.count == 2)
+        #expect(scheduler.pendingChimes.contains { $0.player === previewPlayer })
+        #expect(scheduler.pendingChimes.contains { $0.player === blockStartPlayer })
     }
 
     @Test func testSystemWakeReadsInjectedClockOnceAndCancelsAtThatInstant() {
