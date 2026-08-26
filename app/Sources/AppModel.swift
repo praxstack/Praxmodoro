@@ -17,6 +17,11 @@ final class AppModel {
     var firstAction = ""
     var capacity = "steady"
     var policy: TimingPolicy = .gentleStart
+    private(set) var recoveryNotice: RecoveryNotice?
+
+    func dismissRecoveryNotice() {
+        recoveryNotice = nil
+    }
 
     /// Increments once per acknowledged user choice; the field blooms on change.
     private(set) var fieldPulse = 0
@@ -262,12 +267,14 @@ final class AppModel {
 
     init(
         store: LocalStore?,
+        recoveryNotice: RecoveryNotice? = nil,
         capabilities: CapabilityRegistry = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases)),
         clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
         soundScheduler: SoundCueScheduling = AudioCueScheduler(),
         notificationScheduler: NotificationScheduling = LocalNotificationScheduler()
     ) {
         self.store = store
+        self.recoveryNotice = recoveryNotice
         self.capabilities = capabilities
         self.clock = clock
         self.liveObservationStartedAt = clock()

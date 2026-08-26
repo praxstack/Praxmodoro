@@ -79,6 +79,8 @@ struct FocusCapsule: View {
                     Image(systemName: display.phase == .held ? "play.fill" : "pause.fill")
                 }
                 .buttonStyle(.borderless)
+                .focusable()
+                .keyboardShortcut(.space, modifiers: [])
                 .accessibilityLabel(display.phase == .held ? "Resume timer" : "Hold timer")
                 .accessibilityIdentifier("capsule-hold")
             }

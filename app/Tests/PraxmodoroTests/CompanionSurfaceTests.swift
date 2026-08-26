@@ -129,7 +129,7 @@ import Testing
         let source = try String(contentsOf: appURL, encoding: .utf8)
         let code = Self.codeOnly(source)
         let cases = [
-            (guardName: "menuBarSurfaceAvailable", key: "menuBarSurface", construction: #"MenuBarExtra\s*\("#),
+            (guardName: "menuBarSurfaceAvailable", key: "menuBarSurface", construction: #"MenuBarExtra\s*(?:\(|\{)"#),
             (
                 guardName: "focusCapsuleAvailable", key: "focusCapsule",
                 construction: #"Window\s*\(\s*,\s*id:\s*Self\.capsuleWindowID\s*\)\s*\{"#

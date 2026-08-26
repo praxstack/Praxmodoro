@@ -37,6 +37,23 @@ import Testing
         #expect(model.surface == .initiate)
     }
 
+    // Spec: session-persistence "Store corruption degrades gracefully".
+    @Test func testRecoveryNoticeReachesPresentationAndCanBeDismissed() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let storeURL = directory.appendingPathComponent("praxmodoro.store")
+        try Data("not a database".utf8).write(to: storeURL)
+        let (store, openedNotice) = try LocalStore.open(at: storeURL, now: t0)
+        let notice = try #require(openedNotice)
+        let model = AppModel(
+            store: store, recoveryNotice: notice, clock: { self.t0 })
+
+        #expect(model.recoveryNotice == notice)
+        model.dismissRecoveryNotice()
+        #expect(model.recoveryNotice == nil)
+    }
+
     // A closed session does not resurrect on relaunch.
     @Test func testClosedSessionStaysClosed() throws {
         let store = try LocalStore(inMemory: true)

@@ -41,7 +41,7 @@ struct PraxmodoroApp: App {
             .appendingPathComponent("Praxmodoro", isDirectory: true)
         try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
         let opened = try? LocalStore.open(at: supportDir.appendingPathComponent("praxmodoro.store"), now: Date())
-        let model = AppModel(store: opened?.0)
+        let model = AppModel(store: opened?.0, recoveryNotice: opened?.1)
         try? model.restore()
         self._model = State(initialValue: model)
     }
@@ -86,6 +86,17 @@ struct PraxmodoroApp: App {
                 NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
             ) { _ in
                 model.handleSystemWake()
+            }
+            .alert(
+                "Local data recovered",
+                isPresented: Binding(
+                    get: { model.recoveryNotice != nil },
+                    set: { if !$0 { model.dismissRecoveryNotice() } }
+                )
+            ) {
+                Button("OK") { model.dismissRecoveryNotice() }
+            } message: {
+                Text(model.recoveryNotice?.message ?? "")
             }
         }
         .commands {
@@ -151,7 +162,7 @@ struct PraxmodoroApp: App {
 
         ({
             if menuBarSurfaceAvailable {
-                return MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
+                return MenuBarExtra {
                     TimelineView(.periodic(from: .now, by: 1)) { context in
                         let snapshot = model.snapshot(at: context.date)
                         MenuBarPopover(
@@ -167,6 +178,9 @@ struct PraxmodoroApp: App {
                     ) { _ in
                         model.handleSystemWake()
                     }
+                } label: {
+                    Label("Praxmodoro", systemImage: "circle.dotted")
+                        .accessibilityLabel("Praxmodoro")
                 }
                 .menuBarExtraStyle(.window)
             }

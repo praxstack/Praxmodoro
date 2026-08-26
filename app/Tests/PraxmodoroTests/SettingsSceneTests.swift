@@ -108,6 +108,13 @@ import Testing
         #expect(app.contains("SettingsSurface"), "the Settings scene must host SettingsSurface")
     }
 
+    @Test func testLaunchPresentsTheStoreRecoveryNotice() throws {
+        let app = try source("PraxmodoroApp.swift")
+        #expect(app.contains("recoveryNotice: opened?.1"))
+        #expect(app.contains("model.recoveryNotice?.message"))
+        #expect(app.contains("model.dismissRecoveryNotice()"))
+    }
+
     @Test func testSettingsHasAKeyboardPath() {
         #expect(KeyboardMap.all["settings"] == "⌘,")
     }

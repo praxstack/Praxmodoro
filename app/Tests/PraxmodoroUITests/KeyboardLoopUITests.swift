@@ -7,6 +7,13 @@ private extension XCUIElement {
     var hasKeyboardFocus: Bool {
         value(forKey: "hasKeyboardFocus") as? Bool == true
     }
+
+    /// AppKit exposes identified SwiftUI Text content as the AX value while
+    /// controls expose their visible name as the AX label.
+    var accessibilityText: String {
+        if !label.isEmpty { return label }
+        return value as? String ?? ""
+    }
 }
 
 /// The two interface-level follow-ups the independent M1 validator recorded:
@@ -38,13 +45,55 @@ final class KeyboardLoopUITests: XCTestCase {
     @MainActor
     private func waitForLabel(
         _ label: String,
-        on element: XCUIElement,
+        identifier: String,
+        in app: XCUIApplication,
         file: StaticString = #filePath,
         line: UInt = #line
     ) {
         let changed = XCTNSPredicateExpectation(
-            predicate: NSPredicate(format: "label == %@", label), object: element)
+            predicate: NSPredicate { _, _ in
+                app.descendants(matching: .any)[identifier].accessibilityText == label
+            }, object: nil)
         XCTAssertEqual(XCTWaiter.wait(for: [changed], timeout: 5), .completed, file: file, line: line)
+    }
+
+    private func clockSeconds(
+        _ label: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> Int {
+        let parts = label.split(separator: ":").compactMap { Int($0) }
+        guard parts.count == 2 else {
+            XCTFail("Expected MM:SS clock, got \(label)", file: file, line: line)
+            return -1
+        }
+        return parts[0] * 60 + parts[1]
+    }
+
+    @MainActor
+    private func waitForNextClockTick(
+        _ identifier: String,
+        in app: XCUIApplication,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) -> Int {
+        func element() -> XCUIElement { app.staticTexts[identifier] }
+        guard element().waitForExistence(timeout: 5) else {
+            XCTFail("Expected running clock does not exist", file: file, line: line)
+            return -1
+        }
+        let initial = element().accessibilityText
+        let ticked = XCTNSPredicateExpectation(
+            predicate: NSPredicate { _, _ in
+                element().exists && element().accessibilityText != initial
+            }, object: nil)
+        XCTAssertEqual(XCTWaiter.wait(for: [ticked], timeout: 3), .completed, file: file, line: line)
+        return clockSeconds(element().accessibilityText, file: file, line: line)
+    }
+
+    @MainActor
+    private func labels(_ identifiers: [String], in app: XCUIApplication) -> [String] {
+        identifiers.map { app.descendants(matching: .any)[$0].accessibilityText }
     }
 
     /// Spec: app-scaffold "Launch-time first-run assertion".
@@ -95,11 +144,11 @@ final class KeyboardLoopUITests: XCTestCase {
         moveFocus(to: hold, in: app)
         XCTAssertTrue(hold.hasKeyboardFocus)
         hold.typeKey(.space, modifierFlags: [])
-        waitForLabel("Resume timer", on: hold)
+        waitForLabel("Resume timer", identifier: "hold-toggle", in: app)
         if !hold.hasKeyboardFocus { moveFocus(to: hold, in: app) }
         XCTAssertTrue(hold.hasKeyboardFocus)
         hold.typeKey(.space, modifierFlags: [])
-        waitForLabel("Hold timer", on: hold)
+        waitForLabel("Hold timer", identifier: "hold-toggle", in: app)
 
         // Park a thought without leaving focus.
         let thought = "Ask Maya for the final chart"
@@ -198,18 +247,125 @@ final class KeyboardLoopUITests: XCTestCase {
     @MainActor
     func testCapsuleOpensAndClosesFromTheKeyboard() {
         let app = launchFresh(for: self)
-        XCTAssertTrue(app.textFields["task-input"].waitForExistence(timeout: 10))
+        let taskField = app.textFields["task-input"]
+        XCTAssertTrue(taskField.waitForExistence(timeout: 10))
 
         let capsule = app.windows["Focus capsule"]
         XCTAssertFalse(capsule.exists, "the capsule opened itself at launch")
 
+        moveFocus(to: taskField, in: app)
+        taskField.typeText("Edit the outline")
+        app.typeKey(.return, modifierFlags: .command)
+        XCTAssertTrue(app.staticTexts["task-line"].waitForExistence(timeout: 5))
+
         app.typeKey("f", modifierFlags: [.command, .shift])
         XCTAssertTrue(capsule.waitForExistence(timeout: 5), "⌘⇧F did not open the capsule")
+
+        let hold = app.descendants(matching: .any)["capsule-hold"]
+        moveFocus(to: hold, in: app)
+        XCTAssertTrue(hold.hasKeyboardFocus)
+        hold.typeKey(.space, modifierFlags: [])
+        waitForLabel("Resume timer", identifier: "capsule-hold", in: app)
 
         app.typeKey("f", modifierFlags: [.command, .shift])
         let closed = NSPredicate(format: "exists == false")
         expectation(for: closed, evaluatedWith: capsule)
         waitForExpectations(timeout: 5)
+    }
+
+    /// Spec: session-settings "Settings open by keyboard" from a live surface.
+    @MainActor
+    func testSettingsShortcutPreservesRunningSession() {
+        let app = launchFresh(for: self)
+        let taskField = app.textFields["task-input"]
+        XCTAssertTrue(taskField.waitForExistence(timeout: 10))
+        moveFocus(to: taskField, in: app)
+        taskField.typeText("Edit the outline")
+        app.typeKey(.return, modifierFlags: .command)
+
+        let taskLine = app.staticTexts["task-line"]
+        XCTAssertTrue(taskLine.waitForExistence(timeout: 5))
+        let taskBefore = taskLine.accessibilityText
+        let hold = app.buttons["hold-toggle"]
+        XCTAssertTrue(hold.waitForExistence(timeout: 5))
+        XCTAssertEqual(hold.label, "Hold timer")
+        let timeBefore = waitForNextClockTick("time-remaining", in: app)
+
+        app.typeKey(",", modifierFlags: .command)
+        let rhythm = app.descendants(matching: .any)["Rhythm"]
+        XCTAssertTrue(rhythm.waitForExistence(timeout: 5))
+        XCTAssertEqual(taskLine.accessibilityText, taskBefore)
+        XCTAssertEqual(hold.label, "Hold timer")
+        XCTAssertLessThanOrEqual(clockSeconds(app.staticTexts["time-remaining"].accessibilityText), timeBefore)
+
+        app.typeKey("w", modifierFlags: .command)
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: rhythm)
+        waitForExpectations(timeout: 5)
+        XCTAssertEqual(taskLine.accessibilityText, taskBefore)
+        XCTAssertEqual(hold.label, "Hold timer")
+        let timeAfter = clockSeconds(app.staticTexts["time-remaining"].accessibilityText)
+        XCTAssertLessThanOrEqual(timeAfter, timeBefore)
+        XCTAssertGreaterThanOrEqual(timeAfter, timeBefore - 30)
+
+        // A separate Window scene must carry the same app-wide Settings
+        // command without resetting or holding the session.
+        app.typeKey("f", modifierFlags: [.command, .shift])
+        let capsule = app.windows["Focus capsule"]
+        XCTAssertTrue(capsule.waitForExistence(timeout: 5))
+        let capsuleStatus = app.staticTexts["capsule-status"]
+        let capsuleTask = app.staticTexts["capsule-task"]
+        let capsuleTime = app.staticTexts["capsule-time"]
+        let capsuleHold = app.descendants(matching: .any)["capsule-hold"]
+        for element in [capsuleStatus, capsuleTask, capsuleTime, capsuleHold] {
+            XCTAssertTrue(element.waitForExistence(timeout: 5))
+        }
+        moveFocus(to: capsuleHold, in: app)
+        let capsuleIdentifiers = ["capsule-status", "capsule-task", "capsule-hold"]
+        let capsuleLabels = labels(capsuleIdentifiers, in: app)
+        let capsuleTimeBefore = clockSeconds(app.staticTexts["capsule-time"].accessibilityText)
+
+        capsuleHold.typeKey(",", modifierFlags: .command)
+        let capsuleRhythm = app.descendants(matching: .any)["Rhythm"]
+        XCTAssertTrue(capsuleRhythm.waitForExistence(timeout: 5))
+        app.typeKey("w", modifierFlags: .command)
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: capsuleRhythm)
+        waitForExpectations(timeout: 5)
+        XCTAssertTrue(capsule.exists)
+        XCTAssertEqual(labels(capsuleIdentifiers, in: app), capsuleLabels)
+        let capsuleTimeAfter = clockSeconds(app.staticTexts["capsule-time"].accessibilityText)
+        XCTAssertLessThanOrEqual(capsuleTimeAfter, capsuleTimeBefore)
+        XCTAssertGreaterThanOrEqual(capsuleTimeAfter, capsuleTimeBefore - 30)
+        app.typeKey("f", modifierFlags: [.command, .shift])
+
+        // MenuBarExtra is a third scene. Opening Settings may dismiss its
+        // popover, so reopen it after closing Settings before comparing state.
+        let statusItem = app.statusItems["Praxmodoro"]
+        XCTAssertTrue(statusItem.waitForExistence(timeout: 5))
+        statusItem.click()
+        let popoverStatus = app.staticTexts["popover-status"]
+        let popoverTask = app.staticTexts["popover-task"]
+        let popoverTime = app.staticTexts["popover-time"]
+        let popoverPrimary = app.buttons["popover-primary"]
+        for element in [popoverStatus, popoverTask, popoverTime, popoverPrimary] {
+            XCTAssertTrue(element.waitForExistence(timeout: 5))
+        }
+        moveFocus(to: popoverPrimary, in: app)
+        let popoverIdentifiers = ["popover-status", "popover-task", "popover-primary"]
+        let popoverLabels = labels(popoverIdentifiers, in: app)
+        let popoverTimeBefore = clockSeconds(app.staticTexts["popover-time"].accessibilityText)
+
+        popoverPrimary.typeKey(",", modifierFlags: .command)
+        let popoverRhythm = app.descendants(matching: .any)["Rhythm"]
+        XCTAssertTrue(popoverRhythm.waitForExistence(timeout: 5))
+        app.typeKey("w", modifierFlags: .command)
+        expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: popoverRhythm)
+        waitForExpectations(timeout: 5)
+        if !popoverStatus.exists { statusItem.click() }
+        XCTAssertTrue(popoverStatus.waitForExistence(timeout: 5))
+        XCTAssertEqual(labels(popoverIdentifiers, in: app), popoverLabels)
+        let popoverTimeAfter = clockSeconds(app.staticTexts["popover-time"].accessibilityText)
+        XCTAssertLessThanOrEqual(popoverTimeAfter, popoverTimeBefore)
+        XCTAssertGreaterThanOrEqual(popoverTimeAfter, popoverTimeBefore - 30)
     }
 
     /// Spec: session-settings "Five cue samples work without a session".
