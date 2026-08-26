@@ -3,10 +3,10 @@
   "contract": "SPEC.md",
   "workBatch": "architecture-stabilization",
   "activeChanges": [],
-  "status": "closeout-in-progress",
+  "status": "complete",
   "blockingDecisions": [],
-  "evidencePolicy": "Existing done atoms and archived milestones are immutable historical evidence. Pending architecture-stabilization atoms below are the current completion state; no historical result is promoted to current proof.",
-  "updated": "2026-08-26T14:23:02Z",
+  "evidencePolicy": "Existing done atoms and archived milestones are immutable historical evidence. Architecture-stabilization completion is supported only by the fresh evidence recorded below; no historical result is promoted to current proof.",
+  "updated": "2026-08-26T14:35:03Z",
   "atoms": [
     {
       "id": "g1-verification-commands",
@@ -234,8 +234,8 @@
     {
       "id": "as-z-final-closeout",
       "title": "Whole-diff review, fresh gates, evidence, validators, archives, and final status",
-      "status": "pending",
-      "evidence": "Implementation repair commit 3639693 is independently reviewed and its signed pre-archive result passed 237/237. The actual dependency-ordered archives now exist as 2026-08-26-add-companion-surfaces, 2026-08-26-stabilize-runtime-contracts, and 2026-08-26-add-session-settings. Post-archive ./scripts/verify-project.sh exited 0 with Core 46/46, Store 8/8, build success, and signed result Test-Praxmodoro-2026.08.26_19-44-01-+0530.xcresult passing 237/237 with zero failures or skips. Smoke passed, docs built 83 pages, strict canonical OpenSpec passed 6/6, and stale-term, diff, and JSON checks are clean. Only the archive/status commit and issue reconciliation remain."
+      "status": "done",
+      "evidence": "Implementation repair commit 3639693 is independently reviewed and its signed pre-archive result passed 237/237. The actual dependency-ordered archives exist as 2026-08-26-add-companion-surfaces, 2026-08-26-stabilize-runtime-contracts, and 2026-08-26-add-session-settings; archive and evidence commit f1beb90 contains no app implementation. Post-archive ./scripts/verify-project.sh exited 0 with Core 46/46, Store 8/8, build success, and signed result Test-Praxmodoro-2026.08.26_19-44-01-+0530.xcresult passing 237/237 with zero failures or skips. Smoke passed, docs built 83 pages, strict canonical OpenSpec passed 6/6, and stale-term, diff, and JSON checks are clean. GitHub issues #7, #18, and #51-#55 were closed only after f1beb90 existed; every supported checkbox is checked and stale ready-for-agent labels are removed. A first issue-body edit used unsafe shell quoting and temporarily removed code-formatted fragments; all seven bodies were immediately restored from the captured originals and verified for real newlines, zero unchecked boxes, and zero remaining labels. No merge, push, package, release, or deployment is claimed."
     }
   ],
   "archivedMilestones": [

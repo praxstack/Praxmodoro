@@ -353,7 +353,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <div class="eyebrow">Agent conventions</div>
 <h1>Approved architecture closeout session</h1>
 <p class="standfirst">The user approved autonomous execution of the existing specification-to-ticket-to-implementation workflow, followed by code review, systematic debugging, full verification,…</p>
-<div class="meta"><span>872 words</span><span><code>.agent/sessions/2026-08-26T13-34-36Z-approved-closeout.md</code></span></div>
+<div class="meta"><span>1,009 words</span><span><code>.agent/sessions/2026-08-26T13-34-36Z-approved-closeout.md</code></span></div>
 <article class="prose"><h2>User authorization</h2>
 <p>The user approved autonomous execution of the existing specification-to-ticket-to-implementation workflow, followed by code review, systematic debugging, full verification, and a commit only after every required gate passes.</p>
 <h2>Fixed scope and acceptance criteria</h2>
@@ -413,6 +413,10 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li>2026-08-26T14:12:44Z <code>ARCHIVE</code>: archived <code>add-companion-surfaces</code>, <code>stabilize-runtime-contracts</code>, and <code>add-session-settings</code> in dependency order. Canonical specs are synchronized and both generated placeholder Purposes were replaced with the approved delta text.</li>
 <li>2026-08-26T14:13:32Z <code>IMPLEMENTATION_COMMIT</code>: committed the reviewed production and regression repair as <code>3639693</code> (<code>fix(app): close signed accessibility and recovery gaps</code>). Secret scan and staged diff integrity passed.</li>
 <li>2026-08-26T14:16:48Z <code>POST_ARCHIVE_GREEN</code>: <code>./scripts/verify-project.sh</code> exited 0 on the archived tree; <code>Test-Praxmodoro-2026.08.26_19-44-01-+0530.xcresult</code> passed 237/237 with zero failures/skips. Smoke passed, docs built 83 pages, strict canonical OpenSpec passed 6/6, and diff, JSON, and both stale-term scans are clean.</li>
+<li>2026-08-26T14:27:53Z <code>ARCHIVE_COMMIT</code>: committed the reviewed archive, canonical specifications, generated documentation, and evidence receipts as <code>f1beb90</code>; no app implementation was included.</li>
+<li>2026-08-26T14:28:32Z <code>ISSUES_RECONCILED</code>: closed existing GitHub issues #7, #18, and #51-#55 as completed with implementation commit <code>3639693</code>, archive commit <code>f1beb90</code>, signed 237/237 XCTest, focused, smoke, and strict OpenSpec evidence. No duplicate ticket was created.</li>
+<li>2026-08-26T14:31:54Z <code>REVIEW_FINDING</code>: the standards reviewer found all closed issues still had unchecked acceptance boxes and stale <code>ready-for-agent</code> labels, so tracker reconciliation was not complete.</li>
+<li>2026-08-26T14:35:03Z <code>ISSUE_REPAIR</code>: checked every supported criterion and removed <code>ready-for-agent</code> from #7, #18, and #51-#55. The first bulk body edit used unsafe shell quoting and temporarily stripped code-formatted fragments; all seven bodies were immediately restored from the captured originals. Live verification reports CLOSED, zero unchecked boxes, zero labels, and no literal escaped newline damage for every issue.</li>
 </ul>
 </article>
 <footer class="docfoot">

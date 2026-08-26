@@ -4,7 +4,7 @@ Date: 2026-08-23
 Branch: `prax/architecture-review-2026-08-23`
 Frozen baseline: `a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7`
 Archived changes: `add-companion-surfaces`, `stabilize-runtime-contracts`, `add-session-settings`
-Status: archive and verification complete 2026-08-26; final archive/status commit and issue reconciliation pending
+Status: complete 2026-08-26; archive/status commit `f1beb90`; issues #7, #18, and #51–#55 closed
 
 ## Objective and success definition
 

@@ -353,7 +353,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <div class="eyebrow">Archived changes</div>
 <h1>Tasks: stabilize-runtime-contracts</h1>
 <p class="standfirst">No production code task starts until proposal, delta specs, design, this task list, and the dated plan pass every specification review. Because the user prohibited commits…</p>
-<div class="meta"><span>1,245 words</span><span><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/tasks.md</code></span></div>
+<div class="meta"><span>1,262 words</span><span><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/tasks.md</code></span></div>
 <article class="prose"><p>No production code task starts until proposal, delta specs, design, this task list, and the dated plan pass every specification review. Because the user prohibited commits before review closure, red/green work remains uncommitted until the final code-review gate; after that gate, each independently testable atom is committed separately.</p>
 <h2>1. Specification gate</h2>
 <ul>
@@ -393,8 +393,8 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li><input checked="" disabled="" type="checkbox"> 5.4 Before archive, mark implementation tasks complete and update <code>prd.json</code> and <code>progress.txt</code> with actual commands, exit status, test evidence, atom commit SHAs, and issue mapping; do not change acceptance thresholds.</li>
 <li><input checked="" disabled="" type="checkbox"> 5.5 Dispatch an independent fresh-context validator against <code>SPEC.md</code>, the active change, committed implementation atoms, and the uncommitted evidence receipts. Any production/test finding stops archive and re-enters the red regression → minimal uncommitted repair → <code>/code-review</code> plus adversarial review → affected and full fresh gates → isolated staged-tree proof → scoped repair commit → evidence update loop. Documentation-only fixes still rerun strict validation. Rerun the validator to COMPLETE, and never place an implementation repair in the archive/evidence commit.</li>
 <li><input checked="" disabled="" type="checkbox"> 5.6 Archive <code>stabilize-runtime-contracts</code>, then re-run <code>npm run spec:validate</code> and the full project gate against the archived tree.</li>
-<li><input disabled="" type="checkbox"> 5.7 Create the final scoped documentation/status commit for the archive and evidence only.</li>
-<li><input disabled="" type="checkbox"> 5.8 Reconcile existing GitHub issues #7, #18, and #51–#55 rather than creating duplicates; retain #53&#39;s approved <code>model.surface</code> boundary, and close only after final committed evidence exists.</li>
+<li><input checked="" disabled="" type="checkbox"> 5.7 Create the final scoped documentation/status commit for the archive and evidence only. Commit: <code>f1beb90</code>.</li>
+<li><input checked="" disabled="" type="checkbox"> 5.8 Reconcile existing GitHub issues #7, #18, and #51–#55 rather than creating duplicates; retain #53&#39;s approved <code>model.surface</code> boundary, and close only after final committed evidence exists. All seven issues closed 2026-08-26 with implementation commit, archive commit, signed XCTest, smoke, and strict OpenSpec evidence.</li>
 </ul>
 </article>
 <footer class="docfoot">

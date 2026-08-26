@@ -35,9 +35,9 @@ Governed by OpenSpec change `add-companion-surfaces` (archived `2026-08-26-add-c
 
 **Closed 2026-08-26.** The 2026-08-23 validator findings were repaired and independently re-reviewed. Fresh `./scripts/verify-project.sh` exited 0 before and after archive; the signed post-archive result passed 237/237 with zero failures or skips, smoke passed, canonical OpenSpec passed 6/6 strict, and the change was archived with its deltas synchronized.
 
-## Architecture stabilization batch (ARCHIVE AND VERIFICATION COMPLETE 2026-08-26)
+## Architecture stabilization batch (COMPLETE 2026-08-26)
 
-The three changes `add-companion-surfaces`, `stabilize-runtime-contracts`, and `add-session-settings` are archived as `2026-08-26-add-companion-surfaces`, `2026-08-26-stabilize-runtime-contracts`, and `2026-08-26-add-session-settings`. Their implementation and review repairs are committed through `3639693`; no active OpenSpec change remains. Fresh Core 46/46, Store 8/8, build, signed UI 237/237, smoke, strict OpenSpec 6/6, docs, diff, JSON, and stale-term checks pass. The scoped archive/status commit and GitHub issue reconciliation remain pending. This is repository completion evidence, not a claim that the branch has been merged, pushed, packaged, or released.
+The three changes `add-companion-surfaces`, `stabilize-runtime-contracts`, and `add-session-settings` are archived as `2026-08-26-add-companion-surfaces`, `2026-08-26-stabilize-runtime-contracts`, and `2026-08-26-add-session-settings`. Their implementation and review repairs are committed through `3639693`; the archive and evidence are committed as `f1beb90`; no active OpenSpec change remains. Fresh Core 46/46, Store 8/8, build, signed UI 237/237, smoke, strict OpenSpec 6/6, docs, diff, JSON, and stale-term checks pass. GitHub issues #7, #18, and #51–#55 are closed with this evidence. This is repository completion evidence, not a claim that the branch has been merged, pushed, packaged, or released.
 
 The archived specifications and dated plans retain the red-first atoms, reviews, and documented historical deviations without rewriting absent receipts into evidence.
 
