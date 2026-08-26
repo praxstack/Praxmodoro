@@ -5,6 +5,7 @@ Branch: `prax/architecture-review-2026-08-23`
 Baseline: `a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7`
 OpenSpec change: `stabilize-runtime-contracts`
 Issues: #51, #52, #53
+Status: complete 2026-08-26; archived as `2026-08-26-stabilize-runtime-contracts`; post-archive Core 46/46 and full signed gate passed
 
 ## Objective
 

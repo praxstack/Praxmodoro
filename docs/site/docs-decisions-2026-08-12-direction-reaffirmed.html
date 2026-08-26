@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>companion-surfaces · Praxmodoro docs</title>
+<title>Decision: visual direction re-affirmed — Living Companion · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,127 +346,32 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>companion-surfaces</h1>
-<p class="standfirst">Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to design-mocks/living-co…</p>
-<div class="meta"><span>1,044 words</span><span><code>openspec/changes/add-companion-surfaces/specs/companion-surfaces/spec.md</code></span></div>
-<article class="prose"><p>Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to <code>design-mocks/living-companion/</code> (physics contract: <code>companion-physics.js</code>). These surfaces present the session; they never own it.</p>
-<h2>ADDED Requirements</h2>
-<h3>Requirement: One canonical session state for every surface</h3>
-<p>Every surface SHALL render from a single engine-derived snapshot produced by the app model at one instant, and no surface SHALL hold, count, or decrement its own copy of the remaining time. Remaining time SHALL remain a pure function of the recorded transitions and the current instant.</p>
-<h4>Scenario: Surfaces agree at one instant</h4>
-<ul>
-<li><strong>WHEN</strong> the focus surface, the menu-bar popover, and the floating capsule are rendered from the same instant</li>
-<li><strong>THEN</strong> the remaining-time text, task line, and status line SHALL be identical across all three</li>
-</ul>
-<h4>Scenario: No surface counts time</h4>
-<ul>
-<li><strong>WHEN</strong> the surface sources are scanned for timer construction, scheduled decrements, or stored elapsed counters</li>
-<li><strong>THEN</strong> no companion surface SHALL contain one, and the snapshot accessor SHALL be the only source of the rendered remaining time</li>
-</ul>
-<h4>Scenario: Snapshot survives sleep and relaunch</h4>
-<ul>
-<li><strong>WHEN</strong> a snapshot is taken after an interval during which the app was not running</li>
-<li><strong>THEN</strong> its remaining time SHALL equal the value derived from canonical timestamps, with no accumulated tick drift</li>
-</ul>
-<h3>Requirement: Menu-bar popover operates the loop</h3>
-<p>The app SHALL provide a menu-bar item whose popover shows the current status line, remaining time, and task, and SHALL offer the loop entry points available in the current phase — begin, hold or resume, check in, and open the main window.</p>
-<h4>Scenario: Popover reflects the live phase</h4>
-<ul>
-<li><strong>WHEN</strong> the session is held</li>
-<li><strong>THEN</strong> the popover status line SHALL say the place is held and its primary control SHALL offer resume rather than hold</li>
-</ul>
-<h4>Scenario: Popover with no session</h4>
-<ul>
-<li><strong>WHEN</strong> no session is running</li>
-<li><strong>THEN</strong> the popover SHALL offer beginning one and SHALL NOT display a remaining time</li>
-</ul>
-<h4>Scenario: Popover carries no scoring</h4>
-<ul>
-<li><strong>WHEN</strong> the popover renders in any phase</li>
-<li><strong>THEN</strong> it SHALL NOT display streaks, grades, completion percentages, comparative judgments, or an upsell</li>
-</ul>
-<h3>Requirement: Floating focus capsule stays above other windows</h3>
-<p>The app SHALL provide a small floating capsule window carrying the task line, remaining time, and hold/resume, SHALL keep it above ordinary windows while it is open, SHALL NOT open it automatically at launch, and SHALL let the user open and close it from a keyboard-reachable command.</p>
-<h4>Scenario: Capsule is suppressed at launch</h4>
-<ul>
-<li><strong>WHEN</strong> the app launches</li>
-<li><strong>THEN</strong> the capsule window SHALL NOT be shown until the user opens it</li>
-</ul>
-<h4>Scenario: Capsule toggles from the keyboard</h4>
-<ul>
-<li><strong>WHEN</strong> the user invokes the capsule command from the keyboard</li>
-<li><strong>THEN</strong> the capsule window SHALL open, and invoking the command again SHALL close it</li>
-</ul>
-<h4>Scenario: Capsule shows the same time as the main window</h4>
-<ul>
-<li><strong>WHEN</strong> the capsule and the focus surface are rendered from one instant</li>
-<li><strong>THEN</strong> both SHALL display the same remaining-time text derived from the same snapshot</li>
-</ul>
-<h3>Requirement: Return overlay presents the exact next action</h3>
-<p>WHEN a break ends, the app SHALL present a return overlay over the focus surface carrying the exact next action recorded at initiation, SHALL keep it visible until the user acknowledges it, and SHALL dismiss it on ⏎ or its primary control without altering the session state.</p>
-<h4>Scenario: Ending a break raises the overlay</h4>
-<ul>
-<li><strong>WHEN</strong> the user ends a break</li>
-<li><strong>THEN</strong> the return overlay SHALL be presented over the focus surface with the recorded next action as its subject</li>
-</ul>
-<h4>Scenario: Acknowledgement returns to focus</h4>
-<ul>
-<li><strong>WHEN</strong> the user acknowledges the return overlay</li>
-<li><strong>THEN</strong> the overlay SHALL be dismissed, the focus surface SHALL be active, and the session phase SHALL be unchanged by the acknowledgement</li>
-</ul>
-<h4>Scenario: No next action recorded</h4>
-<ul>
-<li><strong>IF</strong> no next action was recorded at initiation</li>
-<li><strong>THEN</strong> the overlay SHALL present the task itself as the way back rather than an empty card</li>
-</ul>
-<h4>Scenario: Return is not a verdict</h4>
-<ul>
-<li><strong>WHEN</strong> the return overlay renders</li>
-<li><strong>THEN</strong> it SHALL NOT display break duration judgments, streaks, or any evaluation of the break that just ended</li>
-</ul>
-<h3>Requirement: Companion surfaces are never paywalled</h3>
-<p>Every companion surface SHALL consult the capability registry, and the keys backing them SHALL resolve as available in Lite; initiation, check-in entry, hold/resume, and accessibility behavior reached through these surfaces SHALL remain inside the never-paywalled set.</p>
-<h4>Scenario: Lite grants every companion surface</h4>
-<ul>
-<li><strong>WHEN</strong> the registry resolves the companion-surface feature keys under Lite</li>
-<li><strong>THEN</strong> every key SHALL resolve to available and no surface SHALL render an upsell</li>
-</ul>
-<h4>Scenario: Companion surface keys cannot be gated off Lite</h4>
-<ul>
-<li><strong>WHEN</strong> a registry configuration attempts to mark a companion-surface key as non-Lite</li>
-<li><strong>THEN</strong> registry validation SHALL fail at startup in debug and the key SHALL resolve as available in release</li>
-</ul>
-<h3>Requirement: Accessibility alternates on every companion surface</h3>
-<p>Every companion surface SHALL ship its accessibility alternates in this change: Reduce Motion or &quot;Motion: still&quot; SHALL stop the physics engine on that surface entirely, Reduce Transparency SHALL render an opaque background instead of a translucent one, Increase Contrast SHALL raise the text-to-background contrast, every control SHALL be keyboard-reachable, and every surface SHALL carry VoiceOver labels.</p>
-<h4>Scenario: Reduce Motion standdown on the new surfaces</h4>
-<ul>
-<li><strong>WHEN</strong> Reduce Motion is on and the popover or capsule renders a companion field</li>
-<li><strong>THEN</strong> the physics model SHALL NOT be instantiated and the static alternate SHALL render</li>
-</ul>
-<h4>Scenario: Reduce Transparency renders opaque</h4>
-<ul>
-<li><strong>WHEN</strong> a companion surface background is rasterized with Reduce Transparency on over a known backdrop</li>
-<li><strong>THEN</strong> the backdrop SHALL NOT be visible through the rendered background</li>
-</ul>
-<h4>Scenario: Increase Contrast raises the measured ratio</h4>
-<ul>
-<li><strong>WHEN</strong> the companion-surface text and background tokens are rasterized under standard and increased contrast</li>
-<li><strong>THEN</strong> the measured contrast ratio SHALL meet the normal-text minimum under standard settings and SHALL be strictly higher under increased contrast</li>
-</ul>
-<h4>Scenario: VoiceOver reads each companion surface</h4>
-<ul>
-<li><strong>WHEN</strong> VoiceOver focuses the popover, the capsule, or the return overlay</li>
-<li><strong>THEN</strong> each SHALL expose a concise label naming the surface and the current session state</li>
-</ul>
+<div class="eyebrow">Generated tooling prompts</div>
+<h1>Decision: visual direction re-affirmed — Living Companion</h1>
+<p class="standfirst">Date: 2026-08-12 · Decider: Prax · Instrument: dcanvas export 01KZTMCW568JN5GKMA8TP9PHPA (canvas 01KYSZMZQDXAVQXTQCCHH7ETYR) · Gate: go</p>
+<div class="meta"><span>216 words</span><span><code>docs/decisions/2026-08-12-direction-reaffirmed.md</code></span></div>
+<article class="prose"><p>Date: 2026-08-12 · Decider: Prax · Instrument: dcanvas export <code>01KZTMCW568JN5GKMA8TP9PHPA</code> (canvas <code>01KYSZMZQDXAVQXTQCCHH7ETYR</code>) · Gate: <strong>go</strong></p>
+<h2>The decision</h2>
+<p><code>base_direction = living-companion</code>, confirmed <strong>explicitly</strong>, after reviewing three deliberately divergent alternatives (D Flight Instrument, E Quiet Terminal, F Broadsheet — <code>design-mocks/direction-gate-2/</code>). <code>write_spec = go</code>.</p>
+<p>This closes GitHub issue #5 and unblocks the design-system chain (#8 tokens, #9 typography, #10 field fidelity, #11–#12 migrations, #13 motion, #14 contract).</p>
+<h2>What this decision means, precisely</h2>
+<ol>
+<li><strong>Living Companion stays the binding reference</strong> (<code>design-mocks/living-companion/</code>, physics contract <code>companion-physics.js</code>) — now by a second, informed confirmation rather than the original 2026-07-30 approval alone. The 2026-08-04 &quot;hated it&quot; reaction is superseded by this record.</li>
+<li><strong>The mandate is execution, not re-selection.</strong> The design-parity audit (<code>docs/analysis/2026-08-04-design-parity.md</code>) stands: the app implements roughly a fifth of this direction. The gap closes by building the direction properly — tokens derived not eyeballed, the three typefaces resolved, motion vocabulary, field fidelity.</li>
+<li><strong>D, E and F become comparative records</strong>, kept like the first gate&#39;s alternates. They are not dead weight: E&#39;s restraint and D&#39;s tabular time are referenced as seasoning for Living Companion&#39;s execution where the audit found it flat.</li>
+<li><code>direction_notes</code> was left at default — no constraints were attached beyond the choice itself.</li>
+</ol>
+<h2>Raw export</h2>
+<pre><code class="language-json">{&quot;kind&quot;:&quot;decisions&quot;,&quot;schemaVersion&quot;:&quot;0.1.0&quot;,&quot;canvasId&quot;:&quot;01KYSZMZQDXAVQXTQCCHH7ETYR&quot;,&quot;exportId&quot;:&quot;01KZTMCW568JN5GKMA8TP9PHPA&quot;,&quot;exportedAt&quot;:&quot;2026-08-12T09:21:02.118Z&quot;,&quot;baseline&quot;:&quot;6ff9fa687a46b5dcc9b2d4a9cf1592976b25acb7120aaeaec2f741e345478b53&quot;,&quot;answers&quot;:[{&quot;questionId&quot;:&quot;01KYSZMZQDXAVQXTQCCHH7ETYT&quot;,&quot;confirmation&quot;:&quot;explicit&quot;,&quot;key&quot;:&quot;base_direction&quot;,&quot;resolution&quot;:&quot;answered&quot;,&quot;value&quot;:&quot;living-companion&quot;},{&quot;questionId&quot;:&quot;01KYSZMZQDXAVQXTQCCHH7ETYV&quot;,&quot;confirmation&quot;:&quot;default&quot;,&quot;key&quot;:&quot;direction_notes&quot;,&quot;resolution&quot;:&quot;answered&quot;},{&quot;questionId&quot;:&quot;01KYSZMZQDXAVQXTQCCHH7ETYX&quot;,&quot;confirmation&quot;:&quot;explicit&quot;,&quot;key&quot;:&quot;write_spec&quot;,&quot;resolution&quot;:&quot;answered&quot;,&quot;value&quot;:&quot;go&quot;}],&quot;gate&quot;:{&quot;raw&quot;:&quot;go&quot;,&quot;effective&quot;:&quot;go&quot;,&quot;wordsWinTriggered&quot;:false}}
+</code></pre>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/specs/companion-surfaces/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/specs/companion-surfaces/spec.md</code></span>
+  <a class="srcbtn" href="../../docs/decisions/2026-08-12-direction-reaffirmed.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>docs/decisions/2026-08-12-direction-reaffirmed.md</code></span>
 </footer>
 </main>
 <script>

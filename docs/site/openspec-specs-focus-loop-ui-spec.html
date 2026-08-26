@@ -346,16 +346,16 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
 <div class="eyebrow">Capability specs</div>
 <h1>focus-loop-ui Specification</h1>
-
-<div class="meta"><span>998 words</span><span><code>openspec/specs/focus-loop-ui/spec.md</code></span></div>
+<p class="standfirst">The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in wit…</p>
+<div class="meta"><span>1,344 words</span><span><code>openspec/specs/focus-loop-ui/spec.md</code></span></div>
 <article class="prose"><h2>Purpose</h2>
-<p>The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in with no failure state, a break that keeps your place, and a review that records rather than judges. Also carries the companion field&#39;s physics contract, the complete accessibility alternates, the non-medical copy rule, and the edition-gating seam.</p>
+<p>The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in with no failure state, a break that keeps your place, and a review that records rather than judges. Also carries the companion field&#39;s physics contract, the complete accessibility alternates, the non-medical copy rule, and the capability-provenance seam that keeps every behavior available in the one product.</p>
 <h2>Requirements</h2>
 <h3>Requirement: One-task initiation</h3>
 <p>The initiate surface SHALL ask for exactly one task, one tiny first action, a self-reported capacity (foggy/steady/restless/charged), and a timing policy, and SHALL show no other configuration on the start path (research w1-user-friction-004).</p>
@@ -425,7 +425,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li><strong>THEN</strong> its copy SHALL state the observation&#39;s limits (e.g. &quot;one afternoon is not a pattern&quot;)</li>
 </ul>
 <h3>Requirement: Complete accessibility alternates</h3>
-<p>Every surface SHALL provide full alternates: Reduce Motion or &quot;Motion: still&quot; SHALL stop the physics engine entirely and present a calm static field; Reduce Transparency SHALL replace translucent veils with solid semantic backgrounds; Increase Contrast SHALL meet contrast ratios on every text and control; every control SHALL be keyboard-reachable and VoiceOver-labeled.</p>
+<p>Every surface SHALL provide full alternates: Reduce Motion or &quot;Motion: still&quot; SHALL stop the physics engine entirely and present a calm static field; Reduce Transparency SHALL replace translucent veils with solid semantic backgrounds, verified by rasterizing the surface background over a known backdrop; Increase Contrast SHALL meet contrast ratios on every text and control, verified by measuring rasterized foreground and background tokens; every control SHALL be keyboard-reachable and VoiceOver-labeled, and the whole loop SHALL be operable by real key events with no pointer input.</p>
 <h4>Scenario: Reduce Motion standdown is total</h4>
 <ul>
 <li><strong>WHEN</strong> system Reduce Motion is on or the user selects &quot;Motion: still&quot;</li>
@@ -434,12 +434,27 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <h4>Scenario: Full keyboard loop</h4>
 <ul>
 <li><strong>WHEN</strong> a user operates only the keyboard</li>
-<li><strong>THEN</strong> begin, hold/resume, check-in answers, break choices, thought parking, and surface navigation SHALL all be reachable and visibly focused</li>
+<li><strong>THEN</strong> begin, hold/resume, check-in entry, check-in answers, break choices, break end, thought parking, and surface navigation SHALL all be reachable and visibly focused</li>
+</ul>
+<h4>Scenario: Keyboard loop as real key events</h4>
+<ul>
+<li><strong>WHEN</strong> an automated interface test drives begin, check-in entry, each check-in answer, break end, and new session using only key events</li>
+<li><strong>THEN</strong> each key event SHALL advance the loop to the expected surface with no pointer interaction required</li>
 </ul>
 <h4>Scenario: VoiceOver on the field</h4>
 <ul>
 <li><strong>WHEN</strong> VoiceOver focuses the companion field region</li>
 <li><strong>THEN</strong> it SHALL read a concise state description (e.g. &quot;Companion: breathing, 17 minutes remaining&quot;) and the decorative layers SHALL be hidden from the accessibility tree</li>
+</ul>
+<h4>Scenario: Reduce Transparency verified at render level</h4>
+<ul>
+<li><strong>WHEN</strong> a surface background is rasterized with Reduce Transparency on, composited over a known backdrop color</li>
+<li><strong>THEN</strong> the sampled rendered pixels SHALL show no trace of the backdrop, and the same background rasterized with Reduce Transparency off SHALL differ from it</li>
+</ul>
+<h4>Scenario: Increase Contrast verified at render level</h4>
+<ul>
+<li><strong>WHEN</strong> the actual menu-bar popover, focus capsule, and return overlay are rasterized from fixed content under standard and increased <code>colorSchemeContrast</code></li>
+<li><strong>THEN</strong> the primary-text pixels measured on every named surface SHALL match the corresponding <code>SurfacePalette</code> branch, SHALL reach at least 4.5:1 under standard settings, and SHALL be strictly greater and at least 7:1 under increased contrast</li>
 </ul>
 <h3>Requirement: Non-medical language everywhere</h3>
 <p>All UI copy SHALL use non-medical positioning (&quot;ADHD-aware&quot;, &quot;designed with executive-function challenges in mind&quot;) and SHALL NOT include diagnostic, therapeutic, or outcome claims.</p>
@@ -448,12 +463,24 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li><strong>WHEN</strong> the copy audit test runs over all user-facing strings</li>
 <li><strong>THEN</strong> zero strings SHALL match the banned-claims lexicon (treat, cure, diagnose, clinically proven, optimal schedule, and equivalents)</li>
 </ul>
-<h3>Requirement: Edition gating seam without gated behavior</h3>
-<p>Every surface SHALL consult the capability registry for feature availability, and in this change the Lite grant SHALL include all surfaces and behaviors.</p>
-<h4>Scenario: Lite includes the whole loop</h4>
+<h3>Requirement: Capability provenance without gated behavior</h3>
+<p>Every surface SHALL consult the internal capability-provenance registry where its feature key is constructed, and every surface and behavior in this spec SHALL remain available in the one product with no upsell or tier branch.</p>
+<h4>Scenario: The whole loop ships to everyone</h4>
 <ul>
-<li><strong>WHEN</strong> the app runs with the Lite edition flag</li>
-<li><strong>THEN</strong> all five surfaces and all behaviors in this spec SHALL be available with no upsell present on any of them</li>
+<li><strong>WHEN</strong> the app runs under its sole product configuration</li>
+<li><strong>THEN</strong> all five main surfaces and all behaviors in this spec SHALL be available with no edition, tier, or upsell copy</li>
+</ul>
+<h3>Requirement: Surfaces express routing intents through the model</h3>
+<p>Every SwiftUI surface SHALL request routing changes through a named <code>AppModel</code> method and SHALL NOT assign <code>AppModel.surface</code> directly; the property SHALL be read-only outside <code>AppModel</code> so the compiler enforces this boundary.</p>
+<h4>Scenario: Begin another session from review</h4>
+<ul>
+<li><strong>WHEN</strong> the user activates “Begin something new” on the review surface</li>
+<li><strong>THEN</strong> the surface SHALL call <code>beginNextSession()</code>, the model SHALL route to initiate, and existing task text and preferences SHALL remain unchanged until the user edits or begins the next session</li>
+</ul>
+<h4>Scenario: Direct routing writes are structurally rejected</h4>
+<ul>
+<li><strong>WHEN</strong> the surface-boundary source test scans Swift files under <code>app/Sources/Surfaces/</code></li>
+<li><strong>THEN</strong> the test SHALL fail if any surface contains a direct <code>model.surface =</code> assignment</li>
 </ul>
 </article>
 <footer class="docfoot">

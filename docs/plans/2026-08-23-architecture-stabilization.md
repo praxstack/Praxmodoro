@@ -3,8 +3,8 @@
 Date: 2026-08-23
 Branch: `prax/architecture-review-2026-08-23`
 Frozen baseline: `a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7`
-Active changes: `add-companion-surfaces`, `add-session-settings`, `stabilize-runtime-contracts`
-Status: implementation and reviewed repair atoms committed; current signed UI execution, fresh validator, and archives pending
+Archived changes: `add-companion-surfaces`, `stabilize-runtime-contracts`, `add-session-settings`
+Status: archive and verification complete 2026-08-26; final archive/status commit and issue reconciliation pending
 
 ## Objective and success definition
 
@@ -199,7 +199,7 @@ Each atom records: test command, expected red reason, minimal production diff, g
 
 ## Implementation tickets
 
-Ticket conversion runs only after all specification/plan reviews are green. Reuse #7, #18, and #51–#53. Create no duplicate umbrella. New tickets may cover only validator-derived work not already represented:
+Ticket conversion runs only after all specification/plan reviews are green. Reuse #7, #18, and #51–#55. Create no duplicate umbrella. New tickets may cover only validator-derived work not already represented:
 
 - M2 runtime/accessibility validation remediation;
 - settings preset/token/notification validation remediation;
@@ -214,7 +214,7 @@ Every ticket must copy acceptance criteria from the approved artifacts, include 
 - broad `AppModel` decomposition or actions protocols: no current acceptance test needs them.
 - companion-field fidelity, token-migration batches, Appearance & Presence, global hotkeys, haptics, imported sounds, network/sync/analytics/AI.
 - unknown stored event-kind/schema migration and O(n) store order indexing: verified architecture debts, but outside these approved changes and not required by their EARS scenarios.
-- parked-thought carryover between sessions and capacity restoration: verified state-continuity debts tracked by #41 or a follow-up; neither is required by these three active changes.
+- parked-thought carryover between sessions and capacity restoration: verified state-continuity debts tracked by #41 or a follow-up; neither was required by these three now-archived changes.
 
 ## Stop and rollback rules
 

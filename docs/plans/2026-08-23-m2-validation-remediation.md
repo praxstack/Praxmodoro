@@ -3,7 +3,7 @@
 Date: 2026-08-23
 Change: `add-companion-surfaces`
 Umbrella issue: #7
-Status: implementation complete and review-clear; full gate, commits, and archive pending
+Status: complete 2026-08-26; archived as `2026-08-26-add-companion-surfaces`; post-archive signed gate passed 237/237
 
 ## Objective
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>app-scaffold · M2 change · Praxmodoro docs</title>
+<title>Design: stabilize-runtime-contracts · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,37 +346,160 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>app-scaffold · M2 change</h1>
-<p class="standfirst">M1 asserted first-run behavior at the model layer. This change adds the launch-time assertion: what a real launch against a fresh store actually presents.</p>
-<div class="meta"><span>193 words</span><span><code>openspec/changes/add-companion-surfaces/specs/app-scaffold/spec.md</code></span></div>
-<article class="prose"><p>M1 asserted first-run behavior at the model layer. This change adds the launch-time assertion: what a real launch against a fresh store actually presents.</p>
-<h2>MODIFIED Requirements</h2>
-<h3>Requirement: App lifecycle restores state</h3>
-<p>The app SHALL restore the timer-engine session from persistence at launch and hand it to the UI before first render, so relaunch lands the user exactly where they were; with no persisted session it SHALL present the start path and nothing else.</p>
-<h4>Scenario: Relaunch into a running block</h4>
+<div class="eyebrow">Archived changes</div>
+<h1>Design: stabilize-runtime-contracts</h1>
+<p class="standfirst">PraxmodoroCore.Session is a deterministic state machine over canonical timestamps. PraxmodoroStore.LocalStore is an append-only SwiftData adapter. The app target imports bo…</p>
+<div class="meta"><span>1,386 words</span><span><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md</code></span></div>
+<article class="prose"><h2>Context</h2>
+<p><code>PraxmodoroCore.Session</code> is a deterministic state machine over canonical timestamps. <code>PraxmodoroStore.LocalStore</code> is an append-only SwiftData adapter. The app target imports both packages and <code>AppModel</code> currently performs their translation inline.</p>
+<p>The change keeps those package boundaries intact:</p>
+<pre><code class="language-text">user intent
+    |
+    v
+surface -&gt; AppModel -&gt; TransitionPayload.encode -&gt; LocalStore
+              ^                                      |
+              |                                      v
+              +------- SessionReplay.replay &lt;- StoredEvent[]
+                              |
+                              v
+                        Core Session
+                              |
+                              +-&gt; breakEndInstant(cadence:)
+                                      |       |       |
+                                      v       v       v
+                                reconcile   sound   notification
+</code></pre>
+<h2>Goals / Non-Goals</h2>
+<p><strong>Goals:</strong> make stored lifecycle vocabulary explicit and exhaustive; make replay pure and directly testable; keep one authority for break-end arithmetic; prevent views from bypassing the model&#39;s intent boundary.</p>
+<p><strong>Non-goals:</strong> introduce a repository protocol, coordinator, reducer, dependency-injection framework, new package, schema migration, general event serialization framework, or wholesale actions-struct migration.</p>
+<h2>Approaches considered</h2>
+<h3>Approach A: Local substitutions</h3>
+<p>Replace each bare string with <code>SessionState.rawValue</code>, add guards inline in <code>AppModel.restore()</code>, and deduplicate the two presentation calculations with an app helper.</p>
 <ul>
-<li><strong>WHEN</strong> the app is relaunched while a block is <code>running</code></li>
-<li><strong>THEN</strong> the focus surface SHALL be the first surface shown, with remaining time derived from canonical timestamps</li>
+<li>Effort: small.</li>
+<li>Advantage: fewest new declarations.</li>
+<li>Rejected because: restore stays embedded in a 700-line controller; Store-to-Core translation remains untestable without constructing <code>AppModel</code>; Core reconciliation can still diverge from the app helper.</li>
 </ul>
-<h4>Scenario: Fresh state lands on initiate</h4>
+<h3>Approach B: Narrow runtime contracts (selected)</h3>
+<p>Add one app-target replay/payload file, one Core derivation, and one model method plus structural guards.</p>
 <ul>
-<li><strong>WHEN</strong> the app launches with no persisted session</li>
-<li><strong>THEN</strong> the initiate surface SHALL be shown</li>
+<li>Effort: small to medium.</li>
+<li>Advantage: resolves all three existing prerequisite tickets at their shared boundaries without moving unrelated behavior.</li>
+<li>Cost: one new app source file and a typed replay result.</li>
 </ul>
-<h4>Scenario: Launch-time first-run assertion</h4>
+<h3>Approach C: App architecture rewrite</h3>
+<p>Split <code>AppModel</code> into repository, session coordinator, router, presentation director, and surface action protocols.</p>
 <ul>
-<li><strong>WHEN</strong> the app is launched against a fresh empty store and its interface is inspected</li>
-<li><strong>THEN</strong> the start path controls SHALL be present, no running-session control SHALL be present, the begin control SHALL be disabled until a task is named, and no ambient companion surface SHALL have opened itself</li>
+<li>Effort: large.</li>
+<li>Rejected because: no current test or feature requires those abstractions; it would mix structural churn with behavior changes and duplicate the deferred main-surface actions migration recorded in #53.</li>
 </ul>
+<h2>Decisions</h2>
+<h3>1. The app target owns payload translation</h3>
+<p><code>PraxmodoroStore</code> SHALL continue to expose plain <code>StoredEvent</code> values and SHALL NOT import Core. Core SHALL continue to know nothing about storage. A new <code>SessionReplay.swift</code> file in the app target SHALL contain:</p>
+<ul>
+<li><code>TransitionPayload</code>, a namespace codec from Core&#39;s existing <code>SessionState</code> to the stored lifecycle values <code>running</code>, <code>held</code>, <code>break</code>, and <code>closed</code>, not a second state model;</li>
+<li><code>SessionReplayError</code>, with <code>unsupportedTransitionState(SessionState)</code>, <code>unknownTransitionPayload(String)</code>, and <code>invalidAdjustmentPayload(String)</code> cases;</li>
+<li><code>SessionReplay</code>, initialized with <code>LocalStore.SessionSummary</code> and exposing <code>replay(events:task:)</code>;</li>
+<li><code>SessionReplay.Result</code>, containing the reconstructed <code>Session</code>, session identifier, task text, first action, and parked thoughts.</li>
+</ul>
+<p><code>TransitionPayload</code> SHALL provide <code>encode(_ state: SessionState) throws -&gt; String</code>, <code>decode(_ payload: String) throws -&gt; SessionState</code>, and a descriptive review-label function. Encoding <code>.idle</code> SHALL throw <code>unsupportedTransitionState(.idle)</code> because idle is the synthetic reconstruction seed, not an appended lifecycle event.</p>
+<p>The concrete value contract is:</p>
+<pre><code class="language-text">TransitionPayload.encode/decode maps SessionState.running | held | onBreak(encoded as &quot;break&quot;) | closed
+
+SessionReplay.init(summary: LocalStore.SessionSummary)
+
+SessionReplay.replay(
+  events: [StoredEvent],
+  task: (title: String, firstAction: String)?
+) throws -&gt; SessionReplay.Result
+
+SessionReplay.Result:
+  session: Session                         required
+  sessionID: UUID                         required, copied from summary.id
+  taskTitle: String                       required, default &quot;&quot;
+  firstAction: String                     required, default &quot;&quot;
+  parkedThoughts: [String]                required, default []
+</code></pre>
+<p>Known review labels are fixed: <code>running</code> → <code>Focus resumed</code>; <code>held</code> → <code>Held — place kept</code>; <code>break</code> → <code>Chose an intentional break</code>; <code>closed</code> → <code>Closed the session</code>.</p>
+<h3>2. Replay ordering is deterministic</h3>
+<p><code>SessionReplay.replay(events:task:)</code> SHALL:</p>
+<ol>
+<li>retain each event&#39;s input index;</li>
+<li>select transition events;</li>
+<li>decode every transition or throw <code>unknownTransitionPayload</code>;</li>
+<li>order transitions by timestamp ascending, then input index ascending;</li>
+<li>prepend the synthetic <code>.idle</code> record at <code>summary.startedAt</code>;</li>
+<li>decode every adjustment as signed whole seconds or throw <code>invalidAdjustmentPayload</code>, then order adjustments by timestamp ascending and input index ascending;</li>
+<li>construct the Core <code>Session</code> using <code>TimingPolicy.named(summary.policyName)</code>;</li>
+<li>copy task values when present and use empty strings when absent;</li>
+<li>preserve parked thoughts in store order.</li>
+</ol>
+<p>Closed and idle replay results are valid translation results. To preserve current behavior, <code>AppModel.restore()</code> SHALL leave every pre-call model property unchanged when the valid replay result is closed; a fresh launch therefore remains on initiate without resurrecting the closed session. This is distinct from a failed replay: the pure replay succeeds and is directly testable.</p>
+<p><code>AppModel.restore()</code> SHALL fetch all inputs, obtain a complete replay result, and only then assign <code>session</code>, <code>sessionID</code>, <code>policy</code>, task text, first action, parked thoughts, and surface routing. A replay error SHALL leave every pre-call model property unchanged.</p>
+<h3>3. Unknown stored values never fabricate state</h3>
+<p>An unknown transition payload SHALL terminate replay with a typed error. It SHALL NOT fall back to <code>.running</code>, skip the record, or partially apply the replay result. A malformed adjustment SHALL follow the same all-or-nothing rule.</p>
+<p>The review timeline SHALL render an explicit <code>Unknown state record: &lt;payload&gt;</code> label for an unknown transition because a historical review is descriptive and must not disappear. Startup user presentation for replay errors belongs to #35/#36 and is outside this change.</p>
+<p><code>AppModel</code> SHALL own one throwing helper, <code>appendTransition(_ state: SessionState, at: Date) throws</code>, which first encodes through <code>TransitionPayload</code> and only then calls the store. It contains the only direct <code>LocalStore.appendEvent(kind: .transition, ...)</code> call in the app model. Encoding failure therefore performs no write. A source test SHALL reject any second direct transition append or bare durable lifecycle literal on a write path.</p>
+<h3>4. Core owns the break-end instant</h3>
+<p><code>Session.breakEndInstant(cadence:) -&gt; Date?</code> SHALL return <code>nil</code> unless the session&#39;s final transition is <code>.onBreak</code>. Otherwise it SHALL return:</p>
+<pre><code class="language-text">last_break_transition.at + suggestedBreakLength(cadence: cadence)
+</code></pre>
+<p><code>Session.reconciled</code>, <code>AppModel.syncSound</code>, and <code>AppModel.syncNotifications</code> SHALL consume this method. The current public Core argument <code>autoReturn: TimeInterval?</code> SHALL migrate to <code>autoReturn: Bool = false</code>; when true, reconciliation SHALL use <code>breakEndInstant(cadence:)</code> and no caller-supplied duration. Its required <code>autoReturnAfter: Date?</code> argument is temporal provenance, not another duration: Core appends the return only when the canonical break end is later than the supplied process-live boundary. Callers pass <code>nil</code> only with <code>autoReturn: false</code>; <code>AppModel</code> captures and passes a non-nil boundary once from its injected clock at initialization whenever auto-return is enabled. This prevents the first or any later render after relaunch from materializing a break end that occurred while the process was absent, while a process alive before sleep still catches the canonical edge on wake. Custom-policy and before/after-boundary regressions SHALL prove both rules.</p>
+<h3>5. Surfaces express intents</h3>
+<p><code>AppModel.surface</code> SHALL become <code>private(set)</code>. <code>ReviewSurface</code> SHALL call <code>AppModel.beginNextSession()</code>. The method SHALL perform only the existing routing change to <code>.initiate</code>; it SHALL not reset task, history, or preferences. A source test SHALL also scan Swift source under <code>app/Sources/Surfaces/</code> and fail on direct <code>model.surface =</code> assignment so the intended boundary remains visible even though the compiler enforces it.</p>
+<p>The broader migration of main surfaces to immutable display/actions values remains deferred until a concrete render-independent test needs it.</p>
+<h2>Error contract</h2>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Trigger</th>
+<th>State change</th>
+<th>Caller behavior in this change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>unsupportedTransitionState(.idle)</code></td>
+<td>a writer attempts to persist synthetic idle as a transition</td>
+<td>none</td>
+<td>transition append propagates the error</td>
+</tr>
+<tr>
+<td><code>unknownTransitionPayload(value)</code></td>
+<td>transition payload is not one of the four durable values</td>
+<td>none</td>
+<td><code>AppModel.restore()</code> propagates the error</td>
+</tr>
+<tr>
+<td><code>invalidAdjustmentPayload(value)</code></td>
+<td>adjustment payload is not a signed whole-second integer</td>
+<td>none</td>
+<td><code>AppModel.restore()</code> propagates the error</td>
+</tr>
+<tr>
+<td>existing store error</td>
+<td>summary, events, or task fetch fails</td>
+<td>existing concrete-store behavior is unchanged; no new atomicity claim</td>
+<td><code>AppModel.restore()</code> propagates the store error; injectable store-failure behavior remains #35/#36</td>
+</tr>
+</tbody></table></div>
+<p>No retry is added. Replay errors are deterministic local-data errors; retrying the same bytes cannot change the outcome. This change&#39;s executable all-or-nothing guarantee is scoped to a complete fetched input set that fails replay. A general injectable store-read/write failure seam and persist-before-mutate guarantee remain explicitly owned by #35/#36.</p>
+<h2>Data boundaries</h2>
+<p>No SwiftData model, attribute, event kind, or stored payload value changes. Known existing records remain byte-for-byte readable. No new user data is collected. The app target remains the only layer importing both Store and Core.</p>
+<h2>Dependency provenance</h2>
+<p>Foundation, <code>PraxmodoroCore</code>, and <code>PraxmodoroStore</code> are already present. No dependency is added.</p>
+<h2>Rollback</h2>
+<p>The code change is additive except for call-site replacement. Reverting the change restores the old inline translation and duplicated arithmetic; no data migration or rollback transform is required. The rollback pointer for the complete run is baseline commit <code>a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7</code>.</p>
+<h2>Verification strategy</h2>
+<p>Each behavior change starts with one observed failing test. Core derivation tests run with <code>swift test --package-path app/Packages/PraxmodoroCore</code>; app replay, presentation agreement, and source guards run with <code>./scripts/focused.sh</code>. Completion requires <code>./scripts/verify-project.sh</code>, <code>./scripts/smoke.sh</code>, strict OpenSpec validation, an independent spec validator, the named cross-model review lanes, and a final independent code review.</p>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/specs/app-scaffold/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/specs/app-scaffold/spec.md</code></span>
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md</code></span>
 </footer>
 </main>
 <script>

@@ -2,7 +2,9 @@
 
 ## Purpose
 How the macOS application is generated, launched, and bounded. Covers reproducible project generation from `app/project.yml`, the documented build and test commands, lifecycle restore from persistence, the capability provenance registry that prevents withholding core ADHD support, the no-hidden-cloud guarantee, and build provenance.
+
 ## Requirements
+
 ### Requirement: Reproducible project generation
 The repository SHALL contain an XcodeGen `project.yml` under `app/` that deterministically generates the Xcode project with an app target, a unit-test target, and a UI-test target for macOS 26+, Swift 6.3.
 
@@ -22,7 +24,7 @@ README SHALL document the exact commands to generate, build, test, and run the a
 - **THEN** each SHALL exit zero on a healthy tree
 
 ### Requirement: App lifecycle restores state
-The app SHALL restore the timer-engine session from persistence at launch and hand it to the UI before first render, so relaunch lands the user exactly where they were.
+The app SHALL restore the timer-engine session from persistence at launch and hand it to the UI before first render, so relaunch lands the user exactly where they were; with no persisted session it SHALL present the start path and nothing else.
 
 #### Scenario: Relaunch into a running block
 - **WHEN** the app is relaunched while a block is `running`
@@ -32,16 +34,9 @@ The app SHALL restore the timer-engine session from persistence at launch and ha
 - **WHEN** the app launches with no persisted session
 - **THEN** the initiate surface SHALL be shown
 
-### Requirement: Edition capability registry
-The scaffold SHALL provide a capability registry resolving feature keys against the active edition (Lite/Pro/Enterprise), injected at app start; the Lite grant SHALL include every capability in this change, and core accessibility and ADHD-support behavior SHALL be structurally impossible to gate off Lite.
-
-#### Scenario: Lite grant is total for this change
-- **WHEN** the registry resolves every feature key introduced by this change under Lite
-- **THEN** every key SHALL resolve to available
-
-#### Scenario: Core support cannot be paywalled
-- **WHEN** a registry configuration attempts to mark initiation help, check-ins, adaptive breaks, or accessibility modes as non-Lite
-- **THEN** registry validation SHALL fail at startup in debug and the key SHALL resolve as available in release
+#### Scenario: Launch-time first-run assertion
+- **WHEN** the app is launched against a fresh empty store and its interface is inspected
+- **THEN** the start path controls SHALL be present, no running-session control SHALL be present, the begin control SHALL be disabled until a task is named, and no ambient companion surface SHALL have opened itself
 
 ### Requirement: No hidden cloud dependency
 The app target SHALL make no network requests in this change; any future network capability SHALL arrive via its own spec with explicit opt-in.
@@ -50,9 +45,20 @@ The app target SHALL make no network requests in this change; any future network
 - **WHEN** the app runs through a full loop under a network-observing test harness
 - **THEN** zero outbound connections SHALL be observed
 
-### Requirement: Deterministic versioning and provenance
-The scaffold SHALL stamp the app with version, git SHA, and edition, visible in the About surface, so every build's provenance is inspectable.
+### Requirement: Capability provenance registry
+The scaffold SHALL provide one injected registry of feature keys for architecture provenance; the sole product configuration SHALL resolve every feature key as available, and a hostile test fixture omitting a key SHALL fail startup validation while runtime lookup self-heals to available.
 
-#### Scenario: About shows provenance
+#### Scenario: One product grant is total
+- **WHEN** the registry resolves every defined feature key
+- **THEN** every key SHALL resolve available with no edition, tier, license, or upsell branch
+
+#### Scenario: Hostile omission fails validation
+- **WHEN** a test fixture omits any defined feature key
+- **THEN** registry validation SHALL fail and runtime lookup SHALL still resolve the omitted key available
+
+### Requirement: Deterministic build provenance
+The scaffold SHALL stamp the app with version and git SHA, visible in the About surface, so every build's provenance is inspectable without product-tier vocabulary.
+
+#### Scenario: About shows one-product provenance
 - **WHEN** the About window opens
-- **THEN** version, commit SHA, and edition SHALL be displayed
+- **THEN** version and commit SHA SHALL be displayed, local-first identity SHALL remain visible, and no edition or tier label SHALL render

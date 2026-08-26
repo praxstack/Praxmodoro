@@ -1,9 +1,12 @@
 {
   "product": "Praxmodoro",
   "contract": "SPEC.md",
-  "activeChange": "add-session-settings",
-  "milestone": "M3",
-  "updated": "2026-08-13T15:10:00Z",
+  "workBatch": "architecture-stabilization",
+  "activeChanges": [],
+  "status": "closeout-in-progress",
+  "blockingDecisions": [],
+  "evidencePolicy": "Existing done atoms and archived milestones are immutable historical evidence. Pending architecture-stabilization atoms below are the current completion state; no historical result is promoted to current proof.",
+  "updated": "2026-08-26T14:23:02Z",
   "atoms": [
     {
       "id": "g1-verification-commands",
@@ -122,6 +125,117 @@
       "title": "Independent code-review findings closed",
       "status": "done",
       "evidence": "red: 5 compile errors + 4 behavioural failures in BreakPhaseControlTests. green: 95 tests in 27 suites. Closed 4 findings: popover primary during a break routed through a hold the engine refuses (dead button) -> new CompanionActions.endBreak; capsule offered the same impossible hold -> hold affordance absent during a break, catalog is phase-dependent; return card could stack on a check-in -> openCheckin stands it down; capsuleOpen drifted from the real window -> onDisappear keeps them in step. Also fixed comment rot claiming production never sets motionStilledOverride (it does) and made the surface guard strip comments like its module-wide sibling. Negative control: @State in a surface still trips the guard."
+    },
+    {
+      "id": "as-a0-one-product-provenance",
+      "title": "One-product capability and build provenance",
+      "status": "done",
+      "commit": "aaaaecef077a",
+      "evidence": "Red-first 2026-08-23: the configuredKeys compiler boundary produced five expected compile errors; ProvenanceTests then failed on edition/Lite copy; OneProductContractTests then failed on the remaining SettingsSurface product vocabulary. Minimal production removal followed each red. Green: targeted provenance and source-contract tests passed, then ./scripts/focused.sh passed (exit 0). Isolated staged-tree checks passed before commit aaaaecef077a."
+    },
+    {
+      "id": "as-a1-m2-capability-contrast",
+      "title": "M2 scene capability consultation and actual-surface contrast",
+      "status": "done",
+      "commit": "f6df42674dfc",
+      "evidence": "Task 10.1 red reported all three absent direct guards and enclosing if blocks; green CompanionSurfaceTests passed 13 tests after native guarded-scene wiring. Task 10.2 red actual-surface raster suite retained MenuBarPopover as positive control while FocusCapsule failed 2,441 and ReturnOverlay 132,488 palette channel fits. After direct environment/style wiring, the overlay still exposed contrast-reactive native decoration; a fixed token stroke and borderless bordered action removed that contamination without weakening the exact all-delta mask. Green RenderAccessibilityTests passed all 6 with raw coverage, exact alpha, sRGB/dimension, background, and WCAG checks. Isolated staged-tree checks passed before commit f6df42674dfc."
+    },
+    {
+      "id": "as-a2-m2-snapshot-overlay",
+      "title": "M2 one-instant main render and overlay acknowledgement",
+      "status": "done",
+      "commit": "8191ad22ba2d",
+      "evidence": "Task 10.3 structural red produced five failures for the missing local snapshot consumers; the sentinel FocusSurface test separately failed at the missing snapshot initializer. Green: route, focus, overlay, callback, and readout consume one immutable main snapshot; targeted Snapshot/Companion/CheckinResponse suites passed 26 tests. Task 10.4 red produced three failures for premature overlay clearing/routing; green ReturnOverlay and BreakPhaseControl suites passed 14 tests after reusing checkinPending and one existing hold. Isolated staged-tree checks passed before commit 8191ad22ba2d."
+    },
+    {
+      "id": "as-a3-m2-keyboard-closeout",
+      "title": "M2 complete signed keyboard evidence and close-out",
+      "status": "done",
+      "commit": "04b80dc500c0",
+      "evidence": "Task 10.5 red-first: XCTest did not expose hasKeyboardFocus at compile time; after a macOS automation shim, the signed path showed the existing control identifiers were swallowed and native Tab could not reach hold or break buttons under AppleKeyboardUIMode=0. Green: stable identifiers plus native focusability made every named stop reachable; existing Space activates hold/resume, Return parks a thought, and four surface-local numeric break shortcuts activate the existing choice buttons. KeyboardLoopUITests passed 4/4, BreakPhaseControlTests plus CompanionSurfaceTests passed 21/21, persisted review evidence proved Break: water, and ./scripts/focused.sh exited 0. Isolated staged-tree checks passed before commit 04b80dc500c0."
+    },
+    {
+      "id": "as-b1-settings-presets-tokens",
+      "title": "Settings preset integrity and rendered token wiring",
+      "status": "done",
+      "commit": "11e8dbc6f769",
+      "evidence": "Task 10.1 reconciled the already-reviewed owner-approved specification freeze before production work. Task 10.2 red-first tests produced 13 expected compile errors for the missing shared preset commit/help seam; green PreferencesTests and SettingsSceneTests prove unique whole-minute add/edit/remove, invalid-input preservation, Cartesian/fallback policy generation, and byte-readable stored-session derivation after preset removal. Task 10.3 red-first source checks reported eight missing environment/token requirements, both real panes exposed zero changed/opaque background pixels, and transparency probes found no backdrop response. Green SettingsSceneTests passed 17/17 after direct existing-token wiring and reusing each first section title as the pane's token-backed heading; no new token, dependency, snapshot framework, or private production environment key was added. Isolated staged-tree checks passed before commit 11e8dbc6f769."
+    },
+    {
+      "id": "as-b2-settings-notification-denial",
+      "title": "Notification denial race resynchronization",
+      "status": "done",
+      "commit": "913722b64dc4",
+      "evidence": "Task 10.4 red-first deferred-availability test scheduled one request, then failed because denial caused zero cancellations. The existing availability callback now sets the unavailable state and immediately reuses syncNotifications(at: clock()); no protocol, pane, scheduler, or authorization path changed. Green NotificationDirectorTests passed 10/10, the schedule-call count stayed one while one cancellation cleared the protocol-owned pending request, independent Sol review returned CLEAR, strict formatting/diff checks passed, and ./scripts/focused.sh reported TEST SUCCEEDED. Isolated staged-tree checks passed before commit 913722b64dc4."
+    },
+    {
+      "id": "as-b3-settings-sound-auto-return",
+      "title": "Five-cue compatibility, previews, live auto-return, and audio retention",
+      "status": "done",
+      "commit": "ecc814ef72fe",
+      "evidence": "Tasks 10.5-10.9 are red-first implemented and green: legacy decoding, factory cues, exact transition/preview behavior, process-bounded date-edge auto-return, five bundled sample controls/resources, and wake-time stale-player cancellation. After early host-auth failures, signed execution exposed saved-window-state and sequential-launch leakage; the shared UI launcher now uses Apple's persistence-ignore argument and explicit per-test termination. Fresh signed evidence: first-run green, sample traversal/labels/activation green, whole loop green, and KeyboardLoopUITests 5/5 green. Review also closed stale rhythm scheduling and in-place master-volume defects. Isolated staged-tree checks passed before commit ecc814ef72fe."
+    },
+    {
+      "id": "as-c1-runtime-replay",
+      "title": "Typed transition payloads and deterministic pure replay",
+      "status": "done",
+      "commit": "9f9c8dbeb551",
+      "evidence": "Task 2.1 red-first focused build exited 65 on the missing SessionReplayError after the concurrent C3 compiler red was cleared. Green: SessionReplay and TransitionPayload strictly encode/decode the four durable states, reject idle/unknown/malformed values, sort transitions and adjustments by timestamp plus input index, preserve thought store order, and return complete replay results. AppModel applies only successful non-closed results, uses one encode-before-store transition helper, and labels unknown review records explicitly. ./scripts/focused.sh now regenerates unconditionally and passed; exactly one direct transition append remains; strict format/diff checks and signed smoke passed. Isolated staged-tree checks passed before commit 9f9c8dbeb551."
+    },
+    {
+      "id": "as-c2-runtime-break-authority",
+      "title": "Core-owned break end and Boolean auto-return gate",
+      "status": "done",
+      "commit": "3d3474972b56",
+      "evidence": "Task 3.1 red-first Core build failed on missing breakEndInstant, the obsolete duration-shaped API, and missing autoReturnAfter; the app focused suite separately failed all five source-boundary assertions. Green: Core owns the cadence-aware instant and Boolean/process-live fence; AppModel captures one injected-clock boundary, restore explicitly disables auto-return, and sound plus notifications are the exact two app consumers with no app-side break arithmetic. Core passed 46/46, ./scripts/focused.sh reported TEST SUCCEEDED, exact source guards and strict format/diff checks passed, and signed smoke exited 0. Isolated staged-tree checks passed before commit 3d3474972b56."
+    },
+    {
+      "id": "as-c3-runtime-surface-intent",
+      "title": "Private surface routing through model intent",
+      "status": "done",
+      "commit": "66fb629aee71",
+      "evidence": "Task 4.1 red-first checks reported the public setter and ReviewSurface direct assignment, while isolated typechecking failed because AppModel lacked beginNextSession. Green: surface is private(set), the one-line model intent is used by ReviewSurface and the sole test setup, and the behavior regression proves task/action, all preference families, session, identifier, and parked thoughts remain unchanged. Targeted routing passed 3/3, combined CheckinResponse regression passed 8/8, product build/strict format/diff checks passed, the exact source rg returned no matches, and signed smoke exited 0. Isolated staged-tree checks passed before commit 66fb629aee71."
+    },
+    {
+      "id": "as-r1-canonical-surface-status",
+      "title": "Visible canonical status across focus, popover, and capsule",
+      "status": "done",
+      "commit": "d4da3004529f",
+      "evidence": "Independent validation found that FocusSurface hard-coded its status and FocusCapsule carried status only in its accessibility label. Red-first capsule tests failed to compile because FocusCapsule had no statusText. The minimum repair renders each snapshot status line visibly and compares focus, popover, and capsule task/time/status from one instant. FocusCapsuleTests passed 5/5, the full app suite passed 228/228, two independent rechecks returned CLEAR/CLOSED, and the exact staged tree passed ./scripts/focused.sh before commit d4da3004529f."
+    },
+    {
+      "id": "as-r2-selective-chime-cancellation",
+      "title": "Replace one derived chime without cancelling previews or block starts",
+      "status": "done",
+      "commit": "8eac35aa368d",
+      "evidence": "Review regression testAdjustmentKeepsTheBlockStartCue failed because a one-minute adjustment broadly removed the tracked expiry, a same-cue preview, and the block-start cue. The scheduler now cancels only the exact cue/instant pair formerly derived by AppModel. SoundDirectorTests passed 24/24, the full app suite passed 228/228, independent review returned CLEAR, and the exact staged tree passed ./scripts/focused.sh before commit 8eac35aa368d."
+    },
+    {
+      "id": "as-r3-composed-transparency-evidence",
+      "title": "Composed Reduce Transparency evidence for every companion surface",
+      "status": "done",
+      "commit": "a62d5afee1f7",
+      "evidence": "The final accessibility audit required the actual popover, capsule, and overlay rather than token-only probes. Their off/on backdrop renders now assert broad opaque-background coverage, zero sampled backdrop leaks, and off-state backdrop sensitivity; a 3x3 interior probe excludes only antialiased boundary pixels. Independent review found no material weakening. The full app suite passed 228/228 and the exact staged tree passed ./scripts/focused.sh before commit a62d5afee1f7."
+    },
+    {
+      "id": "as-r4-current-ui-evidence",
+      "title": "Capsule activation and live-session Settings shortcuts from every scene root",
+      "status": "done",
+      "commit": "3639693",
+      "evidence": "The reviewed UI tests activate capsule hold by Tab plus Space and issue Command-comma from each independent scene root: main WindowGroup, focused capsule Window, and focused MenuBarExtra popover. AppKit AX values and TimelineView node replacement are handled by identifier re-query without weakening assertions; borderless companion controls are explicitly keyboard focusable. Fresh ./scripts/verify-project.sh exited 0 on 2026-08-26. The signed result Test-Praxmodoro-2026.08.26_19-35-29-+0530.xcresult passed 237/237 with zero failures or skips, and both independent fixed-point reviewers returned COMPLETE."
+    },
+    {
+      "id": "as-r5-archive-closeout-integrity",
+      "title": "Deterministic OpenSpec archive and documentation close-out",
+      "status": "done",
+      "commit": "4417c3506f7b",
+      "evidence": "Disposable archive rehearsals first reproduced an ENOENT when moved active Markdown remained in Git's cached path list, then exposed duplicate titles across repeated active/archive capabilities, stale one-product terminology, OpenSpec 1.6 placeholder Purposes, and a weaker obsolete schema-parity test. The repair discovers cached plus untracked non-ignored Markdown, filters deleted paths, qualifies titles by change and capability, rejects duplicate titles/outputs, carries a timer-engine rename delta, aligns source references, and specifies Purpose/EOF normalization. Both independent re-reviews returned CLEAR. The uniqueness negative control exited 1 on the injected duplicate; the exact staged tree passed Core 46/46, app 227/227, docs build, strict OpenSpec 7/7, formatting, diff, and secret checks. Its exact M2 → runtime → settings rehearsal produced 81 pages, strict OpenSpec 6/6, correct canonical Purposes, unique outputs, and clean stale-term scans before commit 4417c3506f7b."
+    },
+    {
+      "id": "as-z-final-closeout",
+      "title": "Whole-diff review, fresh gates, evidence, validators, archives, and final status",
+      "status": "pending",
+      "evidence": "Implementation repair commit 3639693 is independently reviewed and its signed pre-archive result passed 237/237. The actual dependency-ordered archives now exist as 2026-08-26-add-companion-surfaces, 2026-08-26-stabilize-runtime-contracts, and 2026-08-26-add-session-settings. Post-archive ./scripts/verify-project.sh exited 0 with Core 46/46, Store 8/8, build success, and signed result Test-Praxmodoro-2026.08.26_19-44-01-+0530.xcresult passing 237/237 with zero failures or skips. Smoke passed, docs built 83 pages, strict canonical OpenSpec passed 6/6, and stale-term, diff, and JSON checks are clean. Only the archive/status commit and issue reconciliation remain."
     }
   ],
   "archivedMilestones": [
@@ -300,6 +414,27 @@
           "evidence": "Full gauntlet green: 33 unit + 1 UI test, verify gate (lint+build+full suite), spec:validate strict. Independent validator (fresh context) found 4 EARS gaps + unwired pulse + bookkeeping + missing run command - ALL fixed and re-tested: pulse wired model->surfaces, drift/first-run/schema-parity tests added, scripts/run.sh documented."
         }
       ]
+    },
+    {
+      "milestone": "M2",
+      "change": "add-companion-surfaces",
+      "archivedAs": "2026-08-26-add-companion-surfaces",
+      "completed": "2026-08-26",
+      "evidence": "Independent COMPLETE review; post-archive signed gate 237/237; canonical specs synchronized."
+    },
+    {
+      "milestone": "Runtime contracts",
+      "change": "stabilize-runtime-contracts",
+      "archivedAs": "2026-08-26-stabilize-runtime-contracts",
+      "completed": "2026-08-26",
+      "evidence": "Independent COMPLETE review; Core 46/46 and post-archive full gate green; canonical specs synchronized."
+    },
+    {
+      "milestone": "M3",
+      "change": "add-session-settings",
+      "archivedAs": "2026-08-26-add-session-settings",
+      "completed": "2026-08-26",
+      "evidence": "Independent COMPLETE review; signed Settings paths included in 237/237; canonical specs synchronized."
     }
   ],
   "commitMapping": {

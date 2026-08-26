@@ -6,7 +6,7 @@ Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach
 
 Research is complete, **Living Companion** is the approved base direction (2026-07-30), and **milestone M1 — app scaffold + complete core loop — is implemented and independently validated** (2026-07-31; change archived as `2026-07-31-add-app-scaffold-core-loop`, 27 requirements synced to `openspec/specs/`). The native app runs the full loop: initiate → focus (physics-driven companion field) → check-in → break → review, local-first with no account.
 
-M2 companion surfaces and the settings implementation are merged, but neither active change is archive-ready: fresh 2026-08-23 validators reopened behavior, accessibility, compatibility, and evidence work. The active change set is `add-companion-surfaces`, `add-session-settings`, and `stabilize-runtime-contracts`; the amended specifications passed their final reviews, the owner pre-approved them, and red-first implementation is in progress on the feature branch. Their dated plans live under `docs/plans/2026-08-23-*.md`. Historical green output remains evidence, not a current completion claim. No shipping release is claimed yet.
+M2 companion surfaces, runtime-contract stabilization, and session settings are implemented, independently reviewed, and archived as `2026-08-26-add-companion-surfaces`, `2026-08-26-stabilize-runtime-contracts`, and `2026-08-26-add-session-settings`. There are no active OpenSpec changes. The post-archive gate passed Core 46/46, Store 8/8, build, signed UI 237/237, smoke, strict canonical OpenSpec 6/6, and documentation/integrity checks. This branch has not been merged, pushed, packaged, or released.
 
 ## One product
 
@@ -24,7 +24,7 @@ Praxmodoro is one complete app. Every capability ships to every user; capability
 - `.agent/sessions/` — continuous autonomous build audit trail.
 - `progress.txt` — append-only execution log.
 
-`SPEC.md` is the completion contract, `prd.json` is atom state, active changes live under `openspec/changes/`, and dated execution plans live under `docs/plans/`. `BLUEPRINT.md` was never created and is not part of the workflow.
+`SPEC.md` is the completion contract, `prd.json` is atom state, archived changes live under `openspec/changes/archive/`, and dated execution plans live under `docs/plans/`. `BLUEPRINT.md` was never created and is not part of the workflow.
 
 ## Specification commands
 

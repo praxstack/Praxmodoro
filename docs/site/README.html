@@ -346,25 +346,20 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
 <div class="eyebrow">The contract</div>
 <h1>README — project overview</h1>
 <p class="standfirst">Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. It combines low-friction task initiation, gentle check-ins, adaptive breaks, and local-fir…</p>
-<div class="meta"><span>526 words</span><span><code>README.md</code></span></div>
+<div class="meta"><span>486 words</span><span><code>README.md</code></span></div>
 <article class="prose"><p>Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. It combines low-friction task initiation, gentle check-ins, adaptive breaks, and local-first review with the “Living Companion” visual language approved on 2026-07-30 (<code>design-mocks/living-companion/</code>).</p>
 <h2>Current state</h2>
 <p>Research is complete, <strong>Living Companion</strong> is the approved base direction (2026-07-30), and <strong>milestone M1 — app scaffold + complete core loop — is implemented and independently validated</strong> (2026-07-31; change archived as <code>2026-07-31-add-app-scaffold-core-loop</code>, 27 requirements synced to <code>openspec/specs/</code>). The native app runs the full loop: initiate → focus (physics-driven companion field) → check-in → break → review, local-first with no account.</p>
-<p><strong>Milestone M2 (companion surfaces) is implemented on <code>feat/m2-companion-surfaces</code></strong> — menu-bar popover, floating focus capsule, return overlay, and the four M1 hardening follow-ups, as OpenSpec change <code>add-companion-surfaces</code>. One gate is outstanding and it is environmental: the UI test suite cannot run while the Mac&#39;s screen is locked, so <code>./scripts/verify-project.sh</code> stops at its final stage. Unlock and re-run it to close M2. See <code>SPEC.md</code> for the gate list and status. No shipping release or Enterprise service is claimed yet.</p>
-<h2>Editions</h2>
-<ul>
-<li><strong>Lite:</strong> complete local focus loop, initiation support, check-ins, adaptive breaks, accessibility modes, menu-bar controls, and local review.</li>
-<li><strong>Pro:</strong> advanced local insights, richer automations/integrations, optional sync, and deeper customization.</li>
-<li><strong>Enterprise:</strong> the same native client with managed policy, audit/export, deployment, and identity integration boundaries. Team/cloud services are separate deliverables, not hidden inside the scaffold.</li>
-</ul>
-<p>Core accessibility and ADHD-aware focus support are not paywalled.</p>
+<p>M2 companion surfaces, runtime-contract stabilization, and session settings are implemented, independently reviewed, and archived as <code>2026-08-26-add-companion-surfaces</code>, <code>2026-08-26-stabilize-runtime-contracts</code>, and <code>2026-08-26-add-session-settings</code>. There are no active OpenSpec changes. The post-archive gate passed Core 46/46, Store 8/8, build, signed UI 237/237, smoke, strict canonical OpenSpec 6/6, and documentation/integrity checks. This branch has not been merged, pushed, packaged, or released.</p>
+<h2>One product</h2>
+<p>Praxmodoro is one complete app. Every capability ships to every user; capability keys remain internal provenance checks and cannot withhold behavior. Any future network, sync, analytics, or AI work requires its own explicit optional specification.</p>
 <h2>Repository map</h2>
 <ul>
 <li><code>research/pomodoro-landscape-20260720/</code> — sourced product and platform research.</li>
@@ -377,7 +372,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li><code>.agent/sessions/</code> — continuous autonomous build audit trail.</li>
 <li><code>progress.txt</code> — append-only execution log.</li>
 </ul>
-<p><code>SPEC.md</code> (completion contract) and <code>prd.json</code> (atom state) now exist and govern milestone M1. <code>BLUEPRINT.md</code> remains a planned artifact for the implementation phase.</p>
+<p><code>SPEC.md</code> is the completion contract, <code>prd.json</code> is atom state, archived changes live under <code>openspec/changes/archive/</code>, and dated execution plans live under <code>docs/plans/</code>. <code>BLUEPRINT.md</code> was never created and is not part of the workflow.</p>
 <h2>Specification commands</h2>
 <pre><code class="language-bash">npm install
 npm run spec:list

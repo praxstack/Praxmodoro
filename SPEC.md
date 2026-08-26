@@ -12,7 +12,7 @@ Visual direction: **Living Companion** (approved 2026-07-30, **re-affirmed 2026-
 
 Governed by OpenSpec change `add-app-scaffold-core-loop` (archived `2026-07-31-add-app-scaffold-core-loop`). Independent fresh-context validation confirmed all seven gates PASS at `d56949d`. M1 was complete when, and only when:
 
-1. Every EARS scenario in `openspec/changes/add-app-scaffold-core-loop/specs/{app-scaffold,timer-engine,focus-loop-ui,session-persistence}/spec.md` is covered by an automated test that passes.
+1. Every EARS scenario in `openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/{app-scaffold,timer-engine,focus-loop-ui,session-persistence}/spec.md` is covered by an automated test that passes.
 2. Every task in that change's `tasks.md` is checked, each with its red-then-green evidence recorded in `prd.json` and `progress.txt`.
 3. A clean clone builds, tests, and runs with only the README-documented commands.
 4. The timer survives sleep/wake and relaunch with remaining time exactly derived from canonical timestamps (zero tick drift).
@@ -20,11 +20,11 @@ Governed by OpenSpec change `add-app-scaffold-core-loop` (archived `2026-07-31-a
 6. The copy-tone lint (no medical/diagnostic/judgment claims), no-network harness, and never-paywalled-set validation all pass.
 7. `npm run spec:validate` passes strict, and an independent validator session confirms 1–6 from a fresh context using only this file, the change artifacts, and the repo.
 
-## Milestone M2 — companion surfaces (reopened 2026-08-23)
+## Milestone M2 — companion surfaces (COMPLETE 2026-08-26)
 
-Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and only when:
+Governed by OpenSpec change `add-companion-surfaces` (archived `2026-08-26-add-companion-surfaces`). M2 was complete when, and only when:
 
-1. Every EARS scenario in `openspec/changes/add-companion-surfaces/specs/{companion-surfaces,focus-loop-ui,session-persistence,app-scaffold}/spec.md` is covered by an automated test that passes.
+1. Every EARS scenario in the canonical `openspec/specs/{companion-surfaces,focus-loop-ui,session-persistence,app-scaffold}/spec.md` is covered by an automated test that passes.
 2. The menu-bar popover, floating focus capsule, and return overlay all render one canonical engine-derived session state; no surface counts time, proven behaviorally (a frozen input must produce an unchanged rendering after real time passes), not only by source scanning.
 3. The four M1 hardening follow-ups are closed: render-level Reduce-Transparency/Increase-Contrast verification; two-configuration schema parity against live containers; keyboard UI coverage for ⌘K, check-in 1–4, `R`, ⌘N and the capsule toggle as real key events; a launch-time first-run assertion.
 4. Complete accessibility alternates ship in the same change: Reduce Motion standdown proven on every companion surface in both directions, VoiceOver labels, full keyboard paths.
@@ -33,17 +33,17 @@ Governed by OpenSpec change `add-companion-surfaces`. M2 is complete when, and o
 
 **Status 2026-08-22.** Gate 2's no-second-clock defense survived six adversarial defeats being closed against it (full history in `prd.json` / `progress.txt`). The whole-change independent validator at HEAD `9a6dc8c` on 2026-08-13 confirmed C1–C4 and C6 pass, including the UI half of gate 3 actually executing — `verify-project.sh` exited 0 end to end once the host condition cleared. C5 failed on its bookkeeping clause only: literal one-commit-per-atom is unmeetable without rewriting the per-defeat commit trail that makes the C2 guarantee trustworthy. On 2026-08-22 the criterion owner granted the amendment recorded in `prd.json` (`commitMapping.proposedAmendment`): C5 now reads "every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified."
 
-**Reopened 2026-08-23.** A fresh validator found that capability consultation was not wired at the companion construction sites, capsule/overlay Increase Contrast was not connected to the environment, the main focus render mixed wall-clock instants, the return overlay could clear before acknowledgement, and the signed keyboard evidence omitted required paths. The active `add-companion-surfaces` tasks 10–11 now govern M2 close. Historical green runs remain evidence, not current completion proof. Issue #7 remains open.
+**Closed 2026-08-26.** The 2026-08-23 validator findings were repaired and independently re-reviewed. Fresh `./scripts/verify-project.sh` exited 0 before and after archive; the signed post-archive result passed 237/237 with zero failures or skips, smoke passed, canonical OpenSpec passed 6/6 strict, and the change was archived with its deltas synchronized.
 
-## Active architecture stabilization batch (2026-08-23)
+## Architecture stabilization batch (ARCHIVE AND VERIFICATION COMPLETE 2026-08-26)
 
-Three OpenSpec changes are active: `add-companion-surfaces`, `add-session-settings`, and `stabilize-runtime-contracts`. `add-session-settings` was also reopened after a fresh validator found preset, rendered-token, notification-denial, sound-compatibility, live-auto-return, audio-retention, and evidence gaps. The runtime-contract change is the narrow owner-approved prerequisite represented by issues #51–#53. Implementation is complete and independently review-clear but remains uncommitted pending the fresh full gate, isolated atom commits, evidence reconciliation, and archive; no release is claimed.
+The three changes `add-companion-surfaces`, `stabilize-runtime-contracts`, and `add-session-settings` are archived as `2026-08-26-add-companion-surfaces`, `2026-08-26-stabilize-runtime-contracts`, and `2026-08-26-add-session-settings`. Their implementation and review repairs are committed through `3639693`; no active OpenSpec change remains. Fresh Core 46/46, Store 8/8, build, signed UI 237/237, smoke, strict OpenSpec 6/6, docs, diff, JSON, and stale-term checks pass. The scoped archive/status commit and GitHub issue reconciliation remain pending. This is repository completion evidence, not a claim that the branch has been merged, pushed, packaged, or released.
 
-The active specifications and dated plans define new red-first atoms and fresh validation gates without rewriting historical evidence. The owner pre-approved the specifications in the active completion goal on 2026-08-23, accepting `add-session-settings`' immutable grouped historical commits and missing contemporaneous red receipts as documented deviations. That decision permits implementation and later archive after every remaining gate; it does not rewrite history or turn absent receipts into evidence.
+The archived specifications and dated plans retain the red-first atoms, reviews, and documented historical deviations without rewriting absent receipts into evidence.
 
 ## Charted next (2026-08-23)
 
-The active stabilization batch has extracted issue #18 and architecture prerequisites #51–#53 from the roadmap above. The work still charted below remains unscheduled; detail lives on the issue tracker, and each future slice requires its own OpenSpec change with EARS specs, red-then-green atoms, and independent validation.
+The completed stabilization batch delivered issue #18 and architecture prerequisites #51–#53. The work still charted below remains unscheduled; detail lives on the issue tracker, and each future slice requires its own OpenSpec change with EARS specs, red-then-green atoms, and independent validation.
 
 1. **Presence & continuity pack** (issue #27): global keyboard shortcuts (#19), recent-task reuse (#20), day timeline browser (#21), today-at-a-glance summary (#22), parking list (#30), music (#31), launch-at-login (#32), and finite Session length (#33).
 2. **Trust and presence pass** (plan `docs/plans/2026-08-23-enterprise-grade.md`, remaining issues #35–#50):

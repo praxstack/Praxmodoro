@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Proposal: add-companion-surfaces · Praxmodoro docs</title>
+<title>app-scaffold · archived · 2026-08-26-add-companion-surfaces · app-scaffold · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,50 +346,64 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>Proposal: add-companion-surfaces</h1>
-<p class="standfirst">M1 delivered one complete loop inside one window. That window is the whole product surface today: to see how long is left, or to hold the timer, or to find the way back aft…</p>
-<div class="meta"><span>825 words</span><span><code>openspec/changes/add-companion-surfaces/proposal.md</code></span></div>
-<article class="prose"><h2>Why</h2>
-<p>M1 delivered one complete loop inside one window. That window is the whole product surface today: to see how long is left, or to hold the timer, or to find the way back after a break, the user must find and front the app. For the audience this product is built for, that is exactly the wrong shape — the research&#39;s initiation finding is that the cost of <em>reaching</em> the tool is a real part of the cost of the task (research w1-user-friction-004), and the recovery finding is that the return from a break fails when the next action has to be remembered rather than read (research w2-breaks-adhd-falsification-004).</p>
-<p>This change gives the session three ambient surfaces — a menu-bar popover, a floating focus capsule, and a return overlay — so the session is reachable and legible without hunting for a window. It also closes the four hardening follow-ups the independent M1 validator recorded, which were deferred into this milestone rather than waived.</p>
-<h2>Goals, non-goals, assumptions</h2>
-<p><strong>Goals:</strong> three new surfaces that are <em>views</em> of the existing session and never a second source of truth; one canonical engine-derived snapshot every surface renders; a re-entry path that shows the exact next action at the moment of return; render-level (not source-level) proof of the Reduce Transparency and Increase Contrast alternates; real keyboard coverage of the whole loop as key events; genuine two-configuration schema parity; a launch-time first-run assertion.</p>
-<p><strong>Non-goals (explicitly deferred):</strong> global system hotkeys or any Accessibility/Input-Monitoring entitlement; notifications of any kind; EventKit or Reminders import; App Intents; Shortcuts; CloudKit sync; a Dock-less/agent-only app mode; Pro/Enterprise feature content; any network, account, or analytics capability. None of the new surfaces introduces a new persisted field or a new event kind.</p>
-<p><strong>Assumptions:</strong> macOS 26 SwiftUI <code>MenuBarExtra</code>, scene-level <code>windowLevel(_:)</code>, and <code>defaultLaunchBehavior(_:)</code> are available and sufficient — no <code>NSWindow</code> subclassing or AppKit window plumbing is required (design decision 2 records the fallback). <code>ImageRenderer</code> gives deterministic offscreen rasterization for the render-level accessibility assertions.</p>
-<p><strong>Edition impact:</strong> everything here ships in Lite. The menu-bar popover, the capsule, and the return overlay all carry initiation, hold/resume, check-in entry and accessibility behavior, so all three fall inside the never-paywalled set and the capability registry&#39;s startup validation covers them.</p>
-<p><strong>User value:</strong> the session stays visible and operable from the menu bar or a small always-on-top capsule without fronting the app; after a break the exact next action is presented rather than recalled; and a keyboard-only or Reduce-Motion/Reduce-Transparency/Increase-Contrast user gets the same complete product, verified by rendering rather than by inspection.</p>
-<p><strong>Measurable success:</strong> every EARS scenario in this change is covered by a passing automated test; the three surfaces produce byte-identical remaining-time text from one snapshot at one instant; no surface source constructs a countdown; <code>./scripts/verify-project.sh</code> exits 0 including the signed UI suite; <code>npm run spec:validate</code> passes strict.</p>
-<h2>What Changes</h2>
+<div class="eyebrow">Archived changes</div>
+<h1>app-scaffold · archived · 2026-08-26-add-companion-surfaces · app-scaffold</h1>
+<p class="standfirst">M1 asserted first-run behavior at the model layer. This change adds the launch-time assertion: what a real launch against a fresh store actually presents.</p>
+<div class="meta"><span>468 words</span><span><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/app-scaffold/spec.md</code></span></div>
+<article class="prose"><p>M1 asserted first-run behavior at the model layer. This change adds the launch-time assertion: what a real launch against a fresh store actually presents.</p>
+<h2>MODIFIED Requirements</h2>
+<h3>Requirement: App lifecycle restores state</h3>
+<p>The app SHALL restore the timer-engine session from persistence at launch and hand it to the UI before first render, so relaunch lands the user exactly where they were; with no persisted session it SHALL present the start path and nothing else.</p>
+<h4>Scenario: Relaunch into a running block</h4>
 <ul>
-<li><strong>New <code>SessionSnapshot</code> value and <code>AppModel.snapshot(at:)</code></strong> — the single canonical projection of engine state into everything a surface can render (phase, task line, next action, remaining interval, remaining text, status line, VoiceOver summary). Existing surfaces are migrated onto it, so the rule is enforced by construction rather than by convention.</li>
-<li><strong>New menu-bar popover</strong> (<code>MenuBarExtra</code>, window style): status line, remaining time, current task, and the loop entry points — begin, hold/resume, check in, open the main window.</li>
-<li><strong>New floating focus capsule</strong>: a small always-on-top window with the task line, remaining time, and hold/resume; opened and closed from a menu command; suppressed at launch.</li>
-<li><strong>New return overlay</strong>: presented over the focus surface the moment a break ends, carrying the exact next action, dismissed by ⏎ or its button. In-memory presentation state only — no new persisted field, no new event kind.</li>
-<li><strong>New user-initiated check-in</strong> (⌘K) so the check-in surface has a keyboard path of its own, which the loop previously reached only on a due timer.</li>
-<li><strong>New surface palette</strong> (<code>SurfacePalette</code>) with an explicit Reduce Transparency branch and an Increase Contrast branch, used by the new surfaces and probed at render level by tests.</li>
-<li><strong>Hardening:</strong> render-level transparency/contrast tests via <code>ImageRenderer</code> pixel probes; a two-configuration (in-memory vs on-disk) schema-parity test against live <code>ModelContainer</code> schemas; UI tests that press check-in 1–4, <code>R</code>, and ⌘N as real key events; a launch-time first-run UI assertion.</li>
-<li><strong>New <code>scripts/focused.sh</code></strong> (fast app unit suite) and <strong><code>scripts/smoke.sh</code></strong> (build, launch with an ephemeral store, confirm the window, quit) so the per-atom and changed-surface checks are documented commands rather than ad-hoc invocations.</li>
+<li><strong>WHEN</strong> the app is relaunched while a block is <code>running</code></li>
+<li><strong>THEN</strong> the focus surface SHALL be the first surface shown, with remaining time derived from canonical timestamps</li>
 </ul>
-<h2>Capabilities</h2>
-<h3>New Capabilities</h3>
+<h4>Scenario: Fresh state lands on initiate</h4>
 <ul>
-<li><code>companion-surfaces</code>: the menu-bar popover, floating focus capsule, and return overlay; the single-canonical-state rule that binds them to the engine; their non-scoring, un-paywalled, and accessibility guarantees.</li>
+<li><strong>WHEN</strong> the app launches with no persisted session</li>
+<li><strong>THEN</strong> the initiate surface SHALL be shown</li>
 </ul>
-<h3>Modified Capabilities</h3>
+<h4>Scenario: Launch-time first-run assertion</h4>
 <ul>
-<li><code>focus-loop-ui</code>: &quot;Complete accessibility alternates&quot; gains render-level verification of the Reduce Transparency and Increase Contrast alternates and extends the keyboard scenario to the whole loop as real key events.</li>
-<li><code>session-persistence</code>: &quot;Edition-neutral storage&quot; gains a two-configuration parity scenario against live container schemas.</li>
-<li><code>app-scaffold</code>: &quot;App lifecycle restores state&quot; gains a launch-time first-run assertion.</li>
+<li><strong>WHEN</strong> the app is launched against a fresh empty store and its interface is inspected</li>
+<li><strong>THEN</strong> the start path controls SHALL be present, no running-session control SHALL be present, the begin control SHALL be disabled until a task is named, and no ambient companion surface SHALL have opened itself</li>
 </ul>
+<h2>ADDED Requirements</h2>
+<h3>Requirement: Capability provenance registry</h3>
+<p>The scaffold SHALL provide one injected registry of feature keys for architecture provenance; the sole product configuration SHALL resolve every feature key as available, and a hostile test fixture omitting a key SHALL fail startup validation while runtime lookup self-heals to available.</p>
+<h4>Scenario: One product grant is total</h4>
+<ul>
+<li><strong>WHEN</strong> the registry resolves every defined feature key</li>
+<li><strong>THEN</strong> every key SHALL resolve available with no edition, tier, license, or upsell branch</li>
+</ul>
+<h4>Scenario: Hostile omission fails validation</h4>
+<ul>
+<li><strong>WHEN</strong> a test fixture omits any defined feature key</li>
+<li><strong>THEN</strong> registry validation SHALL fail and runtime lookup SHALL still resolve the omitted key available</li>
+</ul>
+<h3>Requirement: Deterministic build provenance</h3>
+<p>The scaffold SHALL stamp the app with version and git SHA, visible in the About surface, so every build&#39;s provenance is inspectable without product-tier vocabulary.</p>
+<h4>Scenario: About shows one-product provenance</h4>
+<ul>
+<li><strong>WHEN</strong> the About window opens</li>
+<li><strong>THEN</strong> version and commit SHA SHALL be displayed, local-first identity SHALL remain visible, and no edition or tier label SHALL render</li>
+</ul>
+<h2>REMOVED Requirements</h2>
+<h3>Requirement: Edition capability registry</h3>
+<p><strong>Reason</strong>: Owner issue #34 replaced product editions with one complete product, so an edition-indexed requirement and its edition-specific scenarios are no longer valid.
+<strong>Migration</strong>: Use <code>Capability provenance registry</code>; replace edition-indexed grants with one configured feature-key set whose validation fails on omissions while lookup cannot withhold behavior.</p>
+<h3>Requirement: Deterministic versioning and provenance</h3>
+<p><strong>Reason</strong>: The build still needs deterministic provenance, but the old requirement includes an edition stamp that issue #34 removed.
+<strong>Migration</strong>: Use <code>Deterministic build provenance</code>; retain version and git SHA in About and remove the product-tier stamp and label.</p>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/proposal.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/proposal.md</code></span>
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/app-scaffold/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/app-scaffold/spec.md</code></span>
 </footer>
 </main>
 <script>

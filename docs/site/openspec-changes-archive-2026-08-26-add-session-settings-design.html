@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>focus-loop-ui · M2 change · Praxmodoro docs</title>
+<title>Design: add-session-settings · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,52 +346,63 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>focus-loop-ui · M2 change</h1>
-<p class="standfirst">M1 proved the accessibility alternates structurally — by scanning sources and by asserting the physics engine is absent. That is necessary but not sufficient: it cannot see…</p>
-<div class="meta"><span>418 words</span><span><code>openspec/changes/add-companion-surfaces/specs/focus-loop-ui/spec.md</code></span></div>
-<article class="prose"><p>M1 proved the accessibility alternates structurally — by scanning sources and by asserting the physics engine is absent. That is necessary but not sufficient: it cannot see what actually renders. This change raises the transparency and contrast alternates to render-level proof and extends the keyboard scenario from a coverage map to real key events across the whole loop.</p>
-<h2>MODIFIED Requirements</h2>
-<h3>Requirement: Complete accessibility alternates</h3>
-<p>Every surface SHALL provide full alternates: Reduce Motion or &quot;Motion: still&quot; SHALL stop the physics engine entirely and present a calm static field; Reduce Transparency SHALL replace translucent veils with solid semantic backgrounds, verified by rasterizing the surface background over a known backdrop; Increase Contrast SHALL meet contrast ratios on every text and control, verified by measuring rasterized foreground and background tokens; every control SHALL be keyboard-reachable and VoiceOver-labeled, and the whole loop SHALL be operable by real key events with no pointer input.</p>
-<h4>Scenario: Reduce Motion standdown is total</h4>
-<ul>
-<li><strong>WHEN</strong> system Reduce Motion is on or the user selects &quot;Motion: still&quot;</li>
-<li><strong>THEN</strong> the physics engine SHALL not run, the field SHALL render its static alternate, and no continuous animation SHALL play anywhere</li>
-</ul>
-<h4>Scenario: Full keyboard loop</h4>
-<ul>
-<li><strong>WHEN</strong> a user operates only the keyboard</li>
-<li><strong>THEN</strong> begin, hold/resume, check-in entry, check-in answers, break choices, break end, thought parking, and surface navigation SHALL all be reachable and visibly focused</li>
-</ul>
-<h4>Scenario: Keyboard loop as real key events</h4>
-<ul>
-<li><strong>WHEN</strong> an automated interface test drives begin, check-in entry, each check-in answer, break end, and new session using only key events</li>
-<li><strong>THEN</strong> each key event SHALL advance the loop to the expected surface with no pointer interaction required</li>
-</ul>
-<h4>Scenario: VoiceOver on the field</h4>
-<ul>
-<li><strong>WHEN</strong> VoiceOver focuses the companion field region</li>
-<li><strong>THEN</strong> it SHALL read a concise state description (e.g. &quot;Companion: breathing, 17 minutes remaining&quot;) and the decorative layers SHALL be hidden from the accessibility tree</li>
-</ul>
-<h4>Scenario: Reduce Transparency verified at render level</h4>
-<ul>
-<li><strong>WHEN</strong> a surface background is rasterized with Reduce Transparency on, composited over a known backdrop color</li>
-<li><strong>THEN</strong> the sampled rendered pixels SHALL show no trace of the backdrop, and the same background rasterized with Reduce Transparency off SHALL differ from it</li>
-</ul>
-<h4>Scenario: Increase Contrast verified at render level</h4>
-<ul>
-<li><strong>WHEN</strong> the surface text and background tokens are rasterized under standard and under increased contrast</li>
-<li><strong>THEN</strong> the contrast ratio measured from the rendered pixels SHALL be at least 4.5:1 under standard settings and strictly greater under increased contrast</li>
-</ul>
+<div class="eyebrow">Archived changes</div>
+<h1>Design: add-session-settings</h1>
+<p class="standfirst">The 2026-08-12 settings-parity plan is the historical scope record. Current execution is governed by docs/plans/2026-08-23-m3-validation-remediation.md and the architecture…</p>
+<div class="meta"><span>1,605 words</span><span><code>openspec/changes/archive/2026-08-26-add-session-settings/design.md</code></span></div>
+<article class="prose"><h2>Context</h2>
+<p>The 2026-08-12 settings-parity plan is the historical scope record. Current execution is governed by <code>docs/plans/2026-08-23-m3-validation-remediation.md</code> and the architecture-stabilization umbrella; those plans supersede the old parallel-lane and auto-push instructions. Product decisions retained from the applied dcanvas export <code>01KZTPM2DDFA8Q5ZM76ES0JXEJ</code>: autostart is a three-way user setting defaulting to prompt-first; rewind/forward is kept as an engine event; user notification text is verbatim; typography is separate. The engine&#39;s law — remaining time is <code>f(transitions, now)</code> — has survived six adversarial attempts against its guards this month; nothing in this change may weaken it.</p>
+<p>Within the goal-ledger convention this file is the architecture record; <code>proposal.md</code> is the HLD and <code>tasks.md</code> the LLD.</p>
+<h2>Goals / Non-Goals</h2>
+<p><strong>Goals:</strong> every new time-shaped behaviour is an engine transition; every preference lives on the injected defaults seam; sound and notifications are pure presentation; the panes are token-ready without waiting for tokens.</p>
+<p><strong>Non-Goals:</strong> the Appearance pane (joins after lane 2), font bundling (#9), any new persistence schema, any UI-side scheduling.</p>
+<h2>Decisions</h2>
+<ol>
+<li><p><strong>Adjustments are events, not offsets.</strong> Rewind/forward appends an <code>AdjustmentRecord</code> to a log alongside the transitions (the clock-anomaly precedent — persisted transitions carry only a state name, so the magnitude needs its own record); <code>remaining(at:)</code> and <code>expiryInstant()</code> fold the current block&#39;s adjustments into the derivation. <em>Alternative — a mutable <code>bonusSeconds</code> on the session:</em> rejected; mutable state beside an event-sourced timeline is exactly how drift enters, and it would not survive the relaunch-reconstruction property.</p>
+</li>
+<li><p><strong>Autostart reuses the promotion machinery.</strong> <code>reconciled(at:)</code> already inserts the gentle-start promotion at its canonical instant; the autostart break transition is the same shape gated on the behaviour setting, and the auto-return-to-focus transition (break end → focus offered, plan §Rhythm) is the same pass anchored on the break-end instant, off by default. Pure reconciliation inherits canonical timestamp correctness; task 10.7 separately proves the live root observation, sleep/wake, and relaunch-absence behavior after runtime C2. <em>Alternative — a separate app-layer expiry timer:</em> rejected; it would be a second clock and the guards ban it structurally.</p>
+</li>
+<li><p><strong>Prompt-first is presentation over a held engine.</strong> In prompt-first mode the engine records expiry-hold (block complete, place kept) and the app shows a non-modal offer; accepting records the break transition at accept time, with provenance noting the offer. The engine never encodes &quot;a prompt is showing&quot; — that is surface state, like the return overlay.</p>
+</li>
+<li><p><strong>Behaviour setting read at expiry-processing time, not captured at begin.</strong> Changing the setting mid-block affects the current block&#39;s end; least-surprise wins over snapshot semantics. Recorded here because it is the kind of ambiguity implementers otherwise decide silently.</p>
+</li>
+<li><p><strong>Sound is a transition listener.</strong> <code>AudioCueScheduler</code> (AVFoundation) observes the same state changes surfaces render; ticking is an <code>AVAudioPlayer</code> loop started/stopped by state, never a <code>Timer</code>. The cue library has five rows: Block start, Focus tick, Break tick, Focus end, Break end. Each row contains its independent toggle and a trailing sample button with identifiers <code>sound-sample-block-start</code>, <code>sound-sample-focus-tick</code>, <code>sound-sample-break-tick</code>, <code>sound-sample-focus-end</code>, and <code>sound-sample-break-end</code>; each exposes the exact VoiceOver label <code>Play &lt;cue name&gt; sample</code>. Samples call the exact API <code>AppModel.previewSound(_ cue: SoundCue)</code>, which invokes the already-present <code>SoundCueScheduling.scheduleChime(_:at:volume:)</code> at the injected clock instant and current master volume without touching session state or preferences; no second playback abstraction is added. The factory-on set is block-start plus both end chimes at 0.7; both ticks and tick-loop remain off. Block-start fires only on a real transition into a new focus block (initial begin or return from break, including derived auto-return), never on relaunch or hold/resume. Chimes are scheduled ahead via <code>AVAudioPlayer.play(atTime:)</code>, whose device timebase can pause across sleep. Praxmodoro therefore observes the native <code>NSWorkspace.didWakeNotification</code> at the app root and calls the scheduler&#39;s cancellation seam before presentation resynchronizes; every pending chime whose canonical instant is at or before the injected wall clock is stopped and removed. An expiry that happened during sleep never retro-fires — a sound after the fact is noise, not information. No polling timer or second audio engine is introduced.</p>
+</li>
+<li><p><strong>Notifications are scheduled at canonical instants and cancelled on change.</strong> <code>UNUserNotificationCenter</code> requests are created from <code>expiryInstant()</code> when a block begins or is adjusted, and cancelled/recreated on hold, adjustment, or setting change. The notification fires even if the app is quit — which is the point. While an asynchronous availability check is outstanding, existing scheduling behavior remains, but the callback is authoritative: a denied result sets the unavailable flag and immediately resynchronizes/cancels pending work before returning to the UI. Denied permission renders the toggles plainly unavailable; no re-prompt nagging.</p>
+</li>
+<li><p><strong>Preferences are two small value types</strong> (<code>RhythmPreferences</code>, <code>SoundPreferences</code>) decoded from the injected <code>UserDefaults</code>, mirroring the Motion: still pattern; no new storage, no schema change, schema-parity tests untouched. <code>SoundPreferences</code> uses keyed decoding for the new <code>blockStart</code> field: a missing field decodes as <code>false</code> while every legacy master/toggle value remains intact. Only a missing or malformed whole preferences blob falls back to the new factory-on defaults. This prevents a compatible upgrade from silently enabling sounds or erasing prior choices.</p>
+</li>
+<li><p><strong>Panes use the existing token boundaries.</strong> Pane colors come from <code>SurfacePalette</code> with <code>colorSchemeContrast</code> and Reduce Transparency; any explicit layout spacing or radius comes from generated <code>DesignTokens</code>. Domain numbers (minutes, cadence bounds, volume) and the fixed Settings window dimensions are not style literals. Actual-pane raster tests prove both accessibility environments, and the five sample actions carry cue-specific VoiceOver labels. This corrects the earlier “SurfacePalette only” wording, which was technically inconsistent because <code>SurfacePalette</code> exposes colors but no spacing roles.</p>
+</li>
+<li><p><strong>Remaining time is block-scoped</strong> (as-built discovery). The session-wide <code>focusElapsed</code> made <code>expiryInstant()</code> re-derive a break at the very instant one ended — a latent defect auto-return would have amplified into a ping-pong. <code>remaining</code>/<code>expiryInstant</code> now derive from the current block (the last entry into running from a break); <code>focusElapsed</code> keeps the session-wide truth available (no surface consumes it yet).</p>
+</li>
+<li><p><strong>The root date-observation edge materializes derived transitions before presentation.</strong> Every intent still materializes first. In addition, the root <code>TimelineView</code> passes its existing <code>context.date</code> to <code>AppModel.observeDerivedPhase(at:)</code> on every context-date change, not only when the derived phase differs. A phase-only callback is insufficient: sleep can span focus expiry, the complete break, and auto-return, leaving <code>.running</code> at both ends. The observer calls the existing canonical materialization once, then synchronizes sound/notifications; repeated dates are idempotent. This is not a second clock: it reuses the root rendering timeline and performs no duration arithmetic or scheduling.</p>
+</li>
+<li><p><strong>The caller proves when the rhythm was live.</strong> <code>AppModel</code> captures <code>liveObservationStartedAt</code> from its injected clock at initialization. Core reconciliation receives both the explicit <code>autoReturn</code> Boolean and <code>autoReturnAfter: liveObservationStartedAt</code>; a canonical break end is eligible only when it is later than that boundary. A process that sleeps across the edge therefore materializes on wake, including a complete focus→break→focus cycle, while a process launched after the edge can never catch it up on its first or a later render. Restore itself passes <code>autoReturn: false</code> and never calls the observer. The Core <code>breakEndInstant(cadence:)</code> authority from runtime task 3 owns the comparison; the app adds no break arithmetic.</p>
+</li>
+<li><p><strong>Preset editing mutates defaults, never historical policy names.</strong> Each preset row exposes an editable minute value and Remove. <code>availablePolicies</code> forms every user-reachable focus/break pair; if only one family has custom values, the other family uses the classic 25-minute/5-minute fallback. Removing or editing a preset affects future selection only because persisted custom policy names encode their durations. A store-backed relaunch test proves historical derivation remains unchanged.</p>
+</li>
+<li><p><strong>One pure predicate owns ordinary scheduled-player retention.</strong> The internal function <code>shouldRetainChime(scheduledAt:now:isPlaying:) -&gt; Bool</code> returns <code>isPlaying || scheduledAt &gt; now</code>. <code>AudioCueScheduler</code> stores each pending player with its canonical scheduled instant, reads its injected clock once at the scheduling/pruning edge, retains future or currently playing entries, and removes stopped entries whose instant is not future. System wake is the deliberate exception: <code>cancelExpiredChimes(at:)</code> stops and removes every entry with <code>scheduledAt &lt;= now</code> regardless of <code>isPlaying</code>, preventing the device timebase from emitting a stale cue. Both paths are event-driven and add no timer or audio framework.</p>
+</li>
+<li><p><strong>Preset minutes are bounded integers with quiet inline correction.</strong> Focus and break presets both accept unique whole minutes in <code>1...240</code>; the shared range avoids two policies for one data type. Add or edit input outside the range, fractional text, or a duplicate is not committed. The field remains available with the persistent help text “Use a unique whole number from 1 to 240.” No modal error, clamping, silent truncation, or duplicate policy is introduced. Existing stored positive second values remain readable; validation applies when the user edits or adds.</p>
+</li>
+</ol>
+<h2>Data boundaries</h2>
+<p>No new persisted models. Session records gain nothing; autostart and auto-return reuse the existing transition vocabulary, and adjustments persist as a new <code>StoredEventKind.adjustment</code> value (a kind value, not a schema change — entities and attributes untouched). Preferences live in defaults; notification text lives in defaults; sounds are bundled resources.</p>
+<h2>Dependency provenance</h2>
+<p>AVFoundation, UserNotifications, and the already-linked AppKit <code>NSWorkspace</code> wake notification are platform APIs. No third-party packages. Sound assets are original or CC0, committed under <code>app/Resources/Sounds/</code> with provenance noted in the commit.</p>
+<h2>Rollback</h2>
+<p>Additive scenes and Core extensions. Removing the Settings scene and the one new stored event kind (<code>adjustment</code>) restores the pre-settings behavior; autostart and auto-return reuse existing lifecycle payloads. Sessions containing adjustments remain readable on the implemented branch, while the stricter runtime replay change rejects unknown lifecycle payloads rather than fabricating state.</p>
+<h2>Verification strategy</h2>
+<p>Per-atom red→green via <code>./scripts/focused.sh</code>; Core work via <code>swift test --package-path app/Packages/PraxmodoroCore</code>. The no-scheduling and clock-read guards must stay green throughout — they are the proof that autostart and sound introduced no second clock. Focused coverage includes wake cancellation, deferred denial, actual-pane transparency/contrast rasters, and cue-specific VoiceOver/keyboard actions. Full gate <code>./scripts/verify-project.sh</code> plus <code>npm run spec:validate</code> strict at change completion, then the independent fresh-context validator before archive.</p>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/specs/focus-loop-ui/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/specs/focus-loop-ui/spec.md</code></span>
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-add-session-settings/design.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-add-session-settings/design.md</code></span>
 </footer>
 </main>
 <script>

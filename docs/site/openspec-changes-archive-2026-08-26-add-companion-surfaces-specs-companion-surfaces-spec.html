@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>session-persistence · M2 change · Praxmodoro docs</title>
+<title>companion-surfaces · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,37 +346,137 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>session-persistence · M2 change</h1>
-<p class="standfirst">M1 asserted schema parity against a single static schema declaration, which cannot fail while there is only one declaration to compare. This change compares the schemas of…</p>
-<div class="meta"><span>180 words</span><span><code>openspec/changes/add-companion-surfaces/specs/session-persistence/spec.md</code></span></div>
-<article class="prose"><p>M1 asserted schema parity against a single static schema declaration, which cannot fail while there is only one declaration to compare. This change compares the schemas of two live containers built from two different store configurations.</p>
-<h2>MODIFIED Requirements</h2>
-<h3>Requirement: Edition-neutral storage</h3>
-<p>Stored data SHALL be identical in shape across editions and across store configurations; no field SHALL exist solely to enforce or upsell editions, and no store configuration SHALL produce a different entity or attribute set from any other.</p>
-<h4>Scenario: Schema parity</h4>
+<div class="eyebrow">Archived changes</div>
+<h1>companion-surfaces</h1>
+<p class="standfirst">Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to design-mocks/living-co…</p>
+<div class="meta"><span>1,197 words</span><span><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/companion-surfaces/spec.md</code></span></div>
+<article class="prose"><p>Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to <code>design-mocks/living-companion/</code> (physics contract: <code>companion-physics.js</code>). These surfaces present the session; they never own it.</p>
+<h2>ADDED Requirements</h2>
+<h3>Requirement: One canonical session state for every surface</h3>
+<p>For each render pass, every surface SHALL render from exactly one engine-derived snapshot produced by the app model for that scene&#39;s supplied instant, and no surface SHALL hold, count, or decrement its own copy of the remaining time. Separate live scenes MAY receive different current instants from their own platform timelines; when given a common instant they SHALL agree. Remaining time SHALL remain a pure function of the recorded transitions and the supplied instant.</p>
+<h4>Scenario: Surfaces agree at one instant</h4>
 <ul>
-<li><strong>WHEN</strong> the schema is generated under Lite and Pro flags</li>
-<li><strong>THEN</strong> the schemas SHALL be identical</li>
+<li><strong>WHEN</strong> the focus surface, the menu-bar popover, and the floating capsule are rendered from the same instant</li>
+<li><strong>THEN</strong> the remaining-time text, task line, and status line SHALL be identical across all three</li>
 </ul>
-<h4>Scenario: Two-configuration parity against live containers</h4>
+<h4>Scenario: Main-window layers share one render snapshot</h4>
 <ul>
-<li><strong>WHEN</strong> one store is opened in memory and another is opened on disk, and each live container&#39;s schema is read back</li>
-<li><strong>THEN</strong> the entity names, attribute names, and attribute value types SHALL be identical between the two containers</li>
+<li><strong>WHEN</strong> the main-window route, focus surface, and return overlay run in one root timeline pass</li>
+<li><strong>THEN</strong> all three SHALL consume the same immutable snapshot captured once from that timeline context, and no second snapshot or wall-clock read SHALL occur in the pass</li>
 </ul>
-<h4>Scenario: No edition-shaped field</h4>
+<h4>Scenario: No surface counts time</h4>
 <ul>
-<li><strong>WHEN</strong> every attribute name in the live container schema is inspected</li>
-<li><strong>THEN</strong> none SHALL name an edition, paywall, or upsell concept</li>
+<li><strong>WHEN</strong> the surface sources are scanned for timer construction, scheduled decrements, or stored elapsed counters</li>
+<li><strong>THEN</strong> no companion surface SHALL contain one, and the snapshot accessor SHALL be the only source of the rendered remaining time</li>
+</ul>
+<h4>Scenario: Snapshot survives sleep and relaunch</h4>
+<ul>
+<li><strong>WHEN</strong> a snapshot is taken after an interval during which the app was not running</li>
+<li><strong>THEN</strong> its remaining time SHALL equal the value derived from canonical timestamps, with no accumulated tick drift</li>
+</ul>
+<h3>Requirement: Menu-bar popover operates the loop</h3>
+<p>The app SHALL provide a menu-bar item whose popover shows the current status line, remaining time, and task, and SHALL offer the loop entry points available in the current phase — begin, hold or resume, check in, and open the main window.</p>
+<h4>Scenario: Popover reflects the live phase</h4>
+<ul>
+<li><strong>WHEN</strong> the session is held</li>
+<li><strong>THEN</strong> the popover status line SHALL say the place is held and its primary control SHALL offer resume rather than hold</li>
+</ul>
+<h4>Scenario: Popover with no session</h4>
+<ul>
+<li><strong>WHEN</strong> no session is running</li>
+<li><strong>THEN</strong> the popover SHALL offer beginning one and SHALL NOT display a remaining time</li>
+</ul>
+<h4>Scenario: Popover carries no scoring</h4>
+<ul>
+<li><strong>WHEN</strong> the popover renders in any phase</li>
+<li><strong>THEN</strong> it SHALL NOT display streaks, grades, completion percentages, comparative judgments, or an upsell</li>
+</ul>
+<h3>Requirement: Floating focus capsule stays above other windows</h3>
+<p>The app SHALL provide a small floating capsule window carrying the task line, remaining time, and hold/resume, SHALL keep it above ordinary windows while it is open, SHALL NOT open it automatically at launch, and SHALL let the user open and close it from a keyboard-reachable command.</p>
+<h4>Scenario: Capsule is suppressed at launch</h4>
+<ul>
+<li><strong>WHEN</strong> the app launches</li>
+<li><strong>THEN</strong> the capsule window SHALL NOT be shown until the user opens it</li>
+</ul>
+<h4>Scenario: Capsule toggles from the keyboard</h4>
+<ul>
+<li><strong>WHEN</strong> the user invokes the capsule command from the keyboard</li>
+<li><strong>THEN</strong> the capsule window SHALL open, and invoking the command again SHALL close it</li>
+</ul>
+<h4>Scenario: Capsule shows the same time as the main window</h4>
+<ul>
+<li><strong>WHEN</strong> the capsule and the focus surface are rendered from one instant</li>
+<li><strong>THEN</strong> both SHALL display the same remaining-time text derived from the same snapshot</li>
+</ul>
+<h3>Requirement: Return overlay presents the exact next action</h3>
+<p>WHEN a break ends, the app SHALL present a return overlay over the focus surface carrying the exact next action recorded at initiation, SHALL keep it visible until the user acknowledges it, and SHALL dismiss it on ⏎ or its primary control without altering the session state.</p>
+<h4>Scenario: Ending a break raises the overlay</h4>
+<ul>
+<li><strong>WHEN</strong> the user ends a break</li>
+<li><strong>THEN</strong> the return overlay SHALL be presented over the focus surface with the recorded next action as its subject</li>
+</ul>
+<h4>Scenario: Acknowledgement returns to focus</h4>
+<ul>
+<li><strong>WHEN</strong> the user acknowledges the return overlay and no check-in is waiting</li>
+<li><strong>THEN</strong> the overlay SHALL be dismissed, the focus surface SHALL be active, and the session phase SHALL be unchanged by the acknowledgement</li>
+</ul>
+<h4>Scenario: A check-in waits behind the return</h4>
+<ul>
+<li><strong>WHEN</strong> a check-in is requested while the return overlay is pending</li>
+<li><strong>THEN</strong> the app SHALL hold the session and remember the check-in without replacing or dismissing the return overlay, and acknowledgement SHALL then route to the waiting check-in without itself changing session phase</li>
+</ul>
+<h4>Scenario: No next action recorded</h4>
+<ul>
+<li><strong>IF</strong> no next action was recorded at initiation</li>
+<li><strong>THEN</strong> the overlay SHALL present the task itself as the way back rather than an empty card</li>
+</ul>
+<h4>Scenario: Return is not a verdict</h4>
+<ul>
+<li><strong>WHEN</strong> the return overlay renders</li>
+<li><strong>THEN</strong> it SHALL NOT display break duration judgments, streaks, or any evaluation of the break that just ended</li>
+</ul>
+<h3>Requirement: Companion surfaces ship in the one product</h3>
+<p>Every companion surface SHALL consult the internal capability-provenance registry, and the keys backing them SHALL resolve as available in the sole product configuration; initiation, check-in entry, hold/resume, and accessibility behavior reached through these surfaces SHALL be impossible to withhold.</p>
+<h4>Scenario: The product includes every companion surface</h4>
+<ul>
+<li><strong>WHEN</strong> the registry resolves the companion-surface feature keys</li>
+<li><strong>THEN</strong> every key SHALL resolve to available and no surface SHALL render an upsell or tier message</li>
+</ul>
+<h4>Scenario: Companion surface keys cannot be withheld</h4>
+<ul>
+<li><strong>WHEN</strong> a hostile registry fixture omits a companion-surface key</li>
+<li><strong>THEN</strong> registry validation SHALL fail and runtime lookup SHALL still resolve the omitted key as available</li>
+</ul>
+<h3>Requirement: Accessibility alternates on every companion surface</h3>
+<p>Every companion surface SHALL ship its accessibility alternates in this change: Reduce Motion or &quot;Motion: still&quot; SHALL stop the physics engine on that surface entirely, Reduce Transparency SHALL render an opaque background instead of a translucent one, Increase Contrast SHALL raise the text-to-background contrast, every control SHALL be keyboard-reachable, and every surface SHALL carry VoiceOver labels.</p>
+<h4>Scenario: Reduce Motion standdown on the new surfaces</h4>
+<ul>
+<li><strong>WHEN</strong> Reduce Motion is on and the popover or capsule renders a companion field</li>
+<li><strong>THEN</strong> the physics model SHALL NOT be instantiated and the static alternate SHALL render</li>
+</ul>
+<h4>Scenario: Reduce Transparency renders opaque</h4>
+<ul>
+<li><strong>WHEN</strong> a companion surface background is rasterized with Reduce Transparency on over a known backdrop</li>
+<li><strong>THEN</strong> the backdrop SHALL NOT be visible through the rendered background</li>
+</ul>
+<h4>Scenario: Increase Contrast raises the measured ratio</h4>
+<ul>
+<li><strong>WHEN</strong> the actual <code>MenuBarPopover</code>, <code>FocusCapsule</code>, and <code>ReturnOverlay</code> are rasterized from fixed content under standard and increased <code>colorSchemeContrast</code></li>
+<li><strong>THEN</strong> each surface&#39;s changed primary-text pixels SHALL match the standard and increased <code>SurfacePalette.primaryText</code> branches, its opaque background SHALL remain unchanged, and its measured increased text-to-background ratio SHALL be strictly higher and at least 7:1</li>
+</ul>
+<h4>Scenario: VoiceOver reads each companion surface</h4>
+<ul>
+<li><strong>WHEN</strong> VoiceOver focuses the popover, the capsule, or the return overlay</li>
+<li><strong>THEN</strong> each SHALL expose a concise label naming the surface and the current session state</li>
 </ul>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/specs/session-persistence/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/specs/session-persistence/spec.md</code></span>
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/companion-surfaces/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/companion-surfaces/spec.md</code></span>
 </footer>
 </main>
 <script>

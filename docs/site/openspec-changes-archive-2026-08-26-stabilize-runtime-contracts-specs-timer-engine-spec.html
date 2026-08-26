@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tasks: add-companion-surfaces · Praxmodoro docs</title>
+<title>spec · archived · 2026-08-26-stabilize-runtime-contracts · timer-engine · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,64 +346,51 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>Tasks: add-companion-surfaces</h1>
-<p class="standfirst">Every task follows AGENTS.md TDD law: write the named failing test, observe the expected red, implement minimally, verify green plus the smoke command, commit conventionall…</p>
-<div class="meta"><span>739 words</span><span><code>openspec/changes/add-companion-surfaces/tasks.md</code></span></div>
-<article class="prose"><p>Every task follows AGENTS.md TDD law: write the named failing test, observe the expected red, implement minimally, verify green plus the smoke command, commit conventionally with only the slice&#39;s files. Every completed group leaves the repo runnable. Per-atom check: <code>./scripts/focused.sh</code>.</p>
-<h2>1. Verification commands</h2>
+<div class="eyebrow">Archived changes</div>
+<h1>spec · archived · 2026-08-26-stabilize-runtime-contracts · timer-engine</h1>
+<p class="standfirst">The engine SHALL expose breakEndInstant(cadence:) as the sole derivation of the current break's end, using the final break transition timestamp plus the cadence-aware sugge…</p>
+<div class="meta"><span>285 words</span><span><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/timer-engine/spec.md</code></span></div>
+<article class="prose"><h2>ADDED Requirements</h2>
+<h3>Requirement: Break end has one canonical derivation</h3>
+<p>The engine SHALL expose <code>breakEndInstant(cadence:)</code> as the sole derivation of the current break&#39;s end, using the final break transition timestamp plus the cadence-aware suggested break length, and SHALL return no instant when the session is not currently on break.</p>
+<h4>Scenario: Ordinary break end</h4>
 <ul>
-<li><input checked="" disabled="" type="checkbox"> 1.1 Add <code>scripts/focused.sh</code> (app unit suite only) and <code>scripts/smoke.sh</code> (build, launch with <code>-praxmodoro-ephemeral-store</code>, confirm the window, quit); document both in README next to the existing commands. Red: both scripts absent, <code>./scripts/focused.sh</code> exits 127. Green: both exit 0 and the README commands run verbatim. Files: <code>scripts/focused.sh</code>, <code>scripts/smoke.sh</code>, <code>README.md</code>.</li>
+<li><strong>WHEN</strong> a classic session enters break at T and no long-break cadence applies</li>
+<li><strong>THEN</strong> <code>breakEndInstant(cadence:)</code> SHALL equal T plus the policy&#39;s ordinary suggested break length</li>
 </ul>
-<h2>2. One canonical session state</h2>
+<h4>Scenario: Long-break cadence boundary</h4>
 <ul>
-<li><input checked="" disabled="" type="checkbox"> 2.1 <code>SessionSnapshot</code> value + <code>AppModel.snapshot(at:)</code> projecting phase, task line, next action, remaining interval, remaining text, status line and VoiceOver summary; migrate <code>FocusSurface</code> and <code>fieldAccessibilitySummary(at:)</code> onto it. Red: <code>SnapshotTests.testSnapshotDerivesRemainingFromTransitions</code>, <code>testSnapshotOpenEndedBlockHasNoRemaining</code> (no <code>SessionSnapshot</code> type — compile failure). Green: both pass and every M1 test still passes. Files: <code>app/Sources/SessionSnapshot.swift</code>, <code>app/Sources/AppModel.swift</code>, <code>app/Sources/Surfaces/FocusSurface.swift</code>, <code>app/Tests/PraxmodoroTests/SnapshotTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 2.2 Structural single-clock gate. Red: <code>SnapshotTests.testNoSurfaceCountsTime</code> fails while any surface formats remaining time locally. Green: the scan finds no <code>Timer(</code>, <code>Timer.publish</code>, <code>scheduledTimer</code>, or stored elapsed counter in <code>app/Sources</code>, and every rendered remaining time comes from <code>snapshot(at:)</code>. Files: <code>app/Tests/PraxmodoroTests/SnapshotTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 2.3 Sleep/relaunch snapshot fidelity. Red: <code>SnapshotTests.testSnapshotAfterSleepHasNoDrift</code> before the snapshot routes through <code>reconciled(at:)</code>. Green: snapshot remaining equals the canonical-timestamp value across a simulated multi-hour gap. Files: <code>app/Tests/PraxmodoroTests/SnapshotTests.swift</code>.</li>
+<li><strong>WHEN</strong> the current break is the Nth break selected by a valid long-break cadence</li>
+<li><strong>THEN</strong> <code>breakEndInstant(cadence:)</code> SHALL equal the break transition timestamp plus the cadence&#39;s long-break length</li>
 </ul>
-<h2>3. Surface palette and render-level accessibility</h2>
+<h4>Scenario: No active break</h4>
 <ul>
-<li><input checked="" disabled="" type="checkbox"> 3.1 <code>SurfacePalette</code> with an explicit Reduce Transparency background branch and an Increase Contrast primary-text branch. Red: <code>RenderAccessibilityTests.testReduceTransparencyBackgroundIsOpaque</code> (no <code>SurfacePalette</code>). Green: rasterizing the background over a red backdrop with Reduce Transparency on shows no backdrop trace, and differs from the same background with it off. Files: <code>app/Sources/SurfacePalette.swift</code>, <code>app/Tests/PraxmodoroTests/RenderAccessibilityTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 3.2 Render-level contrast measurement. Red: <code>RenderAccessibilityTests.testIncreaseContrastRaisesMeasuredRatio</code>. Green: WCAG ratio computed from rasterized pixels is ≥ 4.5:1 standard and strictly greater under increased contrast. Files: <code>app/Tests/PraxmodoroTests/RenderAccessibilityTests.swift</code>.</li>
+<li><strong>WHEN</strong> the final session state is idle, running, held, or closed</li>
+<li><strong>THEN</strong> <code>breakEndInstant(cadence:)</code> SHALL return <code>nil</code></li>
 </ul>
-<h2>4. Menu-bar popover</h2>
+<h4>Scenario: Every consumer agrees</h4>
 <ul>
-<li><input checked="" disabled="" type="checkbox"> 4.1 <code>MenuBarPopover</code> view + <code>MenuBarExtra</code> scene rendering the snapshot with phase-appropriate controls. Red: <code>CompanionSurfaceTests.testPopoverShowsHeldStateAndOffersResume</code>, <code>testPopoverWithoutSessionOffersBeginAndNoTime</code>. Green: both pass. Files: <code>app/Sources/Surfaces/MenuBarPopover.swift</code>, <code>app/Sources/PraxmodoroApp.swift</code>, <code>app/Tests/PraxmodoroTests/CompanionSurfaceTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 4.2 Popover non-scoring and never-paywalled guarantees. Red: <code>CompanionSurfaceTests.testPopoverCarriesNoScoringOrUpsell</code>, <code>testCompanionSurfaceKeysAreNeverPaywalled</code>. Green: both pass; new feature keys join the never-paywalled set and registry validation covers them. Files: <code>app/Sources/CapabilityRegistry.swift</code>, <code>app/Tests/PraxmodoroTests/CompanionSurfaceTests.swift</code>.</li>
+<li><strong>WHEN</strong> auto-return, the break-end sound cue, and the break-end notification are enabled for the same session and cadence</li>
+<li><strong>THEN</strong> the Core return transition, sound request, and notification request SHALL use exactly the same <code>breakEndInstant(cadence:)</code> value</li>
 </ul>
-<h2>5. Floating focus capsule</h2>
+<h4>Scenario: Auto-return is an explicit gate, not a duration</h4>
 <ul>
-<li><input checked="" disabled="" type="checkbox"> 5.1 <code>FocusCapsule</code> view + floating <code>Window</code> scene, launch-suppressed, with the capsule command and its keyboard shortcut. Red: <code>FocusCapsuleTests.testCapsuleShowsTaskTimeAndHold</code>, <code>testCapsuleCommandHasKeyboardPath</code>, <code>testCapsuleSceneIsFloatingAndLaunchSuppressed</code>. Green: all pass. Files: <code>app/Sources/Surfaces/FocusCapsule.swift</code>, <code>app/Sources/PraxmodoroApp.swift</code>, <code>app/Sources/KeyboardMap.swift</code>, <code>app/Tests/PraxmodoroTests/FocusCapsuleTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 5.2 Three-surface agreement at one instant. Red: <code>FocusCapsuleTests.testThreeSurfacesAgreeAtOneInstant</code>. Green: focus, popover, and capsule render identical remaining text, task line, and status line from one snapshot. Files: <code>app/Tests/PraxmodoroTests/FocusCapsuleTests.swift</code>.</li>
+<li><strong>WHEN</strong> auto-return is true for a custom policy whose ordinary suggested break is seven minutes</li>
+<li><strong>THEN</strong> reconciliation SHALL return at <code>breakEndInstant(cadence:)</code>, seven minutes after the break transition, with no second caller-supplied duration</li>
 </ul>
-<h2>6. Return overlay</h2>
+<h4>Scenario: Auto-return honors the process-live boundary</h4>
 <ul>
-<li><input checked="" disabled="" type="checkbox"> 6.1 <code>AppModel.returnPending</code> / <code>acknowledgeReturn()</code> raised by <code>endBreak()</code>. Red: <code>ReturnOverlayTests.testEndingBreakRaisesReturnOverlay</code>, <code>testAcknowledgementLeavesPhaseUnchanged</code>. Green: both pass. Files: <code>app/Sources/AppModel.swift</code>, <code>app/Tests/PraxmodoroTests/ReturnOverlayTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 6.2 <code>ReturnOverlay</code> view over the focus surface: exact next action, task fallback, ⏎ dismissal, no evaluation copy. Red: <code>ReturnOverlayTests.testOverlayShowsRecordedNextAction</code>, <code>testOverlayFallsBackToTaskWhenNoNextAction</code>, <code>testOverlayCarriesNoBreakVerdict</code>. Green: all pass. Files: <code>app/Sources/Surfaces/ReturnOverlay.swift</code>, <code>app/Sources/PraxmodoroApp.swift</code>, <code>app/Tests/PraxmodoroTests/ReturnOverlayTests.swift</code>.</li>
-</ul>
-<h2>7. Reduce Motion and VoiceOver on the new surfaces</h2>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 7.1 Motion standdown and VoiceOver labels for popover, capsule, and overlay. Red: <code>CompanionAccessibilityTests.testCompanionSurfacesStandDownUnderReduceMotion</code>, <code>testCompanionSurfacesCarryVoiceOverLabels</code>, <code>testAllThreeCompanionSurfacesExist</code>. Green: the physics model is nil on every companion surface under Reduce Motion and each surface exposes a concise label naming the surface and state. Files: <code>app/Sources/Surfaces/MenuBarPopover.swift</code>, <code>app/Sources/Surfaces/FocusCapsule.swift</code>, <code>app/Sources/Surfaces/ReturnOverlay.swift</code>, <code>app/Tests/PraxmodoroTests/CompanionAccessibilityTests.swift</code>.</li>
-</ul>
-<h2>8. Hardening follow-ups from the M1 closeout</h2>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> 8.1 User-initiated check-in (⌘K) routed through <code>openCheckin()</code>. Red: <code>HardeningTests.testCheckinHasItsOwnKeyboardPath</code>. Green: the keyboard map and the command both carry it and the timer-held invariant is unchanged. Files: <code>app/Sources/KeyboardMap.swift</code>, <code>app/Sources/PraxmodoroApp.swift</code>, <code>app/Tests/PraxmodoroTests/HardeningTests.swift</code>.</li>
-<li><input checked="" disabled="" type="checkbox"> 8.2 Two-configuration schema parity against live containers. Red: <code>HardeningTests.testSchemaParityAcrossStoreConfigurations</code> (no <code>containerSchema</code>). Green: in-memory and on-disk containers expose identical entity names, attribute names, and attribute value types. Files: <code>app/Packages/PraxmodoroStore/Sources/PraxmodoroStore/LocalStore.swift</code>, <code>app/Tests/PraxmodoroTests/HardeningTests.swift</code>.</li>
-<li><input disabled="" type="checkbox"> 8.3 (BLOCKED — written and compiling; XCUITest cannot initialize while the host screen is locked) Keyboard UI coverage as real key events: begin, ⌘K, check-in <code>1</code>–<code>4</code>, <code>R</code>, ⌘N, capsule toggle. Red: <code>KeyboardLoopUITests.testWholeLoopByKeyboard</code> before the paths exist. Green: the UI test walks the loop with no pointer interaction. Files: <code>app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift</code>.</li>
-<li><input disabled="" type="checkbox"> 8.4 (BLOCKED — same host condition as 8.3) Launch-time first-run assertion. Red: <code>KeyboardLoopUITests.testFirstRunLaunchPresentsOnlyTheStartPath</code>. Green: start-path controls present, no running-session control, begin disabled until a task is named, no ambient surface self-opened. Files: <code>app/Tests/PraxmodoroUITests/KeyboardLoopUITests.swift</code>.</li>
-</ul>
-<h2>9. Close-out</h2>
-<ul>
-<li><input disabled="" type="checkbox"> 9.1 Full gauntlet and independent validation: <code>./scripts/verify-project.sh</code> exit 0, <code>npm run spec:validate</code> strict, <code>./scripts/smoke.sh</code> exit 0, <code>prd.json</code> and <code>progress.txt</code> carrying per-atom red→green evidence, and an independent fresh-context validator mapping every SPEC.md-level criterion to pass/fail/blocked before the change is archived and merged.</li>
+<li><strong>WHEN</strong> auto-return is true with <code>autoReturnAfter</code> set to the current process&#39;s live-observation start</li>
+<li><strong>THEN</strong> reconciliation SHALL append a return only when <code>breakEndInstant(cadence:)</code> is later than that boundary; an older break SHALL remain open on every later reconciliation, while a process that was live before the edge SHALL materialize it after wake</li>
 </ul>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/tasks.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/tasks.md</code></span>
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/timer-engine/spec.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/timer-engine/spec.md</code></span>
 </footer>
 </main>
 <script>

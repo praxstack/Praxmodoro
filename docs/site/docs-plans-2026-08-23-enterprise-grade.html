@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Design: add-companion-surfaces · Praxmodoro docs</title>
+<title>Enterprise-grade pass: CEO review plan · Praxmodoro docs</title>
 <style>/* Praxmodoro documentation — shared shell.
  *
  * Deliberately NOT a pastiche of the product's own Living Companion palette.
@@ -346,72 +346,104 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
-<div class="eyebrow">Active change · add-companion-surfaces</div>
-<h1>Design: add-companion-surfaces</h1>
-<p class="standfirst">M1 shipped one window containing five surfaces, a deterministic engine (PraxmodoroCore), a local append-only store (PraxmodoroStore), and a golden-tested physics port (Fiel…</p>
-<div class="meta"><span>1,600 words</span><span><code>openspec/changes/add-companion-surfaces/design.md</code></span></div>
-<article class="prose"><h2>Context</h2>
-<p>M1 shipped one window containing five surfaces, a deterministic engine (<code>PraxmodoroCore</code>), a local append-only store (<code>PraxmodoroStore</code>), and a golden-tested physics port (<code>FieldPhysics</code>). The engine rule that matters most here is already established and must not be weakened: remaining time is <code>f(transitions, now)</code> and ticks are presentation only. Adding surfaces is therefore mostly a <em>state-authority</em> problem, not a rendering problem — three more views that each need to show the time are three more chances to accidentally introduce a second clock.</p>
-<p>Inputs are binding: <code>AGENTS.md</code> (spec-first, TDD, deterministic timing, local-first, never-paywalled set), <code>SPEC.md</code> global invariants, the approved Living Companion mocks, and the four hardening follow-ups recorded in the M1 closeout entry of <code>progress.txt</code>.</p>
-<p>This document is the change&#39;s architecture record. Within the goal ledger tracking this milestone it is registered as the <strong>architecture</strong> artifact; <code>proposal.md</code> is the <strong>high-level design</strong> (scope, goals, non-goals, edition impact, measurable success) and <code>tasks.md</code> is the <strong>low-level design</strong> (exact files, exact failing test, exact green criterion, per atom). No parallel design tree is created — these three artifacts already carry that content and are the ones the repository&#39;s own workflow reads.</p>
-<h2>Goals / Non-Goals</h2>
-<p><strong>Goals:</strong> make a second clock structurally impossible; keep every new surface a pure projection; close the four hardening follow-ups with tests that could actually fail; keep the store schema and the event vocabulary untouched.</p>
-<p><strong>Non-Goals:</strong> global hotkeys, notifications, entitlements, agent-only (Dock-less) mode, AppKit window subclassing, sync, integrations, Pro/Enterprise content.</p>
-<h2>Decisions</h2>
-<ol>
-<li><p><strong>One <code>SessionSnapshot</code> value, one accessor, every surface reads it.</strong> <code>AppModel.snapshot(at: Date) -&gt; SessionSnapshot</code> projects the engine into everything a surface can legitimately render: phase, task line, next action, remaining interval, remaining <em>text</em>, status line, VoiceOver summary. The text formatting lives in the snapshot, not in each view, so &quot;the three surfaces agree&quot; is a property of one function rather than a coincidence of three copies. <code>FocusSurface</code> is migrated onto it in the same atom that introduces it, so there is never a moment where two formatting paths exist.
-<em>Alternatives:</em> let each surface call <code>model.remaining(at:)</code> and format locally — rejected: it is exactly the duplication the criterion forbids, and it makes the agreement test a tautology over three separate implementations. A <code>@Published</code> snapshot recomputed on a timer — rejected: that <em>is</em> a second clock, and it would drift across sleep.</p>
-<p><strong>Amended twice, by two independent reviews that both defeated the guard.</strong></p>
-<p>The first version relied on a structural test to forbid a second clock. g2&#39;s reviewer defeated it by adding a genuine drifting clock to <code>FocusSurface</code>: capture a baseline snapshot once, age it with <code>now.timeIntervalSince(base.now)</code> per tick, format with two separate <code>String(format: &quot;%02d&quot;, …)</code> calls joined by a colon. No banned substring, suite green.</p>
-<p>The response — hand the surfaces a <code>SessionSnapshot</code> value and closures instead of the model — was then claimed to make the exploit <em>structurally unwritable</em>. g4&#39;s reviewer falsified that claim too: <code>@State private var driftSeconds</code> aged by <code>.task { try? await Task.sleep(…) }</code>, formatted by string interpolation, needs no <code>Date</code>, <code>.now</code>, <code>Timer</code>, <code>TimelineView</code>, <code>AppModel</code> or <code>String(format:</code> at all. <code>Task.sleep</code> alone is a beat.</p>
-<p>The rule that actually holds is narrower and is stated as three checked barriers rather than one claim:</p>
-<ol>
-<li><strong>No raw interval.</strong> Companion surfaces take a <code>CompanionDisplay</code> — already-rendered strings and a phase, with no <code>TimeInterval</code> anywhere. This one is structural: there is no number to age.</li>
-<li><strong>No mutable state.</strong> No <code>@State</code>/<code>@StateObject</code> in those files, so there is nowhere to keep a drifting value.</li>
-<li><strong>No beat.</strong> No <code>.task</code>, <code>onAppear</code>, <code>onReceive</code>, <code>Task.sleep</code>, <code>asyncAfter</code>, <code>RunLoop</code>, <code>Timer</code>, <code>TimelineView</code> or clock type, so nothing can run on a schedule.</li>
-</ol>
-<p>Barriers 2 and 3 are lints and are described as lints. Together the three remove the two demonstrated failure modes; they are not a proof that no further one exists, and the test says so in as many words. <code>FocusSurface</code> remains the single surface that reads the clock, and only to ask the model for a fresh snapshot per tick.</p>
-</li>
-<li><p><strong><code>MenuBarExtra</code> + a <code>Window</code> scene with <code>windowLevel(.floating)</code>, not AppKit.</strong> Both surfaces are SwiftUI scenes in the existing <code>App</code> body. The capsule uses <code>.windowLevel(.floating)</code>, <code>.windowStyle(.hiddenTitleBar)</code>, <code>.windowResizability(.contentSize)</code> and <code>.defaultLaunchBehavior(.suppressed)</code> so it never opens itself. Opening and closing go through <code>@Environment(\.openWindow)</code> / <code>dismissWindow</code> driven by a <code>CommandGroup</code> entry, which is what gives the capsule its keyboard path.
-<em>Alternatives:</em> an <code>NSPanel</code> with <code>.floating</code> level via <code>NSViewRepresentable</code> — rejected: it reintroduces AppKit window lifecycle the SwiftUI scene graph already owns, and it is harder to drive from a UI test. <code>NSStatusItem</code> built by hand instead of <code>MenuBarExtra</code> — rejected: <code>MenuBarExtra</code> with <code>.menuBarExtraStyle(.window)</code> gives the same popover with scene-managed lifetime and no manual retain of the status item. The trade-off accepted here is that <code>MenuBarExtra</code> content is awkward to drive from XCUITest; that is why the popover&#39;s guarantees are pinned by unit tests over the view&#39;s control catalog and snapshot, and the capsule — which <em>is</em> a real window — carries the interface-level test.</p>
-</li>
-<li><p><strong>The return overlay is presentation state, not session state.</strong> <code>AppModel.returnPending</code> is an in-memory flag set by <code>endBreak()</code> and cleared by <code>acknowledgeReturn()</code>. It deliberately does not persist and does not append an event: the acknowledgement is not something that happened to the session, and inventing a <code>SessionEvent</code> kind for it would change the store schema for a UI beat. Consequence, accepted: relaunching mid-break and then ending the break still raises the overlay (correct), but relaunching <em>while the overlay is up</em> returns straight to focus (acceptable — the next action is still on the focus surface).
-<em>Alternative:</em> persist an <code>overlayAcknowledged</code> event — rejected on schema-stability grounds above.</p>
-</li>
-<li><p><strong>A user-initiated check-in (⌘K) is added rather than faking a due timer.</strong> The keyboard scenario requires driving check-in answers as real key events, and M1 only reached the check-in surface when one became due. Rather than expose a test-only hook, the loop gains the affordance a user would want anyway: check in now. It routes through the existing <code>openCheckin()</code>, so the timer-held invariant and the deferral behavior are unchanged.
-<em>Alternative:</em> a launch argument that forces a due check-in — rejected: a test-only path proves the test harness works, not the product.</p>
-</li>
-<li><p><strong>Accessibility alternates are proven by rasterization, not by reading source.</strong> A <code>SurfacePalette</code> owns the two branches (<code>background(reduceTransparency:)</code>, <code>primaryText(increasedContrast:)</code>) and the new surfaces use nothing else for their background and primary text. Tests use <code>ImageRenderer</code> to rasterize a probe built from those same tokens over a known backdrop and sample pixels: opacity is asserted by the backdrop being absent, contrast by computing the WCAG ratio from rendered luminances. The M1 source-scanning tests stay — they catch a <em>new</em> surface that bypasses the palette, which pixel probes cannot see.
-<em>Alternative:</em> full-surface snapshot images compared against committed reference PNGs — rejected: brittle against font and OS rendering changes, and it answers &quot;did anything change&quot; rather than &quot;is it opaque / is it legible&quot;.</p>
-<p><strong>Amended after g3&#39;s independent review.</strong> A verified colour recipe that nothing calls is not an accessibility alternate. Every companion surface must read <code>accessibilityReduceTransparency</code>, <code>accessibilityReduceMotion</code> and <code>colorSchemeContrast</code> and draw its background and primary text from <code>SurfacePalette</code>; <code>testCompanionSurfacesReadTheAccessibilityEnvironment</code> pins that wiring so the render-level proof cannot drift away from the real UI.</p>
-</li>
-<li><p><strong>Schema parity is measured between two live <code>ModelContainer</code>s.</strong> <code>LocalStore</code> exposes <code>containerSchema</code>; the test opens one in-memory store and one on-disk store in a temporary directory and compares entity names, attribute names, and attribute value types. The M1 test compared a static declaration to itself and could not fail; this one can.</p>
-</li>
-<li><p><strong>Verification commands become scripts.</strong> <code>scripts/focused.sh</code> runs the app unit suite only (the per-atom loop); <code>scripts/smoke.sh</code> builds, launches with <code>-praxmodoro-ephemeral-store</code>, confirms the process and window, and quits. Both are documented in the README next to the existing commands, so the per-atom and changed-surface checks are reproducible by name instead of by remembered argv.</p>
-</li>
-</ol>
-<h2>Data boundaries</h2>
-<p>No new persisted field, no new <code>SessionEvent</code> kind, no new model. <code>SessionSnapshot</code> is a derived value that never round-trips to storage. The return overlay&#39;s state is in-memory. Nothing in this change opens a socket, reads a calendar, or writes outside the app&#39;s Application Support directory — the existing <code>NetworkSilenceTests</code> structural harness continues to cover the new sources because it scans the whole <code>Sources</code> tree.</p>
-<h2>Dependency provenance</h2>
-<p>No new package. The capsule and popover are SwiftUI scenes; the physics stays the existing <code>FieldPhysics</code>/<code>FieldModel</code> port golden-tested against <code>companion-physics.js</code>. <code>ImageRenderer</code> is a platform API. This preserves the M1 dependency audit conclusion (research w2-effects-dependency-audit-004): no third-party rendering or effect package.</p>
-<h2>Rollback</h2>
-<p>Every atom is one commit against a feature branch. The scene additions are additive: removing the <code>MenuBarExtra</code> and capsule <code>Window</code> scenes from <code>PraxmodoroApp.body</code> and reverting <code>FocusSurface</code> to its local formatter restores M1 behavior exactly. The store is untouched, so there is no migration to reverse and no user data at risk.</p>
-<h2>Verification strategy</h2>
+<div class="eyebrow">Generated tooling prompts</div>
+<h1>Enterprise-grade pass: CEO review plan</h1>
+<p class="standfirst">Generated 2026-08-23 by /plan-ceo-review (+ office-hours builder lens, grilling/domain-modeling discipline). Mode: SELECTIVE EXPANSION, meaning hold the ticketed roadmap (#…</p>
+<div class="meta"><span>696 words</span><span><code>docs/plans/2026-08-23-enterprise-grade.md</code></span></div>
+<article class="prose"><p>Generated 2026-08-23 by /plan-ceo-review (+ office-hours builder lens, grilling/domain-modeling discipline).
+Mode: <strong>SELECTIVE EXPANSION</strong>, meaning hold the ticketed roadmap (#7, #17–#34) and cherry-pick hardening and truth-telling work from two parallel code audits.
+Authority: Prax granted autonomous subagent fan-out and decision authority for this review; every gate below records its ruling and remains vetoable.</p>
+<h2>Premise challenge</h2>
 <ul>
-<li><strong>Per atom:</strong> the named failing test first, observed red, then minimal implementation, then <code>./scripts/focused.sh</code> green.</li>
-<li><strong>Single-source-of-truth:</strong> one behavioral test asserting the three surfaces&#39; rendered strings are identical from one snapshot, plus one structural test asserting no surface source contains a timer/counter construction and that the snapshot accessor is the only source of rendered remaining time.</li>
-<li><strong>Accessibility:</strong> render-level pixel probes (transparency, contrast) plus the retained structural scans plus the Reduce-Motion physics-absence assertions extended to the new surfaces.</li>
-<li><strong>Interface:</strong> UI tests drive begin, ⌘K, check-in <code>1</code>–<code>4</code>, <code>R</code>, ⌘N, and the capsule command as real key events against a hermetic ephemeral store, and assert the first-run launch state.</li>
-<li><strong>Whole change:</strong> <code>./scripts/verify-project.sh</code> (regeneration staleness gate, both package suites, strict format lint, build, full signed suite including UI tests), <code>npm run spec:validate</code> strict, <code>./scripts/smoke.sh</code>, and an independent fresh-context validator against <code>SPEC.md</code> before archive.</li>
+<li><strong>Is &quot;enterprise-grade&quot; the right problem?</strong> Rephrased: the app must earn daily-driver <em>trust</em>. Features are already charted. What is missing is the guarantee that the app never loses a byte, never shows a lie, and never fails silently. That is the actual ask, and it is the right one: session history is the product&#39;s memory, and three defects put that memory at risk today.</li>
+<li><strong>What if we do nothing?</strong> The store-open failure path silently disables all persistence while looking normal; 26 <code>try?</code> sites can diverge on-screen state from the persisted record; the first schema change quarantines the entire history without telling anyone. None of this is hypothetical. It is written in the code.</li>
+<li><strong>Framing ruled out:</strong> adding an Enterprise tier (contradicts issue #34, owner-authorized), and adding net-new feature surface beyond the ticketed roadmap (premature; the roadmap is already the feature work).</li>
 </ul>
+<h2>Existing-code leverage (audit finding)</h2>
+<p>Four capabilities are fully built and idle; wiring them is cheaper than building anything:</p>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>Dead capability</th>
+<th>Where</th>
+<th>Unlocks</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>checkinBecameDue()</code> scheduling path</td>
+<td>AppModel.swift:462–486</td>
+<td>Coach-initiated check-ins</td>
+</tr>
+<tr>
+<td><code>.edit</code> event API (<code>editEvent</code>)</td>
+<td>LocalStore.swift:179–181</td>
+<td>Real &quot;make the step smaller&quot;</td>
+</tr>
+<tr>
+<td><code>clockAnomaly</code> event kind</td>
+<td>LocalStore.swift:12</td>
+<td>Honest-time guarantee</td>
+</tr>
+<tr>
+<td><code>focusElapsed(at:)</code></td>
+<td>SessionTimeline.swift:9–16</td>
+<td>Elapsed time for flow blocks</td>
+</tr>
+</tbody></table></div>
+<h2>Approaches considered</h2>
+<pre><code>APPROACH A: Hardening minimum
+  Summary: fix the three data-loss risks + the parked-thoughts defect only.
+  Effort: S · Risk: Low
+  Pros: smallest diff; kills every data-loss path.
+  Cons: leaves the lying surfaces (00:00 breaks, fake &quot;smaller step&quot;) that erode trust daily.
+APPROACH B: Trust pass (RECOMMENDED)
+  Summary: data-safety triad + wire all four dead capabilities + surface-truth fixes +
+  diagnostics + distribution base. Two OpenSpec changes, ~17 atoms.
+  Effort: M/L · Risk: Low-Med
+  Pros: the app stops being able to lie; coach participates; years-of-use durability.
+  Cons: bigger than A; distribution item needs an owner decision (Apple Developer account).
+APPROACH C: B + all product refinements
+  Summary: everything from both audits including presets management, nudge granularity,
+  capacity restatement, reflection notes.
+  Effort: L · Risk: Med (collides with unlanded tickets #20–#22, #30)
+  Pros: maximal. Cons: churn against moving surfaces; defers poorly.
+</code></pre>
+<p><strong>Ruling: Approach B</strong>, SELECTIVE EXPANSION. A is under-scoped for a trust goal; C drags unlanded feature surfaces into a hardening pass.</p>
+<h2>Accepted scope (filed as tickets, ready-for-agent)</h2>
+<p><strong>Change lane 1, data trust (<code>harden-data-trust</code>):</strong></p>
+<ol>
+<li>Surface persistence-failure states (nil-store alert, recovery notice shown, orphan-session prune)</li>
+<li>Persist-before-mutate; stop swallowing store errors; one observable error channel</li>
+<li>VersionedSchema v1 + migration plan before any model change</li>
+<li>Wire <code>clockAnomaly</code> on wake/jump; clamp negative remaining</li>
+<li>Local diagnostics: OSLog categories + last-session breadcrumb</li>
+<li>Store index + O(1) orderIndex derivation</li>
+<li>Parked-thoughts bleed defect (clear on begin)</li>
+<li>Backup escape hatch (amendment to #25: reveal store in Finder; auto-copy on version mismatch)</li>
+</ol>
+<p><strong>Change lane 2, companion presence grade (<code>companion-presence-grade</code>):</strong>
+9. Coach-initiated check-ins (gentle cadence, off by default)
+10. Break countdown on popover/capsule (no more 00:00 during breaks)
+11. &quot;Smaller step&quot; really edits the step (via <code>.edit</code>)
+12. Flow blocks show counting-up elapsed
+13. Capsule phase-aware controls (parity with popover)
+14. Name the drift: optional detour note on check-in
+15. Review shows durations + honest session totals
+16. Capsule joins all Spaces / fullscreen auxiliary</p>
+<p><strong>Operational (owner decision embedded):</strong>
+17. Developer ID signing, notarization, minimal update story</p>
+<h2>Deferred to future (not forgotten)</h2>
+<p>Capacity restatement at breaks (design-sensitive, touches check-in cadence) · named custom presets with arrival ramps · ±5-minute nudges and adjustments while held · one-line session reflection at close-out (let #22 land first) · multi-display pinning.</p>
+<h2>Verified non-problems (checked, not assumed)</h2>
+<p>Quit-during-session and sleep/wake replay are correct by construction (canonical timestamps, pinned tests). Corruption recovery mechanics preserve the old file and start fresh (tested). Append-only discipline holds. Time Machine covers the store location by default.</p>
 </article>
 <footer class="docfoot">
-  <a class="srcbtn" href="../../openspec/changes/add-companion-surfaces/design.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
-  <span class="srcpath"><code>openspec/changes/add-companion-surfaces/design.md</code></span>
+  <a class="srcbtn" href="../../docs/plans/2026-08-23-enterprise-grade.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>docs/plans/2026-08-23-enterprise-grade.md</code></span>
 </footer>
 </main>
 <script>
