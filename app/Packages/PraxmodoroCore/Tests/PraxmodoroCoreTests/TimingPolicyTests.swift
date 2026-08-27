@@ -20,6 +20,43 @@ import Testing
         #expect(promotion?.state == .running)
     }
 
+    // The promotion is seamless by definition: it may never change state.
+    // A hold, break, or close taken during the arrival window must survive
+    // the promotion instant (spec: reconciled — "state unchanged").
+
+    @Test func testHoldDuringArrivalSurvivesPromotionInstant() throws {
+        var session = Session(policy: .gentleStart, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        try session.apply(.hold, at: t0.addingTimeInterval(2 * 60))
+        // Reconcile after the 5-minute arrival boundary: the place is still
+        // held, and no focus time accrued while held.
+        let after = t0.addingTimeInterval(6 * 60)
+        let reconciled = session.reconciled(at: after)
+        #expect(reconciled.state(at: after) == .held)
+        let remaining = try #require(reconciled.remaining(at: after))
+        #expect(remaining == TimeInterval(23 * 60))
+    }
+
+    @Test func testBreakDuringArrivalSurvivesPromotionInstant() throws {
+        var session = Session(policy: .gentleStart, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        try session.apply(.startBreak, at: t0.addingTimeInterval(2 * 60))
+        // Crossing the arrival boundary must not force a return to focus.
+        let after = t0.addingTimeInterval(6 * 60)
+        let reconciled = session.reconciled(at: after)
+        #expect(reconciled.state(at: after) == .onBreak)
+    }
+
+    @Test func testCloseDuringArrivalStaysClosed() throws {
+        var session = Session(policy: .gentleStart, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        try session.apply(.close, at: t0.addingTimeInterval(2 * 60))
+        let after = t0.addingTimeInterval(6 * 60)
+        let reconciled = session.reconciled(at: after)
+        #expect(reconciled.state(at: after) == .closed)
+        #expect(reconciled.transitions == session.transitions)
+    }
+
     @Test func testFlowNeverAutoTransitions() throws {
         var session = Session(policy: .flow, startedAt: nil)
         try session.apply(.begin, at: t0)

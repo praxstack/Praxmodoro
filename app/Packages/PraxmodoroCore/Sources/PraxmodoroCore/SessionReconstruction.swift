@@ -70,7 +70,14 @@ public extension Session {
             !copy.transitions.contains(where: { $0.at == promotion && $0.intent == nil })
         {
             let index = copy.transitions.firstIndex(where: { $0.at > promotion }) ?? copy.transitions.endIndex
-            copy.transitions.insert(TransitionRecord(intent: nil, state: .running, at: promotion), at: index)
+            // Seamless means state-preserving: the record is only written when
+            // the session was running at the promotion instant. A hold, break,
+            // or close taken during the arrival window otherwise gets silently
+            // overridden — appending `.running` after it resumes a held place,
+            // ends a break early, or resurrects a closed session.
+            if index > 0, copy.transitions[index - 1].state == .running {
+                copy.transitions.insert(TransitionRecord(intent: nil, state: .running, at: promotion), at: index)
+            }
         }
         var advanced = true
         while advanced {
