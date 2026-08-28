@@ -58,11 +58,16 @@ public extension Session {
     ///
     /// Callers decide when the rhythm should continue: pass `autoReturn`
     /// only while the user is plausibly present, or an absence fills with
-    /// materialized cycles nobody lived through.
+    /// materialized cycles nobody lived through. `witnessedSince` is the
+    /// witness floor — the earliest instant the caller was present. When
+    /// given, auto-return records materialize only at or after it, so a
+    /// relaunch after an absence backdates the honest expiry but never
+    /// fills the gap with phantom focus blocks (design decision 11).
     func reconciled(
         at now: Date,
         blockEnd: BlockEndBehaviour = .offeredDefault,
         autoReturn: TimeInterval? = nil,
+        witnessedSince: Date? = nil,
         cadence: LongBreakCadence? = nil
     ) -> Session {
         var copy = self
@@ -103,9 +108,10 @@ public extension Session {
                     } else {
                         autoReturn
                     }
-                if last.at.addingTimeInterval(length) <= now {
+                let returnAt = last.at.addingTimeInterval(length)
+                if returnAt <= now, returnAt >= (witnessedSince ?? .distantPast) {
                     copy.transitions.append(
-                        TransitionRecord(intent: nil, state: .running, at: last.at.addingTimeInterval(length)))
+                        TransitionRecord(intent: nil, state: .running, at: returnAt))
                     advanced = true
                 }
             }

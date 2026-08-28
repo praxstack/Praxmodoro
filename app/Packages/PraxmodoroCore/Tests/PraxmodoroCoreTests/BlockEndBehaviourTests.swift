@@ -162,3 +162,58 @@ import Testing
         #expect(session.reconciled(at: after, blockEnd: .promptFirst).state(at: after) == .held)
     }
 }
+
+/// Design decision 11: the caller decides when the rhythm continues. The
+/// witness floor tells reconciliation when the caller became present again;
+/// auto-return records materialize only at or after it, so a relaunch after
+/// an absence never fills with focus blocks nobody lived through.
+@Suite struct AutoReturnWitnessTests {
+    private let t0 = Date(timeIntervalSinceReferenceDate: 800_000_000)
+
+    private func running() throws -> Session {
+        var session = Session(policy: .classic, startedAt: nil)
+        try session.apply(.begin, at: t0)
+        return session
+    }
+
+    @Test func testAnUnwitnessedBreakEndNeverAutoReturns() throws {
+        // Quit five minutes into the block; relaunch three hours later. The
+        // expiry backdates honestly, but the break's end fell inside the
+        // absence — the rhythm must wait for the user, not fill the gap.
+        let session = try running()
+        let relaunch = t0.addingTimeInterval(3 * 60 * 60)
+        let reconciled = session.reconciled(
+            at: relaunch, blockEnd: .offeredDefault, autoReturn: 5 * 60,
+            witnessedSince: relaunch)
+        #expect(reconciled.state(at: relaunch) == .onBreak)
+        #expect(reconciled.transitions.filter { $0.state == .onBreak }.count == 1)
+        #expect(reconciled.transitions.last?.at == t0.addingTimeInterval(25 * 60))
+    }
+
+    @Test func testAWitnessedBreakEndStillAutoReturns() throws {
+        // Relaunch mid-break: the break's end lies ahead of the witness
+        // floor, so the return materializes at its canonical instant.
+        var session = try running()
+        try session.apply(.startBreak, at: t0.addingTimeInterval(25 * 60))
+        let relaunch = t0.addingTimeInterval(27 * 60)
+        let later = t0.addingTimeInterval(31 * 60)
+        let reconciled = session.reconciled(
+            at: later, blockEnd: .offeredDefault, autoReturn: 5 * 60,
+            witnessedSince: relaunch)
+        #expect(reconciled.state(at: later) == .running)
+        #expect(reconciled.transitions.contains { $0.at == t0.addingTimeInterval(30 * 60) && $0.state == .running })
+    }
+
+    @Test func testNoFloorKeepsTheLiveCatchUpUnchanged() throws {
+        // Without a floor — or with one that predates the whole session —
+        // the live-app catch-up materializes the full rhythm, exactly as
+        // the sleep/wake tests above pin it.
+        let session = try running()
+        let wake = t0.addingTimeInterval(62 * 60)
+        let floored = session.reconciled(
+            at: wake, blockEnd: .offeredDefault, autoReturn: 5 * 60, witnessedSince: t0)
+        let free = session.reconciled(at: wake, blockEnd: .offeredDefault, autoReturn: 5 * 60)
+        #expect(floored.transitions == free.transitions)
+        #expect(floored.state(at: wake) == .running)
+    }
+}
