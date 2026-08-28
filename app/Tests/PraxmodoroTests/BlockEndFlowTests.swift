@@ -140,6 +140,60 @@ import PraxmodoroStore
         #expect(model.snapshot(at: ticker.now).phase == .onBreak)
     }
 
+    @Test func testRelaunchAfterAnAbsenceNeverFillsWithPhantomCycles() throws {
+        // Quit five minutes into the block; relaunch three hours later. The
+        // expiry backdates honestly, but the absence must not fill with
+        // auto-return cycles nobody lived through (design decision 11) —
+        // not in the surface, not in the snapshot, and above all not in
+        // the store when the first intent materializes.
+        let store = try LocalStore(inMemory: true)
+        let defaults = scratchDefaults()
+        let ticker = Ticker(t0)
+        let model = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        model.setRhythm(rhythm)
+        model.policy = .classic
+        try model.begin()
+
+        ticker.now = t0.addingTimeInterval(3 * 60 * 60)
+        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
+        try relaunched.restore()
+        #expect(relaunched.snapshot(at: ticker.now).phase == .onBreak)
+        #expect(relaunched.effectiveSurface(at: ticker.now) == .onBreak)
+
+        try relaunched.closeSession()
+        let events = try store.events(sessionID: relaunched.sessionID!)
+        let running = events.filter { $0.kind == .transition && $0.payload == "running" }
+        #expect(running.count == 1, "no focus blocks may materialize during an absence")
+    }
+
+    @Test func testRelaunchMidBreakStillHonoursAutoReturn() throws {
+        // Relaunch two minutes into a five-minute break: the break's end is
+        // witnessed, so the rhythm continues at its canonical instant.
+        let store = try LocalStore(inMemory: true)
+        let defaults = scratchDefaults()
+        let ticker = Ticker(t0)
+        let model = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        model.setRhythm(rhythm)
+        model.policy = .classic
+        try model.begin()
+
+        // The block expires at 25:00; relaunch at 27:00, mid-break.
+        ticker.now = t0.addingTimeInterval(27 * 60)
+        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
+        try relaunched.restore()
+        #expect(relaunched.snapshot(at: ticker.now).phase == .onBreak)
+        // Past the break's canonical end, the return fires as witnessed.
+        ticker.now = t0.addingTimeInterval(31 * 60)
+        #expect(relaunched.snapshot(at: ticker.now).phase == .running)
+        #expect(relaunched.effectiveSurface(at: ticker.now) == .focus)
+    }
+
     // MARK: 6.3 — rewind / forward
 
     @Test func testForwardMinuteIsARecordedAdjustment() throws {

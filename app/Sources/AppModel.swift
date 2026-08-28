@@ -217,6 +217,12 @@ final class AppModel {
     private let soundScheduler: SoundCueScheduling
     private let notificationScheduler: NotificationScheduling
 
+    /// The instant this process began witnessing the session — the
+    /// auto-return witness floor (design decision 11). A relaunch after an
+    /// absence backdates the honest expiry, but the rhythm never fills the
+    /// gap with focus blocks nobody lived through.
+    private let witnessedSince: Date
+
     init(
         store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite),
         clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
@@ -229,6 +235,7 @@ final class AppModel {
         self.defaults = defaults
         self.soundScheduler = soundScheduler
         self.notificationScheduler = notificationScheduler
+        self.witnessedSince = clock()
         self.motionStilled = defaults.bool(forKey: Self.motionStilledKey)
         self.rhythm = RhythmPreferences.load(from: defaults)
         self.sound = SoundPreferences.load(from: defaults)
@@ -307,11 +314,14 @@ final class AppModel {
 
     /// The one reconciliation every read and intent goes through: the user's
     /// block-end behaviour, and — while the app is alive to witness it — the
-    /// auto-return rhythm with the cadence-aware break length.
+    /// auto-return rhythm with the cadence-aware break length. The witness
+    /// floor keeps "alive to witness it" honest across a relaunch: a break
+    /// end that fell inside an absence never auto-returns (decision 11).
     private func reconciledSession(_ session: Session, at now: Date) -> Session {
         session.reconciled(
             at: now, blockEnd: rhythm.blockEnd,
             autoReturn: rhythm.autoReturn ? session.policy.suggestedBreak : nil,
+            witnessedSince: witnessedSince,
             cadence: rhythm.cadence)
     }
 
