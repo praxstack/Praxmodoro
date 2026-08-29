@@ -59,12 +59,66 @@ final class AppModel {
     private(set) var notifications: NotificationPreferences = .factory
 
     func setRhythm(_ preferences: RhythmPreferences) {
+        let previousRhythm = rhythm
+        let previousPolicy = policy
         rhythm = preferences
         preferences.save(to: defaults)
-        if !availablePolicies.contains(policy) {
-            policy = availablePolicies.first ?? .gentleStart
-        }
+        reconcilePolicy(after: previousPolicy, previousRhythm: previousRhythm)
         syncSound(at: clock())
+    }
+
+    /// Keep the initiation picker valid when presets are edited or removed.
+    private func reconcilePolicy(
+        after previousPolicy: TimingPolicy,
+        previousRhythm: RhythmPreferences
+    ) {
+        guard !availablePolicies.contains(policy) else { return }
+        if previousPolicy.name.hasPrefix("custom:"),
+            let remapped = remappedCustomPolicy(from: previousPolicy, previousRhythm: previousRhythm),
+            availablePolicies.contains(remapped)
+        {
+            policy = remapped
+            return
+        }
+        policy = availablePolicies.first ?? .gentleStart
+    }
+
+    private func remappedCustomPolicy(
+        from previous: TimingPolicy,
+        previousRhythm: RhythmPreferences
+    ) -> TimingPolicy? {
+        guard let prevFocus = previous.focus else { return nil }
+        let prevBreak = previous.suggestedBreak
+        guard
+            let newFocus = mapPresetValue(
+                prevFocus,
+                from: previousRhythm.focusPresets,
+                to: rhythm.focusPresets,
+                fallback: TimingPolicy.classic.focus),
+            let newBreak = mapPresetValue(
+                prevBreak,
+                from: previousRhythm.breakPresets,
+                to: rhythm.breakPresets,
+                fallback: TimingPolicy.classic.suggestedBreak)
+        else { return nil }
+        return TimingPolicy.custom(
+            arrival: previous.arrival, focus: newFocus, suggestedBreak: newBreak)
+    }
+
+    private func mapPresetValue(
+        _ value: TimeInterval,
+        from oldPresets: [TimeInterval],
+        to newPresets: [TimeInterval],
+        fallback: TimeInterval?
+    ) -> TimeInterval? {
+        if let index = oldPresets.firstIndex(of: value) {
+            guard newPresets.indices.contains(index) else { return nil }
+            return newPresets[index]
+        }
+        if oldPresets.isEmpty, let fallback, value == fallback {
+            return newPresets.isEmpty ? fallback : nil
+        }
+        return nil
     }
 
     func setSound(_ preferences: SoundPreferences) {
@@ -643,6 +697,8 @@ final class AppModel {
         try current.apply(.close, at: now)
         session = current
         try appendTransition(.closed, at: now)
+        returnPending = false
+        checkinPending = false
         surface = .review
         syncSound(at: now)
     }
