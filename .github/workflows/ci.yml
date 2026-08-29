@@ -13,8 +13,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Mirrors .cursor/environment.json — fast Linux gate for Cloud Agents + PR signal
+  # while macos-latest queues. Full Swift/Xcode verification stays in `checks`.
+  cloud-env:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cloud environment install
+        run: npm ci && npm run spec:validate && npm run docs:build
+
   checks:
     runs-on: macos-latest
+    needs: cloud-env
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
