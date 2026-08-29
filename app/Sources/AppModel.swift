@@ -61,6 +61,9 @@ final class AppModel {
     func setRhythm(_ preferences: RhythmPreferences) {
         rhythm = preferences
         preferences.save(to: defaults)
+        if !availablePolicies.contains(policy) {
+            policy = availablePolicies.first ?? .gentleStart
+        }
         syncSound(at: clock())
     }
 
@@ -83,6 +86,7 @@ final class AppModel {
 
     func handleSystemWake() {
         soundScheduler.cancelExpiredChimes(at: clock())
+        skipPastBlockStartOnNextSync = true
     }
 
     // MARK: Sound direction (spec: "Sound cues, all optional"). Pure policy
@@ -147,6 +151,8 @@ final class AppModel {
     private var tickState: [SoundCue: Bool] = [:]
     private var scheduledChime: (cue: SoundCue, at: Date)?
     private var pendingBlockStartAt: Date?
+    /// Suppresses one retro block-start after wake cancelled expired chimes.
+    private var skipPastBlockStartOnNextSync = false
 
     private func syncSound(at now: Date) {
         let phase = snapshot(at: now).phase
@@ -180,7 +186,7 @@ final class AppModel {
             }
         }
         if scheduledChime?.cue != desired?.cue || scheduledChime?.at != desired?.at {
-            if let scheduledChime {
+            if let scheduledChime, scheduledChime.at > now {
                 soundScheduler.cancelScheduledChime(scheduledChime.cue, at: scheduledChime.at)
             }
             if let desired {
@@ -190,10 +196,12 @@ final class AppModel {
         }
         if let instant = pendingBlockStartAt {
             pendingBlockStartAt = nil
-            if sound.blockStart {
+            let past = instant <= now
+            if sound.blockStart, !(past && skipPastBlockStartOnNextSync) {
                 soundScheduler.scheduleChime(.blockStart, at: instant, volume: sound.masterVolume)
             }
         }
+        skipPastBlockStartOnNextSync = false
         syncNotifications(at: now)
     }
 
@@ -599,7 +607,9 @@ final class AppModel {
         returnPending = false
         if checkinPending {
             checkinPending = false
-            surface = .checkin
+            if let session, session.state(at: clock()) != .closed {
+                surface = .checkin
+            }
         }
         fieldPulse += 1
     }

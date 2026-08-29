@@ -10,8 +10,10 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  # Manual re-triggers should not cancel an in-flight run (billing stalls
+  # already leave jobs queued long enough).
+  cancel-in-progress: ${{ github.event_name != 'workflow_dispatch' }}
 
 jobs:
   # Mirrors .cursor/environment.json — fast Linux gate for Cloud Agents + PR signal

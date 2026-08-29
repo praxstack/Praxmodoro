@@ -181,6 +181,25 @@ struct PraxmodoroApp: App {
                 } label: {
                     Label("Praxmodoro", systemImage: "circle.dotted")
                         .accessibilityLabel("Praxmodoro")
+                        // The label stays mounted when every window is closed,
+                        // so date-edge observation and wake handling survive
+                        // without opening the popover.
+                        .background {
+                            TimelineView(.periodic(from: .now, by: 1)) { context in
+                                Color.clear
+                                    .frame(width: 0, height: 0)
+                                    .accessibilityHidden(true)
+                                    .onChange(of: context.date) {
+                                        try? model.observeDerivedPhase(at: context.date)
+                                    }
+                            }
+                        }
+                        .onReceive(
+                            NSWorkspace.shared.notificationCenter.publisher(
+                                for: NSWorkspace.didWakeNotification)
+                        ) { _ in
+                            model.handleSystemWake()
+                        }
                 }
                 .menuBarExtraStyle(.window)
             }
