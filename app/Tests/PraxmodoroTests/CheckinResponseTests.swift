@@ -1,8 +1,8 @@
 import Foundation
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroStore
 
 /// GitHub #3 — the check-in answers you back.
 ///
@@ -30,10 +30,11 @@ import PraxmodoroStore
     @Test func testFocusShowsTheAnswerResponse() throws {
         for answer in [CheckinAnswer.stillFits, .smallerStep, .drifted] {
             let model = try answered(answer)
-            let surface = FocusSurface(model: model)
+            let surface = FocusSurface(model: model, snapshot: model.snapshot(at: t0))
             #expect(model.surface == .focus)
-            #expect(surface.checkinResponseText == answer.response,
-                    "\(answer) must be answered in its own words")
+            #expect(
+                surface.checkinResponseText == answer.response,
+                "\(answer) must be answered in its own words")
         }
     }
 
@@ -57,19 +58,20 @@ import PraxmodoroStore
         let model = try answered(.smallerStep)
 
         try model.closeSession()
-        model.surface = .initiate
+        model.beginNextSession()
         model.taskTitle = "A fresh task"
         try model.begin()
 
         #expect(model.lastCheckinResponse == nil, "a new session must not inherit the old session's response")
-        #expect(FocusSurface(model: model).checkinResponseText == nil)
+        #expect(FocusSurface(model: model, snapshot: model.snapshot(at: t0)).checkinResponseText == nil)
     }
 
     // VoiceOver hears the response as part of the surface, not as a silent
     // visual change (spec: complete accessibility alternates).
     @Test func testResponseCarriesItsOwnAccessibilityText() throws {
         let model = try answered(.drifted)
-        let text = try #require(FocusSurface(model: model).checkinResponseText)
+        let text = try #require(
+            FocusSurface(model: model, snapshot: model.snapshot(at: t0)).checkinResponseText)
         #expect(text.contains("information"), "the drifted response names the detour as information")
         #expect(!text.isEmpty && text.count < 120, "responses must stay concise enough to be spoken")
     }

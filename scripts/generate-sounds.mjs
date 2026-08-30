@@ -56,6 +56,7 @@ function chime(freqs, amp) {
 
 mkdirSync(OUT, { recursive: true });
 const files = {
+  "chime-block-start.wav": chime([392, 523.25], 0.26), // G4 → C5, a soft arrival into focus
   "tick-focus.wav": tick(1050, 0.22),
   "tick-break.wav": tick(700, 0.18),
   "chime-focus-end.wav": chime([523.25, 659.25], 0.3), // C5 → E5, rising: the block completed

@@ -1,21 +1,19 @@
 import SwiftUI
 
-/// Build provenance shown in About (spec: app-scaffold "Deterministic
-/// versioning and provenance"). Values are stamped by scripts/generate.sh
+/// Build provenance shown in About (spec: app-scaffold "Deterministic build
+/// provenance"). Values are stamped by scripts/generate.sh
 /// into Generated/BuildProvenance.swift.
 struct Provenance {
     let version: String
     let gitSHA: String
-    let edition: String
 
     static let current = Provenance(
         version: BuildProvenance.version,
-        gitSHA: BuildProvenance.gitSHA,
-        edition: BuildProvenance.edition
+        gitSHA: BuildProvenance.gitSHA
     )
 
     var aboutText: String {
-        "Praxmodoro \(version) (\(gitSHA)) · \(edition.capitalized) edition · local-first, no account"
+        "Praxmodoro \(version) (\(gitSHA)) · local-first, no account"
     }
 }
 

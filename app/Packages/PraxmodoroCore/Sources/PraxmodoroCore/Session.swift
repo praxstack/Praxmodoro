@@ -44,7 +44,7 @@ public struct TransitionRecord: Equatable, Sendable, Codable {
     }
 }
 
-/// The deterministic session value. Pure Foundation; UI-free and edition-free.
+/// The deterministic session value. Pure Foundation; UI-free and capability-registry-independent.
 public struct Session: Equatable, Sendable, Codable {
     public let policy: TimingPolicy
     public internal(set) var transitions: [TransitionRecord]

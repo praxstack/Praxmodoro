@@ -1,8 +1,9 @@
 import Foundation
-import Testing
-@testable import Praxmodoro
 import PraxmodoroCore
 import PraxmodoroStore
+import Testing
+
+@testable import Praxmodoro
 
 @MainActor
 @Suite struct InitiateSurfaceTests {
@@ -69,5 +70,81 @@ import PraxmodoroStore
         try model.begin()
         let remaining = try #require(model.remaining(at: t0.addingTimeInterval(10 * 60)))
         #expect(remaining == TimeInterval(15 * 60))
+    }
+}
+
+@MainActor
+@Suite struct SurfaceRoutingIntentTests {
+    private var sourcesRoot: URL {
+        URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Sources")
+    }
+
+    @Test func testBeginNextSessionPreservesTaskAndPreferences() throws {
+        let defaultsName = "SurfaceRoutingIntentTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: defaultsName))
+        defer { defaults.removePersistentDomain(forName: defaultsName) }
+        let model = AppModel(
+            store: try LocalStore(inMemory: true),
+            clock: { Date(timeIntervalSinceReferenceDate: 800_000_000) }, defaults: defaults)
+        let rhythm = RhythmPreferences(
+            focusPresets: [42 * 60], breakPresets: [7 * 60], blockEnd: .promptFirst,
+            autoReturn: true)
+        let sound = SoundPreferences(masterVolume: 0.35)
+        let notifications = NotificationPreferences(
+            blockEndText: "A custom block note.", breakEndText: "A custom break note.")
+        model.taskTitle = "Edit the conference talk outline"
+        model.firstAction = "Mark the section that already feels done."
+        model.setRhythm(rhythm)
+        model.setSound(sound)
+        model.setNotifications(notifications)
+        try model.begin()
+        try model.parkThought("Ask Mira about the demo laptop")
+        try model.closeSession()
+        #expect(model.surface == .review)
+        let reviewedSession = model.session
+        let reviewedSessionID = model.sessionID
+        let reviewedThoughts = model.parkedThoughts
+
+        model.beginNextSession()
+
+        #expect(model.surface == .initiate)
+        #expect(model.taskTitle == "Edit the conference talk outline")
+        #expect(model.firstAction == "Mark the section that already feels done.")
+        #expect(model.rhythm == rhythm)
+        #expect(model.sound == sound)
+        #expect(model.notifications == notifications)
+        #expect(model.session == reviewedSession)
+        #expect(model.sessionID == reviewedSessionID)
+        #expect(model.parkedThoughts == reviewedThoughts)
+    }
+
+    @Test func testSurfaceSetterIsPrivateToTheModel() throws {
+        let source = try String(
+            contentsOf: sourcesRoot.appendingPathComponent("AppModel.swift"), encoding: .utf8)
+        #expect(
+            source.range(
+                of: #"private\(set\)\s+var\s+surface\s*:\s*Surface"#,
+                options: .regularExpression) != nil,
+            "AppModel.surface must be read-only outside the model")
+    }
+
+    @Test func testSurfacesDoNotAssignModelSurface() throws {
+        let surfaces = sourcesRoot.appendingPathComponent("Surfaces")
+        let enumerator = try #require(
+            FileManager.default.enumerator(at: surfaces, includingPropertiesForKeys: nil))
+        var scanned = 0
+
+        for case let file as URL in enumerator
+        where file.pathExtension == "swift" {
+            scanned += 1
+            let source = try String(contentsOf: file, encoding: .utf8)
+            #expect(
+                source.range(of: #"model\.surface\s*="#, options: .regularExpression) == nil,
+                "\(file.lastPathComponent) assigns model.surface directly")
+        }
+
+        #expect(scanned > 0, "surface source scan must not be empty")
     }
 }

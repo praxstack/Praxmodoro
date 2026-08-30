@@ -1,9 +1,9 @@
 import Foundation
 import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroStore
 
 /// Spec: companion-surfaces "Return overlay presents the exact next action".
 /// Coming back from a break, the way back should be read, not remembered.
@@ -111,7 +111,44 @@ import PraxmodoroStore
 
         model.acknowledgeReturn()
 
-        #expect(try store.events(sessionID: sessionID).count == before,
-                "acknowledging the return overlay must not append an event")
+        #expect(
+            try store.events(sessionID: sessionID).count == before,
+            "acknowledging the return overlay must not append an event")
+    }
+
+    @Test func testCheckinWaitsBehindReturnOverlayWithoutDuplicateHold() throws {
+        let model = try modelOnBreak()
+        try model.endBreak()
+        let store = try #require(model.store)
+        let sessionID = try #require(model.sessionID)
+        let heldBefore = try store.events(sessionID: sessionID)
+            .count { $0.kind == .transition && $0.payload == "held" }
+
+        try model.openCheckin()
+        let phaseBeforeAcknowledgement = model.snapshot(at: t0.addingTimeInterval(7 * 60)).phase
+        let heldAfterFirstRequest = try store.events(sessionID: sessionID)
+            .count { $0.kind == .transition && $0.payload == "held" }
+        try model.openCheckin()
+        let heldAfterSecondRequest = try store.events(sessionID: sessionID)
+            .count { $0.kind == .transition && $0.payload == "held" }
+
+        #expect(phaseBeforeAcknowledgement == .held)
+        #expect(model.surface == .focus, "the return card must remain over focus")
+        #expect(model.returnPending, "a check-in request must not silently dismiss the return card")
+        #expect(model.checkinPending, "the requested check-in must wait behind the card")
+        #expect(heldAfterFirstRequest == heldBefore + 1)
+        #expect(heldAfterSecondRequest == heldAfterFirstRequest, "a repeated request appended a duplicate hold")
+
+        model.acknowledgeReturn()
+
+        #expect(!model.returnPending)
+        #expect(!model.checkinPending)
+        #expect(model.surface == .checkin)
+        #expect(
+            model.snapshot(at: t0.addingTimeInterval(7 * 60)).phase == phaseBeforeAcknowledgement,
+            "acknowledgement must route presentation without changing the held session")
+        #expect(
+            try store.events(sessionID: sessionID)
+                .count { $0.kind == .transition && $0.payload == "held" } == heldAfterFirstRequest)
     }
 }

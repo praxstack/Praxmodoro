@@ -11,6 +11,18 @@ struct PraxmodoroApp: App {
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
 
+    private var menuBarSurfaceAvailable: Bool {
+        model.capabilities.isAvailable(.menuBarSurface)
+    }
+
+    private var focusCapsuleAvailable: Bool {
+        model.capabilities.isAvailable(.focusCapsule)
+    }
+
+    private var returnOverlayAvailable: Bool {
+        model.capabilities.isAvailable(.returnOverlay)
+    }
+
     init() {
         // UI tests pass this flag for a hermetic, fresh in-memory store.
         if CommandLine.arguments.contains("-praxmodoro-ephemeral-store") {
@@ -29,7 +41,7 @@ struct PraxmodoroApp: App {
             .appendingPathComponent("Praxmodoro", isDirectory: true)
         try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
         let opened = try? LocalStore.open(at: supportDir.appendingPathComponent("praxmodoro.store"), now: Date())
-        let model = AppModel(store: opened?.0)
+        let model = AppModel(store: opened?.0, recoveryNotice: opened?.1)
         try? model.restore()
         self._model = State(initialValue: model)
     }
@@ -41,34 +53,50 @@ struct PraxmodoroApp: App {
             // block-end presents the break without any UI-side timer
             // advancing state (spec: add-session-settings).
             TimelineView(.periodic(from: .now, by: 1)) { context in
+                let snapshot = model.snapshot(at: context.date)
                 Group {
-                    switch model.effectiveSurface(at: context.date) {
+                    switch model.effectiveSurface(for: snapshot) {
                     case .initiate: InitiateSurface(model: model)
-                    case .focus: FocusSurface(model: model)
+                    case .focus: FocusSurface(model: model, snapshot: snapshot)
                     case .checkin: CheckinSurface(model: model)
                     case .onBreak: BreakSurface(model: model)
                     case .review: ReviewSurface(model: model)
                     }
                 }
-                // A derived phase change (expiry, autostart, auto-return)
-                // hands presentation — sound and notifications only, never
-                // session state — back to the model. Rendering itself stays
-                // pure; this fires only on the transition edge.
-                .onChange(of: model.snapshot(at: context.date).phase) {
-                    model.syncPresentation(at: context.date)
+                // Every root date edge lets the model materialize canonical
+                // transitions before presentation. Phase equality cannot
+                // hide a complete focus-break-focus cycle across sleep.
+                .onChange(of: context.date) {
+                    try? model.observeDerivedPhase(at: context.date)
+                }
+                .frame(minWidth: 720, minHeight: 520)
+                // The way back, over the surface you are coming back to
+                // (spec: companion-surfaces "Return overlay presents the exact
+                // next action").
+                .overlay {
+                    if returnOverlayAvailable && model.returnPending {
+                        ReturnOverlay(
+                            display: snapshot.display,
+                            onAcknowledge: { model.acknowledgeReturn() },
+                            motionStilledOverride: model.motionStilled ? true : nil)
+                    }
                 }
             }
-            .frame(minWidth: 720, minHeight: 520)
-            // The way back, over the surface you are coming back to
-            // (spec: companion-surfaces "Return overlay presents the exact
-            // next action").
-            .overlay {
-                if model.returnPending {
-                    ReturnOverlay(
-                        display: model.snapshot(at: Date()).display,
-                        onAcknowledge: { model.acknowledgeReturn() },
-                        motionStilledOverride: model.motionStilled ? true : nil)
-                }
+            .onReceive(
+                NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
+            ) { _ in
+                model.handleSystemWake()
+            }
+            .alert(
+                "Local data recovered",
+                isPresented: Binding(
+                    get: { model.recoveryNotice != nil },
+                    set: { if !$0 { model.dismissRecoveryNotice() } }
+                )
+            ) {
+                Button("OK") { model.dismissRecoveryNotice() }
+            } message: {
+                Text(model.recoveryNotice?.message ?? "")
             }
         }
         .commands {
@@ -89,26 +117,35 @@ struct PraxmodoroApp: App {
             }
         }
 
-        // Always above ordinary windows, never opened for you.
-        // restorationBehavior(.disabled): a frame autosaved while the capsule
-        // was open must not resurrect the window on the next launch — macOS
-        // restoration defeats defaultLaunchBehavior(.suppressed), which is
-        // exactly the "opened itself at launch" defect (2026-08-21). The
-        // capsule exists only when the user calls it.
-        Window("Focus capsule", id: Self.capsuleWindowID) {
-            TimelineView(.periodic(from: .now, by: 1)) { context in
-                FocusCapsule(
-                    display: model.snapshot(at: context.date).display, actions: companionActions,
-                    motionStilledOverride: model.motionStilled ? true : nil)
+        ({
+            if focusCapsuleAvailable {
+                return Window("Focus capsule", id: Self.capsuleWindowID) {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let snapshot = model.snapshot(at: context.date)
+                        FocusCapsule(
+                            display: snapshot.display, actions: companionActions,
+                            motionStilledOverride: model.motionStilled ? true : nil
+                        )
+                        .onChange(of: context.date) {
+                            try? model.observeDerivedPhase(at: context.date)
+                        }
+                    }
+                    .onReceive(
+                        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
+                    ) { _ in
+                        model.handleSystemWake()
+                    }
+                    .onDisappear { capsuleOpen = false }
+                }
+                .windowLevel(.floating)
+                .windowStyle(.hiddenTitleBar)
+                .windowResizability(.contentSize)
+                .defaultLaunchBehavior(.suppressed)
+                .restorationBehavior(.disabled)
+                .windowBackgroundDragBehavior(.enabled)
             }
-            .onDisappear { capsuleOpen = false }
-        }
-        .windowLevel(.floating)
-        .windowStyle(.hiddenTitleBar)
-        .windowResizability(.contentSize)
-        .defaultLaunchBehavior(.suppressed)
-        .restorationBehavior(.disabled)
-        .windowBackgroundDragBehavior(.enabled)
+            fatalError("validated focus-capsule capability is unavailable")
+        })()
 
         Window("About Praxmodoro", id: "about") {
             AboutView()
@@ -123,17 +160,51 @@ struct PraxmodoroApp: App {
             SettingsSurface(model: model)
         }
 
-        // The loop, reachable without fronting the app. The popover is a pure
-        // function of a snapshot taken here, at the instant it renders
-        // (spec: companion-surfaces "Menu-bar popover operates the loop").
-        MenuBarExtra("Praxmodoro", systemImage: "circle.dotted") {
-            TimelineView(.periodic(from: .now, by: 1)) { context in
-                MenuBarPopover(
-                    display: model.snapshot(at: context.date).display, actions: companionActions,
-                    motionStilledOverride: model.motionStilled ? true : nil)
+        ({
+            if menuBarSurfaceAvailable {
+                return MenuBarExtra {
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let snapshot = model.snapshot(at: context.date)
+                        MenuBarPopover(
+                            display: snapshot.display, actions: companionActions,
+                            motionStilledOverride: model.motionStilled ? true : nil
+                        )
+                        .onChange(of: context.date) {
+                            try? model.observeDerivedPhase(at: context.date)
+                        }
+                    }
+                    .onReceive(
+                        NSWorkspace.shared.notificationCenter.publisher(for: NSWorkspace.didWakeNotification)
+                    ) { _ in
+                        model.handleSystemWake()
+                    }
+                } label: {
+                    Label("Praxmodoro", systemImage: "circle.dotted")
+                        .accessibilityLabel("Praxmodoro")
+                        // The label stays mounted when every window is closed,
+                        // so date-edge observation and wake handling survive
+                        // without opening the popover.
+                        .background {
+                            TimelineView(.periodic(from: .now, by: 1)) { context in
+                                Color.clear
+                                    .frame(width: 0, height: 0)
+                                    .accessibilityHidden(true)
+                                    .onChange(of: context.date) {
+                                        try? model.observeDerivedPhase(at: context.date)
+                                    }
+                            }
+                        }
+                        .onReceive(
+                            NSWorkspace.shared.notificationCenter.publisher(
+                                for: NSWorkspace.didWakeNotification)
+                        ) { _ in
+                            model.handleSystemWake()
+                        }
+                }
+                .menuBarExtraStyle(.window)
             }
-        }
-        .menuBarExtraStyle(.window)
+            fatalError("validated menu-bar capability is unavailable")
+        })()
     }
 
     /// The capsule's keyboard path: open it, or put it away again.

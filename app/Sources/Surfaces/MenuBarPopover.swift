@@ -125,20 +125,25 @@ struct MenuBarPopover: View {
             if display.offersAdjustment {
                 HStack(spacing: 8) {
                     Button("−1 min") { actions.rewindMinute() }
+                        .focusable()
                     Button("+1 min") { actions.forwardMinute() }
+                        .focusable()
                 }
                 .accessibilityIdentifier("popover-adjust")
             }
             Button(primaryControlLabel) { primaryAction() }
                 .accessibilityIdentifier("popover-primary")
+                .focusable()
 
             if display.hasSession {
                 Button("Check in") { actions.checkIn() }
                     .accessibilityIdentifier("popover-check-in")
+                    .focusable()
             }
 
             Button("Open Praxmodoro") { actions.openMainWindow() }
                 .accessibilityIdentifier("popover-open-main")
+                .focusable()
         }
         .buttonStyle(.borderless)
         .padding(14)

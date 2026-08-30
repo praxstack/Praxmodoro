@@ -12,7 +12,6 @@ cat > Sources/Generated/BuildProvenance.swift <<EOF
 enum BuildProvenance {
     static let version = "0.1.0"
     static let gitSHA = "${sha}"
-    static let edition = "lite"
 }
 EOF
 

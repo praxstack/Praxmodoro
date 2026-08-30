@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tasks: add-session-settings · Praxmodoro docs</title>
+<style>/* Praxmodoro documentation — shared shell.
+ *
+ * Deliberately NOT a pastiche of the product's own Living Companion palette.
+ * Documentation that cosplays the product it documents makes the two harder to
+ * tell apart, and this project's visual direction is currently under question.
+ * So: an engineering-dossier voice — warm paper, cool ink, one restrained
+ * blue-teal accent, serif for long-form reading, mono for anything that is a
+ * path, a count, or a command. */
+
+:root {
+  --ground:   oklch(97.2% 0.006 92);
+  --surface:  oklch(94.6% 0.008 90);
+  --surface-2:oklch(91.5% 0.009 88);
+  --ink:      oklch(24% 0.014 258);
+  --ink-2:    oklch(36% 0.014 258);
+  --muted:    oklch(52% 0.014 260);
+  --rule:     oklch(87.5% 0.008 90);
+  --accent:   oklch(47% 0.125 232);
+  --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok:       oklch(48% 0.095 158);
+  --ok-2:     oklch(48% 0.095 158 / 0.13);
+  --warn:     oklch(56% 0.11 68);
+  --warn-2:   oklch(56% 0.11 68 / 0.15);
+  --danger:   oklch(51% 0.16 25);
+  --shadow:   oklch(30% 0.02 260 / 0.09);
+
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: ui-serif, "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 70ch;
+  --bar: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+    --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+    --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+    --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+    --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+  --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+  --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+  --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+  --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+  --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+}
+:root[data-theme="light"] {
+  --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90); --surface-2: oklch(91.5% 0.009 88);
+  --ink: oklch(24% 0.014 258); --ink-2: oklch(36% 0.014 258); --muted: oklch(52% 0.014 260);
+  --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok: oklch(48% 0.095 158); --ok-2: oklch(48% 0.095 158 / 0.13);
+  --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+  --danger: oklch(51% 0.16 25); --shadow: oklch(30% 0.02 260 / 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 1rem); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr, .skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 60; background: var(--accent);
+  color: var(--ground); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .25rem; }
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--bar);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1.25rem; background: color-mix(in oklab, var(--ground) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem; font-weight: 620;
+  font-size: .95rem; color: var(--ink); text-decoration: none; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.brand-mark {
+  width: .7rem; height: .7rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), color-mix(in oklab, var(--accent) 40%, transparent));
+  box-shadow: 0 0 0 3px var(--accent-2);
+}
+.topnav { display: flex; gap: .15rem; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: var(--muted); text-decoration: none; font-size: .82rem; white-space: nowrap;
+  padding: .3rem .55rem; border-radius: .4rem;
+}
+.topnav a:hover { color: var(--ink); background: var(--surface); }
+.theme {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--muted);
+  border-radius: .45rem; width: 2rem; height: 2rem; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+.wrap { max-width: 78rem; margin: 0 auto; padding: 2.75rem 1.5rem 6rem; }
+body:not(.is-index) .wrap { max-width: 56rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .7rem;
+}
+h1 {
+  font-family: var(--sans); font-size: clamp(1.9rem, 4.2vw, 2.85rem); line-height: 1.1;
+  letter-spacing: -.025em; font-weight: 660; margin: 0 0 .7rem; text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--serif); font-size: 1.16rem; line-height: 1.55; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 1rem;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; font-family: var(--mono);
+  font-size: .74rem; color: var(--muted); padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────────── */
+.prose { font-family: var(--serif); font-size: 1.045rem; line-height: 1.72; }
+.prose > * { max-width: var(--measure); }
+.prose > .scroller, .prose > pre { max-width: 100%; }
+.prose h2 {
+  font-family: var(--sans); font-size: 1.45rem; font-weight: 640; letter-spacing: -.015em;
+  margin: 2.9rem 0 .6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-wrap: balance;
+}
+.prose h3 { font-family: var(--sans); font-size: 1.12rem; font-weight: 620; margin: 2rem 0 .4rem; }
+.prose h4 {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 1.6rem 0 .3rem; font-weight: 500;
+}
+.prose p { margin: 0 0 1.05rem; }
+.prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: .35rem; }
+.prose li::marker { color: var(--muted); }
+.prose a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.prose strong { font-weight: 660; color: var(--ink); }
+.prose hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+.prose blockquote {
+  margin: 1.4rem 0; padding: .85rem 1.15rem; border-left: 3px solid var(--warn);
+  background: var(--warn-2); border-radius: 0 .5rem .5rem 0; color: var(--ink-2);
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd {
+  font-family: var(--mono); font-size: .855em;
+  background: var(--surface-2); padding: .1em .36em; border-radius: .3rem;
+  border: 1px solid color-mix(in oklab, var(--rule) 70%, transparent);
+}
+pre {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: .6rem;
+  padding: 1rem 1.15rem; overflow-x: auto; margin: 0 0 1.2rem;
+  font-size: .86rem; line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; font-size: 1em; }
+
+/* Tables — the specs are full of them. */
+.scroller {
+  overflow-x: auto; border: 1px solid var(--rule); border-radius: .6rem;
+  background: var(--surface); margin: 0 0 1.4rem;
+}
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .875rem; }
+th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; white-space: nowrap;
+  background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+}
+tbody tr:last-child td { border-bottom: none; }
+td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
+
+/* Task lists in the OpenSpec task files. */
+.prose input[type="checkbox"] { accent-color: var(--ok); margin-right: .35rem; }
+.prose li:has(> input[type="checkbox"]:checked) { color: var(--muted); }
+.prose ul:has(input[type="checkbox"]) { list-style: none; padding-left: .2rem; }
+
+/* ── Document footer ───────────────────────────────────────────────────── */
+.docfoot {
+  margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srcbtn {
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 550;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--accent);
+  padding: .45rem .85rem; border-radius: .45rem; background: var(--accent-2);
+}
+.srcbtn:hover { background: var(--accent); color: var(--ground); }
+.srcpath { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+/* ── Index ─────────────────────────────────────────────────────────────── */
+.hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 20ch; }
+.hero .standfirst { max-width: 62ch; font-size: 1.2rem; }
+.stats {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.8rem; margin: 1.5rem 0 1.75rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--muted);
+}
+.stats b { color: var(--ink); font-size: 1.15rem; font-weight: 600; margin-right: .3rem; font-variant-numeric: tabular-nums; }
+.search input {
+  width: 100%; max-width: 32rem; font: inherit; font-size: .95rem;
+  padding: .6rem .9rem; border-radius: .55rem; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+
+.block { margin-top: 3.25rem; scroll-margin-top: calc(var(--bar) + 1rem); }
+.block[hidden] { display: none; }
+.block-head { margin-bottom: 1.1rem; }
+.block-head h2 {
+  font-size: 1.35rem; font-weight: 640; letter-spacing: -.015em; margin: 0 0 .25rem;
+}
+.block-head p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 68ch; }
+
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.doc {
+  display: flex; align-items: stretch; gap: .5rem;
+  border: 1px solid var(--rule); border-radius: .6rem; background: var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+.doc[hidden] { display: none; }
+.doc:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--rule)); box-shadow: 0 2px 10px -4px var(--shadow); }
+.doc-main {
+  flex: 1; display: flex; flex-direction: column; gap: .2rem;
+  padding: .85rem 1rem; text-decoration: none; color: inherit; min-width: 0;
+}
+.doc-title { font-weight: 590; font-size: .98rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.doc-sum { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.doc-path { font-family: var(--mono); font-size: .71rem; color: var(--muted); overflow-wrap: anywhere; }
+.doc-path code { background: none; border: none; padding: 0; font-size: 1em; }
+.doc-md {
+  display: flex; align-items: center; padding: 0 .9rem; text-decoration: none;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; color: var(--muted);
+  border-left: 1px solid var(--rule); border-radius: 0 .6rem .6rem 0;
+}
+.doc-md:hover { background: var(--accent-2); color: var(--accent); }
+
+.chip {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .14em .45em; border-radius: .3rem; font-weight: 500; white-space: nowrap;
+}
+.chip.ok { background: var(--ok-2); color: var(--ok); }
+.chip.accent { background: var(--accent-2); color: var(--accent); }
+.chip.muted { background: var(--surface-2); color: var(--muted); }
+
+/* Mockups get more room — they are the thing people actually want to look at. */
+.mocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .75rem; }
+.mock {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.2rem 1rem;
+  border: 1px solid var(--rule); border-radius: .7rem; text-decoration: none; color: inherit;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-2), transparent 62%),
+    var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.mock:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--rule)); box-shadow: 0 4px 18px -8px var(--shadow); }
+.mock-top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-weight: 620; font-size: 1rem; }
+.mock-note { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.mock-go { font-size: .82rem; font-weight: 550; color: var(--accent); margin-top: auto; padding-top: .3rem; }
+
+.rebuild {
+  margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .topnav { display: none; }
+  .wrap { padding: 2rem 1.1rem 4rem; }
+  .doc { flex-direction: column; }
+  .doc-md { border-left: none; border-top: 1px solid var(--rule); padding: .5rem 1rem; border-radius: 0 0 .6rem .6rem; }
+}
+
+/* ── Audit components ──────────────────────────────────────────────────
+ * Used by the design-parity page. Kept here rather than inline so the
+ * audit cannot drift away from the rest of the documentation. */
+
+.verdict {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: .65rem; overflow: hidden; margin: 0 0 1.5rem; max-width: 100%;
+}
+.vcell { background: var(--surface); padding: .95rem 1.05rem; display: flex; flex-direction: column; gap: .15rem; }
+.vnum {
+  font-family: var(--mono); font-size: 1.6rem; line-height: 1.1; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.vlabel { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+
+.meters { display: flex; flex-direction: column; gap: .6rem; margin: 0 0 .75rem; max-width: 100%; }
+.meter { display: grid; grid-template-columns: minmax(7.5rem, 13rem) 1fr 3.5rem; gap: .85rem; align-items: center; }
+.meter-name { font-size: .88rem; }
+.track { height: .45rem; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; }
+.meter-val { font-family: var(--mono); font-size: .78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.defect {
+  border: 1px solid var(--rule); border-left: 3px solid var(--danger);
+  background: var(--surface); border-radius: 0 .6rem .6rem 0;
+  padding: 1rem 1.2rem; margin: 0 0 .85rem; max-width: 100%;
+}
+.defect .tag {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--danger); display: block; margin-bottom: .3rem;
+}
+.defect h3 { margin: 0 0 .4rem; font-family: var(--sans); font-size: 1.02rem; font-weight: 620; }
+.defect p { margin: 0; font-family: var(--serif); font-size: .95rem; color: var(--ink-2); }
+
+.pull {
+  border-left: 3px solid var(--accent); padding: .35rem 0 .35rem 1.25rem;
+  font-family: var(--sans); font-size: 1.16rem; line-height: 1.45; font-weight: 500;
+  color: var(--ink); margin: 1.6rem 0; max-width: 54ch;
+}
+
+.chip.warn { background: var(--warn-2); color: var(--warn); }
+.chip.danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.footnote { font-size: .85rem; color: var(--muted); font-family: var(--sans); max-width: var(--measure); }
+
+/* The meta bar already draws a rule; the first section heading must not add a
+   second one immediately below it. */
+.prose > h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+</style>
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
+</nav>
+<main id="main" class="wrap">
+<div class="eyebrow">Archived changes</div>
+<h1>Tasks: add-session-settings</h1>
+<p class="standfirst">Every task is red-test-first: write the failing test, watch it fail for the right reason, make it pass, run the guard suite. Core tasks verify with swift test --package-pat…</p>
+<div class="meta"><span>2,259 words</span><span><code>openspec/changes/archive/2026-08-26-add-session-settings/tasks.md</code></span></div>
+<article class="prose"><p>Every task is red-test-first: write the failing test, watch it fail for the right reason, make it pass, run the guard suite. Core tasks verify with <code>swift test --package-path app/Packages/PraxmodoroCore</code>; app tasks with <code>./scripts/focused.sh</code>. The module-wide no-scheduling and clock-read guards must be green after every task — they are the standing proof that nothing here grew a second clock.</p>
+<h2>1. Engine: custom policies and cadence (Core)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 1.1 Test: a <code>TimingPolicy</code> constructed from user values (e.g. 40/8) derives remaining time identically to a built-in preset shape; reconstruction from persisted transitions matches on simulated relaunch. Implement custom-policy construction as pure data.</li>
+<li><input checked="" disabled="" type="checkbox"> 1.2 Test: long-break cadence (every N blocks, longer length) is policy data — the Nth block-end derives the longer break suggestion; no counter is persisted outside the transition history. Implement cadence derivation.</li>
+<li><input checked="" disabled="" type="checkbox"> 1.3 Test: removing a preset leaves prior session records readable and their derivations unchanged. Implement (likely a no-op proven by test — presets are construction-time data).</li>
+</ul>
+<h2>2. Engine: adjustment transitions (Core)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 2.1 Test: an <code>adjustment(+60)</code> event shifts <code>remaining(at:)</code> and <code>expiryInstant()</code> by exactly 60s; two <code>-60</code> adjustments reconstruct exactly after simulated relaunch. (As-built: <code>AdjustmentRecord</code> log alongside transitions, the anomaly-log precedent, because persisted transitions carry only a state name.)</li>
+<li><input checked="" disabled="" type="checkbox"> 2.2 Test: adjustment then sleep through the shifted expiry — <code>reconciled(at:)</code> backdates the expiry using the adjusted derivation with zero drift. No new code expected; the test is the point.</li>
+<li><input checked="" disabled="" type="checkbox"> 2.3 Test: adjustments are rejected/ignored for non-running blocks (already-expired, held, closed) — history stays clean. Implement the guard in the transition validator.</li>
+<li><input checked="" disabled="" type="checkbox"> 2.4 Test: a persisted store containing adjustment records replays cleanly under the current schema; schema-parity test still passes untouched.</li>
+</ul>
+<h2>3. Engine: autostart at expiry (Core)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 3.1 Test: with behaviour &quot;offered default&quot;, <code>reconciled(at:)</code> past expiry records the break transition at the canonical expiry instant — including when the reconcile happens minutes later (sleep/quit case). Implement autostart in the promotion machinery.</li>
+<li><input checked="" disabled="" type="checkbox"> 3.2 Test: with behaviour &quot;prompt first&quot;, expiry records the expiry-hold (place kept) and no break transition until an explicit accept, which records at accept time. Implement.</li>
+<li><input checked="" disabled="" type="checkbox"> 3.3 Test: with behaviour &quot;manual&quot;, expiry records nothing — the block-end is presented and the user chooses. (As-built note: today&#39;s engine path equals offered-default, so manual is the new conservative option, not the status quo.)</li>
+<li><input checked="" disabled="" type="checkbox"> 3.4 Test: flow policy + autostart &quot;offered default&quot; → zero automatic transitions at any probed instant. The &quot;Flow never auto-ends&quot; guard extended to the autostart path.</li>
+<li><input checked="" disabled="" type="checkbox"> 3.5 Test: behaviour setting is read at expiry-processing time — the same history yields manual/offered/prompt consequences per the behaviour in force at reconciliation (<code>testBehaviourIsReadAtProcessingTime</code>, added on validator finding 11).</li>
+<li><input checked="" disabled="" type="checkbox"> 3.6 Historical Core baseline: a later supplied reconciliation instant records enabled auto-return at the canonical break end; disabled (then the factory default) leaves the break open. This pure test did not prove root observation, the process-live fence, sleep/wake wiring, or relaunch absence; task 10.7 owns those current behavior tests after runtime C2.</li>
+</ul>
+<h2>4. Preferences on the defaults seam (App)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 4.1 Test: <code>RhythmPreferences</code> (durations, cadence, autostart behaviour) round-trips through an injected ephemeral <code>UserDefaults</code>; factory default is prompt-first with today&#39;s durations. Implement the value type on the seam, mirroring the Motion pattern.</li>
+<li><input checked="" disabled="" type="checkbox"> 4.2 <strong>Historical baseline, superseded by owner issue #18 and task 10.5:</strong> <code>SoundPreferences</code> (master volume, per-cue toggles, tick loop) round-trips; the then-current factory default was everything OFF. The test must be replaced, not retained as current acceptance.</li>
+<li><input checked="" disabled="" type="checkbox"> 4.3 Test: malformed/missing defaults decode to factory values, never crash, never write back garbage.</li>
+</ul>
+<h2>5. Settings scene (App)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 5.1 Test: the Settings scene exists with Rhythm and Sound &amp; Notifications panes and opens via ⌘, without disturbing a running session (state-level assertion, not UI automation). Implement the <code>Settings</code> scene.</li>
+<li><input checked="" disabled="" type="checkbox"> 5.2 Test: Rhythm pane binds every <code>RhythmPreferences</code> field; changes land on the seam. Implement the pane — <code>SurfacePalette</code> roles only, zero raw literals.</li>
+<li><input checked="" disabled="" type="checkbox"> 5.3 Test: the flow-exemption notice is present in the pane&#39;s rendered content when flow policy exists. Implement.</li>
+<li><input checked="" disabled="" type="checkbox"> 5.4 Test: Sound &amp; Notifications pane binds every <code>SoundPreferences</code> field plus notification toggles/texts. Implement the pane.</li>
+<li><input checked="" disabled="" type="checkbox"> 5.5 Test: store schema before/after the whole change is identical (existing schema-parity test re-run and cited in the task commit).</li>
+</ul>
+<h2>6. Block-end flow honours the setting (App)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 6.1 Test: offered-default — at expiry the break surface appears with decline/end as one ordinary action; the transition instant equals the canonical expiry instant. Wire AppModel to pass behaviour into the engine.</li>
+<li><input checked="" disabled="" type="checkbox"> 6.2 Test: prompt-first — a non-modal offer renders; accept records the break; dismiss keeps the held place; copy passes the tone lint. (As-built: the offer flag rides <code>SessionSnapshot</code>, main window only — the capsule and popover stay offer-free by design, they are glanceable not conversational.)</li>
+<li><input checked="" disabled="" type="checkbox"> 6.3 Test: rewind/forward — <code>+</code>/<code>-</code> during a running block appends adjustments via <code>CompanionActions</code>; controls absent when not running. Implement controls and key handling.</li>
+</ul>
+<h2>7. Sound (App)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 7.1 Commit bundled CC0/original sound assets under <code>app/Resources/Sounds/</code> with provenance in the commit message.</li>
+<li><input checked="" disabled="" type="checkbox"> 7.2 <strong>Historical all-off configuration case, not a current factory-default claim:</strong> <code>SoundPlayer</code> with an explicitly all-off <code>SoundPreferences</code> value produces zero play requests across a full simulated session (seam: a played-cue recorder injected in place of AVFoundation). Implement <code>SoundPlayer</code> as a transition listener behind a protocol.</li>
+<li><input checked="" disabled="" type="checkbox"> 7.3 Test: chime enabled — exactly one chime per expiry, none retro-fired after a simulated sleep-through-expiry wake. Implement.</li>
+<li><input checked="" disabled="" type="checkbox"> 7.4 Test: tick loop starts with a running block and stops within one period of hold/close; implemented as an AVAudioPlayer loop toggle, no <code>Timer</code> — guard suite proves it. Implement.</li>
+<li><input checked="" disabled="" type="checkbox"> 7.5 Test: resource-load failure leaves the session untouched and logs quietly (os.Logger, debug level). (As-built: device-vanish is untestable without hardware; AVAudioPlayer failures fall into the same silent path.)</li>
+</ul>
+<h2>8. Notifications (App)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 8.1 Test: notification requests are created from <code>expiryInstant()</code> on begin/adjust and cancelled on hold/adjust/setting-change (seam: injected notification-center protocol). Implement scheduling.</li>
+<li><input checked="" disabled="" type="checkbox"> 8.2 Test: shipped default texts pass the copy-tone lint; the lint explicitly exempts the user-text defaults keys. Implement defaults and lint carve-out.</li>
+<li><input checked="" disabled="" type="checkbox"> 8.3 Test: user-edited text is stored and passed to the request verbatim. Implement.</li>
+<li><input checked="" disabled="" type="checkbox"> 8.4 Test: denied permission renders toggles unavailable and schedules nothing; no re-prompt path exists. Implement.</li>
+</ul>
+<h2>9. Registry and gates</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 9.1 <strong>Historical edition-shaped fixture, superseded by owner issue #34 and M2 task 10.0:</strong> the three settings keys were added and proven non-withholdable. Current acceptance uses the one-product configured-key fixture and no Lite/edition API.</li>
+<li><input checked="" disabled="" type="checkbox"> 9.2 <strong>REOPENED after review repairs.</strong> After section 10 is complete: <code>./scripts/verify-project.sh</code> exit 0; <code>npm run spec:validate</code> strict; smoke and guard suites green; current evidence recorded before archive. Fresh pre-archive and post-archive gates passed; the signed post-archive result passed 237/237 with zero failures or skips. No auto-push is authorized by this run.</li>
+<li><input checked="" disabled="" type="checkbox"> 9.3 Independent fresh-context validator reviews the change against the amended spec deltas before archive. Any production/test finding re-enters the uncommitted repair loop: add or retain the red regression, make the minimal fix, rerun <code>/code-review</code> and all affected plus full gates, commit the independently testable repair, update evidence, and rerun the validator to COMPLETE. Documentation-only corrections receive the same strict validation and evidence update. No implementation fix may be hidden in the archive/status commit. After archive, replace the new <code>openspec/specs/session-settings/spec.md</code> generated <code>TBD</code> Purpose with the descriptive paragraph at the top of its delta before rebuilding docs and running final validation. (The 2026-08-13 pass and fixes are historical; the 2026-08-23 pass rejected the current tree and reopened completion.)</li>
+</ul>
+<h2>10. Fresh-validation and owner-decision remediation (2026-08-23)</h2>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> 10.1 <strong>Specification freeze.</strong> Reconcile owner issue #18 into proposal, design, capability spec, and this task list: explicitly supersede/reopen the historical factory-off atom 4.2; retain 7.2 only as an explicit all-off configuration test; require five cues, block-start/focus-end/break-end factory-on at 0.7, ticks off, five sample buttons, and legacy saved-choice compatibility. Strict-validate before production work.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.2 <strong>Preset contract — red first.</strong> In <code>SettingsSceneTests.swift</code> and <code>PreferencesTests.swift</code>, prove each focus/break row can be edited and removed; only unique whole minutes in <code>1...240</code> commit; <code>0</code>, <code>241</code>, fractional, nonnumeric, and duplicate add/edit attempts leave the prior value/input intact beside “Use a unique whole number from 1 to 240.” Prove all configured focus/break Cartesian pairs appear once in <code>availablePolicies</code>, a break-only preset uses the classic-focus fallback, and removing a preset after a persisted session leaves that session byte-readable and restores the original derivation. Observe the current edit/bounds/duplicate/history/pair failures; implement through the existing <code>RhythmPreferences</code>/<code>RhythmPane</code>/<code>AppModel.availablePolicies</code> seams only.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.3 <strong>Settings token wiring — red first.</strong> In <code>SettingsSceneTests</code>, first use a comment/string-aware balanced-brace helper to require each of <code>RhythmPane.body</code> and <code>SoundNotificationsPane.body</code> to apply <code>.foregroundStyle(SurfacePalette.primaryText(increasedContrast: contrast == .increased))</code> and <code>.background(SurfacePalette.background(reduceTransparency: reduceTransparency))</code>, with matching <code>colorSchemeContrast</code> and Reduce Transparency environment reads inside the same type. Then rasterize each real pane in a 640×560 frame with fixed preferences, scale 1, sRGB, light color scheme, and standard/increased contrast. Reuse <strong><code>add-companion-surfaces</code> task 10.2&#39;s</strong> pixel-difference mask and alpha-blend rules: require at least 20 changed pixels, eight at glyph coverage <code>&gt;= 0.95</code>, standard-to-increased pixels matching the two primary-text tokens within <code>2/255</code>, the opaque background unchanged within <code>1/255</code>, and increased rendered contrast at least 7:1. Separately render Reduce Transparency off/on over a fixed contrasting backdrop and require the on image&#39;s pane background to match the opaque token within <code>1/255</code> with no sampled backdrop contribution. Observe source, contrast-render, and transparency-render failures before wiring existing palette tokens. Generate tokens only if implementation introduces a new explicit spacing/radius; do not redesign pane layout or add a snapshot dependency.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.4 <strong>Notification denial race — red first.</strong> Use a deferred availability recorder: enable a notification, begin a session so one request is pending, then report <code>.denied</code>; assert pending work is cancelled, no replacement is scheduled, and the pane state becomes unavailable. Make the availability callback resynchronize immediately.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.5 <strong>Five-cue preferences and legacy decoding — red first.</strong> In <code>PreferencesTests.swift</code>, update factory tests for block-start plus focus-end and break-end chimes on at 0.7 and focus/break ticks off. Add a hand-built legacy JSON blob without <code>blockStart</code> proving keyed decode preserves its volume and all five existing fields (<code>focusTick</code>, <code>breakTick</code>, <code>focusEndChime</code>, <code>breakEndChime</code>, and <code>tickLoop</code>) while defaulting only block-start off; malformed whole blobs alone use factory settings. Observe the current factory and synthesized-decoder failures, then add only the keyed decoder and new preference field.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.6 <strong>Cue transition edges and preview API — red first.</strong> In <code>SoundDirectorTests.swift</code>/<code>ValidatorFindingsTests.swift</code>, add exactly-once block-start cases for initial begin, explicit end-break, and an already-materialized derived auto-return, with none on relaunch or hold/resume. Add five no-session tests for the exact <code>AppModel.previewSound(_:)</code> API asserting <code>scheduleChime</code> receives the injected instant/current volume and session/preferences stay byte-equal. Observe the missing cue/API failures, then reuse <code>SoundCueScheduling.scheduleChime</code>; add no preview protocol method or second scheduler.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.7 <strong>Live auto-return observation — red first.</strong> Add <code>observeDerivedPhase(at:)</code> regressions for both sides of the process-live fence. Construct the model before a break end, observe before it, then advance across focus→break→focus in one jump so the derived phase is running at both observations; require exactly one canonical return transition, <code>returnPending</code>, and one block-start cue, with a repeated observation duplicating nothing. Construct/restore a second model after the same break end and prove its first and later observations stay on break with no overlay, cue, or delayed catch-up. Reuse runtime task 3&#39;s <code>liveObservationStartedAt</code> and bounded <code>reconciledSession(_:at:)</code> plumbing; implement <code>observeDerivedPhase(at:)</code> and wire the root <code>TimelineView</code> date-change callback to pass only <code>context.date</code> on every date edge, never only when the derived phase changes. This atom depends on runtime task 3 (#52); keep the no-clock guard green and do not call the observer during restore.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.8 <strong>Five sample controls, resources, and keyboard/VoiceOver evidence — red first.</strong> Give all five pane buttons the identifiers named in design and exact labels <code>Play Block start sample</code>, <code>Play Focus tick sample</code>, <code>Play Break tick sample</code>, <code>Play Focus end sample</code>, and <code>Play Break end sample</code>. Extend <code>PraxmodoroUITests/KeyboardLoopUITests.swift</code> to open Settings, Tab/Shift-Tab to each button, assert both the corresponding label and <code>hasKeyboardFocus</code>, and activate it by keyboard. Update resource tests to <code>SoundCue.allCases</code>, generate the original block-start WAV through <code>scripts/generate-sounds.mjs</code>, and update cue copy/toggles. Observe the missing resource, identifier, label, and signed-UI failures before implementation; run copy-tone and focused checks after green.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.9 <strong>Audio retention and wake cancellation — red first.</strong> Reopen historical task 7.3&#39;s unproven device-timebase edge. In <code>app/Tests/PraxmodoroTests/SoundDirectorTests.swift</code>, add pure cases for <code>shouldRetainChime(scheduledAt:now:isPlaying:)</code>: future+stopped and present+playing are true; past+stopped is false. Add a scheduler regression with future, expired-stopped, and expired-playing entries proving <code>cancelExpiredChimes(at:)</code> stops/removes both expired entries and leaves the future one. Add an app-wiring guard for <code>NSWorkspace.didWakeNotification</code> calling <code>AppModel.handleSystemWake()</code>, which reads the injected clock once, cancels expired chimes, then lets the next root date edge resynchronize presentation. Observe the missing predicate/cancellation/wiring failures. Store pending players with their scheduled instant, inject the existing wall-clock closure through <code>AudioCueScheduler.init</code>, and keep ordinary pruning exactly <code>isPlaying || scheduledAt &gt; now</code>; add only the wake-cancellation protocol seam, no timer, delegate, or audio framework.</li>
+<li><input checked="" disabled="" type="checkbox"> 10.10 <strong>Evidence repair without invented history.</strong> Preserve checked tasks 1.1–9.1 and their existing commits as immutable baseline evidence; map the grouped historical commits truthfully and record missing contemporaneous red receipts as missing, never reconstructed. Mark factory-off 4.2 superseded by #18 without deleting it. Only new remediation atoms 10.1–10.9 receive current observed red command/failure, green command/result, and one post-review commit SHA. The owner&#39;s active-goal pre-approval on 2026-08-23 accepts this documented historical deviation; all implementation, review, test, evidence, and archive gates still apply.</li>
+</ul>
+</article>
+<footer class="docfoot">
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-add-session-settings/tasks.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-add-session-settings/tasks.md</code></span>
+</footer>
+</main>
+<script>
+(() => {
+  const root = document.documentElement;
+  const stored = localStorage.getItem("praxdocs-theme");
+  if (stored) root.setAttribute("data-theme", stored);
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme")
+      ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("praxdocs-theme", next);
+  });
+})();
+</script>
+</body>
+</html>

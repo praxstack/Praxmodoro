@@ -346,21 +346,21 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
 <div class="eyebrow">The contract</div>
 <h1>AGENTS — the agent contract</h1>
 <p class="standfirst">Read, in order:</p>
-<div class="meta"><span>373 words</span><span><code>AGENTS.md</code></span></div>
+<div class="meta"><span>462 words</span><span><code>AGENTS.md</code></span></div>
 <article class="prose"><h2>Source of truth</h2>
 <p>Read, in order:</p>
 <ol>
 <li>The current user request and <code>.agent/sessions/</code> audit log.</li>
 <li><code>SPEC.md</code> and <code>prd.json</code> for global completion criteria and atom state.</li>
 <li>The active change under <code>openspec/changes/</code> for proposal, capability specs, design, and tasks.</li>
-<li><code>BLUEPRINT.md</code> and the dated implementation plan in <code>docs/superpowers/plans/</code>.</li>
+<li>Dated implementation plans in <code>docs/plans/</code>. (<code>BLUEPRINT.md</code> was never created; do not wait for it or cite it.)</li>
 <li>Current code, tests, and Git history. Research and memories are evidence, not runtime proof.</li>
 </ol>
 <h2>Workflow</h2>
@@ -377,9 +377,9 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li>Target native macOS 26+ with Swift 6.3 and SwiftUI.</li>
 <li>Keep the timer engine deterministic and based on canonical timestamps so sleep/wake and relaunch cannot drift the session.</li>
 <li>Treat ADHD features as supportive interaction design, never diagnosis or treatment.</li>
-<li>Keep initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load mode in Lite.</li>
-<li>Prefer local processing and data minimization. Any network, sync, analytics, or AI capability must be explicit, optional, edition-gated, and documented.</li>
-<li>“Liquid Instrument” is expressive but must honor Reduce Transparency, Increase Contrast, Reduce Motion, keyboard navigation, VoiceOver, and legibility.</li>
+<li>Keep initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load mode in the one complete product for every user.</li>
+<li>Prefer local processing and data minimization. Any network, sync, analytics, or AI capability must be explicit, optional, capability-scoped, and documented; no tier or edition framing is part of the product.</li>
+<li>“Living Companion” is the approved visual direction; it must honor Reduce Transparency, Increase Contrast, Reduce Motion, keyboard navigation, VoiceOver, and legibility.</li>
 <li>Do not edit or commit <code>research/skill-sources/</code> or <code>research/library-sources/</code>; they are ignored read-only upstream clones.</li>
 </ul>
 <h2>Git safety</h2>
@@ -395,6 +395,8 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <p>Default five-role vocabulary: <code>needs-triage</code>, <code>needs-info</code>, <code>ready-for-agent</code>, <code>ready-for-human</code>, <code>wontfix</code>. See <code>docs/agents/triage-labels.md</code>.</p>
 <h3>Domain docs</h3>
 <p>Single-context: <code>CONTEXT.md</code> and <code>docs/adr/</code> at the repo root (created lazily as decisions land). See <code>docs/agents/domain.md</code>.</p>
+<h3>Skill discovery</h3>
+<p>Start each session with the <code>using-superpowers</code> skill to discover available skills before answering. The gstack suite (browse, ship, investigate, retro, and related) is installed host-side under <code>~/.agents/skills/</code>; invoke it by name when a task matches. Per-role model mapping for pstack lives globally at <code>~/.config/pstack/models.md</code>. For any user-facing prose drafted here, run <code>stop-slop</code> or <code>humanize</code> over it before shipping.</p>
 </article>
 <footer class="docfoot">
   <a class="srcbtn" href="../../AGENTS.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>

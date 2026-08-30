@@ -1,9 +1,9 @@
 import Foundation
 import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroStore
 
 /// Spec: companion-surfaces "Floating focus capsule stays above other windows"
 /// and "Surfaces agree at one instant".
@@ -27,7 +27,8 @@ import PraxmodoroStore
 
         #expect(capsule.taskText == "Edit the outline")
         #expect(capsule.timeText == "22:00")
-        #expect(capsule.controls == ["capsule-task", "capsule-time", "capsule-hold"])
+        #expect(capsule.statusText == "Focusing")
+        #expect(capsule.controls == ["capsule-status", "capsule-task", "capsule-time", "capsule-hold"])
         #expect(capsule.accessibilityLabel.hasPrefix("Focus capsule:"))
     }
 
@@ -38,15 +39,22 @@ import PraxmodoroStore
         let instant = t0.addingTimeInterval(11 * 60 + 30)
         let snapshot = model.snapshot(at: instant)
 
+        let focus = FocusSurface(model: model, snapshot: snapshot)
         let capsule = FocusCapsule(display: snapshot.display, actions: .inert)
         let popover = MenuBarPopover(display: snapshot.display, actions: .inert)
 
-        // The focus surface renders `snapshot.remainingText ?? "open"`; the
-        // canonical value is the snapshot's, and every surface shows it.
+        #expect(focus.taskText == snapshot.taskLine)
+        #expect(focus.remainingReadout.text == snapshot.remainingText)
+        #expect(focus.statusText == snapshot.statusLine)
+        #expect(focus.taskText == capsule.taskText)
+        #expect(focus.remainingReadout.text == capsule.timeText)
+        #expect(focus.statusText == capsule.statusText)
+        #expect(focus.statusText == popover.statusText)
         #expect(capsule.timeText == snapshot.remainingText)
         #expect(popover.timeText == snapshot.remainingText)
         #expect(capsule.timeText == popover.timeText)
         #expect(capsule.taskText == snapshot.taskLine)
+        #expect(capsule.accessibilityLabel.contains(snapshot.statusLine))
         #expect(popover.statusText == snapshot.statusLine)
         #expect(snapshot.remainingText == "13:30")
     }

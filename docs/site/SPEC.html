@@ -346,22 +346,22 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
 <div class="eyebrow">The contract</div>
 <h1>SPEC — the completion contract</h1>
 <p class="standfirst">The durable definition of done. The independent validator checks work against this file, not against session claims. Detailed binary requirements live in the OpenSpec capab…</p>
-<div class="meta"><span>765 words</span><span><code>SPEC.md</code></span></div>
+<div class="meta"><span>1,016 words</span><span><code>SPEC.md</code></span></div>
 <article class="prose"><p>The durable definition of done. The independent validator checks work against this file, not against session claims. Detailed binary requirements live in the OpenSpec capability specs; this file states the contract&#39;s shape and the global gates.</p>
 <h2>Product</h2>
-<p>Praxmodoro: native macOS focus timer and non-clinical ADHD-aware focus coach. macOS 26+, Swift 6.3, SwiftUI, local-first. Editions Lite/Pro/Enterprise share one codebase behind explicit capability gates; initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load modes are Lite, always.</p>
-<p>Visual direction: <strong>Living Companion</strong> (approved 2026-07-30; binding reference <code>design-mocks/living-companion/</code>, physics contract <code>companion-physics.js</code>). Evidence roots: <code>research/pomodoro-landscape-20260720/</code> for product claims, the mocks for visual decisions.</p>
+<p>Praxmodoro: native macOS focus timer and non-clinical ADHD-aware focus coach. macOS 26+, Swift 6.3, SwiftUI, local-first. One product: every capability ships to every user; capability keys remain internal provenance switches and are never paywallable (edition framing struck by owner decision 2026-08-23, issue #34). Initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load modes are built in, always.</p>
+<p>Visual direction: <strong>Living Companion</strong> (approved 2026-07-30, <strong>re-affirmed 2026-08-12</strong> against three divergent alternatives — decision record <code>docs/decisions/2026-08-12-direction-reaffirmed.md</code>; binding reference <code>design-mocks/living-companion/</code>, physics contract <code>companion-physics.js</code>). Evidence roots: <code>research/pomodoro-landscape-20260720/</code> for product claims, the mocks for visual decisions.</p>
 <h2>Milestone M1 — app scaffold + core loop (COMPLETE 2026-07-31)</h2>
 <p>Governed by OpenSpec change <code>add-app-scaffold-core-loop</code> (archived <code>2026-07-31-add-app-scaffold-core-loop</code>). Independent fresh-context validation confirmed all seven gates PASS at <code>d56949d</code>. M1 was complete when, and only when:</p>
 <ol>
-<li>Every EARS scenario in <code>openspec/changes/add-app-scaffold-core-loop/specs/{app-scaffold,timer-engine,focus-loop-ui,session-persistence}/spec.md</code> is covered by an automated test that passes.</li>
+<li>Every EARS scenario in <code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/{app-scaffold,timer-engine,focus-loop-ui,session-persistence}/spec.md</code> is covered by an automated test that passes.</li>
 <li>Every task in that change&#39;s <code>tasks.md</code> is checked, each with its red-then-green evidence recorded in <code>prd.json</code> and <code>progress.txt</code>.</li>
 <li>A clean clone builds, tests, and runs with only the README-documented commands.</li>
 <li>The timer survives sleep/wake and relaunch with remaining time exactly derived from canonical timestamps (zero tick drift).</li>
@@ -369,25 +369,38 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li>The copy-tone lint (no medical/diagnostic/judgment claims), no-network harness, and never-paywalled-set validation all pass.</li>
 <li><code>npm run spec:validate</code> passes strict, and an independent validator session confirms 1–6 from a fresh context using only this file, the change artifacts, and the repo.</li>
 </ol>
-<h2>Milestone M2 — companion surfaces (in progress, one gate blocked 2026-08-04)</h2>
-<p>Governed by OpenSpec change <code>add-companion-surfaces</code>. M2 is complete when, and only when:</p>
+<h2>Milestone M2 — companion surfaces (COMPLETE 2026-08-26)</h2>
+<p>Governed by OpenSpec change <code>add-companion-surfaces</code> (archived <code>2026-08-26-add-companion-surfaces</code>). M2 was complete when, and only when:</p>
 <ol>
-<li>Every EARS scenario in <code>openspec/changes/add-companion-surfaces/specs/{companion-surfaces,focus-loop-ui,session-persistence,app-scaffold}/spec.md</code> is covered by an automated test that passes.</li>
+<li>Every EARS scenario in the canonical <code>openspec/specs/{companion-surfaces,focus-loop-ui,session-persistence,app-scaffold}/spec.md</code> is covered by an automated test that passes.</li>
 <li>The menu-bar popover, floating focus capsule, and return overlay all render one canonical engine-derived session state; no surface counts time, proven behaviorally (a frozen input must produce an unchanged rendering after real time passes), not only by source scanning.</li>
 <li>The four M1 hardening follow-ups are closed: render-level Reduce-Transparency/Increase-Contrast verification; two-configuration schema parity against live containers; keyboard UI coverage for ⌘K, check-in 1–4, <code>R</code>, ⌘N and the capsule toggle as real key events; a launch-time first-run assertion.</li>
 <li>Complete accessibility alternates ship in the same change: Reduce Motion standdown proven on every companion surface in both directions, VoiceOver labels, full keyboard paths.</li>
 <li><code>./scripts/verify-project.sh</code> exits 0 and <code>./scripts/smoke.sh</code> exits 0.</li>
 <li><code>npm run spec:validate</code> passes strict, and an independent validator session confirms 1–5 from a fresh context.</li>
 </ol>
-<p><strong>Status 2026-08-04.</strong> Gates 1 and 4 are met. Gate 3 is met for its two unit-level follow-ups. Gate 2 is met by the current defense but has a history worth knowing: five independent validators each defeated the no-second-clock guard with a real, compiling, drifting counterexample, and each defeat was closed. The current defense — rasterizing held surfaces and comparing renders, so <code>body</code> is in scope — has <strong>not yet itself faced an independent attack</strong>, and the test states its own residual limit (a beat slower than the 2.5s window evades it).</p>
-<p>Gates 3 (UI half), 5 and 6 are <strong>blocked by the host, not the code</strong>: XCUITest cannot initialize while the Mac&#39;s screen is locked (<code>LocalAuthentication -4</code>, <code>CGSSessionScreenIsLocked = true</code>), so <code>KeyboardLoopUITests</code> has never executed and <code>verify-project.sh</code> stops at its final stage. Everything upstream passes: staleness gate, PraxmodoroCore 12/12, PraxmodoroStore 7/7, strict format lint, build, 73 app unit tests in 23 suites, <code>spec:validate</code> 5/5, <code>smoke.sh</code>, and <code>** TEST BUILD SUCCEEDED **</code> for the UI target.</p>
-<p><strong>Unblock: unlock the Mac and run <code>./scripts/verify-project.sh</code>.</strong> M2 is not complete until that exits 0 and an independent validator confirms gates 1–5 against the result.</p>
+<p><strong>Status 2026-08-22.</strong> Gate 2&#39;s no-second-clock defense survived six adversarial defeats being closed against it (full history in <code>prd.json</code> / <code>progress.txt</code>). The whole-change independent validator at HEAD <code>9a6dc8c</code> on 2026-08-13 confirmed C1–C4 and C6 pass, including the UI half of gate 3 actually executing — <code>verify-project.sh</code> exited 0 end to end once the host condition cleared. C5 failed on its bookkeeping clause only: literal one-commit-per-atom is unmeetable without rewriting the per-defeat commit trail that makes the C2 guarantee trustworthy. On 2026-08-22 the criterion owner granted the amendment recorded in <code>prd.json</code> (<code>commitMapping.proposedAmendment</code>): C5 now reads &quot;every atom is traceable to one or more conventional commits, with any atom-to-commit deviation documented and justified.&quot;</p>
+<p><strong>Closed 2026-08-26.</strong> The 2026-08-23 validator findings were repaired and independently re-reviewed. Fresh <code>./scripts/verify-project.sh</code> exited 0 before and after archive; the signed post-archive result passed 237/237 with zero failures or skips, smoke passed, canonical OpenSpec passed 6/6 strict, and the change was archived with its deltas synchronized.</p>
+<h2>Architecture stabilization batch (COMPLETE 2026-08-26)</h2>
+<p>The three changes <code>add-companion-surfaces</code>, <code>stabilize-runtime-contracts</code>, and <code>add-session-settings</code> are archived as <code>2026-08-26-add-companion-surfaces</code>, <code>2026-08-26-stabilize-runtime-contracts</code>, and <code>2026-08-26-add-session-settings</code>. Their implementation and review repairs are committed through <code>3639693</code>; the archive and evidence are committed as <code>f1beb90</code>; no active OpenSpec change remains. Fresh Core 46/46, Store 8/8, build, signed UI 237/237, smoke, strict OpenSpec 6/6, docs, diff, JSON, and stale-term checks pass. GitHub issues #7, #18, and #51–#55 are closed with this evidence. This is repository completion evidence, not a claim that the branch has been merged, pushed, packaged, or released.</p>
+<p>The archived specifications and dated plans retain the red-first atoms, reviews, and documented historical deviations without rewriting absent receipts into evidence.</p>
+<h2>Charted next (2026-08-23)</h2>
+<p>The completed stabilization batch delivered issue #18 and architecture prerequisites #51–#53. The work still charted below remains unscheduled; detail lives on the issue tracker, and each future slice requires its own OpenSpec change with EARS specs, red-then-green atoms, and independent validation.</p>
+<ol>
+<li><strong>Presence &amp; continuity pack</strong> (issue #27): global keyboard shortcuts (#19), recent-task reuse (#20), day timeline browser (#21), today-at-a-glance summary (#22), parking list (#30), music (#31), launch-at-login (#32), and finite Session length (#33).</li>
+<li><strong>Trust and presence pass</strong> (plan <code>docs/plans/2026-08-23-enterprise-grade.md</code>, remaining issues #35–#50):<ul>
+<li>Data trust: persistence-failure surfacing (#35), persist-before-mutate (#36), VersionedSchema plan (#37), clock-anomaly honesty (#38), local diagnostics (#39), event-log indexing (#40), parked-thoughts defect (#41).</li>
+<li>Companion presence grade: coach-initiated check-ins (#43), truthful break countdowns (#44), real step editing (#45), flow elapsed time (#46), capsule parity (#47), drift notes (#48), review totals (#49), fullscreen capsule (#42).</li>
+<li>Distribution base (#50).</li>
+</ul>
+</li>
+</ol>
 <h2>Later milestones (not yet specified)</h2>
-<p>M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 edition content (Pro insights/automations, Enterprise policy boundaries — cloud/team services are separate deliverables). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.</p>
+<p>M3 staged integrations (EventKit import, App Intents, richer local analytics) · M4 optional sync (CloudKit history, never live ticks) · M5 future content (insights, automations; cloud/team services are separate deliverables, if ever). Each arrives as its own OpenSpec change; nothing in this list is promised behavior until specified.</p>
 <h2>Global invariants (hold at every milestone)</h2>
 <ul>
 <li>Deterministic timing from canonical wall-clock timestamps; ticks are presentation only.</li>
-<li>Local-first: no network, account, or telemetry without a spec&#39;d, explicit, optional, edition-gated opt-in.</li>
+<li>Local-first: no network, account, or telemetry without a spec&#39;d, explicit, optional, capability-scoped opt-in.</li>
 <li>Non-medical positioning in every string; no punitive mechanics (streak loss, forced breaks, urgency, judgment of activity).</li>
 <li>Accessibility alternates are architecture, not polish; they ship in the same change as the feature they serve.</li>
 <li>One independently testable atom per commit; conventional commits; never weaken a test to go green.</li>

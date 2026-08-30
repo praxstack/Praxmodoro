@@ -346,7 +346,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="index.html#contract">The contract</a><a href="index.html#analysis">Analysis &amp; decisions</a><a href="index.html#specs">Capability specs</a><a href="index.html#active">Active change</a><a href="index.html#archive">Archived change</a><a href="index.html#handoff">Handoffs</a><a href="index.html#agents">Agent conventions</a><a href="index.html#research">Product research</a></div>
+  <div class="topnav"><a href="index.html#contract">The contract</a><a href="index.html#analysis">Analysis &amp; decisions</a><a href="index.html#specs">Capability specs</a><a href="index.html#active">Active changes</a><a href="index.html#archive">Archived changes</a><a href="index.html#handoff">Handoffs</a><a href="index.html#agents">Agent conventions</a><a href="index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
@@ -360,10 +360,10 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
   <h1>Every document, and the mockups they argue about.</h1>
   <p class="standfirst">Praxmodoro is a native macOS focus timer built spec-first. This is the whole paper trail — the contract, the specs, the audits, the research it rests on, and the three design directions one of which was approved.</p>
   <div class="stats">
-    <span><b>58</b> documents</span>
-    <span><b>58</b> HTML pages</span>
+    <span><b>83</b> documents</span>
+    <span><b>83</b> HTML pages</span>
     <span><b>4</b> mockup sets</span>
-    <span><b>45k</b> words</span>
+    <span><b>78k</b> words</span>
   </div>
   <label class="search">
     <span class="sr">Filter documents</span>
@@ -404,7 +404,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
         <a class="doc-main" href="site/AGENTS.html">
           <span class="doc-title">AGENTS — the agent contract</span>
           <span class="doc-sum">Read, in order:</span>
-          <span class="doc-path"><code>AGENTS.md</code> · 373 words</span>
+          <span class="doc-path"><code>AGENTS.md</code> · 462 words</span>
         </a>
         <a class="doc-md" href="../AGENTS.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="context — domain glossary context.md praxmodoro is a native macos focus timer and non-clinical adhd-aware focus coach. this glossary fixes the language of the focus loop: how a stretch of work is opened, divid…">
@@ -418,14 +418,14 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
         <a class="doc-main" href="site/README.html">
           <span class="doc-title">README — project overview</span>
           <span class="doc-sum">Praxmodoro is a native macOS focus timer and non-clinical ADHD-aware focus coach. It combines low-friction task initiation, gentle check-ins, adaptive breaks, and local-fir…</span>
-          <span class="doc-path"><code>README.md</code> · 526 words</span>
+          <span class="doc-path"><code>README.md</code> · 486 words</span>
         </a>
         <a class="doc-md" href="../README.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="spec — the completion contract spec.md the durable definition of done. the independent validator checks work against this file, not against session claims. detailed binary requirements live in the openspec capab…">
         <a class="doc-main" href="site/SPEC.html">
           <span class="doc-title">SPEC — the completion contract</span>
           <span class="doc-sum">The durable definition of done. The independent validator checks work against this file, not against session claims. Detailed binary requirements live in the OpenSpec capab…</span>
-          <span class="doc-path"><code>SPEC.md</code> · 765 words</span>
+          <span class="doc-path"><code>SPEC.md</code> · 1,016 words</span>
         </a>
         <a class="doc-md" href="../SPEC.md" title="Markdown source">MD</a>
       </li></ul>
@@ -454,94 +454,53 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
       <h2>Capability specs</h2>
       <p>The canonical EARS requirements. These are authoritative — the app is measured against them.</p>
     </div>
-    <ul class="docs"><li class="doc" data-search="app-scaffold specification openspec/specs/app-scaffold/spec.md ">
+    <ul class="docs"><li class="doc" data-search="app-scaffold specification openspec/specs/app-scaffold/spec.md how the macos application is generated, launched, and bounded. covers reproducible project generation from app/project.yml, the documented build and test commands, lifecycl…">
         <a class="doc-main" href="site/openspec-specs-app-scaffold-spec.html">
           <span class="doc-title">app-scaffold Specification</span>
-          
-          <span class="doc-path"><code>openspec/specs/app-scaffold/spec.md</code> · 535 words</span>
+          <span class="doc-sum">How the macOS application is generated, launched, and bounded. Covers reproducible project generation from app/project.yml, the documented build and test commands, lifecycl…</span>
+          <span class="doc-path"><code>openspec/specs/app-scaffold/spec.md</code> · 603 words</span>
         </a>
         <a class="doc-md" href="../openspec/specs/app-scaffold/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="focus-loop-ui specification openspec/specs/focus-loop-ui/spec.md ">
+      </li><li class="doc" data-search="companion-surfaces specification openspec/specs/companion-surfaces/spec.md ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. visual and behavioral truth traces to design-mocks/living-co…">
+        <a class="doc-main" href="site/openspec-specs-companion-surfaces-spec.html">
+          <span class="doc-title">companion-surfaces Specification</span>
+          <span class="doc-sum">Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to design-mocks/living-co…</span>
+          <span class="doc-path"><code>openspec/specs/companion-surfaces/spec.md</code> · 1,199 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/specs/companion-surfaces/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="focus-loop-ui specification openspec/specs/focus-loop-ui/spec.md the five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in wit…">
         <a class="doc-main" href="site/openspec-specs-focus-loop-ui-spec.html">
           <span class="doc-title">focus-loop-ui Specification</span>
-          
-          <span class="doc-path"><code>openspec/specs/focus-loop-ui/spec.md</code> · 998 words</span>
+          <span class="doc-sum">The five core surfaces and the interaction language they share: one-task initiation, a focus surface that keeps task and time legible without scoring anyone, a check-in wit…</span>
+          <span class="doc-path"><code>openspec/specs/focus-loop-ui/spec.md</code> · 1,344 words</span>
         </a>
         <a class="doc-md" href="../openspec/specs/focus-loop-ui/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="session-persistence specification openspec/specs/session-persistence/spec.md ">
+      </li><li class="doc" data-search="session-persistence specification openspec/specs/session-persistence/spec.md what is stored, and what is deliberately not. local swiftdata models with an append-only event log, no network and no account, data minimisation, graceful degradation when…">
         <a class="doc-main" href="site/openspec-specs-session-persistence-spec.html">
           <span class="doc-title">session-persistence Specification</span>
-          
-          <span class="doc-path"><code>openspec/specs/session-persistence/spec.md</code> · 453 words</span>
+          <span class="doc-sum">What is stored, and what is deliberately not. Local SwiftData models with an append-only event log, no network and no account, data minimisation, graceful degradation when…</span>
+          <span class="doc-path"><code>openspec/specs/session-persistence/spec.md</code> · 1,019 words</span>
         </a>
         <a class="doc-md" href="../openspec/specs/session-persistence/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="timer-engine specification openspec/specs/timer-engine/spec.md ">
+      </li><li class="doc" data-search="session-settings specification openspec/specs/session-settings/spec.md rhythm, sound, and notification preferences behind a standard macos settings window. every behaviour here bends to three standing invariants: no punitive mechanics, the eng…">
+        <a class="doc-main" href="site/openspec-specs-session-settings-spec.html">
+          <span class="doc-title">session-settings Specification</span>
+          <span class="doc-sum">Rhythm, sound, and notification preferences behind a standard macOS Settings window. Every behaviour here bends to three standing invariants: no punitive mechanics, the eng…</span>
+          <span class="doc-path"><code>openspec/specs/session-settings/spec.md</code> · 1,821 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/specs/session-settings/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="timer-engine specification openspec/specs/timer-engine/spec.md the deterministic heart of the product. a session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transiti…">
         <a class="doc-main" href="site/openspec-specs-timer-engine-spec.html">
           <span class="doc-title">timer-engine Specification</span>
-          
-          <span class="doc-path"><code>openspec/specs/timer-engine/spec.md</code> · 665 words</span>
+          <span class="doc-sum">The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transiti…</span>
+          <span class="doc-path"><code>openspec/specs/timer-engine/spec.md</code> · 1,267 words</span>
         </a>
         <a class="doc-md" href="../openspec/specs/timer-engine/spec.md" title="Markdown source">MD</a>
       </li></ul>
-  </section><section class="block" id="active">
-    <div class="block-head">
-      <h2>Active change · add-companion-surfaces</h2>
-      <p>Milestone M2: proposal, design with argued alternatives, TDD tasks, and its four capability deltas.</p>
-    </div>
-    <ul class="docs"><li class="doc" data-search="design: add-companion-surfaces openspec/changes/add-companion-surfaces/design.md m1 shipped one window containing five surfaces, a deterministic engine (praxmodorocore), a local append-only store (praxmodorostore), and a golden-tested physics port (fiel…">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-design.html">
-          <span class="doc-title">Design: add-companion-surfaces</span>
-          <span class="doc-sum">M1 shipped one window containing five surfaces, a deterministic engine (PraxmodoroCore), a local append-only store (PraxmodoroStore), and a golden-tested physics port (Fiel…</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/design.md</code> · 1,600 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/design.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="proposal: add-companion-surfaces openspec/changes/add-companion-surfaces/proposal.md m1 delivered one complete loop inside one window. that window is the whole product surface today: to see how long is left, or to hold the timer, or to find the way back aft…">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-proposal.html">
-          <span class="doc-title">Proposal: add-companion-surfaces</span>
-          <span class="doc-sum">M1 delivered one complete loop inside one window. That window is the whole product surface today: to see how long is left, or to hold the timer, or to find the way back aft…</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/proposal.md</code> · 825 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/proposal.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="app-scaffold · m2 change openspec/changes/add-companion-surfaces/specs/app-scaffold/spec.md m1 asserted first-run behavior at the model layer. this change adds the launch-time assertion: what a real launch against a fresh store actually presents.">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-specs-app-scaffold-spec.html">
-          <span class="doc-title">app-scaffold · M2 change</span>
-          <span class="doc-sum">M1 asserted first-run behavior at the model layer. This change adds the launch-time assertion: what a real launch against a fresh store actually presents.</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/specs/app-scaffold/spec.md</code> · 193 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/specs/app-scaffold/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="companion-surfaces openspec/changes/add-companion-surfaces/specs/companion-surfaces/spec.md ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. visual and behavioral truth traces to design-mocks/living-co…">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-specs-companion-surfaces-spec.html">
-          <span class="doc-title">companion-surfaces</span>
-          <span class="doc-sum">Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to design-mocks/living-co…</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/specs/companion-surfaces/spec.md</code> · 1,044 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/specs/companion-surfaces/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="focus-loop-ui · m2 change openspec/changes/add-companion-surfaces/specs/focus-loop-ui/spec.md m1 proved the accessibility alternates structurally — by scanning sources and by asserting the physics engine is absent. that is necessary but not sufficient: it cannot see…">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-specs-focus-loop-ui-spec.html">
-          <span class="doc-title">focus-loop-ui · M2 change</span>
-          <span class="doc-sum">M1 proved the accessibility alternates structurally — by scanning sources and by asserting the physics engine is absent. That is necessary but not sufficient: it cannot see…</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/specs/focus-loop-ui/spec.md</code> · 418 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/specs/focus-loop-ui/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="session-persistence · m2 change openspec/changes/add-companion-surfaces/specs/session-persistence/spec.md m1 asserted schema parity against a single static schema declaration, which cannot fail while there is only one declaration to compare. this change compares the schemas of…">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-specs-session-persistence-spec.html">
-          <span class="doc-title">session-persistence · M2 change</span>
-          <span class="doc-sum">M1 asserted schema parity against a single static schema declaration, which cannot fail while there is only one declaration to compare. This change compares the schemas of…</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/specs/session-persistence/spec.md</code> · 180 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/specs/session-persistence/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="tasks: add-companion-surfaces openspec/changes/add-companion-surfaces/tasks.md every task follows agents.md tdd law: write the named failing test, observe the expected red, implement minimally, verify green plus the smoke command, commit conventionall…">
-        <a class="doc-main" href="site/openspec-changes-add-companion-surfaces-tasks.html">
-          <span class="doc-title">Tasks: add-companion-surfaces</span>
-          <span class="doc-sum">Every task follows AGENTS.md TDD law: write the named failing test, observe the expected red, implement minimally, verify green plus the smoke command, commit conventionall…</span>
-          <span class="doc-path"><code>openspec/changes/add-companion-surfaces/tasks.md</code> · 739 words</span>
-        </a>
-        <a class="doc-md" href="../openspec/changes/add-companion-surfaces/tasks.md" title="Markdown source">MD</a>
-      </li></ul>
   </section><section class="block" id="archive">
     <div class="block-head">
-      <h2>Archived change · M1 core loop</h2>
-      <p>Milestone M1 as it was shipped and archived on 2026-07-31.</p>
+      <h2>Archived changes</h2>
+      <p>Completed OpenSpec changes retained as implementation records.</p>
     </div>
     <ul class="docs"><li class="doc" data-search="design: add-app-scaffold-core-loop openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/design.md zero native code exists. inputs are binding: the validated research corpus (scope, adhd interaction constraints, platform feasibility), the approved living companion mocks…">
         <a class="doc-main" href="site/openspec-changes-archive-2026-07-31-add-app-scaffold-core-loop-design.html">
@@ -557,30 +516,30 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
           <span class="doc-path"><code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/proposal.md</code> · 628 words</span>
         </a>
         <a class="doc-md" href="../openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/proposal.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="app-scaffold · m1 archived openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/app-scaffold/spec.md project skeleton, lifecycle, edition seam, and the build/test entry points every later change relies on.">
+      </li><li class="doc" data-search="app-scaffold · archived · 2026-07-31-add-app-scaffold-core-loop · app-scaffold openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/app-scaffold/spec.md project skeleton, lifecycle, edition seam, and the build/test entry points every later change relies on.">
         <a class="doc-main" href="site/openspec-changes-archive-2026-07-31-add-app-scaffold-core-loop-specs-app-scaffold-spec.html">
-          <span class="doc-title">app-scaffold · M1 archived</span>
+          <span class="doc-title">app-scaffold · archived · 2026-07-31-add-app-scaffold-core-loop · app-scaffold</span>
           <span class="doc-sum">Project skeleton, lifecycle, edition seam, and the build/test entry points every later change relies on.</span>
           <span class="doc-path"><code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/app-scaffold/spec.md</code> · 505 words</span>
         </a>
         <a class="doc-md" href="../openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/app-scaffold/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="focus-loop-ui · m1 archived openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/focus-loop-ui/spec.md the five core surfaces in the living companion language. visual and behavioral truth traces to design-mocks/living-companion/ (physics contract: companion-physics.js).">
+      </li><li class="doc" data-search="focus-loop-ui · archived · 2026-07-31-add-app-scaffold-core-loop · focus-loop-ui openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/focus-loop-ui/spec.md the five core surfaces in the living companion language. visual and behavioral truth traces to design-mocks/living-companion/ (physics contract: companion-physics.js).">
         <a class="doc-main" href="site/openspec-changes-archive-2026-07-31-add-app-scaffold-core-loop-specs-focus-loop-ui-spec.html">
-          <span class="doc-title">focus-loop-ui · M1 archived</span>
+          <span class="doc-title">focus-loop-ui · archived · 2026-07-31-add-app-scaffold-core-loop · focus-loop-ui</span>
           <span class="doc-sum">The five core surfaces in the Living Companion language. Visual and behavioral truth traces to design-mocks/living-companion/ (physics contract: companion-physics.js).</span>
           <span class="doc-path"><code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/focus-loop-ui/spec.md</code> · 952 words</span>
         </a>
         <a class="doc-md" href="../openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/focus-loop-ui/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="session-persistence · m1 archived openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/session-persistence/spec.md local-first records. everything stays on this mac; the network is structurally unreachable from this module.">
+      </li><li class="doc" data-search="session-persistence · archived · 2026-07-31-add-app-scaffold-core-loop · session-persistence openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/session-persistence/spec.md local-first records. everything stays on this mac; the network is structurally unreachable from this module.">
         <a class="doc-main" href="site/openspec-changes-archive-2026-07-31-add-app-scaffold-core-loop-specs-session-persistence-spec.html">
-          <span class="doc-title">session-persistence · M1 archived</span>
+          <span class="doc-title">session-persistence · archived · 2026-07-31-add-app-scaffold-core-loop · session-persistence</span>
           <span class="doc-sum">Local-first records. Everything stays on this Mac; the network is structurally unreachable from this module.</span>
           <span class="doc-path"><code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/session-persistence/spec.md</code> · 424 words</span>
         </a>
         <a class="doc-md" href="../openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/session-persistence/spec.md" title="Markdown source">MD</a>
-      </li><li class="doc" data-search="timer-engine openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/timer-engine/spec.md deterministic session state machine. all truth derives from canonical wall-clock timestamps; ticks are presentation only.">
+      </li><li class="doc" data-search="timer-engine · archived · 2026-07-31-add-app-scaffold-core-loop · timer-engine openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/timer-engine/spec.md deterministic session state machine. all truth derives from canonical wall-clock timestamps; ticks are presentation only.">
         <a class="doc-main" href="site/openspec-changes-archive-2026-07-31-add-app-scaffold-core-loop-specs-timer-engine-spec.html">
-          <span class="doc-title">timer-engine</span>
+          <span class="doc-title">timer-engine · archived · 2026-07-31-add-app-scaffold-core-loop · timer-engine</span>
           <span class="doc-sum">Deterministic session state machine. All truth derives from canonical wall-clock timestamps; ticks are presentation only.</span>
           <span class="doc-path"><code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/specs/timer-engine/spec.md</code> · 619 words</span>
         </a>
@@ -592,6 +551,139 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
           <span class="doc-path"><code>openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/tasks.md</code> · 561 words</span>
         </a>
         <a class="doc-md" href="../openspec/changes/archive/2026-07-31-add-app-scaffold-core-loop/tasks.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="design: add-companion-surfaces openspec/changes/archive/2026-08-26-add-companion-surfaces/design.md m1 shipped one window containing five surfaces, a deterministic engine (praxmodorocore), a local append-only store (praxmodorostore), and a golden-tested physics port (fiel…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-design.html">
+          <span class="doc-title">Design: add-companion-surfaces</span>
+          <span class="doc-sum">M1 shipped one window containing five surfaces, a deterministic engine (PraxmodoroCore), a local append-only store (PraxmodoroStore), and a golden-tested physics port (Fiel…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/design.md</code> · 2,280 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/design.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="proposal: add-companion-surfaces openspec/changes/archive/2026-08-26-add-companion-surfaces/proposal.md m1 delivered one complete loop inside one window. that window is the whole product surface today: to see how long is left, or to hold the timer, or to find the way back aft…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-proposal.html">
+          <span class="doc-title">Proposal: add-companion-surfaces</span>
+          <span class="doc-sum">M1 delivered one complete loop inside one window. That window is the whole product surface today: to see how long is left, or to hold the timer, or to find the way back aft…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/proposal.md</code> · 870 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/proposal.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="app-scaffold · archived · 2026-08-26-add-companion-surfaces · app-scaffold openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/app-scaffold/spec.md m1 asserted first-run behavior at the model layer. this change adds the launch-time assertion: what a real launch against a fresh store actually presents.">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-specs-app-scaffold-spec.html">
+          <span class="doc-title">app-scaffold · archived · 2026-08-26-add-companion-surfaces · app-scaffold</span>
+          <span class="doc-sum">M1 asserted first-run behavior at the model layer. This change adds the launch-time assertion: what a real launch against a fresh store actually presents.</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/app-scaffold/spec.md</code> · 468 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/app-scaffold/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="companion-surfaces openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/companion-surfaces/spec.md ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. visual and behavioral truth traces to design-mocks/living-co…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-specs-companion-surfaces-spec.html">
+          <span class="doc-title">companion-surfaces</span>
+          <span class="doc-sum">Ambient views of one running session: the menu-bar popover, the floating focus capsule, and the return overlay. Visual and behavioral truth traces to design-mocks/living-co…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/companion-surfaces/spec.md</code> · 1,197 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/companion-surfaces/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="focus-loop-ui · archived · 2026-08-26-add-companion-surfaces · focus-loop-ui openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/focus-loop-ui/spec.md m1 proved the accessibility alternates structurally — by scanning sources and by asserting the physics engine is absent. that is necessary but not sufficient: it cannot see…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-specs-focus-loop-ui-spec.html">
+          <span class="doc-title">focus-loop-ui · archived · 2026-08-26-add-companion-surfaces · focus-loop-ui</span>
+          <span class="doc-sum">M1 proved the accessibility alternates structurally — by scanning sources and by asserting the physics engine is absent. That is necessary but not sufficient: it cannot see…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/focus-loop-ui/spec.md</code> · 583 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/focus-loop-ui/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="session-persistence · archived · 2026-08-26-add-companion-surfaces · session-persistence openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/session-persistence/spec.md m1 asserted schema parity against a single static schema declaration, which cannot fail while there is only one declaration to compare. this change compares the schemas of…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-specs-session-persistence-spec.html">
+          <span class="doc-title">session-persistence · archived · 2026-08-26-add-companion-surfaces · session-persistence</span>
+          <span class="doc-sum">M1 asserted schema parity against a single static schema declaration, which cannot fail while there is only one declaration to compare. This change compares the schemas of…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/session-persistence/spec.md</code> · 200 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/session-persistence/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="timer-engine · archived · 2026-08-26-add-companion-surfaces · timer-engine openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/timer-engine/spec.md m1's module-isolation requirement used retired product-edition terminology. this change preserves the isolation contract while naming the actual one-product boundary.">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-specs-timer-engine-spec.html">
+          <span class="doc-title">timer-engine · archived · 2026-08-26-add-companion-surfaces · timer-engine</span>
+          <span class="doc-sum">M1's module-isolation requirement used retired product-edition terminology. This change preserves the isolation contract while naming the actual one-product boundary.</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/timer-engine/spec.md</code> · 123 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/specs/timer-engine/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="tasks: add-companion-surfaces openspec/changes/archive/2026-08-26-add-companion-surfaces/tasks.md every new remediation task follows agents.md tdd law: write the named failing test, observe the expected red, implement minimally, and verify green plus the smoke command.…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-companion-surfaces-tasks.html">
+          <span class="doc-title">Tasks: add-companion-surfaces</span>
+          <span class="doc-sum">Every new remediation task follows AGENTS.md TDD law: write the named failing test, observe the expected red, implement minimally, and verify green plus the smoke command.…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-companion-surfaces/tasks.md</code> · 1,949 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-companion-surfaces/tasks.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="design: add-session-settings openspec/changes/archive/2026-08-26-add-session-settings/design.md the 2026-08-12 settings-parity plan is the historical scope record. current execution is governed by docs/plans/2026-08-23-m3-validation-remediation.md and the architecture…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-session-settings-design.html">
+          <span class="doc-title">Design: add-session-settings</span>
+          <span class="doc-sum">The 2026-08-12 settings-parity plan is the historical scope record. Current execution is governed by docs/plans/2026-08-23-m3-validation-remediation.md and the architecture…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-session-settings/design.md</code> · 1,605 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-session-settings/design.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="proposal: add-session-settings openspec/changes/archive/2026-08-26-add-session-settings/proposal.md praxmodoro has no settings surface at all. the only preferences that exist are a menu-command motion toggle and four fixed timing policies chosen at initiation. for the pro…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-session-settings-proposal.html">
+          <span class="doc-title">Proposal: add-session-settings</span>
+          <span class="doc-sum">Praxmodoro has no settings surface at all. The only preferences that exist are a menu-command motion toggle and four fixed timing policies chosen at initiation. For the pro…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-session-settings/proposal.md</code> · 699 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-session-settings/proposal.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="session-settings openspec/changes/archive/2026-08-26-add-session-settings/specs/session-settings/spec.md rhythm, sound, and notification preferences behind a standard macos settings window. every behaviour here bends to three standing invariants: no punitive mechanics, the eng…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-session-settings-specs-session-settings-spec.html">
+          <span class="doc-title">session-settings</span>
+          <span class="doc-sum">Rhythm, sound, and notification preferences behind a standard macOS Settings window. Every behaviour here bends to three standing invariants: no punitive mechanics, the eng…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-session-settings/specs/session-settings/spec.md</code> · 1,819 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-session-settings/specs/session-settings/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="timer-engine · archived · 2026-08-26-add-session-settings · timer-engine openspec/changes/archive/2026-08-26-add-session-settings/specs/timer-engine/spec.md the engine gains two transition kinds — user adjustments and autostart-at-expiry — without surrendering its one law: remaining time is a pure function of recorded transitio…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-session-settings-specs-timer-engine-spec.html">
+          <span class="doc-title">timer-engine · archived · 2026-08-26-add-session-settings · timer-engine</span>
+          <span class="doc-sum">The engine gains two transition kinds — user adjustments and autostart-at-expiry — without surrendering its one law: remaining time is a pure function of recorded transitio…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-session-settings/specs/timer-engine/spec.md</code> · 452 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-session-settings/specs/timer-engine/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="tasks: add-session-settings openspec/changes/archive/2026-08-26-add-session-settings/tasks.md every task is red-test-first: write the failing test, watch it fail for the right reason, make it pass, run the guard suite. core tasks verify with swift test --package-pat…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-add-session-settings-tasks.html">
+          <span class="doc-title">Tasks: add-session-settings</span>
+          <span class="doc-sum">Every task is red-test-first: write the failing test, watch it fail for the right reason, make it pass, run the guard suite. Core tasks verify with swift test --package-pat…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-add-session-settings/tasks.md</code> · 2,259 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-add-session-settings/tasks.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="design: stabilize-runtime-contracts openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md praxmodorocore.session is a deterministic state machine over canonical timestamps. praxmodorostore.localstore is an append-only swiftdata adapter. the app target imports bo…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-stabilize-runtime-contracts-design.html">
+          <span class="doc-title">Design: stabilize-runtime-contracts</span>
+          <span class="doc-sum">PraxmodoroCore.Session is a deterministic state machine over canonical timestamps. PraxmodoroStore.LocalStore is an append-only SwiftData adapter. The app target imports bo…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md</code> · 1,386 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="proposal: stabilize-runtime-contracts openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/proposal.md the deterministic timer engine is already the right foundation, but three runtime boundaries still rely on convention instead of contracts:">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-stabilize-runtime-contracts-proposal.html">
+          <span class="doc-title">Proposal: stabilize-runtime-contracts</span>
+          <span class="doc-sum">The deterministic timer engine is already the right foundation, but three runtime boundaries still rely on convention instead of contracts:</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/proposal.md</code> · 657 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/proposal.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="spec · archived · 2026-08-26-stabilize-runtime-contracts · focus-loop-ui openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/focus-loop-ui/spec.md every swiftui surface shall request routing changes through a named appmodel method and shall not assign appmodel.surface directly; the property shall be read-only outside…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-stabilize-runtime-contracts-specs-focus-loop-ui-spec.html">
+          <span class="doc-title">spec · archived · 2026-08-26-stabilize-runtime-contracts · focus-loop-ui</span>
+          <span class="doc-sum">Every SwiftUI surface SHALL request routing changes through a named AppModel method and SHALL NOT assign AppModel.surface directly; the property SHALL be read-only outside…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/focus-loop-ui/spec.md</code> · 127 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/focus-loop-ui/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="spec · archived · 2026-08-26-stabilize-runtime-contracts · session-persistence openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/session-persistence/spec.md the app integration layer shall encode and decode persisted lifecycle transitions through one exhaustive vocabulary containing running, held, break, and closed, and shall n…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-stabilize-runtime-contracts-specs-session-persistence-spec.html">
+          <span class="doc-title">spec · archived · 2026-08-26-stabilize-runtime-contracts · session-persistence</span>
+          <span class="doc-sum">The app integration layer SHALL encode and decode persisted lifecycle transitions through one exhaustive vocabulary containing running, held, break, and closed, and SHALL N…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/session-persistence/spec.md</code> · 472 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/session-persistence/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="spec · archived · 2026-08-26-stabilize-runtime-contracts · timer-engine openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/timer-engine/spec.md the engine shall expose breakendinstant(cadence:) as the sole derivation of the current break's end, using the final break transition timestamp plus the cadence-aware sugge…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-stabilize-runtime-contracts-specs-timer-engine-spec.html">
+          <span class="doc-title">spec · archived · 2026-08-26-stabilize-runtime-contracts · timer-engine</span>
+          <span class="doc-sum">The engine SHALL expose breakEndInstant(cadence:) as the sole derivation of the current break's end, using the final break transition timestamp plus the cadence-aware sugge…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/timer-engine/spec.md</code> · 285 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/specs/timer-engine/spec.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="tasks: stabilize-runtime-contracts openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/tasks.md no production code task starts until proposal, delta specs, design, this task list, and the dated plan pass every specification review. because the user prohibited commits…">
+        <a class="doc-main" href="site/openspec-changes-archive-2026-08-26-stabilize-runtime-contracts-tasks.html">
+          <span class="doc-title">Tasks: stabilize-runtime-contracts</span>
+          <span class="doc-sum">No production code task starts until proposal, delta specs, design, this task list, and the dated plan pass every specification review. Because the user prohibited commits…</span>
+          <span class="doc-path"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/tasks.md</code> · 1,262 words</span>
+        </a>
+        <a class="doc-md" href="../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/tasks.md" title="Markdown source">MD</a>
       </li></ul>
   </section><section class="block" id="handoff">
     <div class="block-head">
@@ -621,10 +713,30 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
     <ul class="docs"><li class="doc" data-search="praxodoro autonomous bootstrap session .agent/sessions/2026-07-20t13-48-25z-praxodoro-autonomous-bootstrap.md ">
         <a class="doc-main" href="site/agent-sessions-2026-07-20T13-48-25Z-praxodoro-autonomous-bootstrap.html">
           <span class="doc-title">Praxodoro autonomous bootstrap session</span>
-          
           <span class="doc-path"><code>.agent/sessions/2026-07-20T13-48-25Z-praxodoro-autonomous-bootstrap.md</code> · 851 words</span>
         </a>
         <a class="doc-md" href="../.agent/sessions/2026-07-20T13-48-25Z-praxodoro-autonomous-bootstrap.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="session: m3 closeout — add-session-settings (2026-08-21) .agent/sessions/2026-08-21t00-00-00z-m3-closeout.md actor: ox-alpha (opencode, x-preview-f-free) · mode: autonomous-orchestrion-v6 + ponytail(full)">
+        <a class="doc-main" href="site/agent-sessions-2026-08-21T00-00-00Z-m3-closeout.html">
+          <span class="doc-title">Session: M3 closeout — add-session-settings (2026-08-21)</span>
+          <span class="doc-sum">Actor: ox-alpha (opencode, x-preview-f-free) · Mode: autonomous-orchestrion-v6 + ponytail(full)</span>
+          <span class="doc-path"><code>.agent/sessions/2026-08-21T00-00-00Z-m3-closeout.md</code> · 282 words</span>
+        </a>
+        <a class="doc-md" href="../.agent/sessions/2026-08-21T00-00-00Z-m3-closeout.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="architecture review session .agent/sessions/2026-08-23t14-21-50z-architecture-review.md loaded: using-superpowers, brainstorming, writing-plans, dispatching-parallel-agents, subagent-driven-development, test-driven-development, verification-before-completion,…">
+        <a class="doc-main" href="site/agent-sessions-2026-08-23T14-21-50Z-architecture-review.html">
+          <span class="doc-title">Architecture review session</span>
+          <span class="doc-sum">Loaded: using-superpowers, brainstorming, writing-plans, dispatching-parallel-agents, subagent-driven-development, test-driven-development, verification-before-completion,…</span>
+          <span class="doc-path"><code>.agent/sessions/2026-08-23T14-21-50Z-architecture-review.md</code> · 3,038 words</span>
+        </a>
+        <a class="doc-md" href="../.agent/sessions/2026-08-23T14-21-50Z-architecture-review.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="approved architecture closeout session .agent/sessions/2026-08-26t13-34-36z-approved-closeout.md the user approved autonomous execution of the existing specification-to-ticket-to-implementation workflow, followed by code review, systematic debugging, full verification,…">
+        <a class="doc-main" href="site/agent-sessions-2026-08-26T13-34-36Z-approved-closeout.html">
+          <span class="doc-title">Approved architecture closeout session</span>
+          <span class="doc-sum">The user approved autonomous execution of the existing specification-to-ticket-to-implementation workflow, followed by code review, systematic debugging, full verification,…</span>
+          <span class="doc-path"><code>.agent/sessions/2026-08-26T13-34-36Z-approved-closeout.md</code> · 1,009 words</span>
+        </a>
+        <a class="doc-md" href="../.agent/sessions/2026-08-26T13-34-36Z-approved-closeout.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="domain docs docs/agents/domain.md how the engineering skills should consume this repo's domain documentation when exploring the codebase.">
         <a class="doc-main" href="site/docs-agents-domain.html">
           <span class="doc-title">Domain Docs</span>
@@ -662,7 +774,6 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
       </li><li class="doc" data-search="decisions research/pomodoro-landscape-20260720/logs/decisions.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-logs-decisions.html">
           <span class="doc-title">Decisions</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/logs/decisions.md</code> · 207 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/logs/decisions.md" title="Markdown source">MD</a>
@@ -704,7 +815,6 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
       </li><li class="doc" data-search="global synthesis research/pomodoro-landscape-20260720/synthesis/current.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-synthesis-current.html">
           <span class="doc-title">Global Synthesis</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/synthesis/current.md</code> · 1,683 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/synthesis/current.md" title="Markdown source">MD</a>
@@ -746,56 +856,48 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
       </li><li class="doc" data-search="merge receipt: w1-adhd-research research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-adhd-research.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-01-merge-w1-adhd-research.html">
           <span class="doc-title">Merge Receipt: w1-adhd-research</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-adhd-research.md</code> · 54 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-adhd-research.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w1-competitor-official research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-competitor-official.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-01-merge-w1-competitor-official.html">
           <span class="doc-title">Merge Receipt: w1-competitor-official</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-competitor-official.md</code> · 49 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-competitor-official.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w1-macos-visual-tech research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-macos-visual-tech.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-01-merge-w1-macos-visual-tech.html">
           <span class="doc-title">Merge Receipt: w1-macos-visual-tech</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-macos-visual-tech.md</code> · 56 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-macos-visual-tech.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w1-user-friction research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-user-friction.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-01-merge-w1-user-friction.html">
           <span class="doc-title">Merge Receipt: w1-user-friction</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-user-friction.md</code> · 49 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-01/merge-w1-user-friction.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w2-breaks-adhd-falsification research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-breaks-adhd-falsification.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-02-merge-w2-breaks-adhd-falsification.html">
           <span class="doc-title">Merge Receipt: w2-breaks-adhd-falsification</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-breaks-adhd-falsification.md</code> · 55 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-breaks-adhd-falsification.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w2-effects-dependency-audit research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-effects-dependency-audit.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-02-merge-w2-effects-dependency-audit.html">
           <span class="doc-title">Merge Receipt: w2-effects-dependency-audit</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-effects-dependency-audit.md</code> · 57 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-effects-dependency-audit.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w2-platform-feasibility research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-platform-feasibility.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-02-merge-w2-platform-feasibility.html">
           <span class="doc-title">Merge Receipt: w2-platform-feasibility</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-platform-feasibility.md</code> · 61 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-platform-feasibility.md" title="Markdown source">MD</a>
       </li><li class="doc" data-search="merge receipt: w2-product-scope-adjudication research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-product-scope-adjudication.md ">
         <a class="doc-main" href="site/research-pomodoro-landscape-20260720-waves-wave-02-merge-w2-product-scope-adjudication.html">
           <span class="doc-title">Merge Receipt: w2-product-scope-adjudication</span>
-          
           <span class="doc-path"><code>research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-product-scope-adjudication.md</code> · 52 words</span>
         </a>
         <a class="doc-md" href="../research/pomodoro-landscape-20260720/waves/wave-02/merge-w2-product-scope-adjudication.md" title="Markdown source">MD</a>
@@ -854,6 +956,62 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
           <span class="doc-path"><code>design-mocks/hallmark/README.md</code> · 642 words</span>
         </a>
         <a class="doc-md" href="../design-mocks/hallmark/README.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="decision: visual direction re-affirmed — living companion docs/decisions/2026-08-12-direction-reaffirmed.md date: 2026-08-12 · decider: prax · instrument: dcanvas export 01kztmcw568jn5gkma8tp9phpa (canvas 01kyszmzqdxavqxtqcchh7etyr) · gate: go">
+        <a class="doc-main" href="site/docs-decisions-2026-08-12-direction-reaffirmed.html">
+          <span class="doc-title">Decision: visual direction re-affirmed — Living Companion</span>
+          <span class="doc-sum">Date: 2026-08-12 · Decider: Prax · Instrument: dcanvas export 01KZTMCW568JN5GKMA8TP9PHPA (canvas 01KYSZMZQDXAVQXTQCCHH7ETYR) · Gate: go</span>
+          <span class="doc-path"><code>docs/decisions/2026-08-12-direction-reaffirmed.md</code> · 216 words</span>
+        </a>
+        <a class="doc-md" href="../docs/decisions/2026-08-12-direction-reaffirmed.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="plan: settings &amp; rhythm parity — proposed change add-session-settings docs/plans/2026-08-12-settings-parity.md date 2026-08-12 · status: historical scope record — execution superseded 2026-08-23 by docs/plans/2026-08-23-m3-validation-remediation.md and docs/plans/2026-08-23-architec…">
+        <a class="doc-main" href="site/docs-plans-2026-08-12-settings-parity.html">
+          <span class="doc-title">Plan: settings &amp; rhythm parity — proposed change add-session-settings</span>
+          <span class="doc-sum">Date 2026-08-12 · Status: HISTORICAL SCOPE RECORD — execution superseded 2026-08-23 by docs/plans/2026-08-23-m3-validation-remediation.md and docs/plans/2026-08-23-architec…</span>
+          <span class="doc-path"><code>docs/plans/2026-08-12-settings-parity.md</code> · 1,393 words</span>
+        </a>
+        <a class="doc-md" href="../docs/plans/2026-08-12-settings-parity.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="architecture stabilization and milestone close-out plan docs/plans/2026-08-23-architecture-stabilization.md date: 2026-08-23 branch: prax/architecture-review-2026-08-23 frozen baseline: a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7 archived changes: add-companion-surfaces, stabilize-r…">
+        <a class="doc-main" href="site/docs-plans-2026-08-23-architecture-stabilization.html">
+          <span class="doc-title">Architecture stabilization and milestone close-out plan</span>
+          <span class="doc-sum">Date: 2026-08-23 Branch: prax/architecture-review-2026-08-23 Frozen baseline: a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7 Archived changes: add-companion-surfaces, stabilize-r…</span>
+          <span class="doc-path"><code>docs/plans/2026-08-23-architecture-stabilization.md</code> · 3,269 words</span>
+        </a>
+        <a class="doc-md" href="../docs/plans/2026-08-23-architecture-stabilization.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="enterprise-grade pass: ceo review plan docs/plans/2026-08-23-enterprise-grade.md generated 2026-08-23 by /plan-ceo-review (+ office-hours builder lens, grilling/domain-modeling discipline). mode: selective expansion, meaning hold the ticketed roadmap (#…">
+        <a class="doc-main" href="site/docs-plans-2026-08-23-enterprise-grade.html">
+          <span class="doc-title">Enterprise-grade pass: CEO review plan</span>
+          <span class="doc-sum">Generated 2026-08-23 by /plan-ceo-review (+ office-hours builder lens, grilling/domain-modeling discipline). Mode: SELECTIVE EXPANSION, meaning hold the ticketed roadmap (#…</span>
+          <span class="doc-path"><code>docs/plans/2026-08-23-enterprise-grade.md</code> · 696 words</span>
+        </a>
+        <a class="doc-md" href="../docs/plans/2026-08-23-enterprise-grade.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="m2 fresh-validation remediation plan docs/plans/2026-08-23-m2-validation-remediation.md date: 2026-08-23 change: add-companion-surfaces umbrella issue: #7 status: complete 2026-08-26; archived as 2026-08-26-add-companion-surfaces; post-archive signed gate pass…">
+        <a class="doc-main" href="site/docs-plans-2026-08-23-m2-validation-remediation.html">
+          <span class="doc-title">M2 fresh-validation remediation plan</span>
+          <span class="doc-sum">Date: 2026-08-23 Change: add-companion-surfaces Umbrella issue: #7 Status: complete 2026-08-26; archived as 2026-08-26-add-companion-surfaces; post-archive signed gate pass…</span>
+          <span class="doc-path"><code>docs/plans/2026-08-23-m2-validation-remediation.md</code> · 640 words</span>
+        </a>
+        <a class="doc-md" href="../docs/plans/2026-08-23-m2-validation-remediation.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="add-session-settings fresh-validation remediation plan docs/plans/2026-08-23-m3-validation-remediation.md date: 2026-08-23 change: add-session-settings owner decision: #18 status: complete 2026-08-26; archived as 2026-08-26-add-session-settings; post-archive signed gate passed…">
+        <a class="doc-main" href="site/docs-plans-2026-08-23-m3-validation-remediation.html">
+          <span class="doc-title">add-session-settings fresh-validation remediation plan</span>
+          <span class="doc-sum">Date: 2026-08-23 Change: add-session-settings Owner decision: #18 Status: complete 2026-08-26; archived as 2026-08-26-add-session-settings; post-archive signed gate passed…</span>
+          <span class="doc-path"><code>docs/plans/2026-08-23-m3-validation-remediation.md</code> · 962 words</span>
+        </a>
+        <a class="doc-md" href="../docs/plans/2026-08-23-m3-validation-remediation.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="runtime contract foundation implementation plan docs/plans/2026-08-23-runtime-contract-foundation.md date: 2026-08-23 branch: prax/architecture-review-2026-08-23 baseline: a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7 openspec change: stabilize-runtime-contracts issues: #51, #5…">
+        <a class="doc-main" href="site/docs-plans-2026-08-23-runtime-contract-foundation.html">
+          <span class="doc-title">Runtime contract foundation implementation plan</span>
+          <span class="doc-sum">Date: 2026-08-23 Branch: prax/architecture-review-2026-08-23 Baseline: a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7 OpenSpec change: stabilize-runtime-contracts Issues: #51, #5…</span>
+          <span class="doc-path"><code>docs/plans/2026-08-23-runtime-contract-foundation.md</code> · 1,530 words</span>
+        </a>
+        <a class="doc-md" href="../docs/plans/2026-08-23-runtime-contract-foundation.md" title="Markdown source">MD</a>
+      </li><li class="doc" data-search="praxmodoro — every open blocker, one shot praxmodoro-blockers.md six decisions stand between here and uninterrupted execution. everything else is already approved (living companion re-affirmed, settings plan approach d, both lanes author…">
+        <a class="doc-main" href="site/praxmodoro-blockers.html">
+          <span class="doc-title">Praxmodoro — every open blocker, one shot</span>
+          <span class="doc-sum">Six decisions stand between here and uninterrupted execution. Everything else is already approved (Living Companion re-affirmed, settings plan approach D, both lanes author…</span>
+          <span class="doc-path"><code>praxmodoro-blockers.md</code> · 1,303 words</span>
+        </a>
+        <a class="doc-md" href="../praxmodoro-blockers.md" title="Markdown source">MD</a>
       </li></ul>
   </section>
 

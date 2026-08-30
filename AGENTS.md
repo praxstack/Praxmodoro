@@ -24,9 +24,9 @@ Read, in order:
 - Target native macOS 26+ with Swift 6.3 and SwiftUI.
 - Keep the timer engine deterministic and based on canonical timestamps so sleep/wake and relaunch cannot drift the session.
 - Treat ADHD features as supportive interaction design, never diagnosis or treatment.
-- Keep initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load mode in Lite.
-- Prefer local processing and data minimization. Any network, sync, analytics, or AI capability must be explicit, optional, edition-gated, and documented.
-- “Liquid Instrument” is expressive but must honor Reduce Transparency, Increase Contrast, Reduce Motion, keyboard navigation, VoiceOver, and legibility.
+- Keep initiation help, check-ins, adaptive breaks, accessibility, and low-cognitive-load mode in the one complete product for every user.
+- Prefer local processing and data minimization. Any network, sync, analytics, or AI capability must be explicit, optional, capability-scoped, and documented; no tier or edition framing is part of the product.
+- “Living Companion” is the approved visual direction; it must honor Reduce Transparency, Increase Contrast, Reduce Motion, keyboard navigation, VoiceOver, and legibility.
 - Do not edit or commit `research/skill-sources/` or `research/library-sources/`; they are ignored read-only upstream clones.
 
 ## Git safety

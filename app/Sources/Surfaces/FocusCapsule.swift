@@ -11,7 +11,9 @@ struct FocusCapsule: View {
     var offersHold: Bool { display.phase != .onBreak }
 
     var controls: [String] {
-        offersHold ? ["capsule-task", "capsule-time", "capsule-hold"] : ["capsule-task", "capsule-time"]
+        offersHold
+            ? ["capsule-status", "capsule-task", "capsule-time", "capsule-hold"]
+            : ["capsule-status", "capsule-task", "capsule-time"]
     }
 
     let display: CompanionDisplay
@@ -19,9 +21,11 @@ struct FocusCapsule: View {
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+    @Environment(\.colorSchemeContrast) private var contrast
 
     var timeText: String? { display.timeText }
     var taskText: String { display.taskLine }
+    var statusText: String { display.statusLine }
 
     var accessibilityLabel: String {
         guard let timeText else { return "Focus capsule: \(display.statusLine)" }
@@ -55,6 +59,10 @@ struct FocusCapsule: View {
                 .frame(width: 22, height: 22)
 
             VStack(alignment: .leading, spacing: 1) {
+                Text(statusText)
+                    .font(.caption2.smallCaps())
+                    .lineLimit(1)
+                    .accessibilityIdentifier("capsule-status")
                 Text(taskText.isEmpty ? display.statusLine : taskText)
                     .font(.caption)
                     .lineLimit(1)
@@ -71,12 +79,15 @@ struct FocusCapsule: View {
                     Image(systemName: display.phase == .held ? "play.fill" : "pause.fill")
                 }
                 .buttonStyle(.borderless)
+                .focusable()
+                .keyboardShortcut(.space, modifiers: [])
                 .accessibilityLabel(display.phase == .held ? "Resume timer" : "Hold timer")
                 .accessibilityIdentifier("capsule-hold")
             }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
+        .foregroundStyle(SurfacePalette.primaryText(increasedContrast: contrast == .increased))
         .background(
             Capsule().fill(SurfacePalette.background(reduceTransparency: reduceTransparency))
         )

@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design: stabilize-runtime-contracts · Praxmodoro docs</title>
+<style>/* Praxmodoro documentation — shared shell.
+ *
+ * Deliberately NOT a pastiche of the product's own Living Companion palette.
+ * Documentation that cosplays the product it documents makes the two harder to
+ * tell apart, and this project's visual direction is currently under question.
+ * So: an engineering-dossier voice — warm paper, cool ink, one restrained
+ * blue-teal accent, serif for long-form reading, mono for anything that is a
+ * path, a count, or a command. */
+
+:root {
+  --ground:   oklch(97.2% 0.006 92);
+  --surface:  oklch(94.6% 0.008 90);
+  --surface-2:oklch(91.5% 0.009 88);
+  --ink:      oklch(24% 0.014 258);
+  --ink-2:    oklch(36% 0.014 258);
+  --muted:    oklch(52% 0.014 260);
+  --rule:     oklch(87.5% 0.008 90);
+  --accent:   oklch(47% 0.125 232);
+  --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok:       oklch(48% 0.095 158);
+  --ok-2:     oklch(48% 0.095 158 / 0.13);
+  --warn:     oklch(56% 0.11 68);
+  --warn-2:   oklch(56% 0.11 68 / 0.15);
+  --danger:   oklch(51% 0.16 25);
+  --shadow:   oklch(30% 0.02 260 / 0.09);
+
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: ui-serif, "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 70ch;
+  --bar: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+    --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+    --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+    --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+    --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+  --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+  --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+  --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+  --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+  --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+}
+:root[data-theme="light"] {
+  --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90); --surface-2: oklch(91.5% 0.009 88);
+  --ink: oklch(24% 0.014 258); --ink-2: oklch(36% 0.014 258); --muted: oklch(52% 0.014 260);
+  --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok: oklch(48% 0.095 158); --ok-2: oklch(48% 0.095 158 / 0.13);
+  --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+  --danger: oklch(51% 0.16 25); --shadow: oklch(30% 0.02 260 / 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 1rem); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr, .skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 60; background: var(--accent);
+  color: var(--ground); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .25rem; }
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--bar);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1.25rem; background: color-mix(in oklab, var(--ground) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem; font-weight: 620;
+  font-size: .95rem; color: var(--ink); text-decoration: none; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.brand-mark {
+  width: .7rem; height: .7rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), color-mix(in oklab, var(--accent) 40%, transparent));
+  box-shadow: 0 0 0 3px var(--accent-2);
+}
+.topnav { display: flex; gap: .15rem; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: var(--muted); text-decoration: none; font-size: .82rem; white-space: nowrap;
+  padding: .3rem .55rem; border-radius: .4rem;
+}
+.topnav a:hover { color: var(--ink); background: var(--surface); }
+.theme {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--muted);
+  border-radius: .45rem; width: 2rem; height: 2rem; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+.wrap { max-width: 78rem; margin: 0 auto; padding: 2.75rem 1.5rem 6rem; }
+body:not(.is-index) .wrap { max-width: 56rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .7rem;
+}
+h1 {
+  font-family: var(--sans); font-size: clamp(1.9rem, 4.2vw, 2.85rem); line-height: 1.1;
+  letter-spacing: -.025em; font-weight: 660; margin: 0 0 .7rem; text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--serif); font-size: 1.16rem; line-height: 1.55; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 1rem;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; font-family: var(--mono);
+  font-size: .74rem; color: var(--muted); padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────────── */
+.prose { font-family: var(--serif); font-size: 1.045rem; line-height: 1.72; }
+.prose > * { max-width: var(--measure); }
+.prose > .scroller, .prose > pre { max-width: 100%; }
+.prose h2 {
+  font-family: var(--sans); font-size: 1.45rem; font-weight: 640; letter-spacing: -.015em;
+  margin: 2.9rem 0 .6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-wrap: balance;
+}
+.prose h3 { font-family: var(--sans); font-size: 1.12rem; font-weight: 620; margin: 2rem 0 .4rem; }
+.prose h4 {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 1.6rem 0 .3rem; font-weight: 500;
+}
+.prose p { margin: 0 0 1.05rem; }
+.prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: .35rem; }
+.prose li::marker { color: var(--muted); }
+.prose a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.prose strong { font-weight: 660; color: var(--ink); }
+.prose hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+.prose blockquote {
+  margin: 1.4rem 0; padding: .85rem 1.15rem; border-left: 3px solid var(--warn);
+  background: var(--warn-2); border-radius: 0 .5rem .5rem 0; color: var(--ink-2);
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd {
+  font-family: var(--mono); font-size: .855em;
+  background: var(--surface-2); padding: .1em .36em; border-radius: .3rem;
+  border: 1px solid color-mix(in oklab, var(--rule) 70%, transparent);
+}
+pre {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: .6rem;
+  padding: 1rem 1.15rem; overflow-x: auto; margin: 0 0 1.2rem;
+  font-size: .86rem; line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; font-size: 1em; }
+
+/* Tables — the specs are full of them. */
+.scroller {
+  overflow-x: auto; border: 1px solid var(--rule); border-radius: .6rem;
+  background: var(--surface); margin: 0 0 1.4rem;
+}
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .875rem; }
+th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; white-space: nowrap;
+  background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+}
+tbody tr:last-child td { border-bottom: none; }
+td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
+
+/* Task lists in the OpenSpec task files. */
+.prose input[type="checkbox"] { accent-color: var(--ok); margin-right: .35rem; }
+.prose li:has(> input[type="checkbox"]:checked) { color: var(--muted); }
+.prose ul:has(input[type="checkbox"]) { list-style: none; padding-left: .2rem; }
+
+/* ── Document footer ───────────────────────────────────────────────────── */
+.docfoot {
+  margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srcbtn {
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 550;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--accent);
+  padding: .45rem .85rem; border-radius: .45rem; background: var(--accent-2);
+}
+.srcbtn:hover { background: var(--accent); color: var(--ground); }
+.srcpath { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+/* ── Index ─────────────────────────────────────────────────────────────── */
+.hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 20ch; }
+.hero .standfirst { max-width: 62ch; font-size: 1.2rem; }
+.stats {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.8rem; margin: 1.5rem 0 1.75rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--muted);
+}
+.stats b { color: var(--ink); font-size: 1.15rem; font-weight: 600; margin-right: .3rem; font-variant-numeric: tabular-nums; }
+.search input {
+  width: 100%; max-width: 32rem; font: inherit; font-size: .95rem;
+  padding: .6rem .9rem; border-radius: .55rem; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+
+.block { margin-top: 3.25rem; scroll-margin-top: calc(var(--bar) + 1rem); }
+.block[hidden] { display: none; }
+.block-head { margin-bottom: 1.1rem; }
+.block-head h2 {
+  font-size: 1.35rem; font-weight: 640; letter-spacing: -.015em; margin: 0 0 .25rem;
+}
+.block-head p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 68ch; }
+
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.doc {
+  display: flex; align-items: stretch; gap: .5rem;
+  border: 1px solid var(--rule); border-radius: .6rem; background: var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+.doc[hidden] { display: none; }
+.doc:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--rule)); box-shadow: 0 2px 10px -4px var(--shadow); }
+.doc-main {
+  flex: 1; display: flex; flex-direction: column; gap: .2rem;
+  padding: .85rem 1rem; text-decoration: none; color: inherit; min-width: 0;
+}
+.doc-title { font-weight: 590; font-size: .98rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.doc-sum { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.doc-path { font-family: var(--mono); font-size: .71rem; color: var(--muted); overflow-wrap: anywhere; }
+.doc-path code { background: none; border: none; padding: 0; font-size: 1em; }
+.doc-md {
+  display: flex; align-items: center; padding: 0 .9rem; text-decoration: none;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; color: var(--muted);
+  border-left: 1px solid var(--rule); border-radius: 0 .6rem .6rem 0;
+}
+.doc-md:hover { background: var(--accent-2); color: var(--accent); }
+
+.chip {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .14em .45em; border-radius: .3rem; font-weight: 500; white-space: nowrap;
+}
+.chip.ok { background: var(--ok-2); color: var(--ok); }
+.chip.accent { background: var(--accent-2); color: var(--accent); }
+.chip.muted { background: var(--surface-2); color: var(--muted); }
+
+/* Mockups get more room — they are the thing people actually want to look at. */
+.mocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .75rem; }
+.mock {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.2rem 1rem;
+  border: 1px solid var(--rule); border-radius: .7rem; text-decoration: none; color: inherit;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-2), transparent 62%),
+    var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.mock:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--rule)); box-shadow: 0 4px 18px -8px var(--shadow); }
+.mock-top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-weight: 620; font-size: 1rem; }
+.mock-note { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.mock-go { font-size: .82rem; font-weight: 550; color: var(--accent); margin-top: auto; padding-top: .3rem; }
+
+.rebuild {
+  margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .topnav { display: none; }
+  .wrap { padding: 2rem 1.1rem 4rem; }
+  .doc { flex-direction: column; }
+  .doc-md { border-left: none; border-top: 1px solid var(--rule); padding: .5rem 1rem; border-radius: 0 0 .6rem .6rem; }
+}
+
+/* ── Audit components ──────────────────────────────────────────────────
+ * Used by the design-parity page. Kept here rather than inline so the
+ * audit cannot drift away from the rest of the documentation. */
+
+.verdict {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: .65rem; overflow: hidden; margin: 0 0 1.5rem; max-width: 100%;
+}
+.vcell { background: var(--surface); padding: .95rem 1.05rem; display: flex; flex-direction: column; gap: .15rem; }
+.vnum {
+  font-family: var(--mono); font-size: 1.6rem; line-height: 1.1; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.vlabel { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+
+.meters { display: flex; flex-direction: column; gap: .6rem; margin: 0 0 .75rem; max-width: 100%; }
+.meter { display: grid; grid-template-columns: minmax(7.5rem, 13rem) 1fr 3.5rem; gap: .85rem; align-items: center; }
+.meter-name { font-size: .88rem; }
+.track { height: .45rem; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; }
+.meter-val { font-family: var(--mono); font-size: .78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.defect {
+  border: 1px solid var(--rule); border-left: 3px solid var(--danger);
+  background: var(--surface); border-radius: 0 .6rem .6rem 0;
+  padding: 1rem 1.2rem; margin: 0 0 .85rem; max-width: 100%;
+}
+.defect .tag {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--danger); display: block; margin-bottom: .3rem;
+}
+.defect h3 { margin: 0 0 .4rem; font-family: var(--sans); font-size: 1.02rem; font-weight: 620; }
+.defect p { margin: 0; font-family: var(--serif); font-size: .95rem; color: var(--ink-2); }
+
+.pull {
+  border-left: 3px solid var(--accent); padding: .35rem 0 .35rem 1.25rem;
+  font-family: var(--sans); font-size: 1.16rem; line-height: 1.45; font-weight: 500;
+  color: var(--ink); margin: 1.6rem 0; max-width: 54ch;
+}
+
+.chip.warn { background: var(--warn-2); color: var(--warn); }
+.chip.danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.footnote { font-size: .85rem; color: var(--muted); font-family: var(--sans); max-width: var(--measure); }
+
+/* The meta bar already draws a rule; the first section heading must not add a
+   second one immediately below it. */
+.prose > h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+</style>
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
+</nav>
+<main id="main" class="wrap">
+<div class="eyebrow">Archived changes</div>
+<h1>Design: stabilize-runtime-contracts</h1>
+<p class="standfirst">PraxmodoroCore.Session is a deterministic state machine over canonical timestamps. PraxmodoroStore.LocalStore is an append-only SwiftData adapter. The app target imports bo…</p>
+<div class="meta"><span>1,386 words</span><span><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md</code></span></div>
+<article class="prose"><h2>Context</h2>
+<p><code>PraxmodoroCore.Session</code> is a deterministic state machine over canonical timestamps. <code>PraxmodoroStore.LocalStore</code> is an append-only SwiftData adapter. The app target imports both packages and <code>AppModel</code> currently performs their translation inline.</p>
+<p>The change keeps those package boundaries intact:</p>
+<pre><code class="language-text">user intent
+    |
+    v
+surface -&gt; AppModel -&gt; TransitionPayload.encode -&gt; LocalStore
+              ^                                      |
+              |                                      v
+              +------- SessionReplay.replay &lt;- StoredEvent[]
+                              |
+                              v
+                        Core Session
+                              |
+                              +-&gt; breakEndInstant(cadence:)
+                                      |       |       |
+                                      v       v       v
+                                reconcile   sound   notification
+</code></pre>
+<h2>Goals / Non-Goals</h2>
+<p><strong>Goals:</strong> make stored lifecycle vocabulary explicit and exhaustive; make replay pure and directly testable; keep one authority for break-end arithmetic; prevent views from bypassing the model&#39;s intent boundary.</p>
+<p><strong>Non-goals:</strong> introduce a repository protocol, coordinator, reducer, dependency-injection framework, new package, schema migration, general event serialization framework, or wholesale actions-struct migration.</p>
+<h2>Approaches considered</h2>
+<h3>Approach A: Local substitutions</h3>
+<p>Replace each bare string with <code>SessionState.rawValue</code>, add guards inline in <code>AppModel.restore()</code>, and deduplicate the two presentation calculations with an app helper.</p>
+<ul>
+<li>Effort: small.</li>
+<li>Advantage: fewest new declarations.</li>
+<li>Rejected because: restore stays embedded in a 700-line controller; Store-to-Core translation remains untestable without constructing <code>AppModel</code>; Core reconciliation can still diverge from the app helper.</li>
+</ul>
+<h3>Approach B: Narrow runtime contracts (selected)</h3>
+<p>Add one app-target replay/payload file, one Core derivation, and one model method plus structural guards.</p>
+<ul>
+<li>Effort: small to medium.</li>
+<li>Advantage: resolves all three existing prerequisite tickets at their shared boundaries without moving unrelated behavior.</li>
+<li>Cost: one new app source file and a typed replay result.</li>
+</ul>
+<h3>Approach C: App architecture rewrite</h3>
+<p>Split <code>AppModel</code> into repository, session coordinator, router, presentation director, and surface action protocols.</p>
+<ul>
+<li>Effort: large.</li>
+<li>Rejected because: no current test or feature requires those abstractions; it would mix structural churn with behavior changes and duplicate the deferred main-surface actions migration recorded in #53.</li>
+</ul>
+<h2>Decisions</h2>
+<h3>1. The app target owns payload translation</h3>
+<p><code>PraxmodoroStore</code> SHALL continue to expose plain <code>StoredEvent</code> values and SHALL NOT import Core. Core SHALL continue to know nothing about storage. A new <code>SessionReplay.swift</code> file in the app target SHALL contain:</p>
+<ul>
+<li><code>TransitionPayload</code>, a namespace codec from Core&#39;s existing <code>SessionState</code> to the stored lifecycle values <code>running</code>, <code>held</code>, <code>break</code>, and <code>closed</code>, not a second state model;</li>
+<li><code>SessionReplayError</code>, with <code>unsupportedTransitionState(SessionState)</code>, <code>unknownTransitionPayload(String)</code>, and <code>invalidAdjustmentPayload(String)</code> cases;</li>
+<li><code>SessionReplay</code>, initialized with <code>LocalStore.SessionSummary</code> and exposing <code>replay(events:task:)</code>;</li>
+<li><code>SessionReplay.Result</code>, containing the reconstructed <code>Session</code>, session identifier, task text, first action, and parked thoughts.</li>
+</ul>
+<p><code>TransitionPayload</code> SHALL provide <code>encode(_ state: SessionState) throws -&gt; String</code>, <code>decode(_ payload: String) throws -&gt; SessionState</code>, and a descriptive review-label function. Encoding <code>.idle</code> SHALL throw <code>unsupportedTransitionState(.idle)</code> because idle is the synthetic reconstruction seed, not an appended lifecycle event.</p>
+<p>The concrete value contract is:</p>
+<pre><code class="language-text">TransitionPayload.encode/decode maps SessionState.running | held | onBreak(encoded as &quot;break&quot;) | closed
+
+SessionReplay.init(summary: LocalStore.SessionSummary)
+
+SessionReplay.replay(
+  events: [StoredEvent],
+  task: (title: String, firstAction: String)?
+) throws -&gt; SessionReplay.Result
+
+SessionReplay.Result:
+  session: Session                         required
+  sessionID: UUID                         required, copied from summary.id
+  taskTitle: String                       required, default &quot;&quot;
+  firstAction: String                     required, default &quot;&quot;
+  parkedThoughts: [String]                required, default []
+</code></pre>
+<p>Known review labels are fixed: <code>running</code> → <code>Focus resumed</code>; <code>held</code> → <code>Held — place kept</code>; <code>break</code> → <code>Chose an intentional break</code>; <code>closed</code> → <code>Closed the session</code>.</p>
+<h3>2. Replay ordering is deterministic</h3>
+<p><code>SessionReplay.replay(events:task:)</code> SHALL:</p>
+<ol>
+<li>retain each event&#39;s input index;</li>
+<li>select transition events;</li>
+<li>decode every transition or throw <code>unknownTransitionPayload</code>;</li>
+<li>order transitions by timestamp ascending, then input index ascending;</li>
+<li>prepend the synthetic <code>.idle</code> record at <code>summary.startedAt</code>;</li>
+<li>decode every adjustment as signed whole seconds or throw <code>invalidAdjustmentPayload</code>, then order adjustments by timestamp ascending and input index ascending;</li>
+<li>construct the Core <code>Session</code> using <code>TimingPolicy.named(summary.policyName)</code>;</li>
+<li>copy task values when present and use empty strings when absent;</li>
+<li>preserve parked thoughts in store order.</li>
+</ol>
+<p>Closed and idle replay results are valid translation results. To preserve current behavior, <code>AppModel.restore()</code> SHALL leave every pre-call model property unchanged when the valid replay result is closed; a fresh launch therefore remains on initiate without resurrecting the closed session. This is distinct from a failed replay: the pure replay succeeds and is directly testable.</p>
+<p><code>AppModel.restore()</code> SHALL fetch all inputs, obtain a complete replay result, and only then assign <code>session</code>, <code>sessionID</code>, <code>policy</code>, task text, first action, parked thoughts, and surface routing. A replay error SHALL leave every pre-call model property unchanged.</p>
+<h3>3. Unknown stored values never fabricate state</h3>
+<p>An unknown transition payload SHALL terminate replay with a typed error. It SHALL NOT fall back to <code>.running</code>, skip the record, or partially apply the replay result. A malformed adjustment SHALL follow the same all-or-nothing rule.</p>
+<p>The review timeline SHALL render an explicit <code>Unknown state record: &lt;payload&gt;</code> label for an unknown transition because a historical review is descriptive and must not disappear. Startup user presentation for replay errors belongs to #35/#36 and is outside this change.</p>
+<p><code>AppModel</code> SHALL own one throwing helper, <code>appendTransition(_ state: SessionState, at: Date) throws</code>, which first encodes through <code>TransitionPayload</code> and only then calls the store. It contains the only direct <code>LocalStore.appendEvent(kind: .transition, ...)</code> call in the app model. Encoding failure therefore performs no write. A source test SHALL reject any second direct transition append or bare durable lifecycle literal on a write path.</p>
+<h3>4. Core owns the break-end instant</h3>
+<p><code>Session.breakEndInstant(cadence:) -&gt; Date?</code> SHALL return <code>nil</code> unless the session&#39;s final transition is <code>.onBreak</code>. Otherwise it SHALL return:</p>
+<pre><code class="language-text">last_break_transition.at + suggestedBreakLength(cadence: cadence)
+</code></pre>
+<p><code>Session.reconciled</code>, <code>AppModel.syncSound</code>, and <code>AppModel.syncNotifications</code> SHALL consume this method. The current public Core argument <code>autoReturn: TimeInterval?</code> SHALL migrate to <code>autoReturn: Bool = false</code>; when true, reconciliation SHALL use <code>breakEndInstant(cadence:)</code> and no caller-supplied duration. Its required <code>autoReturnAfter: Date?</code> argument is temporal provenance, not another duration: Core appends the return only when the canonical break end is later than the supplied process-live boundary. Callers pass <code>nil</code> only with <code>autoReturn: false</code>; <code>AppModel</code> captures and passes a non-nil boundary once from its injected clock at initialization whenever auto-return is enabled. This prevents the first or any later render after relaunch from materializing a break end that occurred while the process was absent, while a process alive before sleep still catches the canonical edge on wake. Custom-policy and before/after-boundary regressions SHALL prove both rules.</p>
+<h3>5. Surfaces express intents</h3>
+<p><code>AppModel.surface</code> SHALL become <code>private(set)</code>. <code>ReviewSurface</code> SHALL call <code>AppModel.beginNextSession()</code>. The method SHALL perform only the existing routing change to <code>.initiate</code>; it SHALL not reset task, history, or preferences. A source test SHALL also scan Swift source under <code>app/Sources/Surfaces/</code> and fail on direct <code>model.surface =</code> assignment so the intended boundary remains visible even though the compiler enforces it.</p>
+<p>The broader migration of main surfaces to immutable display/actions values remains deferred until a concrete render-independent test needs it.</p>
+<h2>Error contract</h2>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Trigger</th>
+<th>State change</th>
+<th>Caller behavior in this change</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>unsupportedTransitionState(.idle)</code></td>
+<td>a writer attempts to persist synthetic idle as a transition</td>
+<td>none</td>
+<td>transition append propagates the error</td>
+</tr>
+<tr>
+<td><code>unknownTransitionPayload(value)</code></td>
+<td>transition payload is not one of the four durable values</td>
+<td>none</td>
+<td><code>AppModel.restore()</code> propagates the error</td>
+</tr>
+<tr>
+<td><code>invalidAdjustmentPayload(value)</code></td>
+<td>adjustment payload is not a signed whole-second integer</td>
+<td>none</td>
+<td><code>AppModel.restore()</code> propagates the error</td>
+</tr>
+<tr>
+<td>existing store error</td>
+<td>summary, events, or task fetch fails</td>
+<td>existing concrete-store behavior is unchanged; no new atomicity claim</td>
+<td><code>AppModel.restore()</code> propagates the store error; injectable store-failure behavior remains #35/#36</td>
+</tr>
+</tbody></table></div>
+<p>No retry is added. Replay errors are deterministic local-data errors; retrying the same bytes cannot change the outcome. This change&#39;s executable all-or-nothing guarantee is scoped to a complete fetched input set that fails replay. A general injectable store-read/write failure seam and persist-before-mutate guarantee remain explicitly owned by #35/#36.</p>
+<h2>Data boundaries</h2>
+<p>No SwiftData model, attribute, event kind, or stored payload value changes. Known existing records remain byte-for-byte readable. No new user data is collected. The app target remains the only layer importing both Store and Core.</p>
+<h2>Dependency provenance</h2>
+<p>Foundation, <code>PraxmodoroCore</code>, and <code>PraxmodoroStore</code> are already present. No dependency is added.</p>
+<h2>Rollback</h2>
+<p>The code change is additive except for call-site replacement. Reverting the change restores the old inline translation and duplicated arithmetic; no data migration or rollback transform is required. The rollback pointer for the complete run is baseline commit <code>a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7</code>.</p>
+<h2>Verification strategy</h2>
+<p>Each behavior change starts with one observed failing test. Core derivation tests run with <code>swift test --package-path app/Packages/PraxmodoroCore</code>; app replay, presentation agreement, and source guards run with <code>./scripts/focused.sh</code>. Completion requires <code>./scripts/verify-project.sh</code>, <code>./scripts/smoke.sh</code>, strict OpenSpec validation, an independent spec validator, the named cross-model review lanes, and a final independent code review.</p>
+</article>
+<footer class="docfoot">
+  <a class="srcbtn" href="../../openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>openspec/changes/archive/2026-08-26-stabilize-runtime-contracts/design.md</code></span>
+</footer>
+</main>
+<script>
+(() => {
+  const root = document.documentElement;
+  const stored = localStorage.getItem("praxdocs-theme");
+  if (stored) root.setAttribute("data-theme", stored);
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme")
+      ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("praxdocs-theme", next);
+  });
+})();
+</script>
+</body>
+</html>

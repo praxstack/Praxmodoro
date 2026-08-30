@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Praxmodoro — every open blocker, one shot · Praxmodoro docs</title>
+<style>/* Praxmodoro documentation — shared shell.
+ *
+ * Deliberately NOT a pastiche of the product's own Living Companion palette.
+ * Documentation that cosplays the product it documents makes the two harder to
+ * tell apart, and this project's visual direction is currently under question.
+ * So: an engineering-dossier voice — warm paper, cool ink, one restrained
+ * blue-teal accent, serif for long-form reading, mono for anything that is a
+ * path, a count, or a command. */
+
+:root {
+  --ground:   oklch(97.2% 0.006 92);
+  --surface:  oklch(94.6% 0.008 90);
+  --surface-2:oklch(91.5% 0.009 88);
+  --ink:      oklch(24% 0.014 258);
+  --ink-2:    oklch(36% 0.014 258);
+  --muted:    oklch(52% 0.014 260);
+  --rule:     oklch(87.5% 0.008 90);
+  --accent:   oklch(47% 0.125 232);
+  --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok:       oklch(48% 0.095 158);
+  --ok-2:     oklch(48% 0.095 158 / 0.13);
+  --warn:     oklch(56% 0.11 68);
+  --warn-2:   oklch(56% 0.11 68 / 0.15);
+  --danger:   oklch(51% 0.16 25);
+  --shadow:   oklch(30% 0.02 260 / 0.09);
+
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: ui-serif, "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 70ch;
+  --bar: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+    --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+    --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+    --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+    --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+  --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+  --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+  --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+  --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+  --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+}
+:root[data-theme="light"] {
+  --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90); --surface-2: oklch(91.5% 0.009 88);
+  --ink: oklch(24% 0.014 258); --ink-2: oklch(36% 0.014 258); --muted: oklch(52% 0.014 260);
+  --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok: oklch(48% 0.095 158); --ok-2: oklch(48% 0.095 158 / 0.13);
+  --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+  --danger: oklch(51% 0.16 25); --shadow: oklch(30% 0.02 260 / 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 1rem); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr, .skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 60; background: var(--accent);
+  color: var(--ground); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .25rem; }
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--bar);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1.25rem; background: color-mix(in oklab, var(--ground) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem; font-weight: 620;
+  font-size: .95rem; color: var(--ink); text-decoration: none; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.brand-mark {
+  width: .7rem; height: .7rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), color-mix(in oklab, var(--accent) 40%, transparent));
+  box-shadow: 0 0 0 3px var(--accent-2);
+}
+.topnav { display: flex; gap: .15rem; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: var(--muted); text-decoration: none; font-size: .82rem; white-space: nowrap;
+  padding: .3rem .55rem; border-radius: .4rem;
+}
+.topnav a:hover { color: var(--ink); background: var(--surface); }
+.theme {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--muted);
+  border-radius: .45rem; width: 2rem; height: 2rem; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+.wrap { max-width: 78rem; margin: 0 auto; padding: 2.75rem 1.5rem 6rem; }
+body:not(.is-index) .wrap { max-width: 56rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .7rem;
+}
+h1 {
+  font-family: var(--sans); font-size: clamp(1.9rem, 4.2vw, 2.85rem); line-height: 1.1;
+  letter-spacing: -.025em; font-weight: 660; margin: 0 0 .7rem; text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--serif); font-size: 1.16rem; line-height: 1.55; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 1rem;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; font-family: var(--mono);
+  font-size: .74rem; color: var(--muted); padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────────── */
+.prose { font-family: var(--serif); font-size: 1.045rem; line-height: 1.72; }
+.prose > * { max-width: var(--measure); }
+.prose > .scroller, .prose > pre { max-width: 100%; }
+.prose h2 {
+  font-family: var(--sans); font-size: 1.45rem; font-weight: 640; letter-spacing: -.015em;
+  margin: 2.9rem 0 .6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-wrap: balance;
+}
+.prose h3 { font-family: var(--sans); font-size: 1.12rem; font-weight: 620; margin: 2rem 0 .4rem; }
+.prose h4 {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 1.6rem 0 .3rem; font-weight: 500;
+}
+.prose p { margin: 0 0 1.05rem; }
+.prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: .35rem; }
+.prose li::marker { color: var(--muted); }
+.prose a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.prose strong { font-weight: 660; color: var(--ink); }
+.prose hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+.prose blockquote {
+  margin: 1.4rem 0; padding: .85rem 1.15rem; border-left: 3px solid var(--warn);
+  background: var(--warn-2); border-radius: 0 .5rem .5rem 0; color: var(--ink-2);
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd {
+  font-family: var(--mono); font-size: .855em;
+  background: var(--surface-2); padding: .1em .36em; border-radius: .3rem;
+  border: 1px solid color-mix(in oklab, var(--rule) 70%, transparent);
+}
+pre {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: .6rem;
+  padding: 1rem 1.15rem; overflow-x: auto; margin: 0 0 1.2rem;
+  font-size: .86rem; line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; font-size: 1em; }
+
+/* Tables — the specs are full of them. */
+.scroller {
+  overflow-x: auto; border: 1px solid var(--rule); border-radius: .6rem;
+  background: var(--surface); margin: 0 0 1.4rem;
+}
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .875rem; }
+th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; white-space: nowrap;
+  background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+}
+tbody tr:last-child td { border-bottom: none; }
+td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
+
+/* Task lists in the OpenSpec task files. */
+.prose input[type="checkbox"] { accent-color: var(--ok); margin-right: .35rem; }
+.prose li:has(> input[type="checkbox"]:checked) { color: var(--muted); }
+.prose ul:has(input[type="checkbox"]) { list-style: none; padding-left: .2rem; }
+
+/* ── Document footer ───────────────────────────────────────────────────── */
+.docfoot {
+  margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srcbtn {
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 550;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--accent);
+  padding: .45rem .85rem; border-radius: .45rem; background: var(--accent-2);
+}
+.srcbtn:hover { background: var(--accent); color: var(--ground); }
+.srcpath { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+/* ── Index ─────────────────────────────────────────────────────────────── */
+.hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 20ch; }
+.hero .standfirst { max-width: 62ch; font-size: 1.2rem; }
+.stats {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.8rem; margin: 1.5rem 0 1.75rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--muted);
+}
+.stats b { color: var(--ink); font-size: 1.15rem; font-weight: 600; margin-right: .3rem; font-variant-numeric: tabular-nums; }
+.search input {
+  width: 100%; max-width: 32rem; font: inherit; font-size: .95rem;
+  padding: .6rem .9rem; border-radius: .55rem; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+
+.block { margin-top: 3.25rem; scroll-margin-top: calc(var(--bar) + 1rem); }
+.block[hidden] { display: none; }
+.block-head { margin-bottom: 1.1rem; }
+.block-head h2 {
+  font-size: 1.35rem; font-weight: 640; letter-spacing: -.015em; margin: 0 0 .25rem;
+}
+.block-head p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 68ch; }
+
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.doc {
+  display: flex; align-items: stretch; gap: .5rem;
+  border: 1px solid var(--rule); border-radius: .6rem; background: var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+.doc[hidden] { display: none; }
+.doc:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--rule)); box-shadow: 0 2px 10px -4px var(--shadow); }
+.doc-main {
+  flex: 1; display: flex; flex-direction: column; gap: .2rem;
+  padding: .85rem 1rem; text-decoration: none; color: inherit; min-width: 0;
+}
+.doc-title { font-weight: 590; font-size: .98rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.doc-sum { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.doc-path { font-family: var(--mono); font-size: .71rem; color: var(--muted); overflow-wrap: anywhere; }
+.doc-path code { background: none; border: none; padding: 0; font-size: 1em; }
+.doc-md {
+  display: flex; align-items: center; padding: 0 .9rem; text-decoration: none;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; color: var(--muted);
+  border-left: 1px solid var(--rule); border-radius: 0 .6rem .6rem 0;
+}
+.doc-md:hover { background: var(--accent-2); color: var(--accent); }
+
+.chip {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .14em .45em; border-radius: .3rem; font-weight: 500; white-space: nowrap;
+}
+.chip.ok { background: var(--ok-2); color: var(--ok); }
+.chip.accent { background: var(--accent-2); color: var(--accent); }
+.chip.muted { background: var(--surface-2); color: var(--muted); }
+
+/* Mockups get more room — they are the thing people actually want to look at. */
+.mocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .75rem; }
+.mock {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.2rem 1rem;
+  border: 1px solid var(--rule); border-radius: .7rem; text-decoration: none; color: inherit;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-2), transparent 62%),
+    var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.mock:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--rule)); box-shadow: 0 4px 18px -8px var(--shadow); }
+.mock-top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-weight: 620; font-size: 1rem; }
+.mock-note { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.mock-go { font-size: .82rem; font-weight: 550; color: var(--accent); margin-top: auto; padding-top: .3rem; }
+
+.rebuild {
+  margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .topnav { display: none; }
+  .wrap { padding: 2rem 1.1rem 4rem; }
+  .doc { flex-direction: column; }
+  .doc-md { border-left: none; border-top: 1px solid var(--rule); padding: .5rem 1rem; border-radius: 0 0 .6rem .6rem; }
+}
+
+/* ── Audit components ──────────────────────────────────────────────────
+ * Used by the design-parity page. Kept here rather than inline so the
+ * audit cannot drift away from the rest of the documentation. */
+
+.verdict {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: .65rem; overflow: hidden; margin: 0 0 1.5rem; max-width: 100%;
+}
+.vcell { background: var(--surface); padding: .95rem 1.05rem; display: flex; flex-direction: column; gap: .15rem; }
+.vnum {
+  font-family: var(--mono); font-size: 1.6rem; line-height: 1.1; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.vlabel { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+
+.meters { display: flex; flex-direction: column; gap: .6rem; margin: 0 0 .75rem; max-width: 100%; }
+.meter { display: grid; grid-template-columns: minmax(7.5rem, 13rem) 1fr 3.5rem; gap: .85rem; align-items: center; }
+.meter-name { font-size: .88rem; }
+.track { height: .45rem; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; }
+.meter-val { font-family: var(--mono); font-size: .78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.defect {
+  border: 1px solid var(--rule); border-left: 3px solid var(--danger);
+  background: var(--surface); border-radius: 0 .6rem .6rem 0;
+  padding: 1rem 1.2rem; margin: 0 0 .85rem; max-width: 100%;
+}
+.defect .tag {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--danger); display: block; margin-bottom: .3rem;
+}
+.defect h3 { margin: 0 0 .4rem; font-family: var(--sans); font-size: 1.02rem; font-weight: 620; }
+.defect p { margin: 0; font-family: var(--serif); font-size: .95rem; color: var(--ink-2); }
+
+.pull {
+  border-left: 3px solid var(--accent); padding: .35rem 0 .35rem 1.25rem;
+  font-family: var(--sans); font-size: 1.16rem; line-height: 1.45; font-weight: 500;
+  color: var(--ink); margin: 1.6rem 0; max-width: 54ch;
+}
+
+.chip.warn { background: var(--warn-2); color: var(--warn); }
+.chip.danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.footnote { font-size: .85rem; color: var(--muted); font-family: var(--sans); max-width: var(--measure); }
+
+/* The meta bar already draws a rule; the first section heading must not add a
+   second one immediately below it. */
+.prose > h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+</style>
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
+</nav>
+<main id="main" class="wrap">
+<div class="eyebrow">Generated tooling prompts</div>
+<h1>Praxmodoro — every open blocker, one shot</h1>
+<p class="standfirst">Six decisions stand between here and uninterrupted execution. Everything else is already approved (Living Companion re-affirmed, settings plan approach D, both lanes author…</p>
+<div class="meta"><span>1,303 words</span><span><code>praxmodoro-blockers.md</code></span></div>
+<article class="prose"><blockquote>
+<p>Twin of [[praxmodoro-blockers.html]] · DecisionCanvas 0.1.0 · canvas <code>01KZTPD57J8QPVKZ7D5BJF4JPC</code>
+generated 2026-08-12T10:40:00Z</p>
+</blockquote>
+<p>Six decisions stand between here and uninterrupted execution. Everything else is already approved (Living Companion re-affirmed, settings plan approach D, both lanes authorized). Answer these once and nothing else waits on you: lane 1 (sounds, autostart, durations) and lane 2 (tokens + dark theme) run to completion, M2 closes after one Xcode run, and every ticket on the board becomes agent-executable.</p>
+<!-- dcanvas:begin sections -->
+<h2>00 / CARRIED FORWARD — Unresolved from previous docs</h2>
+<p>These were deferred or left open in earlier canvases. Resolving them here writes back to the original decision — you do not need to reopen the old doc.</p>
+<ul>
+<li><strong>Which direction is the base for Praxodoro?</strong><ul>
+<li><input disabled="" type="checkbox"> A · Liquid Instrument ★ — Nocturnal machined instrument: glass controls, tactile panels, amber signal. Quietest identity, cleanest SwiftUI/Metal mapping, dossier-recommended. Known risk: visual density (its own Restraint score was 3/5).</li>
+<li><input disabled="" type="checkbox"> B · Living Companion — Warm dusk-light; an abstract breathing field is the visual centre. Most emotionally supportive, makes the ADHD-aware positioning unmistakable. Known risk: continuous organic motion can distract; heaviest Reduce-Motion burden; must never read juvenile.</li>
+<li><input disabled="" type="checkbox"> C · Focus Observatory — Cyan/steel control room with day ledger, calendar, and automations at the rim; the dock sleeps until a block starts. Strongest power-user legibility. Known risk: density raises activation energy on the start path.</li>
+<li><input disabled="" type="checkbox"> None — rework needed — No direction is right as a base. Say what&#39;s off in a comment (e.g. blend A&#39;s timer with B&#39;s warmth) and I&#39;ll iterate the mocks before any spec is written.</li>
+</ul>
+</li>
+<li><strong>GO: write the formal spec + first OpenSpec change from the chosen direction?</strong><ul>
+<li><input disabled="" type="checkbox"> GO</li>
+<li><input disabled="" type="checkbox"> HOLD</li>
+</ul>
+</li>
+</ul>
+<h2>Timer rhythm</h2>
+<p>Two questions that shape the Rhythm settings pane before its spec is written. Plain terms: rewind/forward is the ±1-minute nudge from your original mock; autostart is what happens the moment a focus block&#39;s time runs out.</p>
+<ul>
+<li><strong>Rewind / forward (±1 min on the running block) — keep or drop? It was in your approved mock but never made it into any spec. The engine derives time purely from recorded events (that&#39;s what makes it survive sleep and relaunch), so nudging time must itself be a recorded event — doable, just delicate.</strong><ul>
+<li><input checked="" disabled="" type="checkbox"> Keep it ★ — ±1 min lands as a real recorded adjustment in the engine, honest across sleep/relaunch, with +/- keys. Lives in the Rhythm pane. Moderate engine work, fully testable.</li>
+<li><input disabled="" type="checkbox"> Drop it — Recorded as an explicit non-goal with the engine-integrity reasoning, so the next audit finds a decision instead of a gap. Ticket #6 closes as decided-no.</li>
+</ul>
+</li>
+<li><strong>When a focus block ends (autostart ON): what exactly happens? Your spec forbids forced breaks, so RoundPie&#39;s hard autostart needs adapting. Note: the flow policy is exempt either way — flow never auto-ends, the settings pane will say so.</strong><ul>
+<li><input checked="" disabled="" type="checkbox"> Break starts as the offered default ★ — The break simply begins; declining or ending it is one ordinary keystroke, no penalty, no modal wall. Closest to RoundPie while honoring the no-forced-breaks rule.</li>
+<li><input disabled="" type="checkbox"> Prompt first — Block ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted.</li>
+<li><input disabled="" type="checkbox"> Keep breaks fully manual — No autostart at all; the setting is not built. Smallest scope, furthest from your RoundPie ask.</li>
+</ul>
+</li>
+</ul>
+<h2>Sound &amp; notifications</h2>
+<p>Notification defaults we ship are lint-checked so they can never carry urgency or judgment language. The open question is text YOU type into the custom-notification box.</p>
+<ul>
+<li><strong>Should text you write yourself in the notification box be exempt from the copy-tone rules?</strong><ul>
+<li><input checked="" disabled="" type="checkbox"> My words are mine ★ — Product-shipped defaults stay linted; anything you type is yours verbatim, even if it&#39;s &#39;GET BACK TO WORK&#39;.</li>
+<li><input disabled="" type="checkbox"> Lint mine too — The same gentle-language rules apply to custom text; the box refuses urgency words. Protects the product voice, constrains you.</li>
+</ul>
+</li>
+</ul>
+<h2>Design execution (lane 2)</h2>
+<p>Living Companion specifies three typefaces (Gabarito, Hanken Grotesk, Sono). The app currently ships zero of them — pure system fonts. All three are SIL Open Font License, so bundling is legally clean.</p>
+<ul>
+<li><strong>Bundle the three Living Companion typefaces into the app, or formally amend the direction to system fonts?</strong><ul>
+<li><input checked="" disabled="" type="checkbox"> Bundle all three ★ — The direction you just re-affirmed gets its real voice. OFL-licensed, ~1-2 MB binary cost, runtime test fails loudly if a face is missing instead of silently substituting.</li>
+<li><input disabled="" type="checkbox"> System fonts, amended — San Francisco everywhere, recorded as a formal amendment so spec and app finally agree. Zero binary cost, loses most of the type personality.</li>
+</ul>
+</li>
+</ul>
+<h2>Operations</h2>
+<p>One physical action only you can perform, and one standing policy so I never have to ask again.</p>
+<ul>
+<li><strong>M2&#39;s final gate needs macOS automation consent granted interactively — one &#39;Product ▸ Test&#39; (Cmd-U) run in Xcode, approving any dialog that appears. Command to open it: open app/Praxmodoro.xcodeproj — when will you do this?</strong><ul>
+<li><input checked="" disabled="" type="checkbox"> Doing it now ★ — I watch for the result, then immediately run the full verification gate, close milestone M2, and archive its change.</li>
+<li><input disabled="" type="checkbox"> Later today — Both lanes proceed regardless; M2 closes whenever the run happens. Nothing else waits on it.</li>
+</ul>
+</li>
+<li><strong>Standing push policy going forward, so momentum never pauses to ask: push main to origin automatically after each green, committed milestone?</strong><ul>
+<li><input checked="" disabled="" type="checkbox"> Auto-push when green ★ — Every committed unit with a passing suite goes straight to origin/main. Matches what you have had me doing today. Never a force-push, ever.</li>
+<li><input disabled="" type="checkbox"> Ask each time — I hold pushes until you say the word, every time.</li>
+</ul>
+</li>
+</ul>
+<h2>The gate</h2>
+<p>GO means: both lanes run to completion without further questions — OpenSpec change, engine work, sounds, panes, tokens, dark theme — pausing only at spec-mandated independent validation, and M2 closes the moment the Xcode run lands.</p>
+<ul>
+<li><strong>Execute everything above to completion?</strong><ul>
+<li><input disabled="" type="checkbox"> GO</li>
+<li><input disabled="" type="checkbox"> HOLD</li>
+</ul>
+</li>
+</ul>
+<!-- dcanvas:end sections -->
+
+<!-- dcanvas:begin decisions -->
+<h3>Decisions (applied 2026-08-12T13:41:39.963Z · export <code>01KZTPM2DDFA8Q5ZM76ES0JXEJ</code>)</h3>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>question</th>
+<th>decision</th>
+<th>confirmation</th>
+<th>note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>base_direction</td>
+<td>living-companion</td>
+<td>explicit</td>
+<td></td>
+</tr>
+<tr>
+<td>write_spec</td>
+<td>go</td>
+<td>explicit</td>
+<td></td>
+</tr>
+<tr>
+<td>rewind_forward</td>
+<td>keep-as-engine-event</td>
+<td>default</td>
+<td></td>
+</tr>
+<tr>
+<td>autostart_semantics</td>
+<td>stay-manual</td>
+<td>explicit</td>
+<td></td>
+</tr>
+<tr>
+<td>notification_text_lint</td>
+<td>user-words-exempt</td>
+<td>default</td>
+<td></td>
+</tr>
+<tr>
+<td>typography</td>
+<td>bundle-three-faces</td>
+<td>default</td>
+<td></td>
+</tr>
+<tr>
+<td>xcode_consent_run</td>
+<td>now</td>
+<td>default</td>
+<td></td>
+</tr>
+<tr>
+<td>push_policy</td>
+<td>auto-push-green</td>
+<td>default</td>
+<td></td>
+</tr>
+<tr>
+<td>execute_all</td>
+<td>hold</td>
+<td>explicit</td>
+<td>⚠ question-mark</td>
+</tr>
+</tbody></table></div>
+<p><strong>Gate:</strong> raw <code>go</code> → effective <code>hold</code> (words win — comments contain open questions)</p>
+<p><strong>Comments:</strong></p>
+<ul>
+<li><strong>autostart_semantics:</strong> Give All Options in settings to user but keep Prompt first as default [[Prompt first
+Block ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted.]] &amp;&amp; give these 3 optons in setting s</li>
+</ul>
+<p>1[[Break starts as the offered default
+The break simply begins; declining or ending it is one ordinary keystroke, no penalty, no modal wall. Closest to RoundPie while honoring the no-forced-breaks rule.]]
+2[[Prompt first
+Block ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted.]]
+3[[Keep breaks fully manual
+No autostart at all; the setting is not built. Smallest scope, furthest from your RoundPie ask.]]</p>
+<ul>
+<li><strong>execute_all:</strong> create /goal /autononomou-irchestartion self /coding-leadrshop-pinciple- cmobined prompt for yourself
+or do we need to run /wayfinder or /implemetn as per matt poccock ?</li>
+</ul>
+<!-- dcanvas:end decisions -->
+</article>
+<footer class="docfoot">
+  <a class="srcbtn" href="../../praxmodoro-blockers.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>praxmodoro-blockers.md</code></span>
+</footer>
+</main>
+<script>
+(() => {
+  const root = document.documentElement;
+  const stored = localStorage.getItem("praxdocs-theme");
+  if (stored) root.setAttribute("data-theme", stored);
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme")
+      ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("praxdocs-theme", next);
+  });
+})();
+</script>
+</body>
+</html>

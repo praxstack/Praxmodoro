@@ -12,11 +12,16 @@ enum Surface: Equatable {
 @MainActor
 @Observable
 final class AppModel {
-    var surface: Surface = .initiate
+    private(set) var surface: Surface = .initiate
     var taskTitle = ""
     var firstAction = ""
     var capacity = "steady"
     var policy: TimingPolicy = .gentleStart
+    private(set) var recoveryNotice: RecoveryNotice?
+
+    func dismissRecoveryNotice() {
+        recoveryNotice = nil
+    }
 
     /// Increments once per acknowledged user choice; the field blooms on change.
     private(set) var fieldPulse = 0
@@ -54,14 +59,88 @@ final class AppModel {
     private(set) var notifications: NotificationPreferences = .factory
 
     func setRhythm(_ preferences: RhythmPreferences) {
+        let previousRhythm = rhythm
+        let previousPolicy = policy
         rhythm = preferences
         preferences.save(to: defaults)
+        reconcilePolicy(after: previousPolicy, previousRhythm: previousRhythm)
+        syncSound(at: clock())
+    }
+
+    /// Keep the initiation picker valid when presets are edited or removed.
+    private func reconcilePolicy(
+        after previousPolicy: TimingPolicy,
+        previousRhythm: RhythmPreferences
+    ) {
+        guard !availablePolicies.contains(policy) else { return }
+        if previousPolicy.name.hasPrefix("custom:"),
+            let remapped = remappedCustomPolicy(from: previousPolicy, previousRhythm: previousRhythm),
+            availablePolicies.contains(remapped)
+        {
+            policy = remapped
+            return
+        }
+        policy = availablePolicies.first ?? .gentleStart
+    }
+
+    private func remappedCustomPolicy(
+        from previous: TimingPolicy,
+        previousRhythm: RhythmPreferences
+    ) -> TimingPolicy? {
+        guard let prevFocus = previous.focus else { return nil }
+        let prevBreak = previous.suggestedBreak
+        guard
+            let newFocus = mapPresetValue(
+                prevFocus,
+                from: previousRhythm.focusPresets,
+                to: rhythm.focusPresets,
+                fallback: TimingPolicy.classic.focus),
+            let newBreak = mapPresetValue(
+                prevBreak,
+                from: previousRhythm.breakPresets,
+                to: rhythm.breakPresets,
+                fallback: TimingPolicy.classic.suggestedBreak)
+        else { return nil }
+        return TimingPolicy.custom(
+            arrival: previous.arrival, focus: newFocus, suggestedBreak: newBreak)
+    }
+
+    private func mapPresetValue(
+        _ value: TimeInterval,
+        from oldPresets: [TimeInterval],
+        to newPresets: [TimeInterval],
+        fallback: TimeInterval?
+    ) -> TimeInterval? {
+        if let index = oldPresets.firstIndex(of: value) {
+            guard newPresets.indices.contains(index) else { return nil }
+            return newPresets[index]
+        }
+        if oldPresets.isEmpty, let fallback, value == fallback {
+            return newPresets.isEmpty ? fallback : nil
+        }
+        return nil
     }
 
     func setSound(_ preferences: SoundPreferences) {
+        let volumeChanged = sound.masterVolume != preferences.masterVolume
         sound = preferences
         preferences.save(to: defaults)
+        if volumeChanged {
+            soundScheduler.setChimeVolume(preferences.masterVolume)
+            for (cue, running) in tickState where running {
+                soundScheduler.setTickLoop(cue, running: true, volume: preferences.masterVolume)
+            }
+        }
         syncSound(at: clock())
+    }
+
+    func previewSound(_ cue: SoundCue) {
+        soundScheduler.scheduleChime(cue, at: clock(), volume: sound.masterVolume)
+    }
+
+    func handleSystemWake() {
+        soundScheduler.cancelExpiredChimes(at: clock())
+        skipPastBlockStartOnNextSync = true
     }
 
     // MARK: Sound direction (spec: "Sound cues, all optional"). Pure policy
@@ -77,14 +156,35 @@ final class AppModel {
         syncSound(at: now)
     }
 
+    /// Record every canonical transition visible at this root-render
+    /// instant, then align presentation. Date edges matter even when the
+    /// phase before and after a full focus-break-focus cycle is `.running`.
+    func observeDerivedPhase(at now: Date) throws {
+        try materialize(at: now)
+        syncSound(at: now)
+    }
+
     /// Everything the initiation surface may offer: the four built-ins plus
     /// every user preset as a real policy (validator finding 1).
     var availablePolicies: [TimingPolicy] {
-        let customBreak = rhythm.breakPresets.first ?? 5 * 60
-        let custom = rhythm.focusPresets.map {
-            TimingPolicy.custom(arrival: nil, focus: $0, suggestedBreak: customBreak)
+        let builtIns: [TimingPolicy] = [.gentleStart, .classic, .flow, .recoveryFirst]
+        guard !rhythm.focusPresets.isEmpty || !rhythm.breakPresets.isEmpty else { return builtIns }
+
+        let focuses =
+            rhythm.focusPresets.isEmpty
+            ? [TimingPolicy.classic.focus].compactMap { $0 }
+            : rhythm.focusPresets
+        let breaks =
+            rhythm.breakPresets.isEmpty
+            ? [TimingPolicy.classic.suggestedBreak]
+            : rhythm.breakPresets
+        var seen = Set<TimingPolicy>()
+        let custom = focuses.flatMap { focus in
+            breaks.map { TimingPolicy.custom(arrival: nil, focus: focus, suggestedBreak: $0) }
+        }.filter {
+            seen.insert($0).inserted
         }
-        return [.gentleStart, .classic, .flow, .recoveryFirst] + custom
+        return builtIns + custom
     }
 
     /// Minutes of the cadence's longer break, when this break is the Nth —
@@ -104,6 +204,9 @@ final class AppModel {
 
     private var tickState: [SoundCue: Bool] = [:]
     private var scheduledChime: (cue: SoundCue, at: Date)?
+    private var pendingBlockStartAt: Date?
+    /// Suppresses one retro block-start after wake cancelled expired chimes.
+    private var skipPastBlockStartOnNextSync = false
 
     private func syncSound(at now: Date) {
         let phase = snapshot(at: now).phase
@@ -130,23 +233,29 @@ final class AppModel {
             let reconciled = reconciledSession(session, at: now)
             if sound.focusEndChime, let expiry = reconciled.expiryInstant(), expiry > now {
                 desired = (.focusEnd, expiry)
-            } else if sound.breakEndChime, reconciled.state(at: now) == .onBreak,
-                let breakStart = reconciled.transitions.last?.at
+            } else if sound.breakEndChime,
+                let breakEnd = reconciled.breakEndInstant(cadence: rhythm.cadence)
             {
-                let breakEnd = breakStart.addingTimeInterval(
-                    reconciled.suggestedBreakLength(cadence: rhythm.cadence))
                 if breakEnd > now { desired = (.breakEnd, breakEnd) }
             }
         }
         if scheduledChime?.cue != desired?.cue || scheduledChime?.at != desired?.at {
-            if scheduledChime != nil {
-                soundScheduler.cancelScheduledChimes()
+            if let scheduledChime, scheduledChime.at > now {
+                soundScheduler.cancelScheduledChime(scheduledChime.cue, at: scheduledChime.at)
             }
             if let desired {
                 soundScheduler.scheduleChime(desired.cue, at: desired.at, volume: sound.masterVolume)
             }
             scheduledChime = desired
         }
+        if let instant = pendingBlockStartAt {
+            pendingBlockStartAt = nil
+            let past = instant <= now
+            if sound.blockStart, !(past && skipPastBlockStartOnNextSync) {
+                soundScheduler.scheduleChime(.blockStart, at: instant, volume: sound.masterVolume)
+            }
+        }
+        skipPastBlockStartOnNextSync = false
         syncNotifications(at: now)
     }
 
@@ -172,7 +281,9 @@ final class AppModel {
 
     func refreshNotificationAvailability() {
         notificationScheduler.checkAvailability { [weak self] availability in
-            self?.notificationsUnavailable = availability == .denied
+            guard let self else { return }
+            self.notificationsUnavailable = availability == .denied
+            self.syncNotifications(at: self.clock())
         }
     }
 
@@ -184,11 +295,9 @@ final class AppModel {
                 desired = LocalNotificationRequest(
                     id: "block-end", body: notifications.blockEndText, at: expiry,
                     bringToFront: notifications.bringToFront)
-            } else if notifications.breakEndEnabled, reconciled.state(at: now) == .onBreak,
-                let breakStart = reconciled.transitions.last?.at
+            } else if notifications.breakEndEnabled,
+                let breakEnd = reconciled.breakEndInstant(cadence: rhythm.cadence)
             {
-                let breakEnd = breakStart.addingTimeInterval(
-                    reconciled.suggestedBreakLength(cadence: rhythm.cadence))
                 if breakEnd > now {
                     desired = LocalNotificationRequest(
                         id: "break-end", body: notifications.breakEndText, at: breakEnd,
@@ -213,19 +322,24 @@ final class AppModel {
     let store: LocalStore?
     let capabilities: CapabilityRegistry
     private let clock: () -> Date
+    private let liveObservationStartedAt: Date
     private let defaults: UserDefaults
     private let soundScheduler: SoundCueScheduling
     private let notificationScheduler: NotificationScheduling
 
     init(
-        store: LocalStore?, capabilities: CapabilityRegistry = CapabilityRegistry(edition: .lite),
+        store: LocalStore?,
+        recoveryNotice: RecoveryNotice? = nil,
+        capabilities: CapabilityRegistry = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases)),
         clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
         soundScheduler: SoundCueScheduling = AudioCueScheduler(),
         notificationScheduler: NotificationScheduling = LocalNotificationScheduler()
     ) {
         self.store = store
+        self.recoveryNotice = recoveryNotice
         self.capabilities = capabilities
         self.clock = clock
+        self.liveObservationStartedAt = clock()
         self.defaults = defaults
         self.soundScheduler = soundScheduler
         self.notificationScheduler = notificationScheduler
@@ -242,6 +356,12 @@ final class AppModel {
         }
     }
 
+    private func appendTransition(_ state: SessionState, at instant: Date) throws {
+        let payload = try TransitionPayload.encode(state)
+        guard let id = sessionID else { return }
+        try store?.appendEvent(sessionID: id, kind: .transition, payload: payload, at: instant)
+    }
+
     func begin() throws {
         fieldPulse += 1
         lastCheckinResponse = nil
@@ -254,10 +374,11 @@ final class AppModel {
         surface = .focus
         try store?.createSession(id: id, policyName: policy.name, startedAt: now)
         try store?.saveTask(sessionID: id, title: taskTitle, firstAction: firstAction, at: now)
-        try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
+        try appendTransition(.running, at: now)
         if !capacity.isEmpty {
             try store?.appendEvent(sessionID: id, kind: .capacityReport, payload: capacity, at: now)
         }
+        pendingBlockStartAt = now
         syncSound(at: now)
     }
 
@@ -268,32 +389,23 @@ final class AppModel {
     func restore() throws {
         guard let store, let summary = try store.latestSession() else { return }
         let events = try store.events(sessionID: summary.id)
-        let transitions =
-            events
-            .filter { $0.kind == .transition }
-            .map { TransitionRecord(intent: nil, state: SessionState(rawValue: $0.payload) ?? .running, at: $0.at) }
-            .sorted { $0.at < $1.at }
-        guard let last = transitions.last, last.state != .closed else { return }
+        let task = try store.task(sessionID: summary.id)
+        let result = try SessionReplay(summary: summary).replay(events: events, task: task)
+        guard result.session.transitions.last?.state != .closed else { return }
 
-        let adjustments =
-            events
-            .filter { $0.kind == .adjustment }
-            .compactMap { event in Int(event.payload).map { AdjustmentRecord(delta: TimeInterval($0), at: event.at) } }
-        let records = [TransitionRecord(intent: nil, state: .idle, at: summary.startedAt)] + transitions
-        session = Session(
-            policy: TimingPolicy.named(summary.policyName), transitions: records, adjustments: adjustments)
-        sessionID = summary.id
-        policy = TimingPolicy.named(summary.policyName)
-        if let task = try store.task(sessionID: summary.id) {
-            taskTitle = task.title
-            firstAction = task.firstAction
-        }
-        parkedThoughts = events.filter { $0.kind == .thoughtParked }.map(\.payload)
+        session = result.session
+        sessionID = result.sessionID
+        policy = result.session.policy
+        taskTitle = result.taskTitle
+        firstAction = result.firstAction
+        parkedThoughts = result.parkedThoughts
 
         // Auto-return is deliberately absent here (design decision 10): an
         // absence must not fill with focus blocks nobody lived through.
         let now = clock()
-        switch session?.reconciled(at: now, blockEnd: rhythm.blockEnd, autoReturn: nil).state(at: now) {
+        switch result.session.reconciled(
+            at: now, blockEnd: rhythm.blockEnd, autoReturn: false, autoReturnAfter: nil
+        ).state(at: now) {
         case .running, .held: surface = .focus
         case .onBreak: surface = .onBreak
         default: surface = .initiate
@@ -311,15 +423,20 @@ final class AppModel {
     private func reconciledSession(_ session: Session, at now: Date) -> Session {
         session.reconciled(
             at: now, blockEnd: rhythm.blockEnd,
-            autoReturn: rhythm.autoReturn ? session.policy.suggestedBreak : nil,
+            autoReturn: rhythm.autoReturn,
+            autoReturnAfter: rhythm.autoReturn ? liveObservationStartedAt : nil,
             cadence: rhythm.cadence)
     }
 
     /// Derived routing for the main window: the stored surface, corrected by
     /// what the engine says this instant. Pure — rendering never mutates.
     func effectiveSurface(at now: Date) -> Surface {
-        guard surface == .focus || surface == .onBreak, let session else { return surface }
-        switch reconciledSession(session, at: now).state(at: now) {
+        effectiveSurface(for: snapshot(at: now))
+    }
+
+    func effectiveSurface(for snapshot: SessionSnapshot) -> Surface {
+        guard surface == .focus || surface == .onBreak else { return surface }
+        switch snapshot.phase {
         case .onBreak where surface == .focus: return .onBreak
         case .running where surface == .onBreak: return .focus
         default: return surface
@@ -336,9 +453,7 @@ final class AppModel {
         let fresh = reconciled.transitions.filter { !current.transitions.contains($0) }
         guard !fresh.isEmpty else { return }
         for record in fresh {
-            if let id = sessionID {
-                try store?.appendEvent(sessionID: id, kind: .transition, payload: record.state.rawValue, at: record.at)
-            }
+            try appendTransition(record.state, at: record.at)
             // A materialized return FROM A BREAK greets like any other
             // return. A promotion also materializes as .running but its
             // predecessor is running — promotions are seamless, never a
@@ -348,6 +463,7 @@ final class AppModel {
                 reconciled.transitions[index - 1].state == .onBreak
             {
                 returnPending = true
+                pendingBlockStartAt = record.at
             }
         }
         session = reconciled
@@ -371,9 +487,7 @@ final class AppModel {
         fieldPulse += 1
         try current.apply(.startBreak, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
-        }
+        try appendTransition(.onBreak, at: now)
         surface = .onBreak
         syncSound(at: now)
     }
@@ -442,9 +556,7 @@ final class AppModel {
         let intent: SessionIntent = state == .held ? .resume : .hold
         try current.apply(intent, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: current.state(at: now).rawValue, at: now)
-        }
+        try appendTransition(current.state(at: now), at: now)
         syncSound(at: now)
     }
 
@@ -456,11 +568,14 @@ final class AppModel {
 
     /// Open the check-in: the timer holds while the question is open.
     ///
-    /// A pending return card stands down here. The card is a greeting for the
-    /// focus surface; if a check-in arrives before it is acknowledged, two
-    /// things would ask for attention at once (found in review).
+    /// A pending return card stays visible. The check-in holds once and waits
+    /// behind it, so two requests never compete for attention.
     func openCheckin() throws {
-        returnPending = false
+        if returnPending {
+            if !isHeld { try applyHoldToggle() }
+            checkinPending = true
+            return
+        }
         if !isHeld { try applyHoldToggle() }
         surface = .checkin
     }
@@ -500,9 +615,7 @@ final class AppModel {
             guard var current = session else { return }
             try current.apply(.startBreak, at: now)
             session = current
-            if let id = sessionID {
-                try store?.appendEvent(sessionID: id, kind: .transition, payload: "break", at: now)
-            }
+            try appendTransition(.onBreak, at: now)
             surface = .onBreak
         }
         syncSound(at: now)
@@ -546,6 +659,12 @@ final class AppModel {
     func acknowledgeReturn() {
         guard returnPending else { return }
         returnPending = false
+        if checkinPending {
+            checkinPending = false
+            if let session, session.state(at: clock()) != .closed {
+                surface = .checkin
+            }
+        }
         fieldPulse += 1
     }
 
@@ -557,11 +676,10 @@ final class AppModel {
         guard var current = session else { return }
         try current.apply(.endBreak, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: "running", at: now)
-        }
+        try appendTransition(.running, at: now)
         surface = .focus
         returnPending = true
+        pendingBlockStartAt = now
         syncSound(at: now)
     }
 
@@ -578,11 +696,15 @@ final class AppModel {
         guard var current = session else { return }
         try current.apply(.close, at: now)
         session = current
-        if let id = sessionID {
-            try store?.appendEvent(sessionID: id, kind: .transition, payload: "closed", at: now)
-        }
+        try appendTransition(.closed, at: now)
+        returnPending = false
+        checkinPending = false
         surface = .review
         syncSound(at: now)
+    }
+
+    func beginNextSession() {
+        surface = .initiate
     }
 
     /// Descriptive timeline straight from the event log — what happened,
@@ -593,14 +715,7 @@ final class AppModel {
             let label: String
             switch event.kind {
             case .transition:
-                label =
-                    switch event.payload {
-                    case "running": "Focus resumed"
-                    case "held": "Held — place kept"
-                    case "break": "Chose an intentional break"
-                    case "closed": "Closed the session"
-                    default: "State: \(event.payload)"
-                    }
+                label = TransitionPayload.reviewLabel(for: event.payload)
             case .checkinAnswer:
                 label = "Check-in: \(CheckinAnswer(rawValue: event.payload)?.label ?? event.payload)"
             case .thoughtParked: label = "Parked a thought"

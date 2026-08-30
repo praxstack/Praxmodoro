@@ -88,6 +88,6 @@ The break simply begins; declining or ending it is one ordinary keystroke, no pe
 Block ends, a gentle prompt asks; the break starts only on confirmation. Softer, but adds one decision at exactly the moment attention is depleted.]]
 3[[Keep breaks fully manual
 No autostart at all; the setting is not built. Smallest scope, furthest from your RoundPie ask.]]
-- **execute_all:** create /goal /autononomou-irchestartion self /coding-leadrshop-pinciple- cmobined prompt for yourself 
+- **execute_all:** create /goal /autononomou-irchestartion self /coding-leadrshop-pinciple- cmobined prompt for yourself
 or do we need to run /wayfinder or /implemetn as per matt poccock ?
 <!-- dcanvas:end decisions -->

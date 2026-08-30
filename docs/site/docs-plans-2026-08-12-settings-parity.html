@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan: settings &amp; rhythm parity — proposed change add-session-settings · Praxmodoro docs</title>
+<style>/* Praxmodoro documentation — shared shell.
+ *
+ * Deliberately NOT a pastiche of the product's own Living Companion palette.
+ * Documentation that cosplays the product it documents makes the two harder to
+ * tell apart, and this project's visual direction is currently under question.
+ * So: an engineering-dossier voice — warm paper, cool ink, one restrained
+ * blue-teal accent, serif for long-form reading, mono for anything that is a
+ * path, a count, or a command. */
+
+:root {
+  --ground:   oklch(97.2% 0.006 92);
+  --surface:  oklch(94.6% 0.008 90);
+  --surface-2:oklch(91.5% 0.009 88);
+  --ink:      oklch(24% 0.014 258);
+  --ink-2:    oklch(36% 0.014 258);
+  --muted:    oklch(52% 0.014 260);
+  --rule:     oklch(87.5% 0.008 90);
+  --accent:   oklch(47% 0.125 232);
+  --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok:       oklch(48% 0.095 158);
+  --ok-2:     oklch(48% 0.095 158 / 0.13);
+  --warn:     oklch(56% 0.11 68);
+  --warn-2:   oklch(56% 0.11 68 / 0.15);
+  --danger:   oklch(51% 0.16 25);
+  --shadow:   oklch(30% 0.02 260 / 0.09);
+
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: ui-serif, "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 70ch;
+  --bar: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+    --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+    --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+    --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+    --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+  --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+  --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+  --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+  --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+  --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+}
+:root[data-theme="light"] {
+  --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90); --surface-2: oklch(91.5% 0.009 88);
+  --ink: oklch(24% 0.014 258); --ink-2: oklch(36% 0.014 258); --muted: oklch(52% 0.014 260);
+  --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok: oklch(48% 0.095 158); --ok-2: oklch(48% 0.095 158 / 0.13);
+  --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+  --danger: oklch(51% 0.16 25); --shadow: oklch(30% 0.02 260 / 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 1rem); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr, .skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 60; background: var(--accent);
+  color: var(--ground); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .25rem; }
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--bar);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1.25rem; background: color-mix(in oklab, var(--ground) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem; font-weight: 620;
+  font-size: .95rem; color: var(--ink); text-decoration: none; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.brand-mark {
+  width: .7rem; height: .7rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), color-mix(in oklab, var(--accent) 40%, transparent));
+  box-shadow: 0 0 0 3px var(--accent-2);
+}
+.topnav { display: flex; gap: .15rem; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: var(--muted); text-decoration: none; font-size: .82rem; white-space: nowrap;
+  padding: .3rem .55rem; border-radius: .4rem;
+}
+.topnav a:hover { color: var(--ink); background: var(--surface); }
+.theme {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--muted);
+  border-radius: .45rem; width: 2rem; height: 2rem; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+.wrap { max-width: 78rem; margin: 0 auto; padding: 2.75rem 1.5rem 6rem; }
+body:not(.is-index) .wrap { max-width: 56rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .7rem;
+}
+h1 {
+  font-family: var(--sans); font-size: clamp(1.9rem, 4.2vw, 2.85rem); line-height: 1.1;
+  letter-spacing: -.025em; font-weight: 660; margin: 0 0 .7rem; text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--serif); font-size: 1.16rem; line-height: 1.55; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 1rem;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; font-family: var(--mono);
+  font-size: .74rem; color: var(--muted); padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────────── */
+.prose { font-family: var(--serif); font-size: 1.045rem; line-height: 1.72; }
+.prose > * { max-width: var(--measure); }
+.prose > .scroller, .prose > pre { max-width: 100%; }
+.prose h2 {
+  font-family: var(--sans); font-size: 1.45rem; font-weight: 640; letter-spacing: -.015em;
+  margin: 2.9rem 0 .6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-wrap: balance;
+}
+.prose h3 { font-family: var(--sans); font-size: 1.12rem; font-weight: 620; margin: 2rem 0 .4rem; }
+.prose h4 {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 1.6rem 0 .3rem; font-weight: 500;
+}
+.prose p { margin: 0 0 1.05rem; }
+.prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: .35rem; }
+.prose li::marker { color: var(--muted); }
+.prose a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.prose strong { font-weight: 660; color: var(--ink); }
+.prose hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+.prose blockquote {
+  margin: 1.4rem 0; padding: .85rem 1.15rem; border-left: 3px solid var(--warn);
+  background: var(--warn-2); border-radius: 0 .5rem .5rem 0; color: var(--ink-2);
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd {
+  font-family: var(--mono); font-size: .855em;
+  background: var(--surface-2); padding: .1em .36em; border-radius: .3rem;
+  border: 1px solid color-mix(in oklab, var(--rule) 70%, transparent);
+}
+pre {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: .6rem;
+  padding: 1rem 1.15rem; overflow-x: auto; margin: 0 0 1.2rem;
+  font-size: .86rem; line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; font-size: 1em; }
+
+/* Tables — the specs are full of them. */
+.scroller {
+  overflow-x: auto; border: 1px solid var(--rule); border-radius: .6rem;
+  background: var(--surface); margin: 0 0 1.4rem;
+}
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .875rem; }
+th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; white-space: nowrap;
+  background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+}
+tbody tr:last-child td { border-bottom: none; }
+td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
+
+/* Task lists in the OpenSpec task files. */
+.prose input[type="checkbox"] { accent-color: var(--ok); margin-right: .35rem; }
+.prose li:has(> input[type="checkbox"]:checked) { color: var(--muted); }
+.prose ul:has(input[type="checkbox"]) { list-style: none; padding-left: .2rem; }
+
+/* ── Document footer ───────────────────────────────────────────────────── */
+.docfoot {
+  margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srcbtn {
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 550;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--accent);
+  padding: .45rem .85rem; border-radius: .45rem; background: var(--accent-2);
+}
+.srcbtn:hover { background: var(--accent); color: var(--ground); }
+.srcpath { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+/* ── Index ─────────────────────────────────────────────────────────────── */
+.hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 20ch; }
+.hero .standfirst { max-width: 62ch; font-size: 1.2rem; }
+.stats {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.8rem; margin: 1.5rem 0 1.75rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--muted);
+}
+.stats b { color: var(--ink); font-size: 1.15rem; font-weight: 600; margin-right: .3rem; font-variant-numeric: tabular-nums; }
+.search input {
+  width: 100%; max-width: 32rem; font: inherit; font-size: .95rem;
+  padding: .6rem .9rem; border-radius: .55rem; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+
+.block { margin-top: 3.25rem; scroll-margin-top: calc(var(--bar) + 1rem); }
+.block[hidden] { display: none; }
+.block-head { margin-bottom: 1.1rem; }
+.block-head h2 {
+  font-size: 1.35rem; font-weight: 640; letter-spacing: -.015em; margin: 0 0 .25rem;
+}
+.block-head p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 68ch; }
+
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.doc {
+  display: flex; align-items: stretch; gap: .5rem;
+  border: 1px solid var(--rule); border-radius: .6rem; background: var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+.doc[hidden] { display: none; }
+.doc:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--rule)); box-shadow: 0 2px 10px -4px var(--shadow); }
+.doc-main {
+  flex: 1; display: flex; flex-direction: column; gap: .2rem;
+  padding: .85rem 1rem; text-decoration: none; color: inherit; min-width: 0;
+}
+.doc-title { font-weight: 590; font-size: .98rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.doc-sum { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.doc-path { font-family: var(--mono); font-size: .71rem; color: var(--muted); overflow-wrap: anywhere; }
+.doc-path code { background: none; border: none; padding: 0; font-size: 1em; }
+.doc-md {
+  display: flex; align-items: center; padding: 0 .9rem; text-decoration: none;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; color: var(--muted);
+  border-left: 1px solid var(--rule); border-radius: 0 .6rem .6rem 0;
+}
+.doc-md:hover { background: var(--accent-2); color: var(--accent); }
+
+.chip {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .14em .45em; border-radius: .3rem; font-weight: 500; white-space: nowrap;
+}
+.chip.ok { background: var(--ok-2); color: var(--ok); }
+.chip.accent { background: var(--accent-2); color: var(--accent); }
+.chip.muted { background: var(--surface-2); color: var(--muted); }
+
+/* Mockups get more room — they are the thing people actually want to look at. */
+.mocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .75rem; }
+.mock {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.2rem 1rem;
+  border: 1px solid var(--rule); border-radius: .7rem; text-decoration: none; color: inherit;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-2), transparent 62%),
+    var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.mock:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--rule)); box-shadow: 0 4px 18px -8px var(--shadow); }
+.mock-top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-weight: 620; font-size: 1rem; }
+.mock-note { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.mock-go { font-size: .82rem; font-weight: 550; color: var(--accent); margin-top: auto; padding-top: .3rem; }
+
+.rebuild {
+  margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .topnav { display: none; }
+  .wrap { padding: 2rem 1.1rem 4rem; }
+  .doc { flex-direction: column; }
+  .doc-md { border-left: none; border-top: 1px solid var(--rule); padding: .5rem 1rem; border-radius: 0 0 .6rem .6rem; }
+}
+
+/* ── Audit components ──────────────────────────────────────────────────
+ * Used by the design-parity page. Kept here rather than inline so the
+ * audit cannot drift away from the rest of the documentation. */
+
+.verdict {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: .65rem; overflow: hidden; margin: 0 0 1.5rem; max-width: 100%;
+}
+.vcell { background: var(--surface); padding: .95rem 1.05rem; display: flex; flex-direction: column; gap: .15rem; }
+.vnum {
+  font-family: var(--mono); font-size: 1.6rem; line-height: 1.1; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.vlabel { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+
+.meters { display: flex; flex-direction: column; gap: .6rem; margin: 0 0 .75rem; max-width: 100%; }
+.meter { display: grid; grid-template-columns: minmax(7.5rem, 13rem) 1fr 3.5rem; gap: .85rem; align-items: center; }
+.meter-name { font-size: .88rem; }
+.track { height: .45rem; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; }
+.meter-val { font-family: var(--mono); font-size: .78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.defect {
+  border: 1px solid var(--rule); border-left: 3px solid var(--danger);
+  background: var(--surface); border-radius: 0 .6rem .6rem 0;
+  padding: 1rem 1.2rem; margin: 0 0 .85rem; max-width: 100%;
+}
+.defect .tag {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--danger); display: block; margin-bottom: .3rem;
+}
+.defect h3 { margin: 0 0 .4rem; font-family: var(--sans); font-size: 1.02rem; font-weight: 620; }
+.defect p { margin: 0; font-family: var(--serif); font-size: .95rem; color: var(--ink-2); }
+
+.pull {
+  border-left: 3px solid var(--accent); padding: .35rem 0 .35rem 1.25rem;
+  font-family: var(--sans); font-size: 1.16rem; line-height: 1.45; font-weight: 500;
+  color: var(--ink); margin: 1.6rem 0; max-width: 54ch;
+}
+
+.chip.warn { background: var(--warn-2); color: var(--warn); }
+.chip.danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.footnote { font-size: .85rem; color: var(--muted); font-family: var(--sans); max-width: var(--measure); }
+
+/* The meta bar already draws a rule; the first section heading must not add a
+   second one immediately below it. */
+.prose > h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+</style>
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
+</nav>
+<main id="main" class="wrap">
+<div class="eyebrow">Generated tooling prompts</div>
+<h1>Plan: settings &amp; rhythm parity — proposed change add-session-settings</h1>
+<p class="standfirst">Date 2026-08-12 · Status: HISTORICAL SCOPE RECORD — execution superseded 2026-08-23 by docs/plans/2026-08-23-m3-validation-remediation.md and docs/plans/2026-08-23-architec…</p>
+<div class="meta"><span>1,393 words</span><span><code>docs/plans/2026-08-12-settings-parity.md</code></span></div>
+<article class="prose"><p>Date 2026-08-12 · Status: HISTORICAL SCOPE RECORD — execution superseded 2026-08-23 by <code>docs/plans/2026-08-23-m3-validation-remediation.md</code> and <code>docs/plans/2026-08-23-architecture-stabilization.md</code> · Trigger: RoundPie comparison (owner screenshots, build 1641) — &quot;I think we have no settings or very few. Fix all, especially sounds and automatic break/focus.&quot;</p>
+<p>The original approach-D scope decision remains provenance. Its parallel-lane, Appearance, ticket-number, and auto-push instructions are not executable in the current run; the newer plans narrow work to the active <code>add-session-settings</code> capability, sequence shared-file edits, and defer every commit until whole-diff review closes.</p>
+<h2>The gap, measured</h2>
+<p>Praxmodoro today has <strong>zero</strong> settings surface. The only user preferences that exist are the in-app &quot;Motion: still&quot; toggle (a menu command) and the four fixed timing policies chosen at initiation. RoundPie ships ~25 settings. The honest comparison, filtered through our own product boundaries:</p>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>RoundPie setting</th>
+<th>Ours today</th>
+<th>Verdict for us</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Autostart timers (25/35/40/45/50 presets)</td>
+<td>4 fixed policies, no custom durations</td>
+<td><strong>Adopt, adapted</strong> — custom focus durations as data-driven policies</td>
+</tr>
+<tr>
+<td>Autostart breaks (5/10/15)</td>
+<td>breaks are fully manual</td>
+<td><strong>Adopt, adapted</strong> — offer, never force (see invariant note)</td>
+</tr>
+<tr>
+<td>Long breaks (every N timers, length)</td>
+<td>nothing</td>
+<td><strong>Adopt</strong> — cadence-aware suggestion</td>
+</tr>
+<tr>
+<td>Notifications on/off + custom stop text</td>
+<td>none (M2 non-goal)</td>
+<td><strong>Adopt</strong> — local UNUserNotification, optional, gentle copy</td>
+</tr>
+<tr>
+<td>Bring app to front</td>
+<td>none</td>
+<td><strong>Adopt</strong> as part of notification action</td>
+</tr>
+<tr>
+<td>Sounds: volume, timer tick, tick loop, break tick, timer alarm, break alarm</td>
+<td><strong>zero sound in the app</strong></td>
+<td><strong>Adopt</strong> — the owner&#39;s top ask</td>
+</tr>
+<tr>
+<td>Tray: task name (+max length), remaining time, break time, seconds</td>
+<td>icon-only MenuBarExtra</td>
+<td><strong>Adopt</strong> — live menu-bar label is high value</td>
+</tr>
+<tr>
+<td>Show icon in Dock</td>
+<td>always shown</td>
+<td><strong>Adopt</strong> — activation-policy toggle</td>
+</tr>
+<tr>
+<td>Always on top</td>
+<td>capsule only</td>
+<td><strong>Adopt</strong> — extend to main window</td>
+</tr>
+<tr>
+<td>Dark theme toggle</td>
+<td>no dark mode at all</td>
+<td><strong>Adopt</strong> — answers the open single-theme question: NOT single-theme</td>
+</tr>
+<tr>
+<td>Layout list/tiles, visible items</td>
+<td>n/a (no task list)</td>
+<td><strong>Skip</strong> — not our shape</td>
+</tr>
+<tr>
+<td>Connected services / sync / account</td>
+<td>none</td>
+<td><strong>Skip</strong> — local-first invariant, M4+ territory</td>
+</tr>
+</tbody></table></div>
+<h2>Where our invariants bend RoundPie&#39;s shape</h2>
+<p>These are not softenings — they are the product&#39;s identity, and each is already an EARS-tested rule:</p>
+<ol>
+<li><strong>&quot;No punitive mechanics (forced breaks)&quot;</strong> — <code>SPEC.md</code> global invariant. So <em>autostart break</em> here means: when a block&#39;s focus ends, the break <strong>begins as the offered default</strong> with a visible, ordinary way to decline or end instantly (&quot;Ending early is ordinary&quot; is already spec). Never a lockout, never a modal wall.</li>
+<li><strong>&quot;Flow never auto-ends&quot;</strong> — timer-engine spec. Autostart cannot apply to the flow policy; the settings UI must say so rather than silently ignore it.</li>
+<li><strong>Sound is never a nag.</strong> Ticks and alarms exist for people whose time-blindness sound genuinely helps. Owner decision #18 supersedes the original silent factory state: block-start and both end chimes are ON at moderate volume, while both ticks and tick-loop remain OFF; every cue is independently optional and has a sample action. The copy-tone lint applies to product notification text; runtime custom text remains the user&#39;s own words.</li>
+<li><strong>Every new capability ships in the one product.</strong> <code>CapabilityRegistry</code> retains internal provenance keys, but no edition, tier, or withholding behavior.</li>
+<li><strong>Canonical timestamps stay the only clock.</strong> Autostart transitions are engine events recorded at their canonical instant (the block&#39;s expiry), exactly like the existing gentle-start promotion — not timers firing in the UI. Sound/notification scheduling derives from <code>expiryInstant()</code>; a fired notification is presentation, never state.</li>
+</ol>
+<h2>Historical proposed scope — OpenSpec change <code>add-session-settings</code></h2>
+<p><strong>New capability <code>session-settings</code>:</strong></p>
+<ol>
+<li><strong>Settings scene</strong> (⌘,), standard macOS Settings window, three panes: Rhythm, Sound &amp; Notifications, Appearance &amp; Presence. All values in <code>UserDefaults</code> via the existing injected-defaults seam; schema untouched (settings are device preferences, not session data).</li>
+<li><strong>Rhythm</strong>: custom focus durations (add/remove presets, RoundPie-style), break durations, long-break cadence (every N blocks, length), autostart-break toggle, auto-return toggle (break end → focus offered), with the flow-policy exemption stated in the UI.</li>
+<li><strong>Sound &amp; Notifications</strong>: master volume, five per-sound toggles (block start, focus tick, break tick, focus-end chime, break-end chime), tick-loop toggle, and one sample button per cue; block-end/break-end local notifications with editable text (linted defaults), bring-to-front action toggle. Bundled sounds are original synthesized assets, no third-party audio dependencies (AVFoundation). Factory-on: block start plus both chimes; ticks off.</li>
+<li><strong>Appearance &amp; Presence</strong>: dark/light/system appearance (requires the dark Living Companion variant — feeds #8 token work, which is exactly why this lands after tokens), menu-bar label content (icon only / +time / +task with max length / seconds), Dock icon toggle, always-on-top for the main window, Motion: still (moves into Settings alongside its menu command).</li>
+</ol>
+<p><strong>Explicit non-goals:</strong> accounts, sync, layout/grid options, any setting that gates the never-paywalled set, global hotkeys (still deferred).</p>
+<p><strong>Historical sequencing — approach D, approved 2026-08-12 and superseded for execution on 2026-08-23: two parallel lanes.</strong>
+UI and gap-fixes are BOTH priorities; the only true dependency is that the Appearance pane needs tokens to exist.</p>
+<ul>
+<li><strong>Lane 1 (starts now):</strong> engine extensions (custom focus/break durations as <code>TimingPolicy</code> values, long-break cadence, autostart transitions as canonical engine events anchored on <code>expiryInstant()</code>), then the Rhythm and Sound &amp; Notifications panes. Discipline rule: panes draw colour/spacing ONLY through <code>SurfacePalette</code> semantic roles — never raw values — so they re-theme automatically when tokens land beneath it.</li>
+<li><strong>Lane 2 (starts now, in parallel):</strong> issue #8 — the <code>DesignTokens</code> converter from <code>tokens.css</code> with a parity test, PLUS the dark Living Companion variant. <code>SurfacePalette</code> becomes token-backed.</li>
+<li><strong>Joins:</strong> Appearance pane (dark/light/system, menu-bar label, Dock icon, always-on-top) lands when lane 2 completes. #14&#39;s literal-ban lands last, as before.</li>
+</ul>
+<p><strong>Historical draft mapping (not current issue identity):</strong> #15 settings scene + Rhythm pane + engine policy extensions · #16 Sound &amp; Notifications · #17 Appearance &amp; Presence (blocked by #8). The old line assigned #18 to dark tokens; current owner issue #18 instead governs the fifth sound cue, factory defaults, and samples.</p>
+<h2>Risks / open questions for review</h2>
+<ul>
+<li><del>Autostart vs. &quot;no forced breaks&quot;</del> <strong>RESOLVED 2026-08-12 (dcanvas export 01KZTPM2DDFA8Q5ZM76ES0JXEJ, words-win):</strong> the autostart behaviour is itself a <strong>three-way user setting</strong> — <em>break starts as offered default</em> / <em>prompt first</em> / <em>fully manual</em> — shipping default <strong>prompt-first</strong>. The radio said stay-manual but the comment overrode it (comments outrank clicks): all three options in Settings, prompt-first as default.</li>
+<li><strong>Custom notification text</strong> — user-authored text is exempt from tone lint by principle (their words); defaults linted. Agree?</li>
+<li><strong>Dock-icon toggle</strong> requires <code>NSApp.setActivationPolicy</code> juggling with the Settings window open — known macOS awkwardness, needs a design.md decision.</li>
+<li><del>Rewind/forward (#6)</del> <strong>RESOLVED 2026-08-12 (default-confirmed, no objection):</strong> kept, as a recorded engine adjustment event — joins the Rhythm scope in #15. Typography likewise resolved: <strong>bundle all three OFL faces</strong> (#9 executable). Custom notification text: <strong>user words exempt</strong>, shipped defaults linted. The former auto-push instruction is superseded; no push is authorized by the 2026-08-23 run.</li>
+</ul>
+<h2>GSTACK REVIEW REPORT</h2>
+<p>Mode: SCOPE EXPANSION (&quot;bil the lake&quot;) · Reviewer: plan-ceo-review · Date 2026-08-12</p>
+<div class="scroller"><table>
+<thead>
+<tr>
+<th>Run</th>
+<th>Status</th>
+<th>Findings</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>System audit</td>
+<td>done</td>
+<td>UserDefaults seam proven (Motion: still); TimingPolicy already data; expiryInstant/promotionInstant are the autostart anchors; zero audio/notification code exists</td>
+</tr>
+<tr>
+<td>Premise (0A)</td>
+<td>pass</td>
+<td>Right problem, reframed: not 25 toggles — &quot;give the rhythm a body&quot; (perceptible time without looking). RoundPie list = checklist, not goal</td>
+</tr>
+<tr>
+<td>Leverage (0B)</td>
+<td>pass</td>
+<td>Nothing rebuilt; every pillar reuses an existing, tested seam</td>
+</tr>
+<tr>
+<td>Alternatives (0C-bis)</td>
+<td>decided</td>
+<td>A panes-first / B tokens-first / C mirror-sprint presented; user rejected the A-vs-B dilemma as false; <strong>D both-lanes-parallel</strong> approved (the only hard dependency is Appearance→tokens)</td>
+</tr>
+<tr>
+<td>Failure modes</td>
+<td>recorded</td>
+<td>UI-side timers structurally banned (guard-enforced); autostart must be engine events; &quot;no forced breaks&quot; invariant bends autostart to offered-default; flow policy exempt and UI must say so</td>
+</tr>
+<tr>
+<td>Expansion ceremony</td>
+<td>compressed</td>
+<td>Owner pre-directed scope (&quot;fix all… add new features too&quot;) via screenshots; adopt-list in the Proposed-scope section IS the accepted expansion set. Additional delight ideas deferred to ticket bodies rather than more dialogs — owner signalled dialog fatigue</td>
+</tr>
+</tbody></table></div>
+<p>VERDICT: HISTORICALLY APPROVED SCOPE — current execution follows the 2026-08-23 plans; one product, no tier framing.</p>
+<p>NO UNRESOLVED DECISIONS</p>
+</article>
+<footer class="docfoot">
+  <a class="srcbtn" href="../../docs/plans/2026-08-12-settings-parity.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>docs/plans/2026-08-12-settings-parity.md</code></span>
+</footer>
+</main>
+<script>
+(() => {
+  const root = document.documentElement;
+  const stored = localStorage.getItem("praxdocs-theme");
+  if (stored) root.setAttribute("data-theme", stored);
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme")
+      ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("praxdocs-theme", next);
+  });
+})();
+</script>
+</body>
+</html>

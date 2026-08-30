@@ -1,9 +1,9 @@
 import Foundation
 import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroStore
 
 /// Spec: companion-surfaces "One canonical session state for every surface".
 /// The snapshot is the only thing a surface may render; these tests pin that
@@ -85,6 +85,30 @@ import PraxmodoroStore
         #expect(tenMinutesLater.accessibilitySummary == "Companion: holding your place")
     }
 
+    @Test func testFocusSurfaceRendersOnlyItsSuppliedSnapshot() throws {
+        let model = AppModel(store: try LocalStore(inMemory: true), clock: { self.t0 })
+        model.taskTitle = "model task must not leak"
+        let sentinel = SessionSnapshot(
+            phase: .held,
+            taskLine: "sentinel task",
+            nextAction: "sentinel next action",
+            remaining: 548,
+            remainingText: "09:08",
+            statusLine: "sentinel status",
+            accessibilitySummary: "sentinel field summary",
+            offersAdjustment: true,
+            offersBlockEndPrompt: true)
+
+        let surface = FocusSurface(model: model, snapshot: sentinel)
+
+        #expect(surface.taskText == "sentinel task")
+        #expect(surface.nextActionText == "sentinel next action")
+        #expect(surface.statusText == "sentinel status")
+        #expect(surface.fieldState == "held")
+        #expect(surface.showsBlockEndPrompt)
+        #expect(surface.remainingReadout.text == "09:08")
+    }
+
     // Sleep, wake, relaunch: the snapshot taken after a gap during which the
     // app was not running reports the canonical value, with no tick drift.
     @Test func testSnapshotAfterSleepHasNoDrift() throws {
@@ -148,10 +172,10 @@ import PraxmodoroStore
             // physics integrator, never session time.
             ("CompanionFieldView.swift", "lastTick.map { now.timeIntervalSince($0) }"),
             // The audio scheduler's own clock seam, mirroring AppModel's.
-            ("SoundDirector.swift", "private let clock: () -> Date = { Date() }"),
+            ("SoundDirector.swift", "clock: @escaping () -> Date = { Date() }"),
             // Converting a canonical engine instant into the audio device's
             // timebase — presentation lead time, never session arithmetic.
-            ("SoundDirector.swift", "instant.timeIntervalSince(clock())"),
+            ("SoundDirector.swift", "instant.timeIntervalSince(now)"),
         ]
 
         var sawSnapshotUse = false
@@ -168,8 +192,9 @@ import PraxmodoroStore
             let code = codeLines.joined(separator: "\n")
 
             for beat in beats {
-                #expect(!code.contains(beat),
-                        "\(file.lastPathComponent) can run code on a schedule via “\(beat)”; the engine is the only clock")
+                #expect(
+                    !code.contains(beat),
+                    "\(file.lastPathComponent) can run code on a schedule via “\(beat)”; the engine is the only clock")
             }
 
             for line in codeLines where clockReads.contains(where: line.contains) {
@@ -179,14 +204,16 @@ import PraxmodoroStore
                 let allowed = allowedReads.contains {
                     $0.file == file.lastPathComponent && line.contains($0.line)
                 }
-                #expect(allowed,
-                        "\(file.lastPathComponent) reads the wall clock outside the allowlist: \(line.trimmingCharacters(in: .whitespaces))")
+                #expect(
+                    allowed,
+                    "\(file.lastPathComponent) reads the wall clock outside the allowlist: \(line.trimmingCharacters(in: .whitespaces))")
             }
 
             // Only the snapshot may turn an interval into a clock face.
             if file.lastPathComponent != "SessionSnapshot.swift" {
-                #expect(!code.contains("%02d:%02d"),
-                        "\(file.lastPathComponent) formats remaining time locally; SessionSnapshot owns that")
+                #expect(
+                    !code.contains("%02d:%02d"),
+                    "\(file.lastPathComponent) formats remaining time locally; SessionSnapshot owns that")
             }
             if code.contains("snapshot(at:") { sawSnapshotUse = true }
         }

@@ -346,16 +346,16 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <a class="skip" href="#main">Skip to content</a>
 <nav class="topbar">
   <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
-  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active change</a><a href="../index.html#archive">Archived change</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
   <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
 </nav>
 <main id="main" class="wrap">
 <div class="eyebrow">Capability specs</div>
 <h1>timer-engine Specification</h1>
-
-<div class="meta"><span>665 words</span><span><code>openspec/specs/timer-engine/spec.md</code></span></div>
+<p class="standfirst">The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transiti…</p>
+<div class="meta"><span>1,267 words</span><span><code>openspec/specs/timer-engine/spec.md</code></span></div>
 <article class="prose"><h2>Purpose</h2>
-<p>The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transitions and the current instant, never a counted tick. Covers the transition table, timestamp arithmetic, sleep/wake and relaunch recovery, hold semantics, user-steerable timing policies, and the engine&#39;s freedom from UI and edition concerns.</p>
+<p>The deterministic heart of the product. A session is a state machine over canonical wall-clock timestamps: remaining time is always a pure function of the recorded transitions and the current instant, never a counted tick. Covers the transition table, timestamp arithmetic, sleep/wake and relaunch recovery, hold semantics, user-steerable timing policies, and the engine&#39;s independence from UI and app-layer capability provenance.</p>
 <h2>Requirements</h2>
 <h3>Requirement: Session state machine</h3>
 <p>The engine SHALL model a session as the states <code>idle</code>, <code>running</code>, <code>held</code>, <code>break</code>, and <code>closed</code>, with transitions only via explicit user intents (begin, hold, resume, startBreak, endBreak, close) or policy expiry, and SHALL reject invalid transitions with a typed error.</p>
@@ -406,7 +406,7 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <li><strong>THEN</strong> remaining time at resume SHALL be exactly 17:26</li>
 </ul>
 <h3>Requirement: User-steerable timing policies</h3>
-<p>The engine SHALL support the four session policies from the approved mocks (gentle start 5+20, classic 25+5, flow open-ended, recovery-first) as data, and SHALL NOT claim or encode any policy as optimal (research w2-breaks-adhd-falsification-001).</p>
+<p>The engine SHALL support the four session policies from the approved mocks (gentle start 5+20, classic 25+5, flow open-ended, recovery-first) as data, SHALL additionally accept user-constructed policies (custom focus and break durations, long-break cadence), and SHALL NOT claim or encode any policy as optimal (research w2-breaks-adhd-falsification-001). The engine SHALL support a recorded adjustment transition (±60 seconds) while a block is running, an autostart transition recorded at the canonical expiry instant when the active block-end behaviour calls for it, and an auto-return transition recorded at the canonical break-end instant when auto-return is enabled. Policy changes SHALL never mutate history, and remaining time SHALL stay a pure function of recorded transitions and the current instant.</p>
 <h4>Scenario: Gentle start promotes without judgment</h4>
 <ul>
 <li><strong>WHEN</strong> a gentle-start 5-minute arrival period ends</li>
@@ -415,14 +415,71 @@ td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
 <h4>Scenario: Flow policy has no forced end</h4>
 <ul>
 <li><strong>WHILE</strong> a flow session is <code>running</code></li>
-<li><strong>THEN</strong> the engine SHALL never auto-transition to break; only user intent or hold applies</li>
+<li><strong>THEN</strong> the engine SHALL never auto-transition to break — including when autostart is enabled; only user intent or hold applies</li>
 </ul>
-<h3>Requirement: Engine is UI-free and edition-free</h3>
-<p>The timer engine SHALL be a pure Swift module with no SwiftUI, AppKit, or network imports, and SHALL NOT consult the edition gate — timing behavior is identical in every edition.</p>
+<h4>Scenario: Custom policy is pure data</h4>
+<ul>
+<li><strong>WHEN</strong> a session runs under a user-constructed 40/8 policy</li>
+<li><strong>THEN</strong> reconstruction from persisted transitions SHALL yield identical remaining time on relaunch</li>
+</ul>
+<h4>Scenario: Adjustment is a first-class transition</h4>
+<ul>
+<li><strong>WHEN</strong> an adjustment of +60 seconds is applied and the Mac then sleeps through the (shifted) expiry</li>
+<li><strong>THEN</strong> wake SHALL backdate the expiry using the adjusted derivation, with no drift</li>
+</ul>
+<h4>Scenario: Autostart records at the canonical instant</h4>
+<ul>
+<li><strong>WHEN</strong> autostart applies and the app was not running at expiry</li>
+<li><strong>THEN</strong> relaunch reconstruction SHALL place the break transition exactly at the expiry instant, not at wake or launch time</li>
+</ul>
+<h4>Scenario: Auto-return records at the canonical break-end instant</h4>
+<ul>
+<li><strong>WHEN</strong> auto-return is enabled and the chosen break length elapses while the app process remains active, including across system sleep</li>
+<li><strong>THEN</strong> wake reconciliation SHALL record the return-to-focus transition at the canonical break-end instant, never at wake time, when that instant is later than the process&#39;s live-observation start; with auto-return disabled breaks SHALL stay open-ended</li>
+</ul>
+<h4>Scenario: Relaunch does not invent unattended focus blocks</h4>
+<ul>
+<li><strong>WHEN</strong> the app relaunches after being absent across a break end</li>
+<li><strong>THEN</strong> restore SHALL reconstruct recorded history with auto-return disabled, seed the new process&#39;s live-observation boundary, leave the break open, and SHALL NOT synthesize that return-to-focus transition on the first or any later observation</li>
+</ul>
+<h3>Requirement: Engine is UI-free and capability-registry-independent</h3>
+<p>The timer engine SHALL be a pure Swift module with no SwiftUI, AppKit, or network imports, and SHALL NOT import or consult the app-layer capability registry; timing behavior SHALL be identical regardless of app-layer feature-key configuration.</p>
 <h4>Scenario: Module isolation is testable</h4>
 <ul>
 <li><strong>WHEN</strong> the engine test target builds</li>
 <li><strong>THEN</strong> it SHALL link only Foundation and the persistence protocol, and all scenarios above SHALL run headlessly with an injected clock</li>
+</ul>
+<h3>Requirement: Break end has one canonical derivation</h3>
+<p>The engine SHALL expose <code>breakEndInstant(cadence:)</code> as the sole derivation of the current break&#39;s end, using the final break transition timestamp plus the cadence-aware suggested break length, and SHALL return no instant when the session is not currently on break.</p>
+<h4>Scenario: Ordinary break end</h4>
+<ul>
+<li><strong>WHEN</strong> a classic session enters break at T and no long-break cadence applies</li>
+<li><strong>THEN</strong> <code>breakEndInstant(cadence:)</code> SHALL equal T plus the policy&#39;s ordinary suggested break length</li>
+</ul>
+<h4>Scenario: Long-break cadence boundary</h4>
+<ul>
+<li><strong>WHEN</strong> the current break is the Nth break selected by a valid long-break cadence</li>
+<li><strong>THEN</strong> <code>breakEndInstant(cadence:)</code> SHALL equal the break transition timestamp plus the cadence&#39;s long-break length</li>
+</ul>
+<h4>Scenario: No active break</h4>
+<ul>
+<li><strong>WHEN</strong> the final session state is idle, running, held, or closed</li>
+<li><strong>THEN</strong> <code>breakEndInstant(cadence:)</code> SHALL return <code>nil</code></li>
+</ul>
+<h4>Scenario: Every consumer agrees</h4>
+<ul>
+<li><strong>WHEN</strong> auto-return, the break-end sound cue, and the break-end notification are enabled for the same session and cadence</li>
+<li><strong>THEN</strong> the Core return transition, sound request, and notification request SHALL use exactly the same <code>breakEndInstant(cadence:)</code> value</li>
+</ul>
+<h4>Scenario: Auto-return is an explicit gate, not a duration</h4>
+<ul>
+<li><strong>WHEN</strong> auto-return is true for a custom policy whose ordinary suggested break is seven minutes</li>
+<li><strong>THEN</strong> reconciliation SHALL return at <code>breakEndInstant(cadence:)</code>, seven minutes after the break transition, with no second caller-supplied duration</li>
+</ul>
+<h4>Scenario: Auto-return honors the process-live boundary</h4>
+<ul>
+<li><strong>WHEN</strong> auto-return is true with <code>autoReturnAfter</code> set to the current process&#39;s live-observation start</li>
+<li><strong>THEN</strong> reconciliation SHALL append a return only when <code>breakEndInstant(cadence:)</code> is later than that boundary; an older break SHALL remain open on every later reconciliation, while a process that was live before the edge SHALL materialize it after wake</li>
 </ul>
 </article>
 <footer class="docfoot">

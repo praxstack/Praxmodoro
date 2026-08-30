@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture review session · Praxmodoro docs</title>
+<style>/* Praxmodoro documentation — shared shell.
+ *
+ * Deliberately NOT a pastiche of the product's own Living Companion palette.
+ * Documentation that cosplays the product it documents makes the two harder to
+ * tell apart, and this project's visual direction is currently under question.
+ * So: an engineering-dossier voice — warm paper, cool ink, one restrained
+ * blue-teal accent, serif for long-form reading, mono for anything that is a
+ * path, a count, or a command. */
+
+:root {
+  --ground:   oklch(97.2% 0.006 92);
+  --surface:  oklch(94.6% 0.008 90);
+  --surface-2:oklch(91.5% 0.009 88);
+  --ink:      oklch(24% 0.014 258);
+  --ink-2:    oklch(36% 0.014 258);
+  --muted:    oklch(52% 0.014 260);
+  --rule:     oklch(87.5% 0.008 90);
+  --accent:   oklch(47% 0.125 232);
+  --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok:       oklch(48% 0.095 158);
+  --ok-2:     oklch(48% 0.095 158 / 0.13);
+  --warn:     oklch(56% 0.11 68);
+  --warn-2:   oklch(56% 0.11 68 / 0.15);
+  --danger:   oklch(51% 0.16 25);
+  --shadow:   oklch(30% 0.02 260 / 0.09);
+
+  --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --serif: ui-serif, "Iowan Old Style", Charter, "Source Serif Pro", Georgia, serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --measure: 70ch;
+  --bar: 3.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+    --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+    --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+    --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+    --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+    --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(17.5% 0.009 258); --surface: oklch(21.5% 0.011 258); --surface-2: oklch(26% 0.012 258);
+  --ink: oklch(93% 0.006 92); --ink-2: oklch(84% 0.007 92); --muted: oklch(68% 0.012 260);
+  --rule: oklch(31% 0.011 258); --accent: oklch(74% 0.11 232); --accent-2: oklch(74% 0.11 232 / 0.15);
+  --ok: oklch(74% 0.1 158); --ok-2: oklch(74% 0.1 158 / 0.15);
+  --warn: oklch(78% 0.1 72); --warn-2: oklch(78% 0.1 72 / 0.15);
+  --danger: oklch(70% 0.14 25); --shadow: oklch(0% 0 0 / 0.4);
+}
+:root[data-theme="light"] {
+  --ground: oklch(97.2% 0.006 92); --surface: oklch(94.6% 0.008 90); --surface-2: oklch(91.5% 0.009 88);
+  --ink: oklch(24% 0.014 258); --ink-2: oklch(36% 0.014 258); --muted: oklch(52% 0.014 260);
+  --rule: oklch(87.5% 0.008 90); --accent: oklch(47% 0.125 232); --accent-2: oklch(47% 0.125 232 / 0.1);
+  --ok: oklch(48% 0.095 158); --ok-2: oklch(48% 0.095 158 / 0.13);
+  --warn: oklch(56% 0.11 68); --warn-2: oklch(56% 0.11 68 / 0.15);
+  --danger: oklch(51% 0.16 25); --shadow: oklch(30% 0.02 260 / 0.09);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: calc(var(--bar) + 1rem); }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+
+body {
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--sans); font-size: 16px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+.sr, .skip:not(:focus) {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap;
+}
+.skip:focus {
+  position: fixed; top: .5rem; left: .5rem; z-index: 60; background: var(--accent);
+  color: var(--ground); padding: .5rem .9rem; border-radius: .4rem; font-size: .85rem;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: .25rem; }
+
+/* ── Top bar ───────────────────────────────────────────────────────────── */
+.topbar {
+  position: sticky; top: 0; z-index: 50; height: var(--bar);
+  display: flex; align-items: center; gap: 1.25rem;
+  padding: 0 1.25rem; background: color-mix(in oklab, var(--ground) 88%, transparent);
+  backdrop-filter: blur(12px); border-bottom: 1px solid var(--rule);
+}
+.brand {
+  display: inline-flex; align-items: center; gap: .55rem; font-weight: 620;
+  font-size: .95rem; color: var(--ink); text-decoration: none; white-space: nowrap;
+  letter-spacing: -.01em;
+}
+.brand-mark {
+  width: .7rem; height: .7rem; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--accent), color-mix(in oklab, var(--accent) 40%, transparent));
+  box-shadow: 0 0 0 3px var(--accent-2);
+}
+.topnav { display: flex; gap: .15rem; overflow-x: auto; flex: 1; scrollbar-width: none; }
+.topnav::-webkit-scrollbar { display: none; }
+.topnav a {
+  color: var(--muted); text-decoration: none; font-size: .82rem; white-space: nowrap;
+  padding: .3rem .55rem; border-radius: .4rem;
+}
+.topnav a:hover { color: var(--ink); background: var(--surface); }
+.theme {
+  border: 1px solid var(--rule); background: var(--surface); color: var(--muted);
+  border-radius: .45rem; width: 2rem; height: 2rem; cursor: pointer; font-size: .95rem; line-height: 1;
+}
+.theme:hover { color: var(--ink); border-color: var(--muted); }
+
+/* ── Page frame ────────────────────────────────────────────────────────── */
+.wrap { max-width: 78rem; margin: 0 auto; padding: 2.75rem 1.5rem 6rem; }
+body:not(.is-index) .wrap { max-width: 56rem; }
+
+.eyebrow {
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: .7rem;
+}
+h1 {
+  font-family: var(--sans); font-size: clamp(1.9rem, 4.2vw, 2.85rem); line-height: 1.1;
+  letter-spacing: -.025em; font-weight: 660; margin: 0 0 .7rem; text-wrap: balance;
+}
+.standfirst {
+  font-family: var(--serif); font-size: 1.16rem; line-height: 1.55; color: var(--ink-2);
+  max-width: 58ch; margin: 0 0 1rem;
+}
+.meta {
+  display: flex; flex-wrap: wrap; gap: .3rem 1.1rem; font-family: var(--mono);
+  font-size: .74rem; color: var(--muted); padding-bottom: 1.75rem;
+  border-bottom: 1px solid var(--rule); margin-bottom: 2.25rem;
+}
+
+/* ── Prose ─────────────────────────────────────────────────────────────── */
+.prose { font-family: var(--serif); font-size: 1.045rem; line-height: 1.72; }
+.prose > * { max-width: var(--measure); }
+.prose > .scroller, .prose > pre { max-width: 100%; }
+.prose h2 {
+  font-family: var(--sans); font-size: 1.45rem; font-weight: 640; letter-spacing: -.015em;
+  margin: 2.9rem 0 .6rem; padding-top: 1.4rem; border-top: 1px solid var(--rule); text-wrap: balance;
+}
+.prose h3 { font-family: var(--sans); font-size: 1.12rem; font-weight: 620; margin: 2rem 0 .4rem; }
+.prose h4 {
+  font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); margin: 1.6rem 0 .3rem; font-weight: 500;
+}
+.prose p { margin: 0 0 1.05rem; }
+.prose ul, .prose ol { margin: 0 0 1.05rem; padding-left: 1.35rem; }
+.prose li { margin-bottom: .35rem; }
+.prose li::marker { color: var(--muted); }
+.prose a { color: var(--accent); text-underline-offset: .18em; text-decoration-thickness: 1px; }
+.prose strong { font-weight: 660; color: var(--ink); }
+.prose hr { border: none; border-top: 1px solid var(--rule); margin: 2.5rem 0; }
+
+.prose blockquote {
+  margin: 1.4rem 0; padding: .85rem 1.15rem; border-left: 3px solid var(--warn);
+  background: var(--warn-2); border-radius: 0 .5rem .5rem 0; color: var(--ink-2);
+}
+.prose blockquote p:last-child { margin-bottom: 0; }
+
+code, kbd {
+  font-family: var(--mono); font-size: .855em;
+  background: var(--surface-2); padding: .1em .36em; border-radius: .3rem;
+  border: 1px solid color-mix(in oklab, var(--rule) 70%, transparent);
+}
+pre {
+  background: var(--surface); border: 1px solid var(--rule); border-radius: .6rem;
+  padding: 1rem 1.15rem; overflow-x: auto; margin: 0 0 1.2rem;
+  font-size: .86rem; line-height: 1.6;
+}
+pre code { background: none; border: none; padding: 0; font-size: 1em; }
+
+/* Tables — the specs are full of them. */
+.scroller {
+  overflow-x: auto; border: 1px solid var(--rule); border-radius: .6rem;
+  background: var(--surface); margin: 0 0 1.4rem;
+}
+table { border-collapse: collapse; width: 100%; font-family: var(--sans); font-size: .875rem; }
+th, td { text-align: left; padding: .6rem .85rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 500; white-space: nowrap;
+  background: color-mix(in oklab, var(--surface-2) 60%, transparent);
+}
+tbody tr:last-child td { border-bottom: none; }
+td:has(> code:only-child), td { font-variant-numeric: tabular-nums; }
+
+/* Task lists in the OpenSpec task files. */
+.prose input[type="checkbox"] { accent-color: var(--ok); margin-right: .35rem; }
+.prose li:has(> input[type="checkbox"]:checked) { color: var(--muted); }
+.prose ul:has(input[type="checkbox"]) { list-style: none; padding-left: .2rem; }
+
+/* ── Document footer ───────────────────────────────────────────────────── */
+.docfoot {
+  margin-top: 3.5rem; padding-top: 1.4rem; border-top: 1px solid var(--rule);
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem;
+}
+.srcbtn {
+  display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; font-weight: 550;
+  color: var(--accent); text-decoration: none; border: 1px solid var(--accent);
+  padding: .45rem .85rem; border-radius: .45rem; background: var(--accent-2);
+}
+.srcbtn:hover { background: var(--accent); color: var(--ground); }
+.srcpath { font-family: var(--mono); font-size: .74rem; color: var(--muted); }
+
+/* ── Index ─────────────────────────────────────────────────────────────── */
+.hero { padding-bottom: 2.5rem; border-bottom: 1px solid var(--rule); margin-bottom: 1rem; }
+.hero h1 { font-size: clamp(2.1rem, 5vw, 3.4rem); max-width: 20ch; }
+.hero .standfirst { max-width: 62ch; font-size: 1.2rem; }
+.stats {
+  display: flex; flex-wrap: wrap; gap: .5rem 1.8rem; margin: 1.5rem 0 1.75rem;
+  font-family: var(--mono); font-size: .8rem; color: var(--muted);
+}
+.stats b { color: var(--ink); font-size: 1.15rem; font-weight: 600; margin-right: .3rem; font-variant-numeric: tabular-nums; }
+.search input {
+  width: 100%; max-width: 32rem; font: inherit; font-size: .95rem;
+  padding: .6rem .9rem; border-radius: .55rem; border: 1px solid var(--rule);
+  background: var(--surface); color: var(--ink);
+}
+.search input::placeholder { color: var(--muted); }
+
+.block { margin-top: 3.25rem; scroll-margin-top: calc(var(--bar) + 1rem); }
+.block[hidden] { display: none; }
+.block-head { margin-bottom: 1.1rem; }
+.block-head h2 {
+  font-size: 1.35rem; font-weight: 640; letter-spacing: -.015em; margin: 0 0 .25rem;
+}
+.block-head p { margin: 0; color: var(--muted); font-size: .92rem; max-width: 68ch; }
+
+.docs { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.doc {
+  display: flex; align-items: stretch; gap: .5rem;
+  border: 1px solid var(--rule); border-radius: .6rem; background: var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease, transform .12s ease;
+}
+.doc[hidden] { display: none; }
+.doc:hover { border-color: color-mix(in oklab, var(--accent) 45%, var(--rule)); box-shadow: 0 2px 10px -4px var(--shadow); }
+.doc-main {
+  flex: 1; display: flex; flex-direction: column; gap: .2rem;
+  padding: .85rem 1rem; text-decoration: none; color: inherit; min-width: 0;
+}
+.doc-title { font-weight: 590; font-size: .98rem; display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+.doc-sum { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.doc-path { font-family: var(--mono); font-size: .71rem; color: var(--muted); overflow-wrap: anywhere; }
+.doc-path code { background: none; border: none; padding: 0; font-size: 1em; }
+.doc-md {
+  display: flex; align-items: center; padding: 0 .9rem; text-decoration: none;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .06em; color: var(--muted);
+  border-left: 1px solid var(--rule); border-radius: 0 .6rem .6rem 0;
+}
+.doc-md:hover { background: var(--accent-2); color: var(--accent); }
+
+.chip {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .06em; text-transform: uppercase;
+  padding: .14em .45em; border-radius: .3rem; font-weight: 500; white-space: nowrap;
+}
+.chip.ok { background: var(--ok-2); color: var(--ok); }
+.chip.accent { background: var(--accent-2); color: var(--accent); }
+.chip.muted { background: var(--surface-2); color: var(--muted); }
+
+/* Mockups get more room — they are the thing people actually want to look at. */
+.mocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: .75rem; }
+.mock {
+  display: flex; flex-direction: column; gap: .5rem; padding: 1.1rem 1.2rem 1rem;
+  border: 1px solid var(--rule); border-radius: .7rem; text-decoration: none; color: inherit;
+  background:
+    radial-gradient(120% 90% at 100% 0%, var(--accent-2), transparent 62%),
+    var(--surface);
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+.mock:hover { border-color: color-mix(in oklab, var(--accent) 55%, var(--rule)); box-shadow: 0 4px 18px -8px var(--shadow); }
+.mock-top { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; font-weight: 620; font-size: 1rem; }
+.mock-note { font-family: var(--serif); font-size: .92rem; color: var(--ink-2); line-height: 1.5; }
+.mock-go { font-size: .82rem; font-weight: 550; color: var(--accent); margin-top: auto; padding-top: .3rem; }
+
+.rebuild {
+  margin-top: 4rem; padding-top: 1.25rem; border-top: 1px solid var(--rule);
+  font-size: .85rem; color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .topnav { display: none; }
+  .wrap { padding: 2rem 1.1rem 4rem; }
+  .doc { flex-direction: column; }
+  .doc-md { border-left: none; border-top: 1px solid var(--rule); padding: .5rem 1rem; border-radius: 0 0 .6rem .6rem; }
+}
+
+/* ── Audit components ──────────────────────────────────────────────────
+ * Used by the design-parity page. Kept here rather than inline so the
+ * audit cannot drift away from the rest of the documentation. */
+
+.verdict {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(10.5rem, 1fr));
+  gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+  border-radius: .65rem; overflow: hidden; margin: 0 0 1.5rem; max-width: 100%;
+}
+.vcell { background: var(--surface); padding: .95rem 1.05rem; display: flex; flex-direction: column; gap: .15rem; }
+.vnum {
+  font-family: var(--mono); font-size: 1.6rem; line-height: 1.1; color: var(--accent);
+  font-variant-numeric: tabular-nums; letter-spacing: -.02em;
+}
+.vlabel { font-size: .78rem; color: var(--muted); line-height: 1.4; }
+
+.meters { display: flex; flex-direction: column; gap: .6rem; margin: 0 0 .75rem; max-width: 100%; }
+.meter { display: grid; grid-template-columns: minmax(7.5rem, 13rem) 1fr 3.5rem; gap: .85rem; align-items: center; }
+.meter-name { font-size: .88rem; }
+.track { height: .45rem; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.fill { height: 100%; border-radius: 99px; }
+.meter-val { font-family: var(--mono); font-size: .78rem; color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+
+.defect {
+  border: 1px solid var(--rule); border-left: 3px solid var(--danger);
+  background: var(--surface); border-radius: 0 .6rem .6rem 0;
+  padding: 1rem 1.2rem; margin: 0 0 .85rem; max-width: 100%;
+}
+.defect .tag {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--danger); display: block; margin-bottom: .3rem;
+}
+.defect h3 { margin: 0 0 .4rem; font-family: var(--sans); font-size: 1.02rem; font-weight: 620; }
+.defect p { margin: 0; font-family: var(--serif); font-size: .95rem; color: var(--ink-2); }
+
+.pull {
+  border-left: 3px solid var(--accent); padding: .35rem 0 .35rem 1.25rem;
+  font-family: var(--sans); font-size: 1.16rem; line-height: 1.45; font-weight: 500;
+  color: var(--ink); margin: 1.6rem 0; max-width: 54ch;
+}
+
+.chip.warn { background: var(--warn-2); color: var(--warn); }
+.chip.danger { background: color-mix(in oklab, var(--danger) 14%, transparent); color: var(--danger); }
+
+.footnote { font-size: .85rem; color: var(--muted); font-family: var(--sans); max-width: var(--measure); }
+
+/* The meta bar already draws a rule; the first section heading must not add a
+   second one immediately below it. */
+.prose > h2:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+</style>
+</head>
+<body class="">
+<a class="skip" href="#main">Skip to content</a>
+<nav class="topbar">
+  <a class="brand" href="../index.html"><span class="brand-mark" aria-hidden="true"></span>Praxmodoro docs</a>
+  <div class="topnav"><a href="../index.html#contract">The contract</a><a href="../index.html#analysis">Analysis &amp; decisions</a><a href="../index.html#specs">Capability specs</a><a href="../index.html#active">Active changes</a><a href="../index.html#archive">Archived changes</a><a href="../index.html#handoff">Handoffs</a><a href="../index.html#agents">Agent conventions</a><a href="../index.html#research">Product research</a></div>
+  <button class="theme" type="button" data-theme-toggle aria-label="Switch colour theme">◑</button>
+</nav>
+<main id="main" class="wrap">
+<div class="eyebrow">Agent conventions</div>
+<h1>Architecture review session</h1>
+<p class="standfirst">Loaded: using-superpowers, brainstorming, writing-plans, dispatching-parallel-agents, subagent-driven-development, test-driven-development, verification-before-completion,…</p>
+<div class="meta"><span>3,038 words</span><span><code>.agent/sessions/2026-08-23T14-21-50Z-architecture-review.md</code></span></div>
+<article class="prose"><ul>
+<li>Started: <code>2026-08-23T14:21:50Z</code></li>
+<li>Actor: <code>/root</code> (Codex desktop)</li>
+<li>Baseline: <code>a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7</code></li>
+<li>Branch: <code>prax/architecture-review-2026-08-23</code></li>
+<li>Working tree at baseline: clean</li>
+<li>Objective: verify the current Praxmodoro architecture, create and review implementation-grade OpenSpec artifacts, derive implementation tickets, implement only after the specification gate passes, close every review finding, run every project quality gate, and commit delivery-ready work.</li>
+</ul>
+<h2>Binding constraints</h2>
+<ul>
+<li>Preserve <code>SPEC.md</code>, <code>prd.json</code>, the active OpenSpec change, and the original baseline as separate sources of truth with explicit reconciliation.</li>
+<li>Do not edit or cite a nonexistent <code>BLUEPRINT.md</code>.</li>
+<li>Do not implement before specification and planning reviews pass.</li>
+<li>Use one observed failing test before each behavior change.</li>
+<li>Do not weaken tests or acceptance criteria.</li>
+<li>Do not commit until code-review findings are addressed and fresh verification passes.</li>
+<li>Keep network, sync, analytics, and AI capabilities explicit, optional, capability-scoped, and documented; the owner-authorized one-product contract has no tier or edition gate.</li>
+<li>Preserve unrelated work and do not edit <code>research/skill-sources/</code> or <code>research/library-sources/</code>.</li>
+</ul>
+<h2>Skill discovery</h2>
+<p>Loaded: <code>using-superpowers</code>, <code>brainstorming</code>, <code>writing-plans</code>, <code>dispatching-parallel-agents</code>, <code>subagent-driven-development</code>, <code>test-driven-development</code>, <code>verification-before-completion</code>, <code>using-git-worktrees</code>, <code>finishing-a-development-branch</code>, <code>spec-creator</code>, <code>research</code>, <code>llm-council</code>, <code>council</code>, <code>to-spec</code>, <code>to-tickets</code>, <code>implement</code>, <code>code-review</code>, <code>stop-slop</code>, <code>autonomous-agent</code>, <code>autonomous-orchestrion-v6</code>, <code>apex-autonomous-mode</code>, <code>hermes-agent</code>, <code>grok</code>, and <code>codex</code>.</p>
+<p>Also loaded: <code>plan-ceo-review</code>, <code>plan-eng-review</code>, <code>plan-design-review</code>, <code>plan-devex-review</code>, and the complete <code>spec-creator</code> quality bar, domain, template, and self-review references.</p>
+<p>Requested capability not installed: <code>/moa</code>. No matching skill, CLI, deferred tool, or recommended plugin exists. The review will therefore use an explicitly labelled MOA-equivalent: independent bounded reviewers followed by root synthesis through the installed <code>llm-council</code>/<code>council</code> workflow. This is not represented as the unavailable named skill.</p>
+<h2>Frozen baseline evidence</h2>
+<ul>
+<li>Baseline commit: <code>a78e0e04cbf5cfe75582e50bfd0ec6b2afb0a4e7</code>.</li>
+<li>Fresh <code>./scripts/verify-project.sh</code>: exit <code>0</code>, final line <code>verify-project: OK</code>.</li>
+<li>Independent architecture mapper: Core 41 tests passed, Store 8 tests passed, focused checks passed, and strict OpenSpec validation passed 6/6.</li>
+<li>OpenSpec state: <code>add-companion-surfaces</code> 18/18 implementation tasks but not archived; <code>add-session-settings</code> 34/36 with full-gate and fresh-validation tasks open.</li>
+<li>Rollback pointer: baseline commit above; governing criteria remain <code>SPEC.md</code>, <code>prd.json</code>, and their owner-approved amendments. This run may amend candidate artifacts but will not weaken their acceptance gates.</li>
+</ul>
+<h2>Verified architecture findings</h2>
+<ul>
+<li>The Foundation-only Core timestamp engine remains the correct deterministic authority; no timer rewrite is justified.</li>
+<li><code>AppModel</code> is the mutable runtime owner and currently crosses presentation, persistence, session orchestration, preferences, and recovery concerns.</li>
+<li>Persistence is optional at runtime, startup failures and <code>RecoveryNotice</code> are discarded, and several mutations update memory before durable writes.</li>
+<li>Event vocabulary is duplicated as bare payload strings; unknown restored transitions currently fall through to <code>.running</code>.</li>
+<li>Break-end derivation is duplicated across sound, notification, and reconstruction paths.</li>
+<li>SwiftData uses an unversioned schema, and event order allocation fetches/counts prior events.</li>
+<li>Status artifacts disagree about M2/M3 closure, active change, one-product wording, settings sound defaults, and newer issue dependencies.</li>
+<li>The smallest architecture prerequisite already exists as issues <code>#51</code>, <code>#52</code>, and <code>#53</code>; creating a parallel framework or rewriting Core would duplicate existing work.</li>
+</ul>
+<h2>Timeline</h2>
+<ul>
+<li><code>2026-08-23T14:17:17Z</code> <code>PHASE_ENTER</code> Bootstrap and skill discovery.</li>
+<li><code>2026-08-23T14:21:07Z</code> <code>BASELINE</code> Verified normal checkout on <code>main</code>, clean at baseline SHA; two unarchived OpenSpec changes found.</li>
+<li><code>2026-08-23T14:21:27Z</code> <code>SPAWN</code> Read-only runtime architecture mapper dispatched.</li>
+<li><code>2026-08-23T14:21:38Z</code> <code>SPAWN</code> Read-only source-of-truth/status auditor dispatched.</li>
+<li><code>2026-08-23T14:21:46Z</code> <code>DECISION</code> Created feature branch <code>prax/architecture-review-2026-08-23</code> because project rules prohibit feature work directly on <code>main</code>.</li>
+<li><code>2026-08-23T14:27:16Z</code> <code>AUDIT</code> Runtime architecture mapper completed; no files modified.</li>
+<li><code>2026-08-23T14:27:21Z</code> <code>VERIFY</code> Fresh project verification passed.</li>
+<li><code>2026-08-23T14:30:11Z</code> <code>CAPABILITY</code> Exhaustive installed-capability search confirmed <code>/moa</code> is unavailable; selected the bounded multi-agent council fallback without claiming named-skill execution.</li>
+<li><code>2026-08-23T15:36:54Z</code> <code>PLAN_REVIEW</code> CEO and engineering reviews each found only the explicit historical-commit governance decision; design and DevEx reviews were clean at 9/10 with no unresolved finding.</li>
+<li><code>2026-08-23T15:44:00Z</code> <code>RECONCILE</code> Updated <code>SPEC.md</code>, <code>prd.json</code>, <code>progress.txt</code>, and README to name all three active changes and distinguish historical evidence from pending remediation; no production work or completion claim.</li>
+<li><code>2026-08-23T16:00:00Z</code> <code>REVIEW</code> Grok full review rejected contradictory snapshot, contrast, hostile-registry, and configuration wording; all findings were amended, and the targeted recheck returned CLEAR.</li>
+<li><code>2026-08-23T16:10:33Z</code> <code>REVIEW</code> Independent specification-integrity rerun returned CLEAR with strict validation 7/7, clean diff check, and valid JSON.</li>
+<li><code>2026-08-23T16:16:00Z</code> <code>REVIEW</code> Final Codex audit exposed a phase-equality auto-return defect: sleep can span focus→break→focus, while a first post-relaunch render can catch up an absent break.</li>
+<li><code>2026-08-23T16:20:10Z</code> <code>REPAIR</code> Replaced phase-only observation with root context-date observation and specified Core&#39;s required <code>autoReturnAfter</code> process-live boundary; reordered runtime #52 before settings auto-return and archives to M2 → runtime → settings.</li>
+<li><code>2026-08-23T16:20:10Z</code> <code>VERIFY</code> Global strict validation passed for all three active changes, repository strict validation passed 7/7, <code>jq empty prd.json</code> passed, and <code>git diff --check</code> was clean.</li>
+<li><code>2026-08-23T16:21:24Z</code> <code>DOCS</code> Documentation build completed: 66 generated plus 2 hand-authored pages.</li>
+<li><code>2026-08-23T16:44:13Z</code> <code>VERIFY</code> All three change-specific strict validators, repository strict validation 7/7, <code>git diff --check</code>, and <code>jq empty prd.json</code> passed after the observer-ownership repair.</li>
+<li><code>2026-08-23T16:47:22Z</code> <code>REVIEW</code> Independent specification-integrity recheck returned CLEAR: M2 owns one-snapshot propagation, runtime C2 owns Core/AppModel primitives, and settings 10.7 alone owns date-edge observation behavior and wiring.</li>
+<li><code>2026-08-23T16:52:44Z</code> <code>REVIEW</code> Targeted Codex recheck found three remaining documentation defects: two older runtime-ownership overclaims and generated pages that predated the corrected Markdown.</li>
+<li><code>2026-08-23T16:54:07Z</code> <code>REPAIR</code> Narrowed the historical settings and runtime-plan claims, rebuilt the site from the complete candidate Markdown set, and generated 77 pages plus 2 hand-authored pages.</li>
+<li><code>2026-08-23T16:58:10Z</code> <code>REVIEW</code> Final targeted Codex recheck returned CLEAR. It verified byte-for-byte rendered article parity for 32 changed generated pages and reran all requested validators successfully.</li>
+<li><code>2026-08-23T17:03:14Z</code> <code>REVIEW</code> Final plan-gate recheck returned CLEAR after removing a stale pre-reconciliation row and a premature delivery-readiness claim.</li>
+<li><code>2026-08-23T17:04:53Z</code> <code>DECISION_REQUIRED</code> The explicit owner prompt about immutable grouped settings commits and missing contemporaneous red receipts returned no selection for the second time. No approval was inferred; production/test edits, ticket conversion, implementation, and commits remain blocked.</li>
+<li><code>2026-08-23T17:15:07Z</code> <code>OWNER_DECISION</code> The active completion goal explicitly declares the project specifications pre-approved and requires uninterrupted specification-driven completion. This accepts the documented grouped-commit/missing-receipt deviation without rewriting history or inventing evidence; all new atoms retain red-first, review, isolated-commit, and fresh-gate requirements.</li>
+<li><code>2026-08-23T17:15:07Z</code> <code>REVIEW_POLICY</code> Future Grok/OpenCode/model availability failures are non-blocking; the owner directed replacement with a Codex Luna XHigh review. Existing Grok review evidence remains valid and clear.</li>
+<li><code>2026-08-23T19:13:04Z</code> <code>TDD</code> A3 keyboard remediation observed compile red for the unavailable public macOS focus property, identifier red for all four break choices, and signed traversal red where native Tab skipped buttons under the host&#39;s keyboard-navigation mode.</li>
+<li><code>2026-08-23T19:13:05Z</code> <code>REPAIR</code> Reused native controls: exposed stable accessibility children, made existing hold/break buttons focusable, retained Space and Return behavior, and added only surface-local 1-4 shortcuts after the signed traversal red proved the buttons otherwise unreachable.</li>
+<li><code>2026-08-23T19:13:06Z</code> <code>VERIFY</code> The isolated signed whole-loop test passed; the full KeyboardLoopUITests class passed 4/4, focused companion/break suites passed 21/21, the persisted timeline exposed <code>Break: water</code>, formatting and diff checks passed, and <code>./scripts/focused.sh</code> exited 0.</li>
+<li><code>2026-08-23T19:43:00Z</code> <code>TDD</code> B1 preset tests first failed with 13 missing-seam compiler errors. The pane source test then reported eight absent accessibility requirements, real-pane contrast renders exposed zero changed/background pixels, and Reduce Transparency renders exposed neither opaque pane background nor backdrop sensitivity.</li>
+<li><code>2026-08-23T19:43:01Z</code> <code>REPAIR</code> Added only the shared RhythmPreferences commit validator, editable existing rows, complete preset-pair generation through AppModel, and direct existing SurfacePalette wiring. Reused each pane&#39;s first section title as the raster-visible token witness; added no token, dependency, snapshot framework, or private production environment key.</li>
+<li><code>2026-08-23T19:43:17Z</code> <code>VERIFY</code> PreferencesTests, SettingsSceneTests, and RenderAccessibilityTests passed 34 tests across three suites, including exact real-pane contrast and transparency rasters. Formatting, JSON parsing, and diff checks passed; tasks 10.1-10.3 and prd atom B1 now truthfully read implemented-uncommitted.</li>
+<li><code>2026-08-23T19:44:10Z</code> <code>SPEC_GATE</code> Reconciled runtime tasks 1.1-1.3 with the already-recorded clear Codex, Grok, MOA-equivalent, independent, CEO, engineering, design, DevEx, and spec-creator reviews. Fresh strict validation reported <code>stabilize-runtime-contracts</code> valid; runtime production work is unblocked.</li>
+<li><code>2026-08-23T19:45:00Z</code> <code>TDD</code> B2&#39;s deferred availability report arrived after one notification request existed and failed with recorder.cancels equal to zero, directly reproducing the denial race.</li>
+<li><code>2026-08-23T19:45:01Z</code> <code>REPAIR</code> The existing availability callback now invokes the existing synchronization seam after updating denial state; that one-line behavior change cancels pending work without scheduling a replacement.</li>
+<li><code>2026-08-23T19:45:21Z</code> <code>VERIFY</code> NotificationDirectorTests passed 10 tests, independent Sol review returned CLEAR, strict formatting/diff checks passed after one mechanical import-order correction, and the full focused app test script reported TEST SUCCEEDED. Task 10.4 and prd atom B2 now read implemented-uncommitted.</li>
+<li><code>2026-08-23T19:55:00Z</code> <code>TDD</code> C1&#39;s attributable focused red failed on the missing SessionReplayError after C3&#39;s independent compiler red was cleared. C3 separately produced two source-boundary failures and a missing beginNextSession compiler error.</li>
+<li><code>2026-08-23T19:55:02Z</code> <code>REPAIR</code> C1 added one strict app-boundary codec/replay file, one encode-before-store helper, atomic restore application, codec-owned review labels, and unconditional project regeneration. C3 added only private(set) routing plus a one-line model intent and replaced the two external writes.</li>
+<li><code>2026-08-23T19:55:10Z</code> <code>VERIFY</code> C1 focused tests, C3 targeted 3/3 and combined 8/8 regressions, product build, strict formatting/diff checks, sole-append and no-surface-write source guards, and a shared signed smoke all passed. Runtime atoms C1 and C3 now read implemented-uncommitted; their commit tasks remain open for the post-review isolated-staging gate.</li>
+<li><code>2026-08-23T20:00:00Z</code> <code>TDD</code> C2&#39;s Core red failed on the missing canonical break-end API, the obsolete duration-shaped auto-return argument, and missing process boundary; the app red independently failed all five source guards against duplicated scheduling arithmetic and old restore/live plumbing.</li>
+<li><code>2026-08-23T20:00:53Z</code> <code>VERIFY</code> The minimum shared repair made Core authoritative and process-bounded. Core passed 46 tests, the focused app suite passed, exact two-consumer/no-duplicate guards and strict formatting/diff checks passed, and signed smoke exited 0. C2 now reads implemented-uncommitted; task 3.5 remains open for the post-review isolated-staging gate.</li>
+<li><code>2026-08-23T20:03:08Z</code> <code>TDD</code> B3 task 10.5 failed on the absent fifth preference and decoder contract; task 10.6 then failed on the absent cue and preview API; task 10.7 failed on the absent live observer. Each red was captured before its production slice.</li>
+<li><code>2026-08-23T20:10:20Z</code> <code>VERIFY</code> Legacy/factory preferences, five preview cases, transition-specific block starts, persisted same-phase live auto-return, and post-relaunch non-catch-up all passed their targeted suites. Review tightened the observer to persistence-first throwing behavior and added stored-event idempotence evidence.</li>
+<li><code>2026-08-23T20:11:38Z</code> <code>TDD</code> B3 task 10.8 unit red exposed the absent source/bundle resource and all missing pane controls. Three signed UI attempts failed inside macOS automation initialization before the test body (two timeouts and one authentication cancellation), so no product UI result is recorded yet.</li>
+<li><code>2026-08-23T20:18:50Z</code> <code>TDD</code> B3 task 10.9 failed on the absent retention predicate, pending-player timestamp, wake cancellation protocol, AppModel intent, and native app wiring.</li>
+<li><code>2026-08-23T20:20:32Z</code> <code>VERIFY</code> The generated fifth WAV, exact sample controls, copy-tone test, focused suite, and 55-test sound/snapshot/wiring selection passed. Wake cancellation retains only future players and performs no resync. Tasks 10.5-10.7 and 10.9 are checked; 10.8 remains open solely for a signed test-body result, and independent review is in flight.</li>
+<li><code>2026-08-23T20:31:57Z</code> <code>REVIEW_FIX_RED</code> Independent sound review found two untested defects: rhythm edits retained stale break-end scheduling, and master-volume edits did not update the tracked chime or active tick loop. Three new regressions reproduced both defects in a targeted exit-65 run.</li>
+<li><code>2026-08-23T20:33:54Z</code> <code>REVIEW_FIX_GREEN</code> The minimum repair reuses the existing synchronization and scheduling seams. Rhythm changes now resynchronize sound and notifications; master-volume changes replace the tracked chime and update active tick players. The targeted selection and full focused suite passed, strict source/test formatting and diff checks passed, and re-review is in flight.</li>
+<li><code>2026-08-23T20:37:55Z</code> <code>REVIEW_FIX_RED</code> Re-review showed that broad volume-change cancellation stopped the just-fired block-start cue or an active sample, then recreated only the tracked end chime. A pending-player recorder exposed the loss and the SoundDirector suite exited 65.</li>
+<li><code>2026-08-23T20:40:36Z</code> <code>REVIEW_CLEAR</code> The scheduler now updates every pending one-shot player&#39;s volume in place and keeps the active tick update on its existing seam. The targeted 70-test selection and full focused suite passed, strict formatting/diff checks passed, and independent sound re-review returned CLEAR.</li>
+<li><code>2026-08-23T21:00:04Z</code> <code>UI_FIX_RED</code> Signed execution finally reached the sample and first-run bodies. It exposed saved-window-state leakage and then app/helper connection loss across sequential class launches; individual sample, first-run, and whole-loop behavior otherwise exercised the expected controls.</li>
+<li><code>2026-08-23T21:17:16Z</code> <code>UI_GREEN</code> The shared launcher now uses Apple&#39;s persistence-ignore argument and explicit before/after termination. Fresh signed first-run, five-sample traversal/labels/activation, whole-loop, and complete KeyboardLoopUITests 5/5 runs passed. Task 10.8 is checked and B3 is implemented-uncommitted.</li>
+<li><code>2026-08-23T21:36:51Z</code> <code>REVIEW_FIX_GREEN</code> Whole-diff review exposed main-window-only ownership of derived-phase and wake observation. The new companion-scene regression failed before wiring. A permanent menu-label TimelineView was tried and rejected because it kept hosted tests alive; the retained repair reuses the capsule and menu popover timelines with their own canonical snapshot instant, date-edge materialization, and native wake cleanup. CompanionSurfaceTests passed 15/15, including single-snapshot, drift, and no-second-clock guards; independent re-review is in flight.</li>
+<li><code>2026-08-23T21:47:54Z</code> <code>FULL_GATE_RED</code> Fresh verify-project passed Core 46/46, Store 8/8, strict format, and product build, then failed four signed UI tests. XCResult hierarchies showed disabled keyboard-test applications and legacy launch-test processes with no window; the two UI classes had drifted launch contracts.</li>
+<li><code>2026-08-23T21:51:08Z</code> <code>FULL_UI_GREEN</code> A single shared launcher now gives both UI classes persistence-ignore and hermetic-store arguments, terminate-before, explicit activation, and teardown termination. The complete signed UI target passed 7/7 in 94.9 seconds: KeyboardLoopUITests 5/5 and LaunchUITests 2/2. Full verify-project rerun remains pending review.</li>
+<li><code>2026-08-23T21:52:18Z</code> <code>REVIEW_CLEAR</code> Independent whole-diff re-review cleared the companion-scene lifecycle repair; a separate targeted review cleared the shared UI launcher. No production or test finding remains open.</li>
+<li><code>2026-08-23T21:54:23Z</code> <code>FULL_GATE_GREEN</code> Fresh <code>./scripts/verify-project.sh</code> exited 0: Core 46/46, Store 8/8, signed build green, signed Xcode result 230/230 including UI 7/7.</li>
+<li><code>2026-08-23T21:55:58Z</code> <code>CLOSEOUT_GATES_GREEN</code> Fresh smoke, focused app 223/223, strict OpenSpec 7/7, changed-file formatting, diff/JSON integrity, product-vocabulary, sole-transition-write, and private-surface guards all exited 0.</li>
+<li><code>2026-08-23T23:04:42Z</code> <code>IMPLEMENTATION_COMMITTED</code> Ten independently testable implementation atoms were committed after exact staged-tree checks: A0 <code>aaaaecef077a</code>, A1 <code>f6df42674dfc</code>, A2 <code>8191ad22ba2d</code>, A3 <code>04b80dc500c0</code>, B1 <code>11e8dbc6f769</code>, B2 <code>913722b64dc4</code>, C1 <code>9f9c8dbeb551</code>, C2 <code>3d3474972b56</code>, C3 <code>66fb629aee71</code>, and B3 <code>ecc814ef72fe</code>. Every residual-patch SHA remained byte-identical to the frozen reviewed candidate.</li>
+<li><code>2026-08-23T23:05:40Z</code> <code>SPECIFICATIONS_COMMITTED</code> The reviewed architecture specifications and dated implementation plans were committed as <code>b84b19e</code>; strict OpenSpec validation remained 7/7.</li>
+<li><code>2026-08-23T23:10:49Z</code> <code>POST_COMMIT_VERIFY</code> Core 46/46, Store 8/8, strict format, signed build, app 223/223, smoke, and strict OpenSpec 7/7 passed. Two UI retries stopped before test execution in the macOS automation host; the committed app tree <code>1eb06e8992e087e2769e60d62f925d6ffee179e3</code> exactly matches the frozen app tree that passed 230/230 including UI 7/7 at 21:54:23Z.</li>
+<li><code>2026-08-23T23:44:39Z</code> <code>REVIEW_FIX_RED</code> A new sound regression proved that replacing one derived focus-end expiry broadly cancelled an unrelated block-start and same-cue preview. The targeted SoundDirector run failed as expected.</li>
+<li><code>2026-08-23T23:45:38Z</code> <code>REVIEW_FIX_GREEN</code> AppModel now cancels only its tracked cue/instant pair. SoundDirectorTests passed 24/24, including real pending-player isolation; independent review returned CLEAR.</li>
+<li><code>2026-08-23T23:56:34Z</code> <code>REVIEW_FIX_RED</code> Literal EARS validation found the status line was not visibly canonical on focus and capsule. The strengthened capsule test failed compilation at the missing <code>statusText</code> seam.</li>
+<li><code>2026-08-23T23:57:27Z</code> <code>REVIEW_FIX_GREEN</code> Focus and capsule now visibly reuse the canonical snapshot status; focus, popover, and capsule task/time/status are compared at one instant. FocusCapsuleTests passed 5/5 and two independent rechecks returned CLEAR/CLOSED.</li>
+<li><code>2026-08-24T00:02:11Z</code> <code>REPAIR_COMMITS</code> Three reviewed exact staged trees passed <code>./scripts/focused.sh</code> before commits <code>d4da3004529f</code> (surface status), <code>8eac35aa368d</code> (selective chime cancellation), and <code>a62d5afee1f7</code> (composed transparency evidence).</li>
+<li><code>2026-08-24T00:03:28Z</code> <code>CURRENT_NON_UI_GATES</code> Current Core 46/46, Store 8/8, app 228/228, strict source formatting, product build, signed smoke, strict OpenSpec 7/7, diff/JSON integrity, and UI test-bundle compilation all passed.</li>
+<li><code>2026-08-24T00:05:05Z</code> <code>CURRENT_UI_HOST_BLOCK</code> The signed capsule/settings selection failed before either test body because macOS timed out enabling automation mode. The reviewed UI evidence remains uncommitted; no product failure or green result is inferred.</li>
+<li><code>2026-08-24T00:13:49Z</code> <code>UI_EVIDENCE_RED</code> Literal review found “Settings open by keyboard from any surface” was proved only from the main WindowGroup. The extended three-scene-root test initially failed compilation because its XCUI clock helper lacked MainActor isolation.</li>
+<li><code>2026-08-24T00:15:16Z</code> <code>UI_BUILD_GREEN_REVIEW_CLEAR</code> The one-line isolation fix restored TEST BUILD SUCCEEDED. Independent review cleared the main WindowGroup, capsule Window, and MenuBarExtra command origins plus their state/countdown assertions. Signed execution remains pending.</li>
+<li><code>2026-08-24T00:26:08Z</code> <code>AUTH_PATH_EXHAUSTED</code> <code>/usr/bin/automationmodetool</code> reports Automation Mode disabled and requiring user authentication; <code>sudo -n</code> has no cached credential. Local and official Apple research found no supported xcodebuild flag or noninteractive grant from this state. No TCC/security database, private entitlement, credential, or LocalAuthentication bypass was attempted.</li>
+<li><code>2026-08-24T00:35:57Z</code> <code>ARCHIVE_REHEARSAL_RED</code> Dependency-ordered disposable archives reproduced docs source discovery failure after Git moves, then independent reviews exposed same-section title collisions, stale canonical/source terminology, OpenSpec 1.6 TBD Purposes, archive-added EOF whitespace, and one obsolete edition-shaped parity test already superseded by live two-container evidence.</li>
+<li><code>2026-08-24T00:47:41Z</code> <code>ARCHIVE_CLOSEOUT_COMMIT</code> The minimum archive-closeout repair landed as <code>4417c3506f7b</code>. Both re-reviews returned CLEAR. The exact staged tree passed Core 46/46, app 227/227, docs build, strict OpenSpec 7/7, formatting, diff, and secret checks; a duplicate-title negative control failed through the permanent guard. Its exact M2 → runtime → settings rehearsal produced 81 pages, strict OpenSpec 6/6, correct canonical Purposes, unique outputs, and clean stale-term scans.</li>
+<li><code>2026-08-24T00:50:15Z</code> <code>POST_R5_NON_UI_GATES</code> Store passed 8/8, the current UI target reported TEST BUILD SUCCEEDED with the uncommitted scene-root cases, signed smoke passed, strict UI-test formatting passed, strict OpenSpec remained 7/7, and diff/JSON integrity passed. Current signed UI execution remains the only runtime test gate not reached.</li>
+<li><code>2026-08-24T01:03:45Z</code> <code>VALIDATOR_INCOMPLETE</code> A fresh independent validator mapped all 97 active EARS scenarios and found no product, specification, test-candidate, or archive-closeout defect. Core 46/46, Store 8/8, app 227/227, smoke/build/format/diff/JSON, and strict OpenSpec 7/7 passed. <code>verify-project.sh</code> exited 65 only at UI-runner initialization with <code>Authentication canceled. System authentication is running</code>; its xcresult contains zero UI test bodies, so the verdict remains INCOMPLETE and archive remains closed.</li>
+<li><code>2026-08-24T01:04:53Z</code> <code>EXTERNAL_AUTH_IMPASSE</code> A third consecutive goal-turn audit still reports Automation Mode disabled, administrator authentication required, and no cached sudo credential. All safe supported paths are exhausted. The reviewed UI candidate and closeout evidence remain preserved uncommitted; no archive, final commit, push, or issue mutation was performed.</li>
+</ul>
+<h2>Current gate</h2>
+<ul>
+<li>Specifications passed the final Codex, Grok, MOA-equivalent, and targeted independent reviews; current strict OpenSpec validation is 7/7.</li>
+<li>Ten planned implementation atoms, three implementation review-repair atoms, and the archive-closeout repair are committed. A fresh independent validator found no defect and mapped all 97 active EARS scenarios, but returned INCOMPLETE because the new capsule/settings UI paths have not executed: macOS authentication stopped the UI runner before any body. Their commit, a fresh COMPLETE verdict, and actual dependency-ordered archive remain pending.</li>
+<li>Historical grouped commits remain immutable and missing contemporaneous red receipts remain explicitly missing; owner pre-approval removed only the governance hold.</li>
+</ul>
+</article>
+<footer class="docfoot">
+  <a class="srcbtn" href="../../.agent/sessions/2026-08-23T14-21-50Z-architecture-review.md">Read the Markdown source<span aria-hidden="true"> ↗</span></a>
+  <span class="srcpath"><code>.agent/sessions/2026-08-23T14-21-50Z-architecture-review.md</code></span>
+</footer>
+</main>
+<script>
+(() => {
+  const root = document.documentElement;
+  const stored = localStorage.getItem("praxdocs-theme");
+  if (stored) root.setAttribute("data-theme", stored);
+  document.querySelector("[data-theme-toggle]")?.addEventListener("click", () => {
+    const current = root.getAttribute("data-theme")
+      ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    const next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("praxdocs-theme", next);
+  });
+})();
+</script>
+</body>
+</html>

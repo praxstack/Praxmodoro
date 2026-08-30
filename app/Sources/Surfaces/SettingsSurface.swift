@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The standard macOS Settings window (⌘,) — Rhythm and Sound &
 /// Notifications panes (spec: add-session-settings "Settings scene").
-/// Everything here is Lite; nothing here is ever paywalled.
+/// Every capability here ships in the one product.
 struct SettingsSurface: View {
     static let paneTitles = ["Rhythm", "Sound & Notifications"]
 

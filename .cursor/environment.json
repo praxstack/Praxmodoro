@@ -1,0 +1,5 @@
+{
+  "name": "Praxmodoro — OpenSpec + docs (Linux cloud)",
+  "install": "npm ci && npm run spec:validate && npm run docs:build",
+  "terminals": []
+}

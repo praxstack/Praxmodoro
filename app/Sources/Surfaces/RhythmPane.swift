@@ -12,55 +12,64 @@ struct RhythmPane: View {
         "Flow sessions are exempt: a Flow block never ends by itself, whatever is chosen here."
 
     @Bindable var model: AppModel
+    @Environment(\.colorSchemeContrast) private var contrast
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
 
     @State private var newFocusMinutes = ""
     @State private var newBreakMinutes = ""
+    @State private var focusDrafts: [Int: String] = [:]
+    @State private var breakDrafts: [Int: String] = [:]
 
     var body: some View {
-        Form {
-            Section("When a block ends") {
-                Picker("Block end", selection: blockEnd) {
-                    Text("Break starts, declining is one key").tag(BlockEndBehaviour.offeredDefault)
-                    Text("A gentle prompt asks first").tag(BlockEndBehaviour.promptFirst)
-                    Text("Nothing happens until I choose").tag(BlockEndBehaviour.manual)
-                }
-                .pickerStyle(.radioGroup)
-                Toggle("Return to focus when the break has run its length", isOn: autoReturn)
-                Text(Self.flowExemptionNotice)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-            }
-
-            Section("Focus durations") {
-                presetList(keyPath: \.focusPresets)
-                addRow(text: $newFocusMinutes, label: "Add focus minutes") { minutes in
-                    update { $0.focusPresets.append(minutes * 60) }
-                }
-            }
-
-            Section("Break durations") {
-                presetList(keyPath: \.breakPresets)
-                addRow(text: $newBreakMinutes, label: "Add break minutes") { minutes in
-                    update { $0.breakPresets.append(minutes * 60) }
-                }
-            }
-
-            Section("Long break") {
-                Toggle("Suggest a longer break on a cadence", isOn: cadenceEnabled)
-                if model.rhythm.cadence != nil {
-                    Stepper(
-                        "Every \(model.rhythm.cadence?.everyBlocks ?? 4) blocks",
-                        value: cadenceBlocks, in: 2...12)
-                    Stepper(
-                        "Length \(Int((model.rhythm.cadence?.length ?? 900) / 60)) minutes",
-                        value: cadenceMinutes, in: 5...60, step: 5)
-                    Text("A suggestion, never a score — declining is ordinary.")
+        VStack(alignment: .leading) {
+            Text("When a block ends")
+                .font(.headline)
+            Form {
+                Section {
+                    Picker("Block end", selection: blockEnd) {
+                        Text("Break starts, declining is one key").tag(BlockEndBehaviour.offeredDefault)
+                        Text("A gentle prompt asks first").tag(BlockEndBehaviour.promptFirst)
+                        Text("Nothing happens until I choose").tag(BlockEndBehaviour.manual)
+                    }
+                    .pickerStyle(.radioGroup)
+                    Toggle("Return to focus when the break has run its length", isOn: autoReturn)
+                    Text(Self.flowExemptionNotice)
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 }
+
+                Section("Focus durations") {
+                    presetList(keyPath: \.focusPresets, drafts: $focusDrafts)
+                    addRow(text: $newFocusMinutes, label: "Add focus minutes", keyPath: \.focusPresets)
+                    presetHelp
+                }
+
+                Section("Break durations") {
+                    presetList(keyPath: \.breakPresets, drafts: $breakDrafts)
+                    addRow(text: $newBreakMinutes, label: "Add break minutes", keyPath: \.breakPresets)
+                    presetHelp
+                }
+
+                Section("Long break") {
+                    Toggle("Suggest a longer break on a cadence", isOn: cadenceEnabled)
+                    if model.rhythm.cadence != nil {
+                        Stepper(
+                            "Every \(model.rhythm.cadence?.everyBlocks ?? 4) blocks",
+                            value: cadenceBlocks, in: 2...12)
+                        Stepper(
+                            "Length \(Int((model.rhythm.cadence?.length ?? 900) / 60)) minutes",
+                            value: cadenceMinutes, in: 5...60, step: 5)
+                        Text("A suggestion, never a score — declining is ordinary.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
+            .formStyle(.grouped)
+            .scrollContentBackground(.hidden)
         }
-        .formStyle(.grouped)
+        .foregroundStyle(SurfacePalette.primaryText(increasedContrast: contrast == .increased))
+        .background(SurfacePalette.background(reduceTransparency: reduceTransparency))
     }
 
     // MARK: Bindings onto the seam — every change lands via setRhythm.
@@ -111,7 +120,10 @@ struct RhythmPane: View {
     }
 
     @ViewBuilder
-    private func presetList(keyPath: WritableKeyPath<RhythmPreferences, [TimeInterval]>) -> some View {
+    private func presetList(
+        keyPath: WritableKeyPath<RhythmPreferences, [TimeInterval]>,
+        drafts: Binding<[Int: String]>
+    ) -> some View {
         let presets = model.rhythm[keyPath: keyPath]
         if presets.isEmpty {
             Text("The built-in policies are always available.")
@@ -119,26 +131,56 @@ struct RhythmPane: View {
                 .foregroundStyle(.secondary)
         }
         ForEach(Array(presets.enumerated()), id: \.offset) { index, seconds in
+            let draft = Binding(
+                get: { drafts.wrappedValue[index] ?? String(Int(seconds / 60)) },
+                set: { drafts.wrappedValue[index] = $0 })
             HStack {
-                Text("\(Int(seconds / 60)) minutes")
-                Spacer()
-                Button("Remove") { update { $0[keyPath: keyPath].remove(at: index) } }
-                    .buttonStyle(.borderless)
+                TextField("Preset minutes", text: draft)
+                    .textFieldStyle(.roundedBorder)
+                Button("Save") {
+                    var input = draft.wrappedValue
+                    var rhythm = model.rhythm
+                    if rhythm.commitPreset(&input, at: index, in: keyPath) {
+                        model.setRhythm(rhythm)
+                        drafts.wrappedValue[index] = nil
+                    }
+                }
+                .buttonStyle(.borderless)
+                Button("Remove") {
+                    update { rhythm in
+                        guard rhythm[keyPath: keyPath].indices.contains(index) else { return }
+                        rhythm[keyPath: keyPath].remove(at: index)
+                    }
+                    drafts.wrappedValue.removeAll()
+                }
+                .buttonStyle(.borderless)
             }
         }
     }
 
     @ViewBuilder
-    private func addRow(text: Binding<String>, label: String, add: @escaping (TimeInterval) -> Void) -> some View {
+    private func addRow(
+        text: Binding<String>,
+        label: String,
+        keyPath: WritableKeyPath<RhythmPreferences, [TimeInterval]>
+    ) -> some View {
         HStack {
             TextField(label, text: text)
                 .textFieldStyle(.roundedBorder)
             Button("Add") {
-                if let minutes = TimeInterval(text.wrappedValue), minutes > 0, minutes <= 240 {
-                    add(minutes)
-                    text.wrappedValue = ""
+                var input = text.wrappedValue
+                var rhythm = model.rhythm
+                if rhythm.commitPreset(&input, in: keyPath) {
+                    model.setRhythm(rhythm)
+                    text.wrappedValue = input
                 }
             }
         }
+    }
+
+    private var presetHelp: some View {
+        Text(RhythmPreferences.presetHelp)
+            .font(.caption)
+            .foregroundStyle(.secondary)
     }
 }

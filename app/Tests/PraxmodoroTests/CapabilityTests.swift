@@ -3,24 +3,22 @@ import Testing
 @testable import Praxmodoro
 
 @Suite struct CapabilityTests {
-    // Spec: app-scaffold "Lite grant is total for this change".
-    @Test func testLiteGrantIsTotal() {
-        let registry = CapabilityRegistry(edition: .lite)
+    @Test func testConfiguredProductContainsEveryFeature() throws {
+        let registry = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases))
+
+        try registry.validate()
         for key in FeatureKey.allCases {
-            #expect(registry.isAvailable(key), "\(key) must be available in Lite")
+            #expect(registry.isAvailable(key), "\(key) must be available in the product")
         }
     }
 
-    // Spec: "Core support cannot be paywalled" — a configuration that tries
-    // to gate the never-paywalled set fails validation, and the key still
-    // resolves as available (release self-heal).
-    @Test func testCorePaywallAttemptFailsValidation() {
-        var grants = CapabilityRegistry.defaultGrants
-        grants[.lite]?.remove(.checkins)
-        let registry = CapabilityRegistry(edition: .lite, grants: grants)
+    @Test func testOmittedFeatureFailsValidationButLookupSelfHeals() {
+        let registry = CapabilityRegistry(
+            configuredKeys: Set(FeatureKey.allCases).subtracting([.localReview]))
+
         #expect(throws: CapabilityRegistry.ValidationError.self) {
             try registry.validate()
         }
-        #expect(registry.isAvailable(.checkins), "never-paywalled keys self-heal to available")
+        #expect(registry.isAvailable(.localReview), "defined keys self-heal to available")
     }
 }

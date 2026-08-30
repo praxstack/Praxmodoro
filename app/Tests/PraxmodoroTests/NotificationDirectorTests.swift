@@ -1,9 +1,9 @@
 import Foundation
+import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroCore
-import PraxmodoroStore
 
 /// Spec: add-session-settings "Local notifications with honest text"
 /// (tasks 8.1–8.4). Scheduling anchors on canonical instants through a seam;
@@ -21,6 +21,8 @@ import PraxmodoroStore
         var scheduled: [LocalNotificationRequest] = []
         var cancels = 0
         var availability = NotificationAvailability.available
+        var deferredAvailability = false
+        private var deferredReport: (@MainActor (NotificationAvailability) -> Void)?
 
         func schedule(_ request: LocalNotificationRequest) {
             scheduled.append(request)
@@ -32,7 +34,16 @@ import PraxmodoroStore
 
         func checkAvailability(_ report: @escaping @MainActor (NotificationAvailability) -> Void) {
             let value = availability
+            if deferredAvailability {
+                deferredReport = report
+                return
+            }
             Task { @MainActor in report(value) }
+        }
+
+        @MainActor func deliverAvailability(_ value: NotificationAvailability) {
+            deferredReport?(value)
+            deferredReport = nil
         }
     }
 
@@ -95,6 +106,22 @@ import PraxmodoroStore
         #expect(recorder.cancels >= 1)
     }
 
+    @Test func testCadenceChangeReschedulesActiveBreakNotification() throws {
+        let (model, ticker, recorder) = try makeModel { $0.breakEndEnabled = true }
+        try model.begin()
+        ticker.now = t0.addingTimeInterval(26 * 60)
+        try model.acceptBlockEndOffer()
+        #expect(recorder.scheduled.last?.at == t0.addingTimeInterval(31 * 60))
+        let cancelsBefore = recorder.cancels
+        var rhythm = model.rhythm
+        rhythm.cadence = LongBreakCadence(everyBlocks: 1, length: 10 * 60)
+
+        model.setRhythm(rhythm)
+
+        #expect(recorder.cancels == cancelsBefore + 1)
+        #expect(recorder.scheduled.last?.at == t0.addingTimeInterval(36 * 60))
+    }
+
     @Test func testBringToFrontRidesTheRequest() throws {
         let (model, _, recorder) = try makeModel {
             $0.blockEndEnabled = true
@@ -140,6 +167,21 @@ import PraxmodoroStore
         #expect(model.notificationsUnavailable, "the panes need the plain truth to render")
     }
 
+    @Test func testDenialAfterSchedulingCancelsPendingWithoutReplacement() throws {
+        let (model, _, recorder) = try makeModel()
+        recorder.deferredAvailability = true
+        var preferences = model.notifications
+        preferences.blockEndEnabled = true
+        model.setNotifications(preferences)
+        try model.begin()
+        #expect(recorder.scheduled.count == 1)
+
+        recorder.deliverAvailability(.denied)
+        #expect(model.notificationsUnavailable)
+        #expect(recorder.cancels == 1)
+        #expect(recorder.scheduled.count == 1)
+    }
+
     @Test func testNoReAuthorizationNagPathExists() throws {
         let source = try String(
             contentsOf: URL(fileURLWithPath: #filePath)
@@ -156,6 +198,8 @@ import PraxmodoroStore
 /// A silent stand-in so notification tests exercise one seam at a time.
 private struct InertSoundScheduler: SoundCueScheduling {
     func scheduleChime(_ cue: SoundCue, at instant: Date, volume: Double) {}
-    func cancelScheduledChimes() {}
+    func cancelScheduledChime(_ cue: SoundCue, at instant: Date) {}
+    func setChimeVolume(_ volume: Double) {}
+    func cancelExpiredChimes(at now: Date) {}
     func setTickLoop(_ cue: SoundCue, running: Bool, volume: Double) {}
 }

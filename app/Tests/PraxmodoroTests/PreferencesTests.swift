@@ -1,8 +1,8 @@
 import Foundation
+import PraxmodoroCore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroCore
 
 /// Spec: add-session-settings "Settings scene" / "Autostart behaviour is the
 /// user's choice" / "Sound cues, all optional" (tasks 4.1–4.3). Preferences
@@ -52,22 +52,92 @@ import PraxmodoroCore
         defaults.removePersistentDomain(forName: name)
     }
 
-    // MARK: Sound (task 4.2)
+    // MARK: 10.2 — preset input is predictable
 
-    @Test func testSoundFactoryDefaultsAreSilent() {
+    @Test func testPresetRowsAddEditAndRemoveWholeMinutes() {
+        var rhythm = RhythmPreferences.factory
+        var focus = "40"
+        var breakMinutes = "8"
+
+        #expect(rhythm.commitPreset(&focus, in: \.focusPresets))
+        #expect(rhythm.commitPreset(&breakMinutes, in: \.breakPresets))
+        #expect(rhythm.focusPresets == [40 * 60])
+        #expect(rhythm.breakPresets == [8 * 60])
+        #expect(focus.isEmpty)
+        #expect(breakMinutes.isEmpty)
+
+        var edit = "45"
+        #expect(rhythm.commitPreset(&edit, at: 0, in: \.focusPresets))
+        #expect(rhythm.focusPresets == [45 * 60])
+        #expect(edit.isEmpty)
+
+        rhythm.focusPresets.remove(at: 0)
+        rhythm.breakPresets.remove(at: 0)
+        #expect(rhythm.focusPresets.isEmpty)
+        #expect(rhythm.breakPresets.isEmpty)
+    }
+
+    @Test(arguments: ["0", "241", "1.5", "not a number"])
+    func testInvalidPresetAddKeepsInputAndPreferences(_ invalid: String) {
+        var rhythm = RhythmPreferences.factory
+        var input = invalid
+
+        #expect(!rhythm.commitPreset(&input, in: \.focusPresets))
+        #expect(input == invalid)
+        #expect(rhythm.focusPresets.isEmpty)
+    }
+
+    @Test func testDuplicateAddAndEditKeepPriorValueAndInput() {
+        var rhythm = RhythmPreferences.factory
+        rhythm.focusPresets = [40 * 60, 50 * 60]
+
+        var duplicateAdd = "40"
+        #expect(!rhythm.commitPreset(&duplicateAdd, in: \.focusPresets))
+        #expect(duplicateAdd == "40")
+        #expect(rhythm.focusPresets == [40 * 60, 50 * 60])
+
+        var duplicateEdit = "40"
+        #expect(!rhythm.commitPreset(&duplicateEdit, at: 1, in: \.focusPresets))
+        #expect(duplicateEdit == "40")
+        #expect(rhythm.focusPresets == [40 * 60, 50 * 60])
+        #expect(RhythmPreferences.presetHelp == "Use a unique whole number from 1 to 240.")
+    }
+
+    // MARK: Sound (task 10.5 supersedes historical factory-off task 4.2)
+
+    @Test func testSoundFactoryDefaultsMakeTransitionsPerceptibleWithoutTicks() {
         let sound = SoundPreferences.load(from: scratchDefaults())
         #expect(sound == SoundPreferences.factory)
+        #expect(sound.masterVolume == 0.7)
+        #expect(sound.blockStart == true)
         #expect(sound.focusTick == false)
         #expect(sound.breakTick == false)
-        #expect(sound.focusEndChime == false)
-        #expect(sound.breakEndChime == false)
+        #expect(sound.focusEndChime == true)
+        #expect(sound.breakEndChime == true)
         #expect(sound.tickLoop == false)
+    }
+
+    @Test func testLegacySoundBlobPreservesEveryStoredChoiceAndDefaultsOnlyBlockStartOff() throws {
+        let defaults = scratchDefaults()
+        let legacy = Data(
+            #"{"masterVolume":0.42,"focusTick":true,"breakTick":false,"focusEndChime":false,"breakEndChime":true,"tickLoop":true}"#.utf8)
+        defaults.set(legacy, forKey: SoundPreferences.key)
+
+        let sound = SoundPreferences.load(from: defaults)
+        #expect(sound.masterVolume == 0.42)
+        #expect(sound.blockStart == false)
+        #expect(sound.focusTick == true)
+        #expect(sound.breakTick == false)
+        #expect(sound.focusEndChime == false)
+        #expect(sound.breakEndChime == true)
+        #expect(sound.tickLoop == true)
     }
 
     @Test func testSoundRoundTripsThroughDefaults() {
         let defaults = scratchDefaults()
         var sound = SoundPreferences.factory
         sound.masterVolume = 0.4
+        sound.blockStart = false
         sound.focusEndChime = true
         sound.tickLoop = true
         sound.save(to: defaults)

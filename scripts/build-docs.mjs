@@ -39,14 +39,14 @@ const SECTIONS = [
   },
   {
     id: "active",
-    title: "Active change · add-companion-surfaces",
-    blurb: "Milestone M2: proposal, design with argued alternatives, TDD tasks, and its four capability deltas.",
-    match: (p) => p.startsWith("openspec/changes/add-companion-surfaces/"),
+    title: "Active changes",
+    blurb: "Proposals, designs, TDD tasks, and capability deltas that have not yet been archived.",
+    match: (p) => p.startsWith("openspec/changes/") && !p.startsWith("openspec/changes/archive/"),
   },
   {
     id: "archive",
-    title: "Archived change · M1 core loop",
-    blurb: "Milestone M1 as it was shipped and archived on 2026-07-31.",
+    title: "Archived changes",
+    blurb: "Completed OpenSpec changes retained as implementation records.",
     match: (p) => p.startsWith("openspec/changes/archive/"),
   },
   {
@@ -122,9 +122,12 @@ const MOCKUPS = [
 
 /* ── Collect ───────────────────────────────────────────────────────────── */
 
-const tracked = execFileSync("git", ["ls-files", "*.md"], { cwd: ROOT, encoding: "utf8" })
+const markdownPaths = execFileSync(
+  "git", ["ls-files", "--cached", "--others", "--exclude-standard", "--", "*.md"],
+  { cwd: ROOT, encoding: "utf8" },
+)
   .split("\n")
-  .filter((p) => p && !p.includes("node_modules"))
+  .filter((p) => p && !p.includes("node_modules") && existsSync(join(ROOT, p)))
   .sort();
 
 /** Several documents open with the bare product name, which makes the index
@@ -145,7 +148,7 @@ const titleOf = (path, source) => {
 };
 
 const summaryOf = (source) => {
-  const body = source.replace(/^#\s+.+$/m, "").replace(/^>.*$/gm, "");
+  const body = source.replace(/^#{1,6}\s+.+$/gm, "").replace(/^>.*$/gm, "");
   const para = body.split(/\n\s*\n/).map((s) => s.trim()).find((s) => s && !s.startsWith("#") && !s.startsWith("|") && !s.startsWith("-"));
   if (!para) return "";
   const flat = para.replace(/\s+/g, " ").replace(/[`*_[\]]/g, "").replace(/\((?:https?|\.)[^)]*\)/g, "");
@@ -154,7 +157,7 @@ const summaryOf = (source) => {
 
 const slugOf = (path) => path.replace(/\.md$/, "").replace(/[/.]/g, "-").replace(/^-+/, "");
 
-const docs = tracked.map((path) => {
+const docs = markdownPaths.map((path) => {
   const source = readFileSync(join(ROOT, path), "utf8");
   const section = SECTIONS.find((s) => s.match(path)) ?? SECTIONS[SECTIONS.length - 1];
   return {
@@ -171,12 +174,21 @@ const docs = tracked.map((path) => {
 });
 
 // Any title shared by two documents gets a qualifier. The same capability
-// spec appears canonically, as an M2 delta, and in the M1 archive — the reader
+// spec can appear canonically, in an active delta, and in an archive — the reader
 // needs to know which one they are opening.
 const SECTION_QUALIFIER = {
   specs: "canonical",
-  active: "M2 change",
-  archive: "M1 archived",
+  active: "active change",
+  archive: "archived",
+};
+
+const openSpecQualifier = (doc) => {
+  if (doc.section === "specs") return SECTION_QUALIFIER.specs;
+  const changeIndex = doc.section === "active" ? 2 : doc.section === "archive" ? 3 : null;
+  if (changeIndex === null) return null;
+  const parts = doc.path.split("/");
+  const capability = parts[changeIndex + 1] === "specs" ? ` · ${parts[changeIndex + 2]}` : "";
+  return `${SECTION_QUALIFIER[doc.section]} · ${parts[changeIndex]}${capability}`;
 };
 
 const groups = new Map();
@@ -184,17 +196,26 @@ for (const d of docs) groups.set(d.title, [...(groups.get(d.title) ?? []), d]);
 for (const [, group] of groups) {
   if (group.length < 2) continue;
   const sectionsDiffer = new Set(group.map((d) => d.section)).size === group.length;
+  const basesDiffer = new Set(group.map((d) => basename(d.path, ".md"))).size === group.length;
   for (const d of group) {
     const base = basename(d.path, ".md");
-    const basesDiffer = new Set(group.map((g) => basename(g.path, ".md"))).size === group.length;
     const qualifier = sectionsDiffer
       ? SECTION_QUALIFIER[d.section] ?? d.section
-      : basesDiffer
-        ? base
-        : basename(dirname(d.path));
+      : (openSpecQualifier(d) ?? (basesDiffer ? base : basename(dirname(d.path))));
     d.title = `${d.title} · ${qualifier}`;
   }
 }
+
+const requireUnique = (label, valueOf) => {
+  const seen = new Set();
+  for (const doc of docs) {
+    const value = valueOf(doc);
+    if (seen.has(value)) throw new Error(`Duplicate ${label}: ${value}`);
+    seen.add(value);
+  }
+};
+requireUnique("document title", (doc) => doc.title);
+requireUnique("output target", (doc) => doc.bespoke ?? `${doc.slug}.html`);
 
 /* ── The shared shell ──────────────────────────────────────────────────── */
 
@@ -358,10 +379,10 @@ const sectionBlocks = SECTIONS.map((section) => {
   const rows = items
     .map((d) => {
       const htmlHref = d.bespoke ? `${IDX_UP}${d.bespoke}` : `site/${d.slug}.html`;
+      const summary = d.summary ? `\n          <span class="doc-sum">${esc(d.summary)}</span>` : "";
       return `<li class="doc" data-search="${esc((d.title + " " + d.path + " " + d.summary).toLowerCase())}">
         <a class="doc-main" href="${htmlHref}">
-          <span class="doc-title">${esc(d.title)}${d.bespoke ? '<span class="chip accent">designed page</span>' : ""}</span>
-          ${d.summary ? `<span class="doc-sum">${esc(d.summary)}</span>` : ""}
+          <span class="doc-title">${esc(d.title)}${d.bespoke ? '<span class="chip accent">designed page</span>' : ""}</span>${summary}
           <span class="doc-path"><code>${esc(d.path)}</code> · ${d.words.toLocaleString()} words</span>
         </a>
         <a class="doc-md" href="${IDX_UP}${d.path}" title="Markdown source">MD</a>

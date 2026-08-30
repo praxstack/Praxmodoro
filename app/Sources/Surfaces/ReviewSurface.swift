@@ -23,8 +23,10 @@ struct ReviewSurface: View {
                                     .foregroundStyle(.secondary)
                                 Text(entry.label)
                             }
+                            .accessibilityElement(children: .combine)
                         }
                     }
+                    .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("timeline")
                 }
             }
@@ -42,7 +44,7 @@ struct ReviewSurface: View {
                     .font(.callout)
                     .accessibilityIdentifier("insight-card")
                 Button {
-                    model.surface = .initiate
+                    model.beginNextSession()
                 } label: {
                     Label("Begin something new", systemImage: "arrow.counterclockwise")
                         .frame(maxWidth: .infinity, minHeight: 38)
