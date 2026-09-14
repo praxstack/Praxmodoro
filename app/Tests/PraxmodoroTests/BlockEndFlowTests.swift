@@ -1,9 +1,9 @@
 import Foundation
+import PraxmodoroCore
+import PraxmodoroStore
 import Testing
 
 @testable import Praxmodoro
-import PraxmodoroCore
-import PraxmodoroStore
 
 /// Spec: add-session-settings "Autostart behaviour is the user's choice"
 /// (tasks 6.1–6.3). Presentation derives from the reconciled engine;
@@ -138,6 +138,51 @@ import PraxmodoroStore
         let (model, ticker) = try makeModel(blockEnd: .offeredDefault, autoReturn: false)
         ticker.now = t0.addingTimeInterval(3 * 60 * 60)
         #expect(model.snapshot(at: ticker.now).phase == .onBreak)
+    }
+
+    @Test func testRelaunchAfterAnAbsenceNeverFillsWithPhantomCycles() throws {
+        let store = try LocalStore(inMemory: true)
+        let defaults = scratchDefaults()
+        let ticker = Ticker(t0)
+        let model = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        model.setRhythm(rhythm)
+        model.policy = .classic
+        try model.begin()
+
+        ticker.now = t0.addingTimeInterval(3 * 60 * 60)
+        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: scratchDefaults())
+        try relaunched.restore()
+        #expect(relaunched.snapshot(at: ticker.now).phase == .onBreak)
+        #expect(relaunched.effectiveSurface(at: ticker.now) == .onBreak)
+
+        try relaunched.closeSession()
+        let events = try store.events(sessionID: relaunched.sessionID!)
+        let running = events.filter { $0.kind == .transition && $0.payload == "running" }
+        #expect(running.count == 1, "no focus blocks may materialize during an absence")
+    }
+
+    @Test func testRelaunchMidBreakStillHonoursAutoReturn() throws {
+        let store = try LocalStore(inMemory: true)
+        let defaults = scratchDefaults()
+        let ticker = Ticker(t0)
+        let model = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        model.setRhythm(rhythm)
+        model.policy = .classic
+        try model.begin()
+
+        ticker.now = t0.addingTimeInterval(27 * 60)
+        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: scratchDefaults())
+        try relaunched.restore()
+        #expect(relaunched.snapshot(at: ticker.now).phase == .onBreak)
+        ticker.now = t0.addingTimeInterval(31 * 60)
+        #expect(relaunched.snapshot(at: ticker.now).phase == .running)
+        #expect(relaunched.effectiveSurface(at: ticker.now) == .focus)
     }
 
     // MARK: 6.3 — rewind / forward
