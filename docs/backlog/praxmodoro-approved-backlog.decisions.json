@@ -1,0 +1,148 @@
+{
+  "kind": "decisions",
+  "schemaVersion": "0.2.0",
+  "canvasId": "01M1AMCH35XEHPRK3K3NC6VZJV",
+  "exportId": "01M1AQV3FS2BFBZR1BCQ3E6FER",
+  "exportedAt": "2026-08-31T01:44:46.842Z",
+  "baseline": "d2dc8b287202490e1ba41e99db9e2edf3834fec86c2f5e7c475bc93ea9587a5c",
+  "baselines": {
+    "01M1AMCH35XEHPRK3K3NC6VZJV": "d2dc8b287202490e1ba41e99db9e2edf3834fec86c2f5e7c475bc93ea9587a5c"
+  },
+  "answers": [
+    {
+      "questionId": "01M1AMCH36DEDG37APAW1PRP3R",
+      "confirmation": "default",
+      "key": "merged_items",
+      "resolution": "answered",
+      "value": {
+        "01M1AMCH36DEDG37APAW1PRP3S": "approved",
+        "01M1AMCH36DEDG37APAW1PRP3T": "approved",
+        "01M1AMCH36DEDG37APAW1PRP3V": "approved",
+        "01M1AMCH36DEDG37APAW1PRP3W": "approved"
+      }
+    },
+    {
+      "questionId": "01M1AMCH36DEDG37APAW1PRP3Y",
+      "confirmation": "default",
+      "key": "distribution_method",
+      "resolution": "answered",
+      "value": "direct-dmg"
+    },
+    {
+      "questionId": "01M1AMCH36DEDG37APAW1PRP40",
+      "confirmation": "default",
+      "key": "direct_dmg_steps",
+      "resolution": "answered",
+      "value": {
+        "01M1AMCH36DEDG37APAW1PRP41": "approved",
+        "01M1AMCH36DEDG37APAW1PRP42": "approved",
+        "01M1AMCH36DEDG37APAW1PRP43": "approved",
+        "01M1AMCH36DEDG37APAW1PRP44": "approved",
+        "01M1AMCH36DEDG37APAW1PRP45": "approved",
+        "01M1AMCH36DEDG37APAW1PRP46": "approved",
+        "01M1AMCH36DEDG37APAW1PRP47": "approved",
+        "01M1AMCH36DEDG37APAW1PRP48": "approved",
+        "01M1AMCH36DEDG37APAW1PRP49": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4A": "approved"
+      }
+    },
+    {
+      "questionId": "01M1AMCH36DEDG37APAW1PRP4C",
+      "confirmation": "default",
+      "key": "open_product_backlog",
+      "resolution": "answered",
+      "value": {
+        "01M1AMCH36DEDG37APAW1PRP4D": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4E": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4F": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4G": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4H": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4J": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4K": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4M": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4N": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4P": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4Q": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4R": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4S": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4T": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4V": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4W": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4X": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4Y": "approved",
+        "01M1AMCH36DEDG37APAW1PRP4Z": "approved",
+        "01M1AMCH36DEDG37APAW1PRP50": "approved",
+        "01M1AMCH36DEDG37APAW1PRP51": "approved",
+        "01M1AMCH36DEDG37APAW1PRP52": "approved",
+        "01M1AMCH36DEDG37APAW1PRP53": "approved",
+        "01M1AMCH36DEDG37APAW1PRP54": "approved",
+        "01M1AMCH36DEDG37APAW1PRP55": "approved",
+        "01M1AMCH36DEDG37APAW1PRP56": "approved",
+        "01M1AMCH36DEDG37APAW1PRP57": "approved",
+        "01M1AMCH36DEDG37APAW1PRP58": "approved",
+        "01M1AMCH36DEDG37APAW1PRP59": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5A": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5B": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5C": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5D": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5E": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5F": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5G": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5H": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5J": "approved"
+      }
+    },
+    {
+      "questionId": "01M1AMCH36DEDG37APAW1PRP5M",
+      "confirmation": "default",
+      "key": "ui_ux_improvements",
+      "resolution": "answered",
+      "value": {
+        "01M1AMCH36DEDG37APAW1PRP5N": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5P": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5Q": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5R": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5S": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5T": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5V": "approved",
+        "01M1AMCH36DEDG37APAW1PRP5W": "approved"
+      }
+    },
+    {
+      "questionId": "01M1AMCH36DEDG37APAW1PRP5Y",
+      "confirmation": "explicit",
+      "key": "final_go",
+      "resolution": "answered",
+      "value": "go"
+    }
+  ],
+  "gate": {
+    "raw": "go",
+    "effective": "go",
+    "wordsWinTriggered": false
+  },
+  "sourceRevisions": {
+    "01M1AMCH35XEHPRK3K3NC6VZJV": {
+      "revisionId": "01M1AMCH36DEDG37APAW1PRP3P",
+      "revisionFingerprint": "e4282195d30a74fe5ccf32e2fd03586a39eecd06382be0bbc6ea537be8c2944a"
+    }
+  },
+  "threadId": "01M1AMCH36DEDG37APAW1PRP3N",
+  "revisionId": "01M1AMCH36DEDG37APAW1PRP3P",
+  "revisionFingerprint": "e4282195d30a74fe5ccf32e2fd03586a39eecd06382be0bbc6ea537be8c2944a",
+  "theme": {
+    "id": "launch-checklist",
+    "version": "1.0.0",
+    "overridden": true
+  },
+  "reviewProfile": {
+    "id": "artifact-review",
+    "version": "1.0.0",
+    "overridden": false
+  },
+  "writingPolicy": {
+    "id": "unslop-humanizer",
+    "version": "1.0.0",
+    "mode": "warn"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "kind": "local-decision-receipt",
+  "formVersion": "praxmodoro-decision-checkpoint@1.0.0",
+  "decisionId": "8516ee60-19aa-4295-b6ac-db2f167f1d18",
+  "choiceId": "html-checkpoint",
+  "choice": "Use this HTML checkpoint for decisions",
+  "note": null,
+  "confirmed": true,
+  "recordedAt": "2026-08-31T03:24:18.619Z",
+  "downstreamStatus": "not-started"
+}
