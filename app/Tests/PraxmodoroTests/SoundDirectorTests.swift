@@ -451,7 +451,13 @@ import Testing
         #expect(app.contains("{_inmodel.handleSystemWake()}"))
 
         let model = try source("AppModel.swift").filter { !$0.isWhitespace }
-        #expect(model.contains("funchandleSystemWake(){soundScheduler.cancelExpiredChimes(at:clock())}"))
+        // The exact body: cancel expired chimes, arm the one-shot retro
+        // block-start suppression, and nothing else — resynchronization
+        // belongs to the next root date edge.
+        #expect(
+            model.contains(
+                "funchandleSystemWake(){soundScheduler.cancelExpiredChimes(at:clock())"
+                    + "skipPastBlockStartOnNextSync=true}"))
     }
 
     @Test func testBundledResourcesActuallyExist() throws {
