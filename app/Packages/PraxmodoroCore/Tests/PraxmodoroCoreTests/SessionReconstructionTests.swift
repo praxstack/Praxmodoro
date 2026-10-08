@@ -43,4 +43,29 @@ import Testing
         #expect(expiry.at == t0.addingTimeInterval(25 * 60))
         #expect(expiry.intent == nil)
     }
+
+    /// Observers wake at the next canonical edge instead of polling (change:
+    /// fix-menubar-launch-hang): promotion, expiry, and break end, strictly
+    /// after `now`, and nothing while held or open-ended.
+    @Test func testNextEdgeIsTheEarliestFutureCanonicalInstant() throws {
+        var gentle = Session(policy: .gentleStart, startedAt: nil)
+        try gentle.apply(.begin, at: t0)
+        #expect(gentle.nextEdgeInstant(after: t0, cadence: nil) == t0.addingTimeInterval(5 * 60))
+        #expect(
+            gentle.nextEdgeInstant(after: t0.addingTimeInterval(5 * 60), cadence: nil)
+                == t0.addingTimeInterval(25 * 60))
+
+        var classic = Session(policy: .classic, startedAt: nil)
+        try classic.apply(.begin, at: t0)
+        let expiry = t0.addingTimeInterval(25 * 60)
+        let onBreak = classic.reconciled(at: expiry, blockEnd: .offeredDefault)
+        #expect(onBreak.nextEdgeInstant(after: expiry, cadence: nil) == t0.addingTimeInterval(30 * 60))
+
+        try classic.apply(.hold, at: t0.addingTimeInterval(60))
+        #expect(classic.nextEdgeInstant(after: t0.addingTimeInterval(60), cadence: nil) == nil)
+
+        var flow = Session(policy: .flow, startedAt: nil)
+        try flow.apply(.begin, at: t0)
+        #expect(flow.nextEdgeInstant(after: t0, cadence: nil) == nil)
+    }
 }

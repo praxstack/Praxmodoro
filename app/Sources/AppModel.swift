@@ -257,6 +257,42 @@ final class AppModel {
         }
         skipPastBlockStartOnNextSync = false
         syncNotifications(at: now)
+        syncObservation(at: now)
+    }
+
+    // MARK: Background observation (change: fix-menubar-launch-hang). Every
+    // window may be closed, so the model asks to be woken at the next instant
+    // the reconciled engine can change — the same canonical instants sound
+    // and notifications anchor on. Nothing polls and no view keeps time.
+
+    private var scheduledObservation: Date?
+
+    /// Core's next canonical edge for the reconciled session; nil when
+    /// nothing is pending (no session, held, flow).
+    func nextObservationInstant(after now: Date) -> Date? {
+        guard let session else { return nil }
+        return reconciledSession(session, at: now).nextEdgeInstant(after: now, cadence: rhythm.cadence)
+    }
+
+    private func syncObservation(at now: Date) {
+        let desired = nextObservationInstant(after: now)
+        guard desired != scheduledObservation else { return }
+        scheduledObservation = desired
+        guard let desired else {
+            observationScheduler.cancel()
+            return
+        }
+        observationScheduler.schedule(at: desired) { [weak self] in
+            guard let self else { return }
+            let now = self.clock()
+            self.scheduledObservation = nil
+            do {
+                try self.observeDerivedPhase(at: now)
+            } catch {
+                // A failed write still leaves the next edge to watch.
+                self.syncObservation(at: now)
+            }
+        }
     }
 
     func setNotifications(_ preferences: NotificationPreferences) {
@@ -326,6 +362,7 @@ final class AppModel {
     private let defaults: UserDefaults
     private let soundScheduler: SoundCueScheduling
     private let notificationScheduler: NotificationScheduling
+    private let observationScheduler: ObservationScheduling
 
     init(
         store: LocalStore?,
@@ -333,7 +370,8 @@ final class AppModel {
         capabilities: CapabilityRegistry = CapabilityRegistry(configuredKeys: Set(FeatureKey.allCases)),
         clock: @escaping () -> Date = { Date() }, defaults: UserDefaults = .standard,
         soundScheduler: SoundCueScheduling = AudioCueScheduler(),
-        notificationScheduler: NotificationScheduling = LocalNotificationScheduler()
+        notificationScheduler: NotificationScheduling = LocalNotificationScheduler(),
+        observationScheduler: ObservationScheduling = InertObservationScheduler()
     ) {
         self.store = store
         self.recoveryNotice = recoveryNotice
@@ -343,6 +381,7 @@ final class AppModel {
         self.defaults = defaults
         self.soundScheduler = soundScheduler
         self.notificationScheduler = notificationScheduler
+        self.observationScheduler = observationScheduler
         self.motionStilled = defaults.bool(forKey: Self.motionStilledKey)
         self.rhythm = RhythmPreferences.load(from: defaults)
         self.sound = SoundPreferences.load(from: defaults)
