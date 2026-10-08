@@ -1,0 +1,24 @@
+{
+  "name": "praxmodoro-site",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Praxmodoro beta waitlist website: static pages on Cloudflare Pages, waitlist API on Pages Functions + D1.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "wrangler pages dev public --port 8788",
+    "test": "node --disable-warning=ExperimentalWarning --test --test-reporter=spec test/*.test.js",
+    "db:migrate:local": "wrangler d1 migrations apply praxmodoro-waitlist --local",
+    "db:migrate:remote": "wrangler d1 migrations apply praxmodoro-waitlist --remote",
+    "deploy": "node scripts/build.mjs && wrangler pages deploy public --project-name praxmodoro",
+    "render:mocks": "node scripts/render-mocks.mjs",
+    "render:brand": "node scripts/render-brand.mjs",
+    "screenshots": "node scripts/screenshots.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "4.140.0"
+  },
+  "engines": {
+    "node": ">=22.13.0"
+  }
+}

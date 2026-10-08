@@ -1,0 +1,22 @@
+# Cloudflare Pages project for the Praxmodoro website + waitlist API.
+# Static files are served from public/; functions/ adds the /api/* endpoints.
+name = "praxmodoro"
+compatibility_date = "2026-09-15"
+pages_build_output_dir = "public"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "praxmodoro-waitlist"
+# Replace with the id printed by `npx wrangler d1 create praxmodoro-waitlist` (README step 1.4).
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Secrets are NOT set here. Set them with `npx wrangler pages secret put <NAME>` (README step 1.6):
+#   ADMIN_TOKEN        long random string that unlocks /api/waitlist/export
+#   IP_HASH_SALT       long random string used to hash IP addresses for rate limiting
+#   TURNSTILE_SECRET   optional, turns on Turnstile verification (README step 5)
+# For local development, copy .dev.vars.example to .dev.vars.
+
+# Optional and public: Turnstile site key. Uncomment and fill in to show the widget (README step 5).
+# [vars]
+# TURNSTILE_SITE_KEY = "0x4AAAAAAA..."
