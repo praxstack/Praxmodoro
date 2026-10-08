@@ -17,7 +17,8 @@ cd "$(dirname "$0")/.."
 
 ./scripts/generate.sh
 
-log=$(mktemp -t praxmodoro-focused)
+# Explicit XXXXXX template: GNU mktemp rejects BSD's bare `-t prefix`.
+log=$(mktemp "${TMPDIR:-/tmp}/praxmodoro-focused.XXXXXX")
 trap 'rm -f "$log"' EXIT
 
 if xcodebuild \

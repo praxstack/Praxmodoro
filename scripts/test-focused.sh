@@ -2,7 +2,8 @@
 # Self-test for scripts/focused.sh failure diagnostics.
 #
 # Runs a copy of focused.sh in a scratch tree with xcodebuild and
-# generate.sh stubbed, feeding it synthetic xcodebuild logs. Each case
+# generate.sh stubbed (and mktemp held to GNU's template rule), feeding it
+# synthetic xcodebuild logs. Each case
 # checks the two promises focused.sh makes on a red run: the diagnostics
 # and footer always print, and the script exits with xcodebuild's own
 # status. Needs no Xcode, no project, and touches nothing in the repo.
@@ -21,7 +22,22 @@ cat > "$scratch/bin/xcodebuild" <<'EOF'
 cat "$FAKE_LOG"
 exit "$FAKE_STATUS"
 EOF
-chmod +x "$scratch/repo/scripts/"*.sh "$scratch/bin/xcodebuild"
+# GNU mktemp (Linux/cloud) rejects a template without trailing X's, while
+# BSD mktemp on macOS accepts a bare `-t prefix`. This shim applies the
+# stricter GNU rule on every platform, so a non-portable call fails here.
+real_mktemp=$(command -v mktemp)
+cat > "$scratch/bin/mktemp" <<EOF
+#!/usr/bin/env bash
+for arg in "\$@"; do
+  case "\$arg" in
+    -*) ;;
+    *XXX) ;;
+    *) echo "mktemp: too few X's in template '\$arg'" >&2; exit 1 ;;
+  esac
+done
+exec "$real_mktemp" "\$@"
+EOF
+chmod +x "$scratch/repo/scripts/"*.sh "$scratch/bin/xcodebuild" "$scratch/bin/mktemp"
 
 failures=0
 fail() {
