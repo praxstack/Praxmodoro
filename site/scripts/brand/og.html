@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en" data-motion="gentle">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../public/assets/css/site.css">
+<style>
+  /* Frozen frame of the breathing field for the 1200x630 share image. */
+  *, *::before, *::after { animation-play-state: paused !important; animation-delay: -2.4s !important; }
+  html, body { width: 1200px; height: 630px; margin: 0; overflow: hidden; }
+  body { background: var(--gradient-room); background-color: var(--color-paper); }
+  .og { position: relative; display: grid; grid-template-columns: 1.15fr 0.85fr; align-items: center; height: 100%; padding: 0 72px; }
+  .og-copy { display: grid; gap: 28px; position: relative; z-index: 1; }
+  .og-copy .wordmark { font-size: 30px; gap: 14px; }
+  .og-copy .brand-mark { width: 52px; height: 52px; font-size: 24px; }
+  .og h1 { font-size: 96px; font-weight: 800; letter-spacing: -0.045em; line-height: 0.92; }
+  .og h1 .soft { color: var(--color-accent-strong); }
+  .og p { color: var(--color-ink-2); font-size: 27px; line-height: 1.35; }
+  .og-field { position: absolute; right: -120px; top: 50%; width: 760px; --field-blur: 34px; transform: translateY(-50%); }
+  .og-time { position: relative; z-index: 1; display: grid; justify-items: center; gap: 14px; }
+  .og-time .timer-time { font-size: 112px; }
+  .og-time .timer-state { font-size: 20px; padding: 6px 16px; }
+</style>
+</head>
+<body>
+  <div class="og">
+    <div class="og-copy">
+      <span class="wordmark"><span class="brand-mark">P</span><span>Praxmodoro</span></span>
+      <h1>Start with one <span class="soft">tiny step.</span></h1>
+      <p>A calm focus timer for Mac.<br>Free beta waitlist now open.</p>
+    </div>
+    <div class="og-time">
+      <span class="timer-time">05:00</span>
+      <span class="timer-state">Breathing with you</span>
+    </div>
+  </div>
+  <div class="companion-field og-field" data-state="breathing">
+    <span class="field-layer field-a"></span><span class="field-layer field-b"></span><span class="field-layer field-c"></span><span class="field-core"></span><span class="field-ring"></span>
+  </div>
+</body>
+</html>
