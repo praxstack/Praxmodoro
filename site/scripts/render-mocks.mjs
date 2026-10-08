@@ -10,7 +10,7 @@ import { launch, pngToWebp } from "./lib/browser.mjs";
 const here = dirname(fileURLToPath(import.meta.url));
 const site = join(here, "..");
 const mockDir = join(site, "..", "design-mocks", "living-companion");
-const fontDir = join(site, "public", "assets", "fonts");
+const fontDir = join(site, "scripts", "mock-fonts"); // the app's typefaces; the website uses its own
 const outDir = join(site, "public", "assets", "img");
 mkdirSync(outDir, { recursive: true });
 

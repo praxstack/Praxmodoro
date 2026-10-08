@@ -8,319 +8,260 @@
 {{> header}}
 <main id="main">
 
-  <!-- Hero: the thesis is the app's own first moment. -->
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="wrap hero-grid">
-      <div class="hero-copy">
-        <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>Mac beta &middot; free while in testing</p>
-        <h1 class="display" id="hero-title">Start with one <span class="soft nowrap">tiny step.</span></h1>
-        <p class="lead">Praxmodoro is a calm focus timer for your Mac, made for the moment before you begin. Name one task, write a step small enough to do now, and let a slowly breathing companion keep the time. Nothing scores you.</p>
-
-        <div class="hero-form">
-          <form class="join-form" action="/api/waitlist" method="post" data-waitlist-form data-source="hero">
-            <div class="join-inline">
-              <label class="sr-only" for="hero-email">Email address</label>
-              <input class="input" id="hero-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="you@example.com" required aria-describedby="hero-status">
-              <button class="button button-primary" type="submit" data-submit>
-                <span data-submit-label>Join the beta</span>
-                <svg class="button-arrow" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h9.5M8.5 4l4 4-4 4"/></svg>
-              </button>
-            </div>
-            <label class="check">
-              <input type="checkbox" name="consent" value="on" required>
-              <span>Email me about the beta. Unsubscribe any time.</span>
-            </label>
-            <div class="honeypot" aria-hidden="true">
-              <label for="hero-website">Leave this empty</label>
-              <input id="hero-website" name="website" type="text" tabindex="-1" autocomplete="off">
-            </div>
-            <input type="hidden" name="source" value="hero">
-            <input type="hidden" name="utm_source" value="">
-            <input type="hidden" name="utm_medium" value="">
-            <input type="hidden" name="utm_campaign" value="">
-            <input type="hidden" name="referrer" value="">
-            <div class="turnstile-slot" data-turnstile-slot hidden></div>
-            <p class="form-status" id="hero-status" role="status" aria-live="polite" data-status></p>
-          </form>
-          <div class="join-success" data-success tabindex="-1" hidden>
-            <p class="success-title"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span data-success-title>You&rsquo;re on the list.</span></p>
-            <p data-success-text>We&rsquo;ll email you when a beta spot opens. That&rsquo;s the only reason we&rsquo;ll write.</p>
-          </div>
+  <!-- First light. The breathing light is the companion; the words sit at its centre, where the app keeps the time. -->
+  <section class="room room-arrive" aria-labelledby="hero-title">
+    <div class="wrap arrive">
+      <div class="breath">
+        <span class="light" aria-hidden="true">{{> light}}</span>
+        <div class="breath-words">
+          <h1 class="breath-title" id="hero-title">Start with one tiny&nbsp;step.</h1>
+          <p class="breath-cue" aria-hidden="true">
+            <span class="cue cue-in">Breathe in</span>
+            <span class="cue cue-out">Breathe out</span>
+            <span class="cue cue-still">In for four, out for six</span>
+          </p>
         </div>
+      </div>
+      <button class="motion-toggle motion-toggle-quiet" type="button" data-motion-toggle data-system-hides data-label-gentle="Pause the breathing" data-label-still="Let it breathe" hidden>
+        <span class="motion-dot" aria-hidden="true"></span>
+        <span data-motion-label>Pause the breathing</span>
+      </button>
 
-        <ul class="hero-facts" aria-label="Beta details">
-          <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>macOS 26 or later</li>
-          <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>No account</li>
-          <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg>Your data stays on your Mac</li>
-        </ul>
+      <p class="lede">Praxmodoro is a calm focus timer for your Mac, made for the moment before you begin. Name one step small enough to do now, and a slowly breathing companion keeps you&nbsp;company.</p>
+
+      <div class="hero-join">
+        <form class="join-form join-form-inline" action="/api/waitlist" method="post" data-waitlist-form data-source="hero">
+          <div class="join-row">
+            <label class="sr-only" for="hero-email">Email address</label>
+            <input class="input input-pill" id="hero-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" placeholder="you@example.com" required aria-describedby="hero-status">
+            <button class="button button-primary" type="submit" data-submit><span data-submit-label>Join the beta</span></button>
+          </div>
+          <label class="check">
+            <input type="checkbox" name="consent" value="on" required>
+            <span>Email me about the beta. Unsubscribe any time.</span>
+          </label>
+          <div class="honeypot" aria-hidden="true">
+            <label for="hero-website">Leave this empty</label>
+            <input id="hero-website" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <input type="hidden" name="source" value="hero">
+          <input type="hidden" name="utm_source" value="">
+          <input type="hidden" name="utm_medium" value="">
+          <input type="hidden" name="utm_campaign" value="">
+          <input type="hidden" name="referrer" value="">
+          <div class="turnstile-slot" data-turnstile-slot hidden></div>
+          <p class="form-status" id="hero-status" role="status" aria-live="polite" data-status></p>
+        </form>
+        <div class="join-success" data-success tabindex="-1" hidden>
+          <p class="success-title"><span class="success-light" aria-hidden="true"></span><span data-success-title>You&rsquo;re on the list.</span></p>
+          <p data-success-text>We&rsquo;ll email you when a beta spot opens. That&rsquo;s the only reason we&rsquo;ll write.</p>
+        </div>
       </div>
 
-      <div class="hero-stage">
-        <div class="companion-field field-hero" data-state="gathering" data-demo-field aria-hidden="true">{{> field-layers}}</div>
-
-        <section class="demo" aria-labelledby="demo-title" data-demo data-stage="begin">
-          <form class="demo-panel" data-panel="begin" data-demo-form>
-            <div class="demo-head">
-              <h2 class="quiet-label" id="demo-title">Try the first minute</h2>
-              <span class="demo-local"><svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="10" height="7" rx="2"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>Stays in this page</span>
-            </div>
-            <div>
-              <label class="field-label" for="demo-task">What has your attention?</label>
-              <input class="input" id="demo-task" name="task" type="text" maxlength="80" autocomplete="off" placeholder="Reply to Asha about the venue">
-            </div>
-            <div>
-              <label class="field-label" for="demo-step">One step small enough to begin</label>
-              <div class="step-row">
-                <span class="step-puck" aria-hidden="true">1</span>
-                <input class="input" id="demo-step" name="step" type="text" maxlength="120" autocomplete="off" placeholder="Open the thread, write one line" aria-describedby="demo-step-hint">
-              </div>
-              <p class="hint" id="demo-step-hint" data-step-hint>Concrete and about two minutes. Rough is fine.</p>
-            </div>
-            <button class="begin-control" type="submit" data-begin>
-              <span class="begin-puck" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 3.2v9.6a.6.6 0 00.9.5l7.6-4.8a.6.6 0 000-1L5.9 2.7a.6.6 0 00-.9.5z" fill="currentColor"/></svg></span>
-              <span><strong data-begin-title>Begin gentle start</strong><small data-begin-sub>Five minutes to arrive. Nothing owed beyond them.</small></span>
-              <span class="begin-shortcut" aria-hidden="true">&#8984; &#8617;</span>
-            </button>
-          </form>
-
-          <div class="demo-panel" data-panel="focus" tabindex="-1" hidden aria-labelledby="demo-focus-title">
-            <div class="demo-now">
-              <p class="quiet-label">Now focusing &middot; gentle start</p>
-              <h3 class="demo-task-title" id="demo-focus-title" data-out="task"></h3>
-              <p class="demo-next">Next: <span data-out="step"></span></p>
-            </div>
-            <div class="demo-timer">
-              <span class="timer-time" data-focus-time>05:00</span>
-              <span class="timer-state" data-focus-state>Breathing with you</span>
-            </div>
-            <div class="demo-controls">
-              <button class="chip-button" type="button" data-action="hold">
-                <svg viewBox="0 0 16 16" aria-hidden="true" data-hold-icon="pause"><rect x="4" y="3" width="2.6" height="10" rx="1.2" fill="currentColor"/><rect x="9.4" y="3" width="2.6" height="10" rx="1.2" fill="currentColor"/></svg>
-                <svg viewBox="0 0 16 16" aria-hidden="true" data-hold-icon="play" hidden><path d="M5 3.2v9.6a.6.6 0 00.9.5l7.6-4.8a.6.6 0 000-1L5.9 2.7a.6.6 0 00-.9.5z" fill="currentColor"/></svg>
-                <span data-hold-label>Hold</span>
-              </button>
-              <button class="chip-button" type="button" data-action="checkin">Check in</button>
-              <button class="chip-button" type="button" data-action="reset">Start over</button>
-            </div>
-            <p class="demo-message" data-message></p>
-          </div>
-
-          <div class="demo-panel" data-panel="checkin" tabindex="-1" hidden aria-labelledby="demo-checkin-title">
-            <p class="quiet-label">Check-in &middot; timer held</p>
-            <h3 class="checkin-question" id="demo-checkin-title">How does the step fit right now?</h3>
-            <div class="checkin-options" role="group" aria-label="Check-in answer">
-              <button class="checkin-option" type="button" data-answer="fits"><span class="option-key" aria-hidden="true">1</span><span>Still fits, keep going</span></button>
-              <button class="checkin-option" type="button" data-answer="smaller"><span class="option-key" aria-hidden="true">2</span><span>Make the step smaller</span></button>
-              <button class="checkin-option" type="button" data-answer="detour"><span class="option-key" aria-hidden="true">3</span><span>I drifted somewhere else</span></button>
-              <button class="checkin-option" type="button" data-answer="break"><span class="option-key" aria-hidden="true">4</span><span>I could use a break</span></button>
-            </div>
-            <p class="demo-note">No answer here is wrong. Keys 1 to 4 work too.</p>
-          </div>
-
-          <div class="demo-panel" data-panel="break" tabindex="-1" hidden aria-labelledby="demo-break-title">
-            <h3 class="quiet-label" id="demo-break-title">Break &middot; yours to shape</h3>
-            <div class="demo-timer">
-              <span class="timer-time" data-break-time>03:00</span>
-              <span class="timer-state" data-break-state>Ending early is fine</span>
-            </div>
-            <div class="reentry">
-              <span class="quiet-label">When you come back</span>
-              <strong data-out="step"></strong>
-            </div>
-            <button class="begin-control is-quiet" type="button" data-action="return">
-              <span class="begin-puck" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M5 3.2v9.6a.6.6 0 00.9.5l7.6-4.8a.6.6 0 000-1L5.9 2.7a.6.6 0 00-.9.5z" fill="currentColor"/></svg></span>
-              <span><strong>Ready when you are</strong><small>Back to the same step, same place.</small></span>
-            </button>
-          </div>
-
-          <p class="sr-only" aria-live="polite" data-announce></p>
-          <p class="demo-after" data-demo-after hidden>That&rsquo;s the first minute. The Mac app keeps the rest: check-ins, breaks and a gentle record of your day. <a href="#join">Join the beta</a></p>
-        </section>
-      </div>
+      <ul class="facts" aria-label="Beta details">
+        <li>Mac beta</li>
+        <li>macOS 26 or later</li>
+        <li>Free while testing</li>
+        <li>Your data stays on your Mac</li>
+      </ul>
     </div>
   </section>
 
-  <!-- The problem: reminders repeat the task; a step makes it smaller. -->
-  <section class="section problem" id="problem" aria-labelledby="problem-title">
-    <div class="wrap problem-grid">
-      <div class="problem-copy">
-        <p class="quiet-label">Why it exists</p>
-        <h2 class="section-title" id="problem-title">Starting is the hard part.</h2>
-        <p>Most tools are good at remembering. They hold the list, set the date and remind you again. But a reminder only repeats what the task is. It does nothing to make the first move smaller, so the task waits and grows heavier.</p>
+  <!-- Why: a reminder repeats the task and it grows heavier; a step makes it smaller. -->
+  <section class="room room-why" id="why" aria-labelledby="why-title">
+    <div class="wrap">
+      <div class="measure">
+        <h2 class="room-title" id="why-title">Starting is the hard part.</h2>
+        <p>Most tools are good at remembering. They hold the list and remind you again. But a reminder only repeats what the task is, so the task waits and grows heavier.</p>
+      </div>
+
+      <figure class="echo" aria-labelledby="echo-caption">
+        <ol class="echo-list" aria-label="Three reminders for the same task">
+          <li><time datetime="09:00">09:00</time><span>Finish the grant budget</span></li>
+          <li><time datetime="11:30">11:30</time><span>Finish the grant budget</span></li>
+          <li><time datetime="14:00">14:00</time><span>Finish the grant budget</span></li>
+        </ol>
+        <div class="stone-step">
+          <span class="stone" aria-hidden="true">1</span>
+          <p><strong>Open last year&rsquo;s budget and copy the table.</strong><span>About two minutes. Rough is fine.</span></p>
+        </div>
+        <figcaption id="echo-caption">A reminder repeats the task. A step makes it smaller.</figcaption>
+      </figure>
+
+      <div class="measure">
         <p>Praxmodoro works on the other side of that moment. It asks for one task and one step you could do in about two minutes, then keeps you company while you do it.</p>
       </div>
-      <figure class="contrast-figure">
-        <div class="reminders" role="img" aria-label="Three reminders for the same task, at 9:00, 11:30 and 14:00, each saying Finish the grant budget.">
-          <div class="notif"><span class="notif-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5a5 5 0 0110 0v3l1.5 2.5h-13L5 11.5z"/><path d="M8.3 16.5a1.9 1.9 0 003.4 0"/></svg></span><span><strong>Finish the grant budget</strong>Due today</span><time>09:00</time></div>
-          <div class="notif"><span class="notif-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5a5 5 0 0110 0v3l1.5 2.5h-13L5 11.5z"/><path d="M8.3 16.5a1.9 1.9 0 003.4 0"/></svg></span><span><strong>Finish the grant budget</strong>Reminder</span><time>11:30</time></div>
-          <div class="notif"><span class="notif-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8.5a5 5 0 0110 0v3l1.5 2.5h-13L5 11.5z"/><path d="M8.3 16.5a1.9 1.9 0 003.4 0"/></svg></span><span><strong>Finish the grant budget</strong>Still due today</span><time>14:00</time></div>
-        </div>
-        <p class="contrast-arrow" aria-hidden="true"><svg viewBox="0 0 20 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3c-4 9 4 16 0 32M5 30l5 6 5-6"/></svg>same task, made smaller</p>
-        <div class="step-card">
-          <span class="step-puck" aria-hidden="true">1</span>
-          <div><strong>Open last year&rsquo;s budget and copy the table.</strong><span>About two minutes. Rough is fine.</span></div>
-        </div>
-        <figcaption>A reminder repeats the task. A step makes it smaller.</figcaption>
-      </figure>
     </div>
   </section>
 
-  <!-- The loop: a real sequence, so it is numbered and drawn as a circle. -->
-  <section class="section loop" id="loop" aria-labelledby="loop-title">
-    <div class="wrap">
-      <header class="section-head">
-        <p class="quiet-label">How it works</p>
-        <h2 class="section-title" id="loop-title">One calm loop.</h2>
-        <p>Every session moves through the same five moments, so there&rsquo;s nothing new to figure out each time you sit down.</p>
-      </header>
-
-      <div class="loop-grid">
-        <div class="loop-ring-wrap">
-          <nav class="loop-ring" aria-label="The loop" data-loop-ring>
-            <svg class="ring-track" viewBox="0 0 100 100" aria-hidden="true">
-              <circle class="ring-base" cx="50" cy="50" r="49" pathLength="100"/>
-              <circle class="ring-arc" cx="50" cy="50" r="49" pathLength="100" data-ring-arc/>
-            </svg>
-            <div class="companion-field field-ring-center" data-state="breathing" aria-hidden="true">{{> field-layers}}</div>
-            <ol class="ring-nodes">
-              <li><a class="ring-node" href="#moment-begin" data-loop-link="begin" aria-current="step"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg><span>Begin</span></a></li>
-              <li><a class="ring-node" href="#moment-focus" data-loop-link="focus"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4"/></svg><span>Focus</span></a></li>
-              <li><a class="ring-node" href="#moment-checkin" data-loop-link="checkin"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14v10H9l-4 4V5Z"/><path d="M9 10h6"/></svg><span>Check in</span></a></li>
-              <li><a class="ring-node" href="#moment-break" data-loop-link="break"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5" width="3.4" height="14" rx="1.7"/><rect x="13.6" y="5" width="3.4" height="14" rx="1.7"/></svg><span>Break</span></a></li>
-              <li><a class="ring-node" href="#moment-review" data-loop-link="review"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19v-6M12 19V5M19 19v-9"/></svg><span>Review</span></a></li>
-            </ol>
-          </nav>
+  <!-- The loop: five moments, one room each, from first sun to dusk. -->
+  <section class="loop" id="loop" aria-labelledby="loop-title">
+    <div class="room room-loop">
+      <div class="wrap">
+        <div class="measure">
+          <h2 class="room-title" id="loop-title">One calm loop.</h2>
+          <p>Every session moves through the same five moments, so there&rsquo;s nothing new to figure out each time you sit down.</p>
         </div>
-
-        <ol class="loop-steps">
-          <li class="loop-step" id="moment-begin" data-loop-step="begin">
-            <div class="loop-step-text">
-              <p class="step-meta"><span class="step-index">1</span>Begin</p>
-              <h3>One task, one tiny step.</h3>
-              <p>Name the task and the smallest visible move. Say how you&rsquo;re arriving today, then pick a rhythm. The start screen asks for those four things and nothing else.</p>
-              <ul class="step-details">
-                <li><span>Arriving as foggy, steady, restless or charged</span></li>
-                <li><span>Rhythms: gentle start (5 + 20), classic 25 + 5, open-ended flow, or recovery first</span></li>
-                <li><span><kbd>&#8984;</kbd> <kbd>&#8617;</kbd> begins</span></li>
-              </ul>
-            </div>
-            <figure class="mac-window">
-              <div class="mac-titlebar" aria-hidden="true"><span></span><span></span><span></span></div>
-              <picture>
-                <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-initiate-dark-880.webp 880w, /assets/img/app-initiate-dark-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)">
-                <img src="/assets/img/app-initiate-light-1600.webp" srcset="/assets/img/app-initiate-light-880.webp 880w, /assets/img/app-initiate-light-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)" width="1600" height="905" loading="lazy" decoding="async" alt="The Begin screen: a task field, a numbered first step, four capacity choices, four rhythms and a Begin gentle start button, with the companion field gathering beside them.">
-              </picture>
-            </figure>
-          </li>
-
-          <li class="loop-step" id="moment-focus" data-loop-step="focus">
-            <div class="loop-step-text">
-              <p class="step-meta"><span class="step-index">2</span>Focus</p>
-              <h3>A field that breathes slower than you.</h3>
-              <p>The companion field takes one long breath every 11.6 seconds, with an exhale longer than the inhale. It never speeds up. Your task, your next step and the time stay in plain view, and nothing on the screen keeps score.</p>
-              <ul class="step-details">
-                <li><span>Park a stray thought without leaving the screen</span></li>
-                <li><span>A small capsule floats above other windows, and the menu bar shows the time</span></li>
-                <li><span>Hold the timer and your place is kept, exactly</span></li>
-              </ul>
-            </div>
-            <figure class="mac-window">
-              <div class="mac-titlebar" aria-hidden="true"><span></span><span></span><span></span></div>
-              <picture>
-                <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-focus-dark-880.webp 880w, /assets/img/app-focus-dark-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)">
-                <img src="/assets/img/app-focus-light-1600.webp" srcset="/assets/img/app-focus-light-880.webp 880w, /assets/img/app-focus-light-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)" width="1600" height="1000" loading="lazy" decoding="async" alt="The Focus screen: the task Edit the conference talk outline, its next step, and a 17 minute timer in the centre of the breathing field, with a thought-parking list alongside.">
-              </picture>
-            </figure>
-          </li>
-
-          <li class="loop-step" id="moment-checkin" data-loop-step="checkin">
-            <div class="loop-step-text">
-              <p class="step-meta"><span class="step-index">3</span>Check in</p>
-              <h3>A question, not a report card.</h3>
-              <p>Now and then it asks how the step fits. There are four answers and none of them is a failure: still fits, make it smaller, I drifted, I need a break. Each one only changes what happens next.</p>
-              <ul class="step-details">
-                <li><span>The timer holds while you answer</span></li>
-                <li><span>A detour is information. Return, re-plan or stop, all with equal weight</span></li>
-                <li><span>Keys <kbd>1</kbd> to <kbd>4</kbd> answer</span></li>
-              </ul>
-            </div>
-            <figure class="mac-window">
-              <div class="mac-titlebar" aria-hidden="true"><span></span><span></span><span></span></div>
-              <picture>
-                <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-checkin-dark-880.webp 880w, /assets/img/app-checkin-dark-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)">
-                <img src="/assets/img/app-checkin-light-1600.webp" srcset="/assets/img/app-checkin-light-880.webp 880w, /assets/img/app-checkin-light-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)" width="1600" height="895" loading="lazy" decoding="async" alt="The Check-in screen asking How does the step fit right now, with four answers: still fits, make the step smaller, I drifted somewhere else, and I could use a break.">
-              </picture>
-            </figure>
-          </li>
-
-          <li class="loop-step" id="moment-break" data-loop-step="break">
-            <div class="loop-step-text">
-              <p class="step-meta"><span class="step-index">4</span>Break</p>
-              <h3>Rest that keeps your place.</h3>
-              <p>Break suggestions come only from what you told it, with a note that explains why. End early whenever you like. When you come back, a re-entry card shows the exact next step, so you don&rsquo;t have to rebuild the plan from memory.</p>
-              <ul class="step-details">
-                <li><span>Ending a break early is ordinary, never a penalty</span></li>
-                <li><span>Suggestions are editable and can be turned off</span></li>
-                <li><span><kbd>R</kbd> returns to focus</span></li>
-              </ul>
-            </div>
-            <figure class="mac-window">
-              <div class="mac-titlebar" aria-hidden="true"><span></span><span></span><span></span></div>
-              <picture>
-                <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-break-dark-880.webp 880w, /assets/img/app-break-dark-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)">
-                <img src="/assets/img/app-break-light-1600.webp" srcset="/assets/img/app-break-light-880.webp 880w, /assets/img/app-break-light-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)" width="1600" height="1000" loading="lazy" decoding="async" alt="The Break screen: a three minute timer in a soft green field and a re-entry card that reads Mark the one section that feels done.">
-              </picture>
-            </figure>
-          </li>
-
-          <li class="loop-step" id="moment-review" data-loop-step="review">
-            <div class="loop-step-text">
-              <p class="step-meta"><span class="step-index">5</span>Review</p>
-              <h3>Today, written down gently.</h3>
-              <p>A plain timeline of what happened: when you began, when you made a step smaller, when you rested. Notes stay tentative, because one afternoon is not a pattern.</p>
-              <ul class="step-details">
-                <li><span>No streaks, grades or productivity percentages</span></li>
-                <li><span>The record lives on your Mac</span></li>
-              </ul>
-            </div>
-            <figure class="mac-window">
-              <div class="mac-titlebar" aria-hidden="true"><span></span><span></span><span></span></div>
-              <picture>
-                <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-review-dark-880.webp 880w, /assets/img/app-review-dark-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)">
-                <img src="/assets/img/app-review-light-1600.webp" srcset="/assets/img/app-review-light-880.webp 880w, /assets/img/app-review-light-1600.webp 1600w" sizes="(min-width: 68rem) 48rem, calc(100vw - 2.5rem)" width="1600" height="930" loading="lazy" decoding="async" alt="The Review screen: a timeline of an afternoon session from 13:04 to 14:22 and a note that says Smaller steps kept today moving.">
-              </picture>
-            </figure>
-          </li>
-
-          <li class="loop-step" data-loop-step="again">
-            <div class="loop-return">
-              <strong>Then round again, or close the laptop.</strong>
-              <p>Both count. The next session starts from the same quiet screen, with your last task ready if you want it.</p>
-            </div>
-          </li>
-        </ol>
       </div>
-      <p class="render-note">Screens are design renders of the macOS app, which is in private testing.</p>
     </div>
+
+    <article class="room room-moment room-begin" id="moment-begin" aria-labelledby="begin-title">
+      <div class="wrap">
+        <div class="measure moment-text">
+          {{> arc-1}}
+          <h3 class="moment-title" id="begin-title">Begin</h3>
+          <p class="moment-lede">One task, one tiny step.</p>
+          <p>Name the task and the smallest visible move. Say how you&rsquo;re arriving today, then pick a rhythm. The start screen asks for those four things and nothing else.</p>
+          <ul class="notes">
+            <li>Arriving as foggy, steady, restless or charged</li>
+            <li>Rhythms: gentle start (5 + 20), classic 25 + 5, open-ended flow, or recovery first</li>
+            <li><kbd>&#8984;</kbd> <kbd>&#8617;</kbd> begins</li>
+          </ul>
+        </div>
+
+        <div class="try-wrap measure">
+          <form class="try" data-try hidden aria-labelledby="try-title">
+            <p class="try-title" id="try-title">Try the first step here <span class="try-local">Nothing leaves this page</span></p>
+            <div class="form-field">
+              <label class="field-label" for="try-task">What has your attention?</label>
+              <input class="input" id="try-task" name="task" type="text" maxlength="80" autocomplete="off" placeholder="Reply to Asha about the venue">
+            </div>
+            <div class="form-field">
+              <label class="field-label" for="try-step">One step small enough to begin</label>
+              <input class="input" id="try-step" name="step" type="text" maxlength="120" autocomplete="off" placeholder="Open the thread, write one line" aria-describedby="try-step-hint">
+              <p class="hint" id="try-step-hint">Concrete and about two minutes. Rough is fine.</p>
+            </div>
+            <button class="button button-quiet" type="submit">Hold this step</button>
+          </form>
+          <div class="try-held" data-try-held tabindex="-1" hidden>
+            <div class="stone-step">
+              <span class="stone" aria-hidden="true">1</span>
+              <p><strong data-try-step></strong><span data-try-task></span></p>
+            </div>
+            <p>That&rsquo;s the whole plan for now. In the app, the companion breathes beside this step while you begin, and checks in later to ask how it fits.</p>
+            <button class="text-button" type="button" data-try-reset>Write a different step</button>
+          </div>
+          <p class="sr-only" aria-live="polite" data-try-announce></p>
+        </div>
+
+        <!-- Image slot: Begin. Swap the files or the <picture> for real footage; see DESIGN.md "Image slots". -->
+        <figure class="screen" data-screen="begin">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-initiate-dark-880.webp 880w, /assets/img/app-initiate-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
+            <img src="/assets/img/app-initiate-light-1600.webp" srcset="/assets/img/app-initiate-light-880.webp 880w, /assets/img/app-initiate-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="905" loading="lazy" decoding="async" alt="The Begin screen: a task field, a numbered first step, four capacity choices, four rhythms and a Begin gentle start button, with the companion field gathering beside them.">
+          </picture>
+        </figure>
+      </div>
+    </article>
+
+    <article class="room room-moment room-focus" id="moment-focus" aria-labelledby="focus-title">
+      <div class="wrap">
+        <div class="measure moment-text">
+          {{> arc-2}}
+          <h3 class="moment-title" id="focus-title">Focus</h3>
+          <p class="moment-lede">A light that breathes slower than you.</p>
+          <p>The companion takes one long breath about every eleven seconds, with an exhale longer than the inhale. It never speeds up. Your task, your next step and the time stay in plain view, and nothing on the screen keeps score.</p>
+          <ul class="notes">
+            <li>Park a stray thought without leaving the screen</li>
+            <li>A small capsule floats above other windows, and the menu bar shows the time</li>
+            <li>Hold the timer and your place is kept, exactly</li>
+          </ul>
+        </div>
+        <!-- Image slot: Focus. -->
+        <figure class="screen" data-screen="focus">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-focus-dark-880.webp 880w, /assets/img/app-focus-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
+            <img src="/assets/img/app-focus-light-1600.webp" srcset="/assets/img/app-focus-light-880.webp 880w, /assets/img/app-focus-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="1000" loading="lazy" decoding="async" alt="The Focus screen: the task Edit the conference talk outline, its next step, and a 17 minute timer in the centre of the breathing field, with a thought-parking list alongside.">
+          </picture>
+        </figure>
+      </div>
+    </article>
+
+    <article class="room room-moment room-checkin" id="moment-checkin" aria-labelledby="checkin-title">
+      <div class="wrap">
+        <div class="measure moment-text">
+          {{> arc-3}}
+          <h3 class="moment-title" id="checkin-title">Check in</h3>
+          <p class="moment-lede">A question, not a report card.</p>
+          <p>Now and then it asks how the step fits. There are four answers, and none of them is a failure: still fits, make it smaller, I drifted, I need a break. Each one only changes what happens next.</p>
+          <ul class="notes">
+            <li>The timer holds while you answer</li>
+            <li>A detour is information. Return, re-plan or stop, all with equal weight</li>
+            <li>Keys <kbd>1</kbd> to <kbd>4</kbd> answer</li>
+          </ul>
+        </div>
+        <!-- Image slot: Check in. -->
+        <figure class="screen" data-screen="checkin">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-checkin-dark-880.webp 880w, /assets/img/app-checkin-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
+            <img src="/assets/img/app-checkin-light-1600.webp" srcset="/assets/img/app-checkin-light-880.webp 880w, /assets/img/app-checkin-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="895" loading="lazy" decoding="async" alt="The Check-in screen asking How does the step fit right now, with four answers: still fits, make the step smaller, I drifted somewhere else, and I could use a break.">
+          </picture>
+        </figure>
+      </div>
+    </article>
+
+    <article class="room room-moment room-break" id="moment-break" aria-labelledby="break-title">
+      <div class="wrap">
+        <div class="measure moment-text">
+          {{> arc-4}}
+          <h3 class="moment-title" id="break-title">Break</h3>
+          <p class="moment-lede">Rest that keeps your place.</p>
+          <p>Break ideas come only from what you told it, with a note that says why. End early whenever you like. When you come back, a re-entry card shows the exact next step, so you don&rsquo;t rebuild the plan from memory.</p>
+          <ul class="notes">
+            <li>Ending a break early is ordinary, never a penalty</li>
+            <li>Suggestions are editable and can be turned off</li>
+            <li><kbd>R</kbd> returns to focus</li>
+          </ul>
+        </div>
+        <!-- Image slot: Break. -->
+        <figure class="screen" data-screen="break">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-break-dark-880.webp 880w, /assets/img/app-break-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
+            <img src="/assets/img/app-break-light-1600.webp" srcset="/assets/img/app-break-light-880.webp 880w, /assets/img/app-break-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="1000" loading="lazy" decoding="async" alt="The Break screen: a three minute timer in a soft green field and a re-entry card that reads Mark the one section that feels done.">
+          </picture>
+        </figure>
+      </div>
+    </article>
+
+    <article class="room room-moment room-review" id="moment-review" aria-labelledby="review-title">
+      <div class="wrap">
+        <div class="measure moment-text">
+          {{> arc-5}}
+          <h3 class="moment-title" id="review-title">Review</h3>
+          <p class="moment-lede">Today, written down gently.</p>
+          <p>A plain timeline of what happened: when you began, when you made a step smaller, when you rested. Notes stay tentative, because one afternoon is not a pattern.</p>
+          <ul class="notes">
+            <li>No streaks, grades or productivity percentages</li>
+            <li>The record lives on your Mac</li>
+          </ul>
+        </div>
+        <!-- Image slot: Review. -->
+        <figure class="screen" data-screen="review">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-review-dark-880.webp 880w, /assets/img/app-review-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
+            <img src="/assets/img/app-review-light-1600.webp" srcset="/assets/img/app-review-light-880.webp 880w, /assets/img/app-review-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="930" loading="lazy" decoding="async" alt="The Review screen: a timeline of an afternoon session from 13:04 to 14:22 and a note that says Smaller steps kept today moving.">
+          </picture>
+        </figure>
+        <div class="measure loop-close">
+          <p class="loop-again">Then round again, or close the laptop. Both&nbsp;count.</p>
+          <p>The next session starts from the same quiet screen, with your last task ready if you want it.</p>
+          <p class="render-note">Screens are design renders of the macOS app, which is in private testing.</p>
+        </div>
+      </div>
+    </article>
   </section>
 
-  <!-- Calm by design. -->
-  <section class="section calm" id="calm" aria-labelledby="calm-title">
+  <!-- Evening: what the app refuses to do. -->
+  <section class="room room-calm" id="calm" aria-labelledby="calm-title">
     <div class="wrap">
-      <div class="calm-panel">
-        <div class="calm-lead">
-          <p class="quiet-label">Calm by design</p>
-          <h2 class="section-title" id="calm-title">Nothing here scores you.</h2>
-          <p>No streaks to lose, no points, no red badges, no &ldquo;you missed a day&rdquo;. Drifting, pausing and stopping early are all ordinary. The companion holds your place, never your score.</p>
-          <div class="motion-demo">
-            <div class="companion-field" data-state="breathing" aria-hidden="true">{{> field-layers}}</div>
-            <div>
-              <strong>Motion is your choice.</strong>
-              <p>With Reduce Motion on, or Motion set to still, the field stops completely and the time stays readable. The Motion switch at the top of this page does the same here.</p>
-            </div>
-          </div>
-        </div>
-        <ul class="calm-list">
+      <div class="measure">
+        <h2 class="room-title" id="calm-title">Nothing here scores you.</h2>
+        <p class="room-lede">No streaks to lose, no points, no red badges, no &ldquo;you missed a day&rdquo;. Drifting, pausing and stopping early are all ordinary.</p>
+        <ul class="promises">
+          <li>
+            <h3>Motion is your choice</h3>
+            <p>With Reduce Motion on, or Motion set to still, the companion stops completely and the time stays readable. The switch on this page does the same here.</p>
+          </li>
           <li>
             <h3>The whole loop from the keyboard</h3>
             <p><kbd>&#8984;</kbd> <kbd>&#8617;</kbd> begins, <kbd>1</kbd> to <kbd>4</kbd> answer a check-in, <kbd>R</kbd> returns from a break. Every control has a visible focus ring.</p>
@@ -346,129 +287,118 @@
     </div>
   </section>
 
-  <!-- Private by default. -->
-  <section class="section private" id="private" aria-labelledby="private-title">
-    <div class="wrap private-grid">
-      <div class="private-copy">
-        <p class="quiet-label">Private by default</p>
-        <h2 class="section-title" id="private-title">It stays on your Mac.</h2>
-        <p>There&rsquo;s no account and no sign-in. Your tasks, steps, check-in answers and parked thoughts are stored on your Mac, and the app works without a network connection.</p>
-        <ul class="plain-list">
-          <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span><strong>No analytics or tracking</strong> inside the app.</span></li>
-          <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span><strong>Nothing watches your other apps.</strong> Check-ins ask you; they never look over your shoulder.</span></li>
-          <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span><strong>AI only if you ask for it.</strong> The app has none today. A planned, opt-in helper would use Claude to suggest a first step when you&rsquo;re stuck. It would stay off unless you turn it on.</span></li>
-        </ul>
-        <div class="site-note">
-          <strong>And this website?</strong>
-          <span>It keeps only what you type into the waitlist form, plus a one-way hash of your IP address to stop spam. No cookies, no trackers, no ads. <a href="/privacy/">Read the privacy notice</a>.</span>
-        </div>
+  <!-- Twilight: where your data lives. -->
+  <section class="room room-private" id="private" aria-labelledby="private-title">
+    <div class="wrap">
+      <div class="measure">
+        <h2 class="room-title" id="private-title">It stays on your Mac.</h2>
+        <p class="room-lede">There&rsquo;s no account and no sign-in. Your tasks, steps, check-in answers and parked thoughts are stored on your Mac, and the app works without a network connection.</p>
       </div>
 
-      <figure class="data-diagram" aria-labelledby="diagram-caption">
-        <div class="diagram-mac">
-          <div class="diagram-head"><strong>Your Mac</strong><span class="quiet-label">stored here</span></div>
-          <ul class="data-chips">
+      <figure class="held" aria-labelledby="held-caption">
+        <div class="held-mac">
+          <p class="held-name">Your Mac</p>
+          <ul class="held-items">
             <li>Tasks</li><li>Steps</li><li>Check-in answers</li><li>Parked thoughts</li><li>Breaks</li><li>Your day&rsquo;s timeline</li><li>Settings</li>
           </ul>
         </div>
-        <div class="diagram-links">
-          <div class="diagram-link">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 9a14 14 0 0119 0M5.5 12.5a9.5 9.5 0 0113 0M9 16a4.5 4.5 0 016 0"/><path d="M3 3l18 18"/></svg>
-            <span><strong>The internet</strong>Not needed. Nothing is sent.</span>
-          </div>
-          <div class="diagram-link">
-            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l1.8 5 5 1.8-5 1.8-1.8 5-1.8-5-5-1.8 5-1.8z"/><path d="M18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></svg>
-            <span><strong>Claude, planned</strong>Off by default. Only when you ask, for one step.</span>
-          </div>
-        </div>
-        <figcaption class="sr-only" id="diagram-caption">Diagram: everything Praxmodoro records stays on your Mac. The internet is not needed. A planned Claude helper would be off by default.</figcaption>
+        <dl class="held-outside">
+          <div><dt>The internet</dt><dd>Not needed. Nothing is sent.</dd></div>
+          <div><dt>Claude, planned</dt><dd>Off by default. Only when you ask, for one step.</dd></div>
+        </dl>
+        <figcaption class="sr-only" id="held-caption">Everything Praxmodoro records stays on your Mac. The internet is not needed. A planned Claude helper would be off by default.</figcaption>
       </figure>
-    </div>
-  </section>
 
-  <!-- Questions. -->
-  <section class="section faq" id="faq" aria-labelledby="faq-title">
-    <div class="wrap faq-grid">
-      <header class="section-head">
-        <p class="quiet-label">Questions</p>
-        <h2 class="section-title" id="faq-title">Plain answers.</h2>
-        <p>Something missing? Write to <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a>.</p>
-      </header>
-      <div class="faq-list">
-        <details class="faq-item">
-          <summary>What does the beta cost?</summary>
-          <div class="faq-answer">
-            <p>Nothing. Praxmodoro is free while it&rsquo;s in beta. Pricing after the beta isn&rsquo;t decided yet. Beta testers will hear about it first, and you won&rsquo;t be charged for anything you didn&rsquo;t choose.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>What do I need?</summary>
-          <div class="faq-answer">
-            <p>A Mac running macOS 26 or later. No account, no subscription, no other apps. The sign-up form asks whether your Mac has Apple silicon or an Intel chip, so testing can be planned around the Macs people actually use.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>When can I get in?</summary>
-          <div class="faq-answer">
-            <p>Invites go out by email in small groups while the app is in private testing. There&rsquo;s no fixed date yet and no queue position to watch. We&rsquo;ll only email you about the beta.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Is Praxmodoro a medical app?</summary>
-          <div class="faq-answer">
-            <p>No. It&rsquo;s a focus tool designed with ADHD and executive-function challenges in mind. It doesn&rsquo;t diagnose, treat or monitor any condition, and it isn&rsquo;t a substitute for care from a professional. You don&rsquo;t need a diagnosis to use it, and it never asks about one.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Does it use AI?</summary>
-          <div class="faq-answer">
-            <p>Not today. Praxmodoro works completely without AI. One planned feature would use Claude, Anthropic&rsquo;s AI model, to help you find a first step when a task feels too big to start.</p>
-            <p>The plan for it is simple: off by default, used only when you ask, and clear about exactly what it sends. Everything else stays on your Mac either way.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Is it a Pomodoro timer?</summary>
-          <div class="faq-answer">
-            <p>It can be. Classic 25 + 5 is one of the rhythms. The others are a five-minute gentle start that can grow into a full block, an open-ended flow block, and a rhythm that puts recovery first. You can set your own lengths too.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Will there be an iPhone, iPad or Windows version?</summary>
-          <div class="faq-answer">
-            <p>Not for now. Praxmodoro is a native Mac app, written in Swift for macOS, and the beta is about getting that right first.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Can I take my email off the waitlist?</summary>
-          <div class="faq-answer">
-            <p>Yes. Every beta email has an unsubscribe link, or write to <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a> from the address you signed up with and it will be deleted.</p>
-          </div>
-        </details>
-        <details class="faq-item">
-          <summary>Who makes it?</summary>
-          <div class="faq-answer">
-            <p>Prax, an independent developer in India. Praxmodoro is self-funded and small on purpose: one person, one app, and the people who test it.</p>
-          </div>
-        </details>
+      <div class="measure">
+        <ul class="notes notes-roomy">
+          <li><strong>No analytics or tracking</strong> inside the app.</li>
+          <li><strong>Nothing watches your other apps.</strong> Check-ins ask you; they never look over your shoulder.</li>
+          <li><strong>AI only if you ask for it.</strong> The app has none today. A planned, opt-in helper would use Claude to suggest a first step when you&rsquo;re stuck. It would stay off unless you turn it on.</li>
+        </ul>
+        <p class="site-note"><strong>And this website?</strong> It keeps only what you type into the waitlist form, plus a one-way hash of your IP address to stop spam. No cookies, no trackers, no ads. <a href="/privacy/">Read the privacy notice</a>.</p>
       </div>
     </div>
   </section>
 
-  <!-- Join. -->
-  <section class="section join" id="join" aria-labelledby="join-title">
+  <!-- Blue hour: questions. -->
+  <section class="room room-faq" id="faq" aria-labelledby="faq-title">
     <div class="wrap">
-      <div class="join-panel">
-        <div class="companion-field field-join" data-state="settled" aria-hidden="true">{{> field-layers}}</div>
-        <div class="join-copy">
-          <p class="quiet-label">Mac beta</p>
-          <h2 class="section-title" id="join-title">Begin when you&rsquo;re ready.</h2>
-          <p>Join the waitlist and you&rsquo;ll get an email when a beta spot opens. The two questions are optional. They help shape what gets tested first.</p>
-          <ul class="join-facts">
-            <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span>Free during the beta</span></li>
-            <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span>A Mac with macOS 26 or later</span></li>
-            <li><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span>Email about the beta only. Unsubscribe any time.</span></li>
-          </ul>
+      <div class="measure">
+        <h2 class="room-title" id="faq-title">Plain answers.</h2>
+        <p class="room-lede">Something missing? Write to <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a>.</p>
+        <div class="faq-list">
+          <details class="faq-item">
+            <summary>What does the beta cost?</summary>
+            <div class="faq-answer">
+              <p>Nothing. Praxmodoro is free while it&rsquo;s in beta. Pricing after the beta isn&rsquo;t decided yet. Beta testers will hear about it first, and you won&rsquo;t be charged for anything you didn&rsquo;t choose.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>What do I need?</summary>
+            <div class="faq-answer">
+              <p>A Mac running macOS 26 or later. No account, no subscription, no other apps. The sign-up form asks whether your Mac has Apple silicon or an Intel chip, so testing can be planned around the Macs people actually use.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>When can I get in?</summary>
+            <div class="faq-answer">
+              <p>Invites go out by email in small groups while the app is in private testing. There&rsquo;s no fixed date yet and no queue position to watch. We&rsquo;ll only email you about the beta.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Is Praxmodoro a medical app?</summary>
+            <div class="faq-answer">
+              <p>No. It&rsquo;s a focus tool designed with ADHD and executive-function challenges in mind. It doesn&rsquo;t diagnose, treat or monitor any condition, and it isn&rsquo;t a substitute for care from a professional. You don&rsquo;t need a diagnosis to use it, and it never asks about one.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Does it use AI?</summary>
+            <div class="faq-answer">
+              <p>Not today. Praxmodoro works completely without AI. One planned feature would use Claude, Anthropic&rsquo;s AI model, to help you find a first step when a task feels too big to start.</p>
+              <p>The plan for it is simple: off by default, used only when you ask, and clear about exactly what it sends. Everything else stays on your Mac either way.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Is it a Pomodoro timer?</summary>
+            <div class="faq-answer">
+              <p>It can be. Classic 25 + 5 is one of the rhythms. The others are a five-minute gentle start that can grow into a full block, an open-ended flow block, and a rhythm that puts recovery first. You can set your own lengths too.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Will there be an iPhone, iPad or Windows version?</summary>
+            <div class="faq-answer">
+              <p>Not for now. Praxmodoro is a native Mac app, written in Swift for macOS, and the beta is about getting that right first.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Can I take my email off the waitlist?</summary>
+            <div class="faq-answer">
+              <p>Yes. Every beta email has an unsubscribe link, or write to <a href="mailto:{{CONTACT_EMAIL}}">{{CONTACT_EMAIL}}</a> from the address you signed up with and it will be deleted.</p>
+            </div>
+          </details>
+          <details class="faq-item">
+            <summary>Who makes it?</summary>
+            <div class="faq-answer">
+              <p>Prax, an independent developer in India. Praxmodoro is self-funded and small on purpose: one person, one app, and the people who test it.</p>
+            </div>
+          </details>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- The last light of the day: join. -->
+  <section class="room room-join" id="join" aria-labelledby="join-title">
+    <div class="wrap">
+      <div class="measure">
+        <span class="light light-small" aria-hidden="true">{{> light}}</span>
+        <h2 class="room-title" id="join-title">Begin when you&rsquo;re ready.</h2>
+        <p class="room-lede">Join the waitlist and you&rsquo;ll get an email when a beta spot opens. The two questions are optional. They help shape what gets tested first.</p>
+        <ul class="facts facts-left" aria-label="What joining means">
+          <li>Free during the beta</li>
+          <li>A Mac with macOS 26 or later</li>
+          <li>Email about the beta only</li>
+        </ul>
 
         <div class="join-card">
           <form class="join-form form-stack" action="/api/waitlist" method="post" data-waitlist-form data-join-form data-source="join">
@@ -484,7 +414,7 @@
             </fieldset>
             <div class="form-field">
               <label class="field-label" for="join-hardest">What&rsquo;s hardest for you to start? <span class="optional">Optional</span></label>
-              <textarea class="textarea" id="join-hardest" name="hardest" maxlength="280" rows="3" placeholder="Replying to emails I&rsquo;ve left too long" aria-describedby="join-hardest-count"></textarea>
+              <textarea class="input textarea" id="join-hardest" name="hardest" maxlength="280" rows="3" placeholder="Replying to emails I&rsquo;ve left too long" aria-describedby="join-hardest-count"></textarea>
               <span class="counter" id="join-hardest-count" data-counter-for="join-hardest" aria-live="off">0 / 280</span>
             </div>
             <label class="check">
@@ -507,7 +437,7 @@
             </div>
           </form>
           <div class="join-success" data-success data-join-success tabindex="-1" hidden>
-            <p class="success-title"><svg viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5l3.5 3.5 7.5-8"/></svg><span data-success-title>You&rsquo;re on the list.</span></p>
+            <p class="success-title"><span class="success-light" aria-hidden="true"></span><span data-success-title>You&rsquo;re on the list.</span></p>
             <p data-success-text>We&rsquo;ll email you when a beta spot opens. That&rsquo;s the only reason we&rsquo;ll write.</p>
             <p>Until then, the first step is still yours to take. Close this tab and begin something small.</p>
           </div>

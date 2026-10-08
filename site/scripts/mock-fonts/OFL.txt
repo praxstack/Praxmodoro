@@ -1,12 +1,12 @@
 Fonts in this folder are licensed under the SIL Open Font License, Version 1.1 (full text below).
+They are the app's own typefaces, used only by scripts/render-mocks.mjs to render the app screens. They are not deployed with the website.
 
-Zen Maru Gothic: Copyright 2021 The Zen Maru Gothic Project Authors (https://github.com/googlefonts/zen-marugothic). Designed by Yoshimichi Ohira.
-Atkinson Hyperlegible Next: Copyright 2020-2024 The Atkinson Hyperlegible Next Project Authors (https://github.com/googlefonts/atkinson-hyperlegible-next). Designed by the Braille Institute, Applied Design Works, Elliott Scott, Megan Eiswerth and Letters From Sweden.
+Gabarito: Copyright 2023 The Gabarito Project Authors (https://github.com/naipefoundry/gabarito)
+Hanken Grotesk: Copyright 2021 The Hanken Grotesk Project Authors (https://github.com/marcologous/hanken-grotesk)
+Sono: Copyright 2020 The Sono Project Authors (https://github.com/sursly/sono)
 
-Files are the Latin subsets as served by Google Fonts (October 2026):
-  zen-maru-gothic-latin-500.woff2 and zen-maru-gothic-latin-700.woff2 (static weights 500 and 700)
-  atkinson-hyperlegible-next-latin-wght.woff2 (variable, weights 200 to 800)
-No glyphs were modified.
+Files are the Latin subsets of the variable fonts as distributed by Fontsource
+(@fontsource-variable/gabarito, @fontsource-variable/hanken-grotesk, @fontsource-variable/sono, version 5.3.0).
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.
 This license is copied below, and is also available with a FAQ at:
