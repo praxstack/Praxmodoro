@@ -205,6 +205,9 @@ final class AppModel {
     private var tickState: [SoundCue: Bool] = [:]
     private var scheduledChime: (cue: SoundCue, at: Date)?
     private var pendingBlockStartAt: Date?
+    /// True when the pending block-start comes from begin() or endBreak():
+    /// the user's own start is never retro, so wake suppression skips it.
+    private var pendingBlockStartIsUserInitiated = false
     /// Suppresses one retro block-start after wake cancelled expired chimes.
     private var skipPastBlockStartOnNextSync = false
 
@@ -249,9 +252,15 @@ final class AppModel {
             scheduledChime = desired
         }
         if let instant = pendingBlockStartAt {
+            let userInitiated = pendingBlockStartIsUserInitiated
             pendingBlockStartAt = nil
-            let past = instant <= now
-            if sound.blockStart, !(past && skipPastBlockStartOnNextSync) {
+            pendingBlockStartIsUserInitiated = false
+            // A derived return at or before the wake clock never retro-fires.
+            // begin() and endBreak() bypass suppression explicitly: the
+            // user's own block start is never retro, even while the wake
+            // flag is still armed (review m1).
+            let retro = instant <= now && !userInitiated
+            if sound.blockStart, !(retro && skipPastBlockStartOnNextSync) {
                 soundScheduler.scheduleChime(.blockStart, at: instant, volume: sound.masterVolume)
             }
         }
@@ -379,6 +388,7 @@ final class AppModel {
             try store?.appendEvent(sessionID: id, kind: .capacityReport, payload: capacity, at: now)
         }
         pendingBlockStartAt = now
+        pendingBlockStartIsUserInitiated = true
         syncSound(at: now)
     }
 
@@ -464,6 +474,7 @@ final class AppModel {
             {
                 returnPending = true
                 pendingBlockStartAt = record.at
+                pendingBlockStartIsUserInitiated = false
             }
         }
         session = reconciled
@@ -680,6 +691,7 @@ final class AppModel {
         surface = .focus
         returnPending = true
         pendingBlockStartAt = now
+        pendingBlockStartIsUserInitiated = true
         syncSound(at: now)
     }
 
