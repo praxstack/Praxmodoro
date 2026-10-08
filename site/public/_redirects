@@ -1,0 +1,6 @@
+# Friendly short links. Pages already handles trailing slashes and /index.html.
+/join       /#join     302
+/beta       /#join     302
+/waitlist   /#join     302
+/privacy-policy  /privacy/  301
+/terms-of-service  /terms/  301
