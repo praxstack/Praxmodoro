@@ -2,11 +2,13 @@
   "product": "Praxmodoro",
   "contract": "SPEC.md",
   "workBatch": "architecture-stabilization",
-  "activeChanges": [],
-  "status": "complete",
+  "activeChanges": [
+    "fix-menubar-launch-hang"
+  ],
+  "status": "change-in-review",
   "blockingDecisions": [],
   "evidencePolicy": "Existing done atoms and archived milestones are immutable historical evidence. Architecture-stabilization completion is supported only by the fresh evidence recorded below; no historical result is promoted to current proof.",
-  "updated": "2026-08-26T14:35:03Z",
+  "updated": "2026-10-08T10:10:00Z",
   "atoms": [
     {
       "id": "g1-verification-commands",
@@ -236,6 +238,12 @@
       "title": "Whole-diff review, fresh gates, evidence, validators, archives, and final status",
       "status": "done",
       "evidence": "Implementation repair commit 3639693 is independently reviewed and its signed pre-archive result passed 237/237. The actual dependency-ordered archives exist as 2026-08-26-add-companion-surfaces, 2026-08-26-stabilize-runtime-contracts, and 2026-08-26-add-session-settings; archive and evidence commit f1beb90 contains no app implementation. Post-archive ./scripts/verify-project.sh exited 0 with Core 46/46, Store 8/8, build success, and signed result Test-Praxmodoro-2026.08.26_19-44-01-+0530.xcresult passing 237/237 with zero failures or skips. Smoke passed, docs built 83 pages, strict canonical OpenSpec passed 6/6, and stale-term, diff, and JSON checks are clean. GitHub issues #7, #18, and #51-#55 were closed only after f1beb90 existed; every supported checkbox is checked and stale ready-for-agent labels are removed. A first issue-body edit used unsafe shell quoting and temporarily removed code-formatted fragments; all seven bodies were immediately restored from the captured originals and verified for real newlines, zero unchecked boxes, and zero remaining labels. No merge, push, package, release, or deployment is claimed."
+    },
+    {
+      "id": "fx-menubar-launch-hang",
+      "title": "Model-owned edge-scheduled observation replaces the menu-bar label timeline that hung launch on macOS 27",
+      "status": "done",
+      "evidence": "Red: unpatched main 3531d6a launched from a shell kept its main thread in MenuBarExtraController.init -> updateConfiguration -> invalidateProperties for all 1116 sampled frames; the hosted app unit suite never bootstrapped (xcodebuild exit 65, also CI run 34876884042). With only the label timeline removed, main had 5 failing expectations in 3 pre-existing tests. Green on this macOS 27 / Xcode 27 host: Core 50/50 (new nextEdgeInstant case red first: no member nextEdgeInstant), Store 8/8, app unit suite 242/242 including 11 ScheduledObservationTests (one real-time cycle on the production scheduler with no view mounted), swift format lint --strict clean, pinned OpenSpec 1.6.0 strict 7/7. Fixed build sampled idle in nextEventMatchingMask and stayed alive more than 4 minutes with no window open. Signed UI suite and verify-project were not run (UI automation not authorised on this pass)."
     }
   ],
   "archivedMilestones": [
