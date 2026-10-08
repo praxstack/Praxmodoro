@@ -158,7 +158,13 @@ This covers email checks, consent, the honeypot, duplicates, the rate limit, the
 
 ### Images
 
-The app screens are rendered from the approved design mocks in `design-mocks/living-companion/`, and the share image and icons from `public/favicon.svg`. To regenerate them you need Playwright once:
+The look of the site (the breathing light, the sky colours for each section, the fonts and the motion rules) is written down in `DESIGN.md`. Read it before changing the design.
+
+The app screens are rendered from the approved design mocks in `design-mocks/living-companion/`, using the app's own fonts kept in `scripts/mock-fonts/` (they are not part of the website). Each screen sits in a `<figure class="screen" data-screen="…">` on the home page, so you can swap a render for a real screenshot or a short screen recording later. `DESIGN.md` has the steps under "Image slots".
+
+The share image (`public/og.jpg`) is drawn from `scripts/brand/og.html` with the site's own CSS, and the icons from `public/favicon.svg`. The website's fonts are Zen Maru Gothic and Atkinson Hyperlegible Next, self-hosted in `public/assets/fonts/` with their licence in `OFL.txt`.
+
+To regenerate the images you need Playwright once:
 
 ```sh
 npm i -g playwright && npx playwright install chromium
