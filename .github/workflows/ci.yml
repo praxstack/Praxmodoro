@@ -65,5 +65,8 @@ jobs:
       - name: Store package tests
         run: swift test --package-path app/Packages/PraxmodoroStore
 
+      - name: focused.sh diagnostics self-test
+        run: ./scripts/test-focused.sh
+
       - name: App unit suite
         run: ./scripts/focused.sh
