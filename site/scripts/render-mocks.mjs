@@ -1,5 +1,7 @@
 // Renders the approved Living Companion app mocks (design-mocks/living-companion)
-// into the product images used on the site, in light and dark, as WebP.
+// into WebP images (public/assets/img/app-*.webp), in light and dark.
+// The page now shows real stills of the beta app (screen-*.webp) instead; this
+// script is kept for later, for screens the beta can't show yet.
 // The design-review feedback bar is hidden; nothing else about the mock changes.
 //   NODE_PATH="$(npm root -g)" npm run render:mocks
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
@@ -18,8 +20,8 @@ const SCREENS = ["initiate", "focus", "checkin", "break", "review"];
 const VIEWPORT = { width: 1280, height: 800 };
 // Each screen is laid out at 1280x800 and then cropped so the bottom edge falls
 // between lines of text, never through one, at the same height in light and dark.
-// The script stops if a crop would cut text. After changing a crop, set the
-// image height in src/pages/index.html to 1.25 x the crop; `npm test` checks it.
+// The script stops if a crop would cut text. If a render goes on the page, set
+// its image height in src/pages/index.html to 1.25 x the crop; `npm test` checks it.
 const CROP_HEIGHT = { initiate: 724, focus: 800, checkin: 716, break: 800, review: 744 };
 const CROP_MARGIN = 4; // keep this much clear space between the edge and any line of text
 const WIDTHS = [880, 1600];

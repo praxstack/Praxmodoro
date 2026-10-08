@@ -125,12 +125,15 @@ function webpSize(file) {
   throw new Error(`${file} is not a WebP file`);
 }
 
-test("app renders: declared sizes match the files, in light and dark, at every width", () => {
+test("app screens: declared sizes match the files, in light and dark, at every width", () => {
   const html = read("index.html");
-  const pictures = [...html.matchAll(/<picture>([\s\S]*?)<\/picture>/g)].map((m) => m[1]);
-  assert.ok(pictures.length >= 5);
-  for (const picture of pictures) {
+  // Every screen slot, whether a single <img> or a <picture> with a dark <source>.
+  const screens = [...html.matchAll(/<figure class="screen"[^>]*>([\s\S]*?)<\/figure>/g)].map((m) => m[1]);
+  assert.ok(screens.length >= 5, "one screen for each of the five moments");
+  for (const picture of screens) {
     const img = tags(picture, "img")[0];
+    assert.ok(img, "every screen slot has an <img>");
+    assert.match(attr(img, "alt") || "", /^Real screen from the Praxmodoro beta: \S/, "screen alt text says it is a real screen of the beta app");
     const width = Number(attr(img, "width"));
     const height = Number(attr(img, "height"));
     const candidates = [...picture.matchAll(/\ssrcset="([^"]+)"/g)].flatMap((m) =>

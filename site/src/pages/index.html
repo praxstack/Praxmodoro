@@ -114,7 +114,7 @@
           <p>Name the task and the smallest visible move. Say how you&rsquo;re arriving today, then pick a rhythm. The start screen asks for those four things and nothing else.</p>
           <ul class="notes">
             <li>Arriving as foggy, steady, restless or charged</li>
-            <li>Rhythms: gentle start (5 + 20), classic 25 + 5, open-ended flow, or recovery first</li>
+            <li>Rhythms: gentle start, classic 25 + 5, flow, or recovery first</li>
             <li><kbd>&#8984;</kbd> <kbd>&#8617;</kbd> begins</li>
           </ul>
         </div>
@@ -144,12 +144,10 @@
           <p class="sr-only" aria-live="polite" data-try-announce></p>
         </div>
 
-        <!-- Image slot: Begin. Swap the files or the <picture> for real footage; see DESIGN.md "Image slots". -->
+        <!-- Image slot: Begin. A real still from the beta app; see DESIGN.md "Image slots" to swap it. -->
         <figure class="screen" data-screen="begin">
-          <picture>
-            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-initiate-dark-880.webp 880w, /assets/img/app-initiate-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
-            <img src="/assets/img/app-initiate-light-1600.webp" srcset="/assets/img/app-initiate-light-880.webp 880w, /assets/img/app-initiate-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="905" loading="lazy" decoding="async" alt="The Begin screen: a task field, a numbered first step, four capacity choices, four rhythms and a Begin gentle start button, with the companion field gathering beside them.">
-          </picture>
+          <img src="/assets/img/screen-begin-light-1600.webp" srcset="/assets/img/screen-begin-light-880.webp 880w, /assets/img/screen-begin-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="977" loading="lazy" decoding="async" alt="Real screen from the Praxmodoro beta: the start screen, titled One small step, held with you. The task reads Draft the grant budget, the first visible action reads Open last year&rsquo;s budget and copy the table, capacity is set to Foggy, the session policy to Classic 25+5, and a Begin button sits below.">
+          <figcaption>Real screen from the beta: the start screen, with a sample task.</figcaption>
         </figure>
       </div>
     </article>
@@ -160,19 +158,20 @@
           {{> arc-2}}
           <h3 class="moment-title" id="focus-title">Focus</h3>
           <p class="moment-lede">A light that breathes slower than you.</p>
-          <p>The companion takes one long breath about every eleven seconds, with an exhale longer than the inhale. It never speeds up. Your task, your next step and the time stay in plain view, and nothing on the screen keeps score.</p>
+          <p>The companion takes one long breath about every twelve seconds, with an exhale longer than the inhale. It never speeds up. Your task, your next step and the time stay in plain view, and nothing on the screen keeps score.</p>
           <ul class="notes">
             <li>Park a stray thought without leaving the screen</li>
             <li>A small capsule floats above other windows, and the menu bar shows the time</li>
             <li>Hold the timer and your place is kept, exactly</li>
           </ul>
         </div>
-        <!-- Image slot: Focus. -->
+        <!-- Image slot: Focus. Real stills from the beta app, light and dark. -->
         <figure class="screen" data-screen="focus">
           <picture>
-            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-focus-dark-880.webp 880w, /assets/img/app-focus-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
-            <img src="/assets/img/app-focus-light-1600.webp" srcset="/assets/img/app-focus-light-880.webp 880w, /assets/img/app-focus-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="1000" loading="lazy" decoding="async" alt="The Focus screen: the task Edit the conference talk outline, its next step, and a 17 minute timer in the centre of the breathing field, with a thought-parking list alongside.">
+            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/screen-focus-dark-880.webp 880w, /assets/img/screen-focus-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
+            <img src="/assets/img/screen-focus-light-1600.webp" srcset="/assets/img/screen-focus-light-880.webp 880w, /assets/img/screen-focus-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="977" loading="lazy" decoding="async" alt="Real screen from the Praxmodoro beta: Focus on Draft the grant budget, with the next step, Open last year&rsquo;s budget and copy the table, written under it. The time, 24:47, sits at the centre of the breathing companion, with minus one minute, pause and plus one minute below, and a Thought parking field to the right.">
           </picture>
+          <figcaption>Real screen from the beta: Focus, with the companion mid-breath.</figcaption>
         </figure>
       </div>
     </article>
@@ -187,15 +186,13 @@
           <ul class="notes">
             <li>The timer holds while you answer</li>
             <li>A detour is information. Return, re-plan or stop, all with equal weight</li>
-            <li>Keys <kbd>1</kbd> to <kbd>4</kbd> answer</li>
+            <li><kbd>⌘</kbd> <kbd>K</kbd> checks in whenever you like, and keys <kbd>1</kbd> to <kbd>4</kbd> answer</li>
           </ul>
         </div>
-        <!-- Image slot: Check in. -->
+        <!-- Image slot: Check in. A real still from the beta app. -->
         <figure class="screen" data-screen="checkin">
-          <picture>
-            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-checkin-dark-880.webp 880w, /assets/img/app-checkin-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
-            <img src="/assets/img/app-checkin-light-1600.webp" srcset="/assets/img/app-checkin-light-880.webp 880w, /assets/img/app-checkin-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="895" loading="lazy" decoding="async" alt="The Check-in screen asking How does the step fit right now, with four answers: still fits, make the step smaller, I drifted somewhere else, and I could use a break.">
-          </picture>
+          <img src="/assets/img/screen-checkin-light-1600.webp" srcset="/assets/img/screen-checkin-light-880.webp 880w, /assets/img/screen-checkin-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="977" loading="lazy" decoding="async" alt="Real screen from the Praxmodoro beta: a check-in marked Timer held asks How does the step fit right now? It offers four numbered answers: Still fits, keep going; Make the step smaller; I drifted somewhere else; I could use a break. Below them: No answer here is wrong.">
+          <figcaption>Real screen from the beta: a check-in, with the timer held.</figcaption>
         </figure>
       </div>
     </article>
@@ -213,12 +210,10 @@
             <li><kbd>R</kbd> returns to focus</li>
           </ul>
         </div>
-        <!-- Image slot: Break. -->
+        <!-- Image slot: Break. A real still from the beta app. -->
         <figure class="screen" data-screen="break">
-          <picture>
-            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-break-dark-880.webp 880w, /assets/img/app-break-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
-            <img src="/assets/img/app-break-light-1600.webp" srcset="/assets/img/app-break-light-880.webp 880w, /assets/img/app-break-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="1000" loading="lazy" decoding="async" alt="The Break screen: a three minute timer in a soft green field and a re-entry card that reads Mark the one section that feels done.">
-          </picture>
+          <img src="/assets/img/screen-break-light-1600.webp" srcset="/assets/img/screen-break-light-880.webp 880w, /assets/img/screen-break-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="977" loading="lazy" decoding="async" alt="Real screen from the Praxmodoro beta: a break titled Rest that keeps your place. The companion suggests Water, stand, pour, sip slowly, with Stretch, Step away and Quiet as other choices and a Why this suggestion? link. A re-entry card on the right holds the next step and a Ready when you are button.">
+          <figcaption>Real screen from the beta: a break, with the way back already set.</figcaption>
         </figure>
       </div>
     </article>
@@ -229,23 +224,21 @@
           {{> arc-5}}
           <h3 class="moment-title" id="review-title">Review</h3>
           <p class="moment-lede">Today, written down gently.</p>
-          <p>A plain timeline of what happened: when you began, when you made a step smaller, when you rested. Notes stay tentative, because one afternoon is not a pattern.</p>
+          <p>A plain timeline of what happened: when you focused, how each check-in went, when you rested and when you stopped. Notes stay tentative, because one session is not a pattern.</p>
           <ul class="notes">
             <li>No streaks, grades or productivity percentages</li>
             <li>The record lives on your Mac</li>
           </ul>
         </div>
-        <!-- Image slot: Review. -->
+        <!-- Image slot: Review. A real still from the beta app. -->
         <figure class="screen" data-screen="review">
-          <picture>
-            <source media="(prefers-color-scheme: dark)" type="image/webp" srcset="/assets/img/app-review-dark-880.webp 880w, /assets/img/app-review-dark-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)">
-            <img src="/assets/img/app-review-light-1600.webp" srcset="/assets/img/app-review-light-880.webp 880w, /assets/img/app-review-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="930" loading="lazy" decoding="async" alt="The Review screen: a timeline of an afternoon session from 13:04 to 14:22 and a note that says Smaller steps kept today moving.">
-          </picture>
+          <img src="/assets/img/screen-review-light-1600.webp" srcset="/assets/img/screen-review-light-880.webp 880w, /assets/img/screen-review-light-1600.webp 1600w" sizes="(min-width: 64rem) 60rem, calc(100vw - 2rem)" width="1600" height="977" loading="lazy" decoding="async" alt="Real screen from the Praxmodoro beta: Today, written down gently. A timeline lists one short session: focus, reported capacity foggy, two check-ins, an intentional break for water, and closing the session. A note beside it, marked Observed, not concluded, says one session is not a pattern, and a Begin something new button sits below.">
+          <figcaption>Real screen from the beta: the review after one short session.</figcaption>
         </figure>
         <div class="measure loop-close">
           <p class="loop-again">Then round again, or close the laptop. Both&nbsp;count.</p>
-          <p>The next session starts from the same quiet screen, with your last task ready if you want it.</p>
-          <p class="render-note">Screens are design renders of the macOS app, which is in private testing.</p>
+          <p>&ldquo;Begin something new&rdquo; brings back the same quiet start screen.</p>
+          <p class="render-note">The five screens are real stills from the beta app on a Mac, recorded with sample data. The app is in private testing.</p>
         </div>
       </div>
     </article>

@@ -85,7 +85,7 @@ The page is one column of rooms. A room is a band of sky, at least as tall as it
  │  Begin                                   │  one word, nothing above it
  │  One task, one tiny step.                │
  │  [ try it here ]                         │
- │  [ app screen ]                          │  swap-ready image slot
+ │  [ real app screen ]                     │  a still from the beta, swap-ready
  ├──────────────────────────────────────────┤  sand → sage
  │  ◜ •◝  Focus   …                         │
  ├────  Check in (clear sky) ───────────────┤
@@ -199,19 +199,30 @@ Motion breathes. It never performs.
 
 ## Image slots
 
-App screens are design renders today. Real footage of the Mac app will replace them, so each slot is one `<figure class="screen" data-screen="…">` with:
+The five screens are real stills of the beta app, taken from footage recorded on Prax's Mac (`main` at `3531d6a`, sample data in a fresh, in-memory store, so nothing personal shows). Each slot is one `<figure class="screen" data-screen="…">` with explicit `width` and `height` and a short caption that says it is a real screen.
 
-- a light `<img>`;
-- a dark `<source media="(prefers-color-scheme: dark)">`;
-- explicit `width` and `height`.
+| Moment | Clip | Frame | Why this frame |
+|---|---|---|---|
+| Begin | `01-begin.mov` | 9.55 s | Task and step filled in, Foggy and Classic 25+5 picked, caret off, just before Begin |
+| Focus | `02-focus.mov` | 4.80 s | The companion halfway through an inhale |
+| Focus, dark | `02-focus-dark.mov` | 5.10 s | The same point in the breath, in dark mode |
+| Check in | `03-checkin.mov` | 4.50 s | All four answers on screen, timer held |
+| Break | `04-break.mov` | 9.00 s | Water suggested, re-entry card with the next step |
+| Review | `05-review.mov` | 6.00 s | The whole timeline and the "Observed, not concluded" note |
 
-**To swap in a still**, replace the files named `app-<moment>-<light|dark>-<880|1600>.webp` and update `width` and `height`.
+Each frame was cut with `ffmpeg -i <clip> -ss <time> -frames:v 1 -vf crop=1788:1092:6:6` (3 pt off every edge, which removes the desktop wallpaper at the window's rounded corners) and saved as WebP at 880 and 1600 wide (`screen-<moment>-<light|dark>-<width>.webp`).
+
+**Dark mode.** Only Focus has real dark footage, so only Focus has a `<picture>` with a dark `<source>`. The other four slots are a single `<img>`; a light screen on the night-sky page is what the real app looks like in light mode. When dark footage of another moment exists, wrap its `<img>` in a `<picture>` and add the dark `<source>`, as Focus does.
+
+**To swap in a newer still**, replace the files and update `width` and `height`. `npm test` checks that every file matches the size the page reserves and that every alt text starts with "Real screen from the Praxmodoro beta:".
 
 **To swap in footage:**
 
-- Replace the `<picture>` with `<video muted playsinline loop preload="none" poster="…" width height>`.
+- Replace the `<img>` or `<picture>` with `<video muted playsinline loop preload="none" poster="…" width height>`.
 - Only autoplay it when motion is gentle. Add a pause control.
 - `.screen video` is already styled the same as `.screen img`.
+
+`scripts/render-mocks.mjs` still renders the design mocks to `app-*.webp`. It is kept for later; nothing on the page uses its output now.
 
 ## Copy rules
 

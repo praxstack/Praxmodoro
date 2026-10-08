@@ -160,7 +160,9 @@ This covers email checks, consent, the honeypot, duplicates, the rate limit, the
 
 The look of the site (the breathing light, the sky colours for each section, the fonts and the motion rules) is written down in `DESIGN.md`. Read it before changing the design.
 
-The app screens are rendered from the approved design mocks in `design-mocks/living-companion/`, using the app's own fonts kept in `scripts/mock-fonts/` (they are not part of the website). Each screen sits in a `<figure class="screen" data-screen="…">` on the home page, so you can swap a render for a real screenshot or a short screen recording later. `DESIGN.md` has the steps under "Image slots".
+The app screens on the home page are real stills of the beta app, cut from footage recorded on a Mac with sample data (`public/assets/img/screen-*.webp`). Each sits in a `<figure class="screen" data-screen="…">`, so you can swap in a newer still or a short screen recording later. `DESIGN.md` lists the clip and frame behind each one and the steps, under "Image slots".
+
+`npm run render:mocks` still renders the approved design mocks in `design-mocks/living-companion/` (with the app's own fonts, kept in `scripts/mock-fonts/` and not part of the website) to `app-*.webp`. Nothing on the page uses those now; the script is kept for screens the beta can't show yet.
 
 The share image (`public/og.jpg`) is drawn from `scripts/brand/og.html` with the site's own CSS, and the icons from `public/favicon.svg`. The website's fonts are Zen Maru Gothic and Atkinson Hyperlegible Next, self-hosted in `public/assets/fonts/` with their licence in `OFL.txt`.
 
@@ -168,7 +170,7 @@ To regenerate the images you need Playwright once:
 
 ```sh
 npm i -g playwright && npx playwright install chromium
-NODE_PATH="$(npm root -g)" npm run render:mocks    # app screens, light and dark
+NODE_PATH="$(npm root -g)" npm run render:mocks    # design-mock renders (not on the page now)
 NODE_PATH="$(npm root -g)" npm run render:brand    # og.jpg and icons
 NODE_PATH="$(npm root -g)" npm run screenshots -- http://localhost:8788 screenshots
 ```

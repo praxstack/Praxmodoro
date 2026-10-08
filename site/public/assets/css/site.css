@@ -1172,7 +1172,8 @@ time {
   font-weight: 650;
 }
 
-/* Image slot. Real footage can replace the <picture> with a <video>; both are styled here. */
+/* Image slot: a real still of the beta app (an <img>, or a <picture> where real dark footage exists).
+   A screen recording can replace it with a <video>; all three are styled here. */
 .screen {
   margin-top: var(--space-3xl);
   overflow: hidden;
@@ -1185,6 +1186,13 @@ time {
 .screen video {
   width: 100%;
   height: auto;
+}
+
+.screen figcaption {
+  padding: var(--space-sm) var(--space-md);
+  border-top: 1px solid var(--color-rule);
+  color: var(--color-muted);
+  font-size: var(--text-xs);
 }
 
 .loop-close {
