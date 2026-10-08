@@ -112,6 +112,39 @@ for (const page of htmlPages) {
   });
 }
 
+/** Width and height of a WebP file, from its RIFF header. */
+function webpSize(file) {
+  const b = readFileSync(join(publicDir, file));
+  const chunk = b.toString("ascii", 12, 16);
+  if (chunk === "VP8X") return { width: 1 + b.readUIntLE(24, 3), height: 1 + b.readUIntLE(27, 3) };
+  if (chunk === "VP8 ") return { width: b.readUInt16LE(26) & 0x3fff, height: b.readUInt16LE(28) & 0x3fff };
+  if (chunk === "VP8L") {
+    const bits = b.readUInt32LE(21);
+    return { width: 1 + (bits & 0x3fff), height: 1 + ((bits >> 14) & 0x3fff) };
+  }
+  throw new Error(`${file} is not a WebP file`);
+}
+
+test("app renders: declared sizes match the files, in light and dark, at every width", () => {
+  const html = read("index.html");
+  const pictures = [...html.matchAll(/<picture>([\s\S]*?)<\/picture>/g)].map((m) => m[1]);
+  assert.ok(pictures.length >= 5);
+  for (const picture of pictures) {
+    const img = tags(picture, "img")[0];
+    const width = Number(attr(img, "width"));
+    const height = Number(attr(img, "height"));
+    const candidates = [...picture.matchAll(/\ssrcset="([^"]+)"/g)].flatMap((m) =>
+      m[1].split(",").map((part) => part.trim().split(/\s+/))
+    );
+    candidates.push([attr(img, "src"), `${width}w`]);
+    for (const [url, descriptor] of candidates) {
+      const size = webpSize(url);
+      assert.equal(`${size.width}w`, descriptor, `${url} is not ${descriptor} wide`);
+      assert.ok(Math.abs(size.height - (size.width * height) / width) <= 1, `${url} is ${size.width}x${size.height}, but the page reserves ${width}x${height}`);
+    }
+  }
+});
+
 test("the waitlist forms send exactly what the API reads", () => {
   const html = read("index.html");
   const forms = [...html.matchAll(/<form\b[^>]*data-waitlist-form[^>]*>([\s\S]*?)<\/form>/g)];

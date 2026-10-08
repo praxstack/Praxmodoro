@@ -1517,7 +1517,7 @@ main { overflow-x: clip; }
 .mac-titlebar span:nth-child(2) { background: var(--color-light-min); }
 .mac-titlebar span:nth-child(3) { background: var(--color-light-max); }
 
-.mac-window img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.mac-window img { width: 100%; height: auto; }
 
 .render-note {
   margin-block-start: clamp(3rem, 2rem + 3vw, 5rem);
