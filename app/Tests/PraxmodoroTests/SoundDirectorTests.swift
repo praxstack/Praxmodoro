@@ -279,6 +279,18 @@ import Testing
         #expect(recorder.scheduled.filter { $0.cue == .blockStart }.map(\.at) == [t0])
     }
 
+    @Test func testWakeSuppressesAnAutoReturnObservedAtItsExactInstant() throws {
+        let (model, ticker, recorder) = try autoReturnModel()
+        try model.begin()
+        // Asleep across expiry; the first post-wake observation lands exactly
+        // on the derived auto-return instant (25 min focus + 5 min break).
+        ticker.now = t0.addingTimeInterval(30 * 60)
+        model.handleSystemWake()
+        try model.observeDerivedPhase(at: ticker.now)
+
+        #expect(recorder.scheduled.filter { $0.cue == .blockStart }.map(\.at) == [t0])
+    }
+
     @Test func testWakeNeverDropsTheUsersOwnBlockStart() throws {
         let (model, _, recorder) = try autoReturnModel()
         // Wake, then the user begins before any other sync clears the flag.
