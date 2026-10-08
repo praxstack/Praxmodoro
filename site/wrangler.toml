@@ -11,7 +11,7 @@ database_name = "praxmodoro-waitlist"
 database_id = "00000000-0000-0000-0000-000000000000"
 migrations_dir = "migrations"
 
-# Secrets are NOT set here. Set them with `npx wrangler pages secret put <NAME>` (README step 1.6):
+# Secrets are NOT set here. Set them with `npx wrangler pages secret put <NAME>` (README step 1.7):
 #   ADMIN_TOKEN        long random string that unlocks /api/waitlist/export
 #   IP_HASH_SALT       long random string used to hash IP addresses for rate limiting
 #   TURNSTILE_SECRET   optional, turns on Turnstile verification (README step 5)
