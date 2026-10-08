@@ -12,9 +12,9 @@ const svg = readFileSync(join(pub, "favicon.svg"), "utf8");
 
 const ICONS = [
   { file: "favicon-32.png", size: 32, background: null },
-  { file: "apple-touch-icon.png", size: 180, background: "#f9f3e9", inset: 0.14 },
-  { file: "icon-192.png", size: 192, background: "#f9f3e9", inset: 0.14 },
-  { file: "icon-512.png", size: 512, background: "#f9f3e9", inset: 0.14 }
+  { file: "apple-touch-icon.png", size: 180, background: "#e4eef9", inset: 0.14 },
+  { file: "icon-192.png", size: 192, background: "#e4eef9", inset: 0.14 },
+  { file: "icon-512.png", size: 512, background: "#e4eef9", inset: 0.14 }
 ];
 
 const browser = await launch();
