@@ -253,6 +253,55 @@ import Testing
                 == [t0, t0.addingTimeInterval(30 * 60)])
     }
 
+    // MARK: Wake suppression (0223062) — behaviour, not just the source pin
+
+    private func autoReturnModel() throws -> (AppModel, Ticker, CueRecorder) {
+        let (model, ticker, recorder) = try makeModel {
+            $0.focusEndChime = false
+            $0.breakEndChime = false
+        }
+        var rhythm = model.rhythm
+        rhythm.blockEnd = .offeredDefault
+        rhythm.autoReturn = true
+        model.setRhythm(rhythm)
+        return (model, ticker, recorder)
+    }
+
+    @Test func testWakeSuppressesTheRetroAutoReturnBlockStart() throws {
+        let (model, ticker, recorder) = try autoReturnModel()
+        try model.begin()
+        // Asleep across expiry (25 min) and the derived auto-return (30 min):
+        // the first sync after wake must not play a block-start for 30 min.
+        ticker.now = t0.addingTimeInterval(31 * 60)
+        model.handleSystemWake()
+        try model.observeDerivedPhase(at: ticker.now)
+
+        #expect(recorder.scheduled.filter { $0.cue == .blockStart }.map(\.at) == [t0])
+    }
+
+    @Test func testWakeNeverDropsTheUsersOwnBlockStart() throws {
+        let (model, _, recorder) = try autoReturnModel()
+        // Wake, then the user begins before any other sync clears the flag.
+        model.handleSystemWake()
+        try model.begin()
+
+        #expect(recorder.scheduled.filter { $0.cue == .blockStart }.map(\.at) == [t0])
+    }
+
+    @Test func testWakeNeverDropsTheBlockStartOfAnExplicitReturn() throws {
+        let (model, ticker, recorder) = try autoReturnModel()
+        try model.begin()
+        ticker.now = t0.addingTimeInterval(60)
+        try model.answer(.needBreak)
+        ticker.now = t0.addingTimeInterval(120)
+        model.handleSystemWake()
+        try model.endBreak()
+
+        #expect(
+            recorder.scheduled.filter { $0.cue == .blockStart }.map(\.at)
+                == [t0, t0.addingTimeInterval(120)])
+    }
+
     @Test func testHoldResumeAndRestoreNeverFireBlockStart() throws {
         let defaults = scratchDefaults()
         let store = try LocalStore(inMemory: true)

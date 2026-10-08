@@ -250,7 +250,10 @@ final class AppModel {
         }
         if let instant = pendingBlockStartAt {
             pendingBlockStartAt = nil
-            let past = instant <= now
+            // Strictly before now: begin() and endBreak() pass their own
+            // `now`, and a user-initiated block start is never retro, even
+            // while the wake flag is still armed (review m1).
+            let past = instant < now
             if sound.blockStart, !(past && skipPastBlockStartOnNextSync) {
                 soundScheduler.scheduleChime(.blockStart, at: instant, volume: sound.masterVolume)
             }
