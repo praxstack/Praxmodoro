@@ -1,0 +1,5 @@
+# Local development secrets for `npm run dev`. Copy to .dev.vars (git-ignored).
+ADMIN_TOKEN=local-admin-token-change-me-0123456789
+IP_HASH_SALT=local-salt-change-me-0123456789
+# TURNSTILE_SITE_KEY=1x00000000000000000000AA
+# TURNSTILE_SECRET=1x0000000000000000000000000000000AA

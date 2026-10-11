@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en" data-motion="still">
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="../../public/assets/css/site.css">
+<style>
+  /* The 1200x630 share image: the hero's breathing light, held at the top of an inhale, on a dawn sky. */
+  .light > span { animation-delay: -4s !important; }
+  html, body { width: 1200px; height: 630px; margin: 0; overflow: hidden; }
+  body { background: linear-gradient(180deg, var(--sky-dawn), var(--sky-haze)); }
+  .og { position: relative; display: grid; justify-items: center; align-content: start; height: 100%; padding-top: 40px; text-align: center; }
+  .og-mark { position: absolute; top: 36px; left: 48px; margin: 0; font-size: 26px; gap: 12px; }
+  .og-mark .wordmark-light { width: 36px; height: 36px; }
+  .og-breath { --light-size: 500px; }
+  .og-breath .breath-title { font-size: 62px; }
+  .og-breath .breath-cue { font-size: 24px; }
+  .og-line { position: relative; margin-top: 22px; color: var(--color-ink-2); font-size: 26px; }
+</style>
+</head>
+<body>
+  <div class="og">
+    <span class="wordmark og-mark"><span class="wordmark-light"></span><span>Praxmodoro</span></span>
+    <div class="breath og-breath">
+      <span class="light"><span class="light-halo"></span><span class="light-ring light-ring-1"></span><span class="light-ring light-ring-2"></span><span class="light-ring light-ring-3"></span><span class="light-core"></span></span>
+      <div class="breath-words">
+        <h1 class="breath-title">Start with one tiny&nbsp;step.</h1>
+        <p class="breath-cue"><span class="cue cue-in">Breathe in</span><span class="cue cue-out">Breathe out</span><span class="cue cue-still">In for four, out for six</span></p>
+      </div>
+    </div>
+    <p class="og-line">A calm focus timer for Mac &middot; free beta for macOS 26 and later</p>
+  </div>
+</body>
+</html>
