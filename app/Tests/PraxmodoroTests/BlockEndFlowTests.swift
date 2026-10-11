@@ -153,7 +153,7 @@ import Testing
         try model.begin()
 
         ticker.now = t0.addingTimeInterval(3 * 60 * 60)
-        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: scratchDefaults())
+        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
         try relaunched.restore()
         #expect(relaunched.snapshot(at: ticker.now).phase == .onBreak)
         #expect(relaunched.effectiveSurface(at: ticker.now) == .onBreak)
@@ -177,7 +177,7 @@ import Testing
         try model.begin()
 
         ticker.now = t0.addingTimeInterval(27 * 60)
-        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: scratchDefaults())
+        let relaunched = AppModel(store: store, clock: { ticker.now }, defaults: defaults)
         try relaunched.restore()
         #expect(relaunched.snapshot(at: ticker.now).phase == .onBreak)
         ticker.now = t0.addingTimeInterval(31 * 60)
