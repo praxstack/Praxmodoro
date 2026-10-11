@@ -1,0 +1,186 @@
+<!doctype html>
+<!--
+  END CARD TEXT LIVES HERE, AND ONLY HERE.
+  Edit the "default" values in data-composition-variables below, then re-render.
+  (praxmodoro.com is the planned domain; it has not been bought yet.)
+-->
+<html
+  lang="en"
+  data-composition-variables='[
+    {"id":"cta","type":"string","label":"End card: call to action","default":"Join the Mac beta"},
+    {"id":"url","type":"string","label":"End card: waitlist URL","default":"praxmodoro.com"},
+    {"id":"factsOne","type":"string","label":"End card: facts, line 1","default":"Free while testing · macOS 26 or later"},
+    {"id":"factsTwo","type":"string","label":"End card: facts, line 2","default":"Your data stays on your Mac"}
+  ]'
+>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Praxmodoro demo: end card</title>
+  </head>
+  <body>
+    <template id="07-join-template">
+      <style>
+        @font-face {
+          font-family: "Zen Maru Gothic";
+          font-style: normal;
+          font-weight: 500;
+          src: url("assets/fonts/zen-maru-gothic-latin-500.woff2") format("woff2");
+        }
+        @font-face {
+          font-family: "Atkinson Hyperlegible Next";
+          font-style: normal;
+          font-weight: 200 800;
+          src: url("assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2") format("woff2");
+        }
+        #root {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+        }
+        /* Blue hour: the site's join room. */
+        #join-sky {
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(180deg, #ddddf2, #d5dcf2);
+        }
+        #join-breath {
+          position: absolute;
+          left: 840px;
+          top: 112px;
+          width: 240px;
+          height: 240px;
+        }
+        #join-light {
+          position: absolute;
+          inset: 0;
+        }
+        #join-light > div {
+          position: absolute;
+          border-radius: 50%;
+        }
+        #join-halo {
+          inset: -20%;
+          background: radial-gradient(
+            closest-side,
+            #fffaea 0%,
+            #fffaea 12%,
+            #ffe0ac 34%,
+            #fcd4d6 56%,
+            #dbd8f6 76%,
+            rgba(219, 216, 246, 0) 100%
+          );
+        }
+        #join-core {
+          inset: 18%;
+          background: radial-gradient(closest-side, #fffaea 0%, #fffaea 40%, rgba(255, 250, 234, 0) 100%);
+        }
+        .join-ring {
+          border: 1.5px solid rgba(55, 58, 87, 0.2);
+        }
+        #join-ring-1 {
+          inset: 9%;
+        }
+        #join-ring-2 {
+          inset: 0;
+        }
+        #join-copy {
+          position: absolute;
+          left: 0;
+          top: 404px;
+          width: 1920px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        #join-cta {
+          margin: 0;
+          font-family: "Zen Maru Gothic", sans-serif;
+          font-weight: 500;
+          font-size: 104px;
+          line-height: 1.05;
+          letter-spacing: -0.015em;
+          color: #242b3d;
+        }
+        #join-url {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          margin-top: 40px;
+          height: 104px;
+          padding: 0 56px;
+          border-radius: 999px;
+          background: #454a80;
+          box-shadow:
+            0 1px 2px rgba(51, 56, 85, 0.12),
+            0 18px 40px -24px rgba(37, 43, 76, 0.45);
+          font-family: "Atkinson Hyperlegible Next", sans-serif;
+          font-weight: 650;
+          font-size: 60px;
+          line-height: 1;
+          letter-spacing: 0.005em;
+          color: #f4f7fe;
+        }
+        #join-facts {
+          margin-top: 44px;
+        }
+        .join-fact {
+          margin: 0;
+          font-family: "Atkinson Hyperlegible Next", sans-serif;
+          font-weight: 500;
+          font-size: 46px;
+          line-height: 1.32;
+          color: #434a5b;
+        }
+      </style>
+
+      <div id="root" data-composition-id="07-join" data-width="1920" data-height="1080" data-duration="6.5">
+        <div id="join-sky" class="clip" data-start="0" data-duration="6.5" data-track-index="0"></div>
+
+        <div id="join-breath">
+          <div id="join-light" data-layout-ignore>
+            <div id="join-halo"></div>
+            <div id="join-core"></div>
+            <div id="join-ring-1" class="join-ring"></div>
+            <div id="join-ring-2" class="join-ring"></div>
+          </div>
+        </div>
+
+        <div id="join-copy">
+          <h2 id="join-cta" data-var-text="cta"></h2>
+          <div id="join-url" data-var-text="url"></div>
+          <div id="join-facts">
+            <p id="join-fact-1" class="join-fact" data-var-text="factsOne"></p>
+            <p id="join-fact-2" class="join-fact" data-var-text="factsTwo"></p>
+          </div>
+        </div>
+      </div>
+
+      <script src="assets/vendor/gsap-3.14.2.min.js"></script>
+      <script>
+        (function () {
+          const tl = gsap.timeline({ paused: true });
+          const breath = "sine.inOut";
+          // A smaller, slower light, as in the site's join room: one inhale, then the exhale begins.
+          tl.fromTo("#join-light", { opacity: 0 }, { opacity: 1, duration: 1.6, ease: "sine.out" }, 0.2);
+          tl.fromTo("#join-halo", { scale: 0.9 }, { scale: 1, duration: 4, ease: breath }, 0);
+          tl.to("#join-halo", { scale: 0.9, duration: 6, ease: breath }, 4);
+          tl.fromTo("#join-core", { scale: 0.95 }, { scale: 1.02, duration: 4, ease: breath }, 0);
+          tl.to("#join-core", { scale: 0.95, duration: 6, ease: breath }, 4);
+          [["#join-ring-1", 0.2], ["#join-ring-2", 0.45]].forEach(([sel, lag]) => {
+            tl.fromTo(sel, { scale: 0.92, opacity: 0.3 }, { scale: 1, opacity: 1, duration: 4, ease: breath }, lag);
+            tl.to(sel, { scale: 0.92, opacity: 0.3, duration: 6, ease: breath }, 4 + lag);
+          });
+          // The ask arrives once, gently, then the frame holds still to the last frame.
+          tl.fromTo("#join-cta", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.2, ease: "power2.out" }, 1.2);
+          tl.fromTo("#join-url", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.1, ease: "power2.out" }, 2.3);
+          tl.fromTo("#join-fact-1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" }, 3.1);
+          tl.fromTo("#join-fact-2", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1.0, ease: "power2.out" }, 3.4);
+          window.__timelines["07-join"] = tl;
+        })();
+      </script>
+    </template>
+  </body>
+</html>

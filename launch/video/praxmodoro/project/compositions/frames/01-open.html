@@ -1,0 +1,182 @@
+<template id="01-open-template">
+  <style>
+    @font-face {
+      font-family: "Zen Maru Gothic";
+      font-style: normal;
+      font-weight: 500;
+      src: url("assets/fonts/zen-maru-gothic-latin-500.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Zen Maru Gothic";
+      font-style: normal;
+      font-weight: 700;
+      src: url("assets/fonts/zen-maru-gothic-latin-700.woff2") format("woff2");
+    }
+    @font-face {
+      font-family: "Atkinson Hyperlegible Next";
+      font-style: normal;
+      font-weight: 200 800;
+      src: url("assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2") format("woff2");
+    }
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    /* First light: dawn mist to lilac haze, exactly the site's hero room. */
+    #open-sky {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #e4eef9, #ece8fa);
+    }
+    /* The breathing light: the site's .breath / .light, at video scale. */
+    #open-breath {
+      position: absolute;
+      left: 660px;
+      top: 104px;
+      width: 600px;
+      height: 600px;
+    }
+    #open-light {
+      position: absolute;
+      inset: 0;
+    }
+    #open-light > div {
+      position: absolute;
+      border-radius: 50%;
+    }
+    #open-halo {
+      inset: -20%;
+      background: radial-gradient(
+        closest-side,
+        #fffaea 0%,
+        #fffaea 12%,
+        #ffe0ac 34%,
+        #fcd4d6 56%,
+        #dbd8f6 76%,
+        rgba(219, 216, 246, 0) 100%
+      );
+    }
+    #open-core {
+      inset: 18%;
+      background: radial-gradient(closest-side, #fffaea 0%, #fffaea 40%, rgba(255, 250, 234, 0) 100%);
+    }
+    .open-ring {
+      border: 1.5px solid rgba(55, 58, 87, 0.2);
+    }
+    #open-ring-1 {
+      inset: 9%;
+    }
+    #open-ring-2 {
+      inset: 0;
+    }
+    #open-ring-3 {
+      inset: -5%;
+    }
+    /* The words sit at the light's centre and never move once they have arrived. */
+    #open-words {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #open-title {
+      margin: 0;
+      width: 560px;
+      text-align: center;
+      font-family: "Zen Maru Gothic", sans-serif;
+      font-weight: 500;
+      font-size: 88px;
+      line-height: 1.08;
+      letter-spacing: -0.02em;
+      color: #242b3d;
+    }
+    #open-sign {
+      position: absolute;
+      left: 0;
+      top: 744px;
+      width: 1920px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #open-wordmark {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      font-family: "Zen Maru Gothic", sans-serif;
+      font-weight: 700;
+      font-size: 56px;
+      line-height: 1;
+      letter-spacing: 0.005em;
+      color: #242b3d;
+    }
+    #open-dot {
+      display: block;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(closest-side, #fffaea 0%, #ffe0ac 40%, #fcd4d6 70%, #dbd8f6 100%);
+      box-shadow: 0 0 0 1.5px rgba(55, 58, 87, 0.16);
+    }
+    #open-tagline {
+      margin: 22px 0 0;
+      font-family: "Atkinson Hyperlegible Next", sans-serif;
+      font-weight: 500;
+      font-size: 46px;
+      line-height: 1.2;
+      color: #434a5b;
+    }
+  </style>
+
+  <div id="root" data-composition-id="01-open" data-width="1920" data-height="1080" data-duration="7.2">
+    <div id="open-sky" class="clip" data-start="0" data-duration="7.2" data-track-index="0"></div>
+
+    <div id="open-breath">
+      <div id="open-light" data-layout-ignore>
+        <div id="open-halo"></div>
+        <div id="open-core"></div>
+        <div id="open-ring-1" class="open-ring"></div>
+        <div id="open-ring-2" class="open-ring"></div>
+        <div id="open-ring-3" class="open-ring"></div>
+      </div>
+      <div id="open-words">
+        <h1 id="open-title">Start with one tiny step.</h1>
+      </div>
+    </div>
+
+    <div id="open-sign">
+      <div id="open-wordmark"><span id="open-dot"></span><span id="open-name">Praxmodoro</span></div>
+      <p id="open-tagline">A calm focus timer for your Mac.</p>
+    </div>
+  </div>
+
+  <script src="assets/vendor/gsap-3.14.2.min.js"></script>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // The breath, as on the site: 4 s in, 6 s out, sine in-out, no spring. One inhale, then the exhale begins.
+      const breath = "sine.inOut";
+      tl.fromTo("#open-light", { opacity: 0 }, { opacity: 1, duration: 1.4, ease: "sine.out" }, 0);
+      tl.fromTo("#open-halo", { scale: 0.86 }, { scale: 1, duration: 4, ease: breath }, 0);
+      tl.to("#open-halo", { scale: 0.86, duration: 6, ease: breath }, 4);
+      tl.fromTo("#open-core", { scale: 0.94 }, { scale: 1.03, duration: 4, ease: breath }, 0);
+      tl.to("#open-core", { scale: 0.94, duration: 6, ease: breath }, 4);
+      [["#open-ring-1", 0.2], ["#open-ring-2", 0.45], ["#open-ring-3", 0.7]].forEach(([sel, lag]) => {
+        tl.fromTo(sel, { scale: 0.9, opacity: 0.3 }, { scale: 1, opacity: 1, duration: 4, ease: breath }, lag);
+        tl.to(sel, { scale: 0.9, opacity: 0.3, duration: 6, ease: breath }, 4 + lag);
+      });
+      // One restrained reveal for the words, then stillness.
+      tl.fromTo("#open-title", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.3, ease: "power2.out" }, 0.6);
+      tl.fromTo("#open-wordmark", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.1, ease: "power2.out" }, 2.0);
+      tl.fromTo("#open-tagline", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.1, ease: "power2.out" }, 2.5);
+      // The words step back just before the room dissolves, so they never sit over the incoming window;
+      // the light stays and melts into the next room on its own.
+      tl.to(["#open-words", "#open-sign"], { opacity: 0, duration: 0.7, ease: "sine.inOut" }, 5.3);
+      window.__timelines["01-open"] = tl;
+    })();
+  </script>
+</template>

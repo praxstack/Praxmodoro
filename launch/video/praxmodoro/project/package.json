@@ -1,0 +1,10 @@
+{
+  "name": "praxmodoro-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.141 preview",
+    "check": "npx --yes hyperframes@0.8.141 check",
+    "render": "npx --yes hyperframes@0.8.141 render --quality high --fps 30 --video-frame-format png --output renders/praxmodoro-demo.mp4"
+  }
+}
