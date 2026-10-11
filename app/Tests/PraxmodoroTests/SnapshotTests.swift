@@ -124,9 +124,10 @@ import Testing
         #expect(snapshot.remaining == model.remaining(at: afterFourHours))
     }
 
-    /// Module-wide: nothing in the app sources may run code on a schedule,
-    /// and nothing may read the wall clock except to feed `snapshot(at:)` or
-    /// through one of three named, audited seams.
+    /// Module-wide: nothing in the app sources may run code on a schedule
+    /// except the observation scheduler's one engine-dated timer, and nothing
+    /// may read the wall clock except to feed `snapshot(at:)` or through one
+    /// of the named, audited seams.
     ///
     /// History, because the shape of this test is the residue of six defeats:
     /// a validator parked a beat in a *different* file and read it through
@@ -178,6 +179,15 @@ import Testing
             ("SoundDirector.swift", "instant.timeIntervalSince(now)"),
         ]
 
+        // The one sanctioned beat, line by line, as reviewable as the reads
+        // above: the observation scheduler's single non-repeating timer. It
+        // fires only at an instant the model derived from the engine and
+        // reads no clock itself (change: fix-menubar-launch-hang).
+        let allowedBeats: [(file: String, line: String)] = [
+            ("ObservationScheduler.swift", "let timer = Timer(fire: instant, interval: 0, repeats: false)"),
+            ("ObservationScheduler.swift", "RunLoop.main.add(timer, forMode: .common)"),
+        ]
+
         var sawSnapshotUse = false
         var scanned = 0
 
@@ -191,10 +201,15 @@ import Testing
                 }
             let code = codeLines.joined(separator: "\n")
 
-            for beat in beats {
-                #expect(
-                    !code.contains(beat),
-                    "\(file.lastPathComponent) can run code on a schedule via “\(beat)”; the engine is the only clock")
+            for line in codeLines {
+                for beat in beats where line.contains(beat) {
+                    let allowed = allowedBeats.contains {
+                        $0.file == file.lastPathComponent && line.contains($0.line)
+                    }
+                    #expect(
+                        allowed,
+                        "\(file.lastPathComponent) can run code on a schedule via “\(beat)”; the engine is the only clock")
+                }
             }
 
             for line in codeLines where clockReads.contains(where: line.contains) {

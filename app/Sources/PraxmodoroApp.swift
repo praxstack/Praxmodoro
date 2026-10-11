@@ -34,14 +34,17 @@ struct PraxmodoroApp: App {
             if CommandLine.arguments.contains("-praxmodoro-clean-window-state") {
                 UserDefaults.standard.removePersistentDomain(forName: Bundle.main.bundleIdentifier!)
             }
-            self._model = State(initialValue: AppModel(store: try? LocalStore(inMemory: true)))
+            self._model = State(
+                initialValue: AppModel(
+                    store: try? LocalStore(inMemory: true), observationScheduler: EdgeObservationScheduler()))
             return
         }
         let supportDir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
             .appendingPathComponent("Praxmodoro", isDirectory: true)
         try? FileManager.default.createDirectory(at: supportDir, withIntermediateDirectories: true)
         let opened = try? LocalStore.open(at: supportDir.appendingPathComponent("praxmodoro.store"), now: Date())
-        let model = AppModel(store: opened?.0, recoveryNotice: opened?.1)
+        let model = AppModel(
+            store: opened?.0, recoveryNotice: opened?.1, observationScheduler: EdgeObservationScheduler())
         try? model.restore()
         self._model = State(initialValue: model)
     }
@@ -182,18 +185,12 @@ struct PraxmodoroApp: App {
                     Label("Praxmodoro", systemImage: "circle.dotted")
                         .accessibilityLabel("Praxmodoro")
                         // The label stays mounted when every window is closed,
-                        // so date-edge observation and wake handling survive
-                        // without opening the popover.
-                        .background {
-                            TimelineView(.periodic(from: .now, by: 1)) { context in
-                                Color.clear
-                                    .frame(width: 0, height: 0)
-                                    .accessibilityHidden(true)
-                                    .onChange(of: context.date) {
-                                        try? model.observeDerivedPhase(at: context.date)
-                                    }
-                            }
-                        }
+                        // so wake handling survives without opening the
+                        // popover. It must never re-render on a beat: a
+                        // TimelineView here looped MenuBarExtra's button
+                        // update and hung launch on macOS 27. Date edges with
+                        // every window closed belong to the model's
+                        // observation scheduler (fix-menubar-launch-hang).
                         .onReceive(
                             NSWorkspace.shared.notificationCenter.publisher(
                                 for: NSWorkspace.didWakeNotification)

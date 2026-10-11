@@ -54,6 +54,18 @@ public extension Session {
         return firstRun.at.addingTimeInterval(arrival)
     }
 
+    /// The earliest canonical instant strictly after `now` at which
+    /// reconciliation or the derived state can change — a gentle-start
+    /// promotion, a block expiry, or a break end — nil when none is pending
+    /// (held, open-ended flow, closed). Observers wake here instead of
+    /// polling; call it on a session already reconciled at `now`.
+    func nextEdgeInstant(after now: Date, cadence: LongBreakCadence?) -> Date? {
+        [promotionInstant(), expiryInstant(), breakEndInstant(cadence: cadence)]
+            .compactMap { $0 }
+            .filter { $0 > now }
+            .min()
+    }
+
     /// Returns a session whose recorded state reflects wall-clock truth at
     /// `now`: a completed gentle-start arrival is recorded as an ordinary
     /// event (state unchanged — the promotion is seamless), a block that
