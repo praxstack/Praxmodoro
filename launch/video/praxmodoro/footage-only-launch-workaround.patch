@@ -1,0 +1,21 @@
+diff --git a/app/Sources/PraxmodoroApp.swift b/app/Sources/PraxmodoroApp.swift
+index a215ee9..3f52d9b 100644
+--- a/app/Sources/PraxmodoroApp.swift
++++ b/app/Sources/PraxmodoroApp.swift
+@@ -184,16 +184,6 @@ struct PraxmodoroApp: App {
+                         // The label stays mounted when every window is closed,
+                         // so date-edge observation and wake handling survive
+                         // without opening the popover.
+-                        .background {
+-                            TimelineView(.periodic(from: .now, by: 1)) { context in
+-                                Color.clear
+-                                    .frame(width: 0, height: 0)
+-                                    .accessibilityHidden(true)
+-                                    .onChange(of: context.date) {
+-                                        try? model.observeDerivedPhase(at: context.date)
+-                                    }
+-                            }
+-                        }
+                         .onReceive(
+                             NSWorkspace.shared.notificationCenter.publisher(
+                                 for: NSWorkspace.didWakeNotification)

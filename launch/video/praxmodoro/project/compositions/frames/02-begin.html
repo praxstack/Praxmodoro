@@ -1,0 +1,275 @@
+<template id="02-begin-template">
+  <style>
+      @font-face {
+        font-family: "Zen Maru Gothic";
+        font-style: normal;
+        font-weight: 500;
+        src: url("assets/fonts/zen-maru-gothic-latin-500.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Atkinson Hyperlegible Next";
+        font-style: normal;
+        font-weight: 200 800;
+        src: url("assets/fonts/atkinson-hyperlegible-next-latin-wght.woff2") format("woff2");
+      }
+    #root {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    #begin-sky {
+      position: absolute;
+      inset: 0;
+    }
+    .begin-sky-layer {
+      position: absolute;
+      inset: 0;
+    }
+    #begin-plate {
+      position: absolute;
+      left: 680px;
+      top: 136px;
+      width: 1160px;
+      height: 708.5px;
+      transform-origin: 50% 50%;
+    }
+    #begin-shadow {
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      background: #f5f5f7;
+      box-shadow:
+        0 1px 2px rgba(51, 56, 85, 0.12),
+        0 24px 48px -28px rgba(37, 43, 76, 0.2),
+        0 60px 100px -70px rgba(37, 43, 76, 0.2),
+        0 30px 80px -40px rgba(51, 56, 85, 0.14);
+    }
+    #begin-mask {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      border-radius: 22px;
+      clip-path: inset(0 round 22px);
+    }
+    .begin-layer {
+      position: absolute;
+      inset: 0;
+    }
+    .begin-layer video {
+      position: absolute;
+      left: -3.89px;
+      top: -3.89px;
+      width: 1167.79px;
+      height: 716.24px;
+      object-fit: fill;
+    }
+    #begin-rim {
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      box-shadow: inset 0 0 0 1px rgba(36, 43, 61, 0.1);
+      pointer-events: none;
+    }
+    #begin-column {
+      --ink: #242B3D;
+      --ink-2: #434A5B;
+      position: absolute;
+      left: 100px;
+      top: 136px;
+      width: 540px;
+      height: 708.5px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      color: var(--ink);
+    }
+    #begin-arc {
+      display: block;
+      width: 150px;
+      height: 92.5px;
+      overflow: visible;
+      color: var(--ink-2);
+    }
+    #begin-arc .arc-horizon,
+    #begin-arc .arc-path {
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.2;
+      stroke-linecap: round;
+    }
+    #begin-arc .arc-horizon {
+      opacity: 0.36;
+    }
+    #begin-arc .arc-path {
+      opacity: 0.65;
+      stroke-dasharray: 1 4;
+    }
+    #begin-arc .arc-ticks {
+      fill: currentColor;
+      opacity: 0.55;
+    }
+    #begin-arc .arc-glow {
+      fill: rgba(249, 218, 161, 0.6);
+    }
+    #begin-arc .arc-sun {
+      fill: #F5C984;
+      stroke: currentColor;
+      stroke-width: 1;
+    }
+    #begin-title {
+      margin: 22px 0 0;
+      font-family: "Zen Maru Gothic", sans-serif;
+      font-weight: 500;
+      font-size: 104px;
+      line-height: 1;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      text-wrap: balance;
+    }
+    #begin-lede {
+      margin: 20px 0 0;
+      font-family: "Zen Maru Gothic", sans-serif;
+      font-weight: 500;
+      font-size: 56px;
+      line-height: 1.18;
+      color: var(--ink-2);
+      text-wrap: balance;
+    }
+    #begin-cues {
+      position: relative;
+      margin-top: 40px;
+      width: 540px;
+      height: 130px;
+    }
+    .begin-cue {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 540px;
+      margin: 0;
+      font-family: "Atkinson Hyperlegible Next", sans-serif;
+      font-weight: 500;
+      font-size: 44px;
+      line-height: 1.3;
+      color: var(--ink-2);
+      text-wrap: balance;
+    }
+    #begin-keys {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 22px;
+      height: 64px;
+    }
+    /* Keycaps sit on their own row above the sentence they belong to. */
+    #begin-column .kbd-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    #begin-column .kbd {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 58px;
+      height: 58px;
+      padding: 0 14px;
+      box-sizing: border-box;
+      border-radius: 14px;
+      background: rgba(247, 250, 255, 0.72);
+      border: 1.5px solid rgba(36, 43, 61, 0.24);
+      box-shadow: 0 2px 0 rgba(36, 43, 61, 0.14);
+      font-family: "Atkinson Hyperlegible Next", sans-serif;
+      font-weight: 650;
+      font-size: 34px;
+      line-height: 1;
+      color: #242B3D;
+    }
+    #begin-column .kbd-icon {
+      display: block;
+      width: 30px;
+      height: 30px;
+      fill: none;
+      stroke: #242B3D;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #begin-column .kbd-word {
+      margin-left: 6px;
+      font-family: "Atkinson Hyperlegible Next", sans-serif;
+      font-weight: 500;
+      font-size: 44px;
+      color: var(--ink-2);
+    }
+  </style>
+
+  <div id="root" data-composition-id="02-begin" data-width="1920" data-height="1080" data-duration="11.4">
+    <div id="begin-sky" class="clip" data-start="0" data-duration="11.4" data-track-index="0">
+      <div class="begin-sky-layer" style="background: linear-gradient(180deg, #FAEFDC, #DEF3E4);"></div>
+    </div>
+
+    <div id="begin-plate">
+      <div id="begin-shadow"></div>
+      <div id="begin-mask">
+          <div id="begin-video-layer" class="begin-layer">
+            <video
+              id="begin-video"
+              src="assets/footage/01-begin.mov"
+              muted
+              playsinline
+              data-start="0"
+              data-duration="11.4"
+              data-media-start="1.3"
+              data-track-index="1"
+            ></video>
+          </div>
+      </div>
+      <div id="begin-rim"></div>
+    </div>
+
+    <div id="begin-column">
+      <svg id="begin-arc" class="arc" viewBox="0 0 120 74" role="img" aria-label="Moment">
+            <path class="arc-horizon" d="M0 62h120" />
+            <path class="arc-path" d="M10 62a50 50 0 0 1 100 0" />
+            <g class="arc-ticks">
+              <circle cx="10" cy="62" r="1.6" /><circle cx="24.64" cy="26.64" r="1.6" /><circle cx="60" cy="12" r="1.6" /><circle cx="95.36" cy="26.64" r="1.6" /><circle cx="110" cy="62" r="1.6" />
+            </g>
+            <g id="begin-sun">
+              <circle class="arc-glow" cx="10" cy="62" r="10" />
+              <circle class="arc-sun" cx="10" cy="62" r="5.5" />
+            </g>
+          </svg>
+      <h2 id="begin-title">Begin</h2>
+      <p id="begin-lede">One task, one tiny step.</p>
+      <div id="begin-cues">
+            <p id="begin-cue-1" class="begin-cue">Name the task and the smallest visible move.</p>
+            <p id="begin-cue-2" class="begin-cue">Say how you’re arriving, then pick a rhythm.</p>
+      </div>
+          <div id="begin-keys" class="begin-keys"><span class="kbd" aria-label="Command"><svg class="kbd-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg></span><span class="kbd" aria-label="Return"><svg class="kbd-icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg></span><span class="kbd-word">begins</span></div>
+    </div>
+  </div>
+
+  <script src="assets/vendor/gsap-3.14.2.min.js"></script>
+  <script>
+    (function () {
+      const tl = gsap.timeline({ paused: true });
+      // Window plate: a gentle settle, then the slowest possible drift. Footage runs at real speed.
+      tl.fromTo("#begin-plate", { scale: 0.985 }, { scale: 1, duration: 2.0, ease: "power2.out" }, 0);
+      tl.to("#begin-plate", { scale: 1.012, duration: 8.20, ease: "none" }, 2.0);
+      // Text column waits until the room's crossfade has mostly finished.
+      tl.fromTo("#begin-arc", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 1.0, ease: "power3.out" }, 0.9);
+      tl.fromTo("#begin-sun", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "sine.inOut" }, 1.1);
+      tl.fromTo("#begin-title", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.0, ease: "power3.out" }, 1.05);
+      tl.fromTo("#begin-lede", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 1.0, ease: "power3.out" }, 1.25);
+      tl.fromTo("#begin-cue-1", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 1.90);
+      tl.to("#begin-cue-1", { opacity: 0, y: -6, duration: 0.45, ease: "sine.inOut" }, 5.10);
+      tl.fromTo("#begin-cue-2", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 5.40);
+      tl.fromTo("#begin-keys", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.9, ease: "power3.out" }, 8.10);
+      window.__timelines["02-begin"] = tl;
+    })();
+  </script>
+</template>
